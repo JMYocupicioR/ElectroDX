@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { getModuleById } from '../../content/modules';
 import { Topic } from '../../types/content';
 import { ChevronRight, Home, BookOpen } from 'lucide-react';
+import { OfflineButton } from '../OfflineButton';
 
 function countChildren(topics: Topic[]): number {
   let c = 0;
@@ -58,6 +59,9 @@ export default function ModulePage() {
             <p className="text-xs sm:text-sm font-mono text-slate-400 dark:text-slate-500 mb-1">Módulo {String(mod.number).padStart(2, '0')}</p>
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">{mod.title}</h1>
             <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{mod.description}</p>
+            <div className="mt-3">
+              <OfflineButton moduleId={mod.id} />
+            </div>
           </div>
         </div>
       </motion.div>

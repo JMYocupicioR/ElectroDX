@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { allModules, getAllSearchableTopics } from '../../content/modules';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { BookOpen, Zap, Crosshair, RefreshCw, Repeat, Brain, Wrench, Map, Stethoscope, ClipboardList, Table, BookMarked, ShieldAlert, Search, GraduationCap, Globe, Sun, Moon } from 'lucide-react';
+import { OfflineButton, DownloadAllButton } from '../OfflineButton';
 
 const iconMap: Record<string, any> = { BookOpen, Zap, Crosshair, RefreshCw, Repeat, Brain, Wrench, Map, Stethoscope, ClipboardList, Table, BookMarked, ShieldAlert };
 
@@ -117,14 +118,17 @@ export default function LandingPage() {
           {/* Controls */}
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-            className="flex justify-center gap-3"
+            className="flex flex-col items-center gap-4"
           >
-            <button onClick={toggleDarkMode} className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700 transition-colors">
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
-            </button>
-            <button onClick={() => setLanguage(language === 'es' ? 'en' : 'es')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700 transition-colors text-sm">
-              <Globe className="w-4 h-4" /> {language === 'es' ? 'ES' : 'EN'}
-            </button>
+            <div className="flex justify-center gap-3">
+              <button onClick={toggleDarkMode} className="p-2.5 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700 transition-colors">
+                {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
+              </button>
+              <button onClick={() => setLanguage(language === 'es' ? 'en' : 'es')} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-700 transition-colors text-sm">
+                <Globe className="w-4 h-4" /> {language === 'es' ? 'ES' : 'EN'}
+              </button>
+            </div>
+            <DownloadAllButton moduleIds={allModules.map(m => m.id)} />
           </motion.div>
         </div>
       </section>
@@ -182,6 +186,9 @@ export default function LandingPage() {
                       <span className="text-xs text-blue-500 dark:text-blue-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                         Explorar →
                       </span>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-slate-100/60 dark:border-slate-700/30" onClick={(e) => e.preventDefault()}>
+                      <OfflineButton moduleId={mod.id} compact />
                     </div>
                   </Link>
                 </motion.div>

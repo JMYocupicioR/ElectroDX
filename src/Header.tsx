@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSettingsStore } from './stores/settingsStore';
+import { useOfflineStore } from './stores/offlineStore';
 import { BookOpen, Home, Sun, Moon, Globe, Menu } from 'lucide-react';
 import { CourseSidebar } from './components/CourseSidebar';
+import { OfflineIndicator } from './components/OfflineButton';
 
 export function Header() {
   const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
+  const initializeOffline = useOfflineStore(s => s.initialize);
   const location = useLocation();
   const isHome = location.pathname === '/';
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Initialize offline store (online/offline listeners)
+  useEffect(() => { initializeOffline(); }, [initializeOffline]);
 
   return (
     <>
@@ -37,6 +43,7 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <OfflineIndicator />
             {!isHome && (
               <Link to="/" className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
                 <Home className="w-4 h-4" />
