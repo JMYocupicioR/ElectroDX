@@ -4,6 +4,8 @@ import { getModuleById } from '../../content/modules';
 import { Topic } from '../../types/content';
 import { ChevronRight, Home, BookOpen } from 'lucide-react';
 import { OfflineButton } from '../OfflineButton';
+import { useSettingsStore } from '../../stores/settingsStore';
+import { localizedTopic } from '../../hooks/useLocalizedContent';
 
 function countChildren(topics: Topic[]): number {
   let c = 0;
@@ -27,12 +29,13 @@ function getPreview(topic: Topic): string {
 export default function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const mod = getModuleById(moduleId || '');
+  const lang = useSettingsStore((s) => s.language);
 
   if (!mod) {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
-        <h1 className="text-2xl font-bold mb-4">Módulo no encontrado</h1>
-        <Link to="/" className="text-blue-500 hover:underline">← Volver al inicio</Link>
+        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
+        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
       </div>
     );
   }
@@ -42,10 +45,10 @@ export default function ModulePage() {
       {/* Breadcrumbs */}
       <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
         <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
-          <Home className="w-3.5 h-3.5" /> Inicio
+          <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
         </Link>
         <ChevronRight className="w-3.5 h-3.5" />
-        <span className="text-slate-800 dark:text-white font-medium">{mod.emoji} {mod.title}</span>
+        <span className="text-slate-800 dark:text-white font-medium">{mod.emoji} {(lang === 'en' && mod.titleEn) || mod.title}</span>
       </nav>
 
       {/* Module Header with gradient accent */}
@@ -56,9 +59,9 @@ export default function ModulePage() {
             {mod.emoji}
           </div>
           <div className="min-w-0">
-            <p className="text-xs sm:text-sm font-mono text-slate-400 dark:text-slate-500 mb-1">Módulo {String(mod.number).padStart(2, '0')}</p>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">{mod.title}</h1>
-            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{mod.description}</p>
+            <p className="text-xs sm:text-sm font-mono text-slate-400 dark:text-slate-500 mb-1">{lang === 'en' ? 'Module' : 'Módulo'} {String(mod.number).padStart(2, '0')}</p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">{(lang === 'en' && mod.titleEn) || mod.title}</h1>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{(lang === 'en' && mod.descriptionEn) || mod.description}</p>
             <div className="mt-3">
               <OfflineButton moduleId={mod.id} />
             </div>
@@ -91,7 +94,7 @@ export default function ModulePage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm sm:text-base leading-snug">
-                    {topic.title}
+                    {localizedTopic(topic, lang).title}
                   </h3>
                   {preview && (
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">{preview}</p>
@@ -113,7 +116,7 @@ export default function ModulePage() {
       {/* Back */}
       <div className="mt-10 text-center">
         <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors min-h-[44px]">
-          ← Volver a todos los módulos
+          {lang === 'en' ? '← Back to all modules' : '← Volver a todos los módulos'}
         </Link>
       </div>
     </main>

@@ -5,6 +5,8 @@ import { Topic } from '../../types/content';
 import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, Youtube, ImageIcon } from 'lucide-react';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSettingsStore } from '../../stores/settingsStore';
+import { localizedTopic } from '../../hooks/useLocalizedContent';
 
 /* ─── Rich-text renderer ─── */
 function renderInline(text: string, keyPrefix: string): (string | JSX.Element)[] {
@@ -324,14 +326,15 @@ function YouTubeSection({ videos }: { videos: { title: string; videoId: string; 
 }
 
 /* ─── Clinical Pearls Box ─── */
-function ClinicalPearlsBox({ pearls }: { pearls: string[] }) {
+function ClinicalPearlsBox({ pearls, lang }: { pearls: string[]; lang?: string }) {
+  const label = lang === 'en' ? 'Clinical Pearls' : 'Perlas Clínicas';
   return (
     <div className="mt-5 rounded-xl border border-amber-200/60 dark:border-amber-700/30 bg-gradient-to-br from-amber-50/80 to-yellow-50/50 dark:from-amber-900/20 dark:to-yellow-900/10 p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-3">
         <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-amber-100 dark:bg-amber-800/40 flex items-center justify-center">
           <Lightbulb className="w-4 h-4 text-amber-600 dark:text-amber-400" />
         </span>
-        <h4 className="text-sm font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">Perlas Clínicas</h4>
+        <h4 className="text-sm font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider">{label}</h4>
       </div>
       <ul className="space-y-2">
         {pearls.map((pearl, i) => (
@@ -346,14 +349,15 @@ function ClinicalPearlsBox({ pearls }: { pearls: string[] }) {
 }
 
 /* ─── Key Points Box ─── */
-function KeyPointsBox({ points }: { points: string[] }) {
+function KeyPointsBox({ points, lang }: { points: string[]; lang?: string }) {
+  const label = lang === 'en' ? 'Key Points' : 'Puntos Clave';
   return (
     <div className="mt-5 rounded-xl border border-blue-200/60 dark:border-blue-700/30 bg-gradient-to-br from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10 p-4 sm:p-5">
       <div className="flex items-center gap-2 mb-3">
         <span className="flex-shrink-0 w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-800/40 flex items-center justify-center">
           <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
         </span>
-        <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">Puntos Clave</h4>
+        <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider">{label}</h4>
       </div>
       <ul className="space-y-2">
         {points.map((point, i) => (
@@ -477,6 +481,7 @@ function getAllFlatTopics(topics: Topic[], parentPath: string[] = []): { topic: 
 export default function TopicPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const location = useLocation();
+  const lang = useSettingsStore((s) => s.language);
   const [showTOC, setShowTOC] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -531,8 +536,8 @@ export default function TopicPage() {
   if (!mod) {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
-        <h1 className="text-2xl font-bold mb-4">Módulo no encontrado</h1>
-        <Link to="/" className="text-blue-500 hover:underline">← Volver al inicio</Link>
+        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
+        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
       </div>
     );
   }
@@ -549,8 +554,8 @@ export default function TopicPage() {
   if (!topic) {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
-        <h1 className="text-2xl font-bold mb-4">Tema no encontrado</h1>
-        <Link to={`/modulo/${moduleId}`} className="text-blue-500 hover:underline">← Volver al módulo</Link>
+        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Topic not found' : 'Tema no encontrado'}</h1>
+        <Link to={`/modulo/${moduleId}`} className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to module' : '← Volver al módulo'}</Link>
       </div>
     );
   }
@@ -560,6 +565,10 @@ export default function TopicPage() {
   // Get references for first-level topic
   const firstLevelTopicId = pathParts[0] || topic.id;
   const references = getReferencesForTopic(mod.id, firstLevelTopicId);
+
+  // Localized fields for the main topic
+  const lt = localizedTopic(topic, lang);
+  const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
 
   return (
     <>
@@ -571,21 +580,21 @@ export default function TopicPage() {
         {/* Breadcrumbs */}
         <nav className="flex flex-wrap items-center gap-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
           <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
-            <Home className="w-3.5 h-3.5" /> Inicio
+            <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
           </Link>
           <ChevronRight className="w-3 h-3 flex-shrink-0" />
           <Link to={`/modulo/${mod.id}`} className="hover:text-blue-500 transition-colors truncate max-w-[120px] sm:max-w-none min-h-[2rem] inline-flex items-center">
-            {mod.emoji} {mod.title}
+            {mod.emoji} {modTitle}
           </Link>
           {breadcrumbs.map((bc, i) => (
             <span key={bc.id} className="flex items-center gap-1">
               <ChevronRight className="w-3 h-3 flex-shrink-0" />
               {i < breadcrumbs.length - 1 ? (
                 <Link to={`/modulo/${mod.id}/${pathParts.slice(0, i + 1).join('/')}`} className="hover:text-blue-500 transition-colors truncate max-w-[100px] sm:max-w-none min-h-[2rem] inline-flex items-center">
-                  {bc.title}
+                  {localizedTopic(bc, lang).title}
                 </Link>
               ) : (
-                <span className="text-slate-800 dark:text-white font-medium truncate max-w-[140px] sm:max-w-none">{bc.title}</span>
+                <span className="text-slate-800 dark:text-white font-medium truncate max-w-[140px] sm:max-w-none">{localizedTopic(bc, lang).title}</span>
               )}
             </span>
           ))}
@@ -597,21 +606,24 @@ export default function TopicPage() {
           <div className={`h-1 w-16 rounded-full bg-gradient-to-r ${mod.color} mb-4`} />
 
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 leading-tight tracking-tight">
-            {topic.title}
+            {lt.title}
           </h1>
-          {topic.titleEn && (
+          {lang === 'es' && topic.titleEn && (
             <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.titleEn}</p>
+          )}
+          {lang === 'en' && topic.title !== lt.title && (
+            <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.title}</p>
           )}
 
           {/* Main content */}
-          {topic.content && (
+          {lt.content && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
-              <RichContent text={topic.content} />
-              {topic.clinicalPearls && topic.clinicalPearls.length > 0 && (
-                <ClinicalPearlsBox pearls={topic.clinicalPearls} />
+              <RichContent text={lt.content} />
+              {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
+                <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
               )}
-              {topic.keyPoints && topic.keyPoints.length > 0 && (
-                <KeyPointsBox points={topic.keyPoints} />
+              {lt.keyPoints && lt.keyPoints.length > 0 && (
+                <KeyPointsBox points={lt.keyPoints} lang={lang} />
               )}
               {topic.imageUrls && topic.imageUrls.length > 0 && (
                 <ImageGallery images={topic.imageUrls} />
@@ -625,13 +637,13 @@ export default function TopicPage() {
             </div>
           )}
           {/* Media without content */}
-          {!topic.content && (topic.videoUrls?.length || topic.youtubeUrls?.length || topic.clinicalPearls?.length || topic.keyPoints?.length) && (
+          {!lt.content && (topic.videoUrls?.length || topic.youtubeUrls?.length || lt.clinicalPearls?.length || lt.keyPoints?.length) && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
-              {topic.clinicalPearls && topic.clinicalPearls.length > 0 && (
-                <ClinicalPearlsBox pearls={topic.clinicalPearls} />
+              {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
+                <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
               )}
-              {topic.keyPoints && topic.keyPoints.length > 0 && (
-                <KeyPointsBox points={topic.keyPoints} />
+              {lt.keyPoints && lt.keyPoints.length > 0 && (
+                <KeyPointsBox points={lt.keyPoints} lang={lang} />
               )}
               {topic.videoUrls && topic.videoUrls.length > 0 && (
                 <VideoSection videos={topic.videoUrls} />
@@ -646,6 +658,7 @@ export default function TopicPage() {
           {hasChildContent && (
             <div className="space-y-6 mt-6">
               {topic.children!.map((child, i) => {
+                const lc = localizedTopic(child, lang);
                 const childPath = `/modulo/${mod.id}/${[...pathParts, child.id].join('/')}`;
                 const hasGrandchildren = child.children && child.children.length > 0;
 
@@ -669,14 +682,17 @@ export default function TopicPage() {
                           <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white leading-tight">
                             {hasGrandchildren ? (
                               <Link to={childPath} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                {child.title}
+                                {lc.title}
                               </Link>
                             ) : (
-                              child.title
+                              lc.title
                             )}
                           </h2>
-                          {child.titleEn && (
+                          {lang === 'es' && child.titleEn && (
                             <p className="text-xs text-slate-400 dark:text-slate-500 italic mt-0.5">{child.titleEn}</p>
+                          )}
+                          {lang === 'en' && child.title !== lc.title && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 italic mt-0.5">{child.title}</p>
                           )}
                         </div>
                         {hasGrandchildren && (
@@ -684,21 +700,21 @@ export default function TopicPage() {
                             to={childPath}
                             className="flex-shrink-0 text-xs text-blue-500 hover:text-blue-600 dark:text-blue-400 font-medium flex items-center gap-1 mt-1 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           >
-                            {child.children!.length} subtemas <ChevronRight className="w-3 h-3" />
+                            {child.children!.length} {lang === 'en' ? 'subtopics' : 'subtemas'} <ChevronRight className="w-3 h-3" />
                           </Link>
                         )}
                       </div>
 
                       {/* Section content — always visible */}
-                      {child.content && (
+                      {lc.content && (
                         <div className="px-5 sm:px-6 pb-5 sm:pb-6">
                           <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4">
-                            <RichContent text={child.content} />
-                            {child.clinicalPearls && child.clinicalPearls.length > 0 && (
-                              <ClinicalPearlsBox pearls={child.clinicalPearls} />
+                            <RichContent text={lc.content} />
+                            {lc.clinicalPearls && lc.clinicalPearls.length > 0 && (
+                              <ClinicalPearlsBox pearls={lc.clinicalPearls} lang={lang} />
                             )}
-                            {child.keyPoints && child.keyPoints.length > 0 && (
-                              <KeyPointsBox points={child.keyPoints} />
+                            {lc.keyPoints && lc.keyPoints.length > 0 && (
+                              <KeyPointsBox points={lc.keyPoints} lang={lang} />
                             )}
                             {child.imageUrls && child.imageUrls.length > 0 && (
                               <ImageGallery images={child.imageUrls} />
@@ -713,14 +729,14 @@ export default function TopicPage() {
                         </div>
                       )}
                       {/* Media without content */}
-                      {!child.content && (child.videoUrls?.length || child.youtubeUrls?.length || child.clinicalPearls?.length || child.keyPoints?.length) && (
+                      {!lc.content && (child.videoUrls?.length || child.youtubeUrls?.length || lc.clinicalPearls?.length || lc.keyPoints?.length) && (
                         <div className="px-5 sm:px-6 pb-5 sm:pb-6">
                           <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4">
-                            {child.clinicalPearls && child.clinicalPearls.length > 0 && (
-                              <ClinicalPearlsBox pearls={child.clinicalPearls} />
+                            {lc.clinicalPearls && lc.clinicalPearls.length > 0 && (
+                              <ClinicalPearlsBox pearls={lc.clinicalPearls} lang={lang} />
                             )}
-                            {child.keyPoints && child.keyPoints.length > 0 && (
-                              <KeyPointsBox points={child.keyPoints} />
+                            {lc.keyPoints && lc.keyPoints.length > 0 && (
+                              <KeyPointsBox points={lc.keyPoints} lang={lang} />
                             )}
                             {child.videoUrls && child.videoUrls.length > 0 && (
                               <VideoSection videos={child.videoUrls} />
@@ -752,9 +768,9 @@ export default function TopicPage() {
               >
                 <ArrowLeft className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
                 <div className="min-w-0">
-                  <span className="block text-[0.65rem] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Anterior</span>
+                  <span className="block text-[0.65rem] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{lang === 'en' ? 'Previous' : 'Anterior'}</span>
                   <span className="block truncate text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors font-medium">
-                    {prevTopic.topic.title}
+                    {localizedTopic(prevTopic.topic, lang).title}
                   </span>
                 </div>
               </Link>
@@ -766,9 +782,9 @@ export default function TopicPage() {
                 className="flex items-center justify-end gap-3 px-4 py-3.5 rounded-xl bg-white/70 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all text-sm group flex-1 min-w-0 text-right"
               >
                 <div className="min-w-0">
-                  <span className="block text-[0.65rem] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Siguiente</span>
+                  <span className="block text-[0.65rem] uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">{lang === 'en' ? 'Next' : 'Siguiente'}</span>
                   <span className="block truncate text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors font-medium">
-                    {nextTopic.topic.title}
+                    {localizedTopic(nextTopic.topic, lang).title}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-500 transition-colors flex-shrink-0" />
@@ -810,7 +826,7 @@ export default function TopicPage() {
                       }`}
                     >
                       <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                      <span className="line-clamp-2 leading-snug">{child.title}</span>
+                      <span className="line-clamp-2 leading-snug">{localizedTopic(child, lang).title}</span>
                     </button>
                   ))}
                 </nav>
@@ -821,7 +837,7 @@ export default function TopicPage() {
                     className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                   >
                     <ArrowLeft className="w-3 h-3" />
-                    <span>Volver al módulo</span>
+                    <span>{lang === 'en' ? 'Back to module' : 'Volver al módulo'}</span>
                   </Link>
                 </div>
               </div>
@@ -878,7 +894,7 @@ export default function TopicPage() {
                     }`}
                   >
                     <span className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                    <span className="leading-snug">{child.title}</span>
+                    <span className="leading-snug">{localizedTopic(child, lang).title}</span>
                   </button>
                 ))}
               </nav>

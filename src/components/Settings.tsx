@@ -1,11 +1,8 @@
-import React from 'react';
 import { Moon, Sun, Languages } from 'lucide-react';
 import { useSettingsStore } from '../stores/settingsStore';
-import { useTranslationStore } from '../stores/translationStore';
 
 export function Settings() {
-  const { isDarkMode, toggleDarkMode } = useSettingsStore();
-  const { language, setLanguage } = useTranslationStore();
+  const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
 
   return (
     <div className="flex items-center space-x-4">
@@ -30,7 +27,7 @@ export function Settings() {
         title="Cambiar idioma"
       >
         <Languages size={20} />
-        <span className="font-medium">{(language || 'es').toUpperCase()}</span>
+        <span className="font-medium">{language.toUpperCase()}</span>
       </button>
     </div>
   );

@@ -14,7 +14,9 @@ export interface Topic {
   youtubeUrls?: { title: string; videoId: string; startTime?: number }[];  // YouTube video embeds
   imageUrls?: { src: string; alt: string; caption?: string }[];  // Educational images/diagrams
   clinicalPearls?: string[];    // Highlighted clinical tips (💡)
+  clinicalPearlsEn?: string[];
   keyPoints?: string[];         // Key takeaway summaries (📌)
+  keyPointsEn?: string[];
   children?: Topic[];      // Recursive sub-topics (unlimited depth)
   tags?: string[];
   keyTerms?: string[];
