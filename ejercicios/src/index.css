@@ -1,0 +1,356 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary-50: #f0f9ff;
+    --primary-100: #e0f2fe;
+    --primary-200: #bae6fd;
+    --primary-300: #7dd3fc;
+    --primary-400: #38bdf8;
+    --primary-500: #0ea5e9;
+    --primary-600: #0284c7;
+    --primary-700: #0369a1;
+    --primary-800: #075985;
+    --primary-900: #0c4a6e;
+  }
+
+  html {
+    @apply antialiased;
+    font-size: 16px; /* Base font size for desktop */
+  }
+  
+  body {
+    @apply bg-gray-900 text-gray-100 min-h-screen w-full overflow-x-hidden;
+  }
+
+  #root {
+    @apply min-h-screen flex flex-col w-full;
+  }
+
+  /* Mejoras de responsividad y amplitud */
+  .container {
+    @apply px-4 sm:px-6 lg:px-8 mx-auto w-full max-w-5xl xl:max-w-7xl 2xl:max-w-screen-2xl;
+    /* Original: max-w-7xl. Ampliado para xl y 2xl breakpoints */
+  }
+
+  /* Ajustes para dispositivos móviles */
+  @media (max-width: 768px) { /* md breakpoint */
+    html {
+      font-size: 15px; /* Ligeramente más pequeño para tablets */
+    }
+    .container {
+      @apply max-w-3xl; /* Ajustar el max-width para tablets */
+    }
+  }
+
+  @media (max-width: 640px) { /* sm breakpoint */
+    html {
+      font-size: 14px; /* Más pequeño para móviles */
+    }
+    .container {
+      @apply max-w-full; /* Permitir que ocupe todo el ancho en móviles */
+    }
+  }
+}
+
+@layer components {
+  .form-card {
+    @apply bg-gray-800/50 backdrop-blur-sm p-4 md:p-6 lg:p-8 rounded-lg shadow-lg border border-gray-700/50 transition-all hover:shadow-xl hover:border-gray-600 w-full;
+    /* Aumentado padding en pantallas más grandes */
+  }
+
+  .form-section {
+    @apply space-y-4 md:space-y-6 w-full;
+     /* Aumentado espaciado en pantallas más grandes */
+  }
+
+  .form-group {
+    @apply mb-4 md:mb-6 w-full;
+    /* Aumentado margen en pantallas más grandes */
+  }
+
+  .form-label {
+    @apply block text-sm md:text-base font-medium text-gray-200 mb-1 md:mb-2;
+    /* Aumentado tamaño de fuente y margen en pantallas más grandes */
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    @apply w-full rounded-lg bg-gray-800 border-gray-700 text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors placeholder-gray-500 p-2 md:p-3 text-sm md:text-base;
+    /* Aumentado padding y tamaño de fuente en pantallas más grandes */
+  }
+
+  .form-checkbox {
+    @apply rounded border-gray-700 bg-gray-800 text-blue-500 shadow-sm focus:border-blue-500 focus:ring-blue-500 h-4 w-4 md:h-5 md:w-5;
+     /* Aumentado tamaño en pantallas más grandes */
+  }
+
+  .btn {
+    @apply px-4 py-2 md:px-6 md:py-3 rounded-lg font-medium transition-all duration-200 w-full sm:w-auto text-sm md:text-base;
+    /* Aumentado padding y tamaño de fuente en pantallas más grandes */
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900 shadow-lg hover:shadow-xl;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-800 text-gray-200 hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900 border border-gray-700;
+  }
+
+  /* Estilos adicionales para tema oscuro */
+  .card-dark {
+    @apply bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-lg shadow-lg;
+  }
+
+  .text-primary-dark {
+    @apply text-gray-100;
+  }
+
+  .text-secondary-dark {
+    @apply text-gray-300;
+  }
+
+  .text-muted-dark {
+    @apply text-gray-400;
+  }
+
+  .bg-primary-dark {
+    @apply bg-gray-900;
+  }
+
+  .bg-secondary-dark {
+    @apply bg-gray-800;
+  }
+
+  .border-dark {
+    @apply border-gray-700;
+  }
+
+  .hover-dark {
+    @apply hover:bg-gray-700/50 transition-colors;
+  }
+
+  /* Estilos para tablas en tema oscuro */
+  .table-dark {
+    @apply bg-gray-800/50;
+  }
+
+  .table-dark th {
+    @apply bg-gray-700/50 text-gray-200 border-gray-600;
+  }
+
+  .table-dark td {
+    @apply text-gray-300 border-gray-600;
+  }
+
+  .table-dark tr:hover {
+    @apply bg-gray-700/30;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Estilos específicos para impresión */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    @apply bg-white text-black;
+    margin: 0;
+    padding: 0;
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  /* Ocultar elementos no necesarios para impresión */
+  .no-print,
+  button:not(.print-visible),
+  .btn:not(.print-visible),
+  nav,
+  .navigation,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Mostrar solo el contenido del reporte */
+  .print-content {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Estilos para el contenedor del reporte */
+  [ref="reportContentRef"],
+  .prose {
+    @apply bg-white text-black border-none shadow-none;
+    margin: 0 !important;
+    padding: 20pt !important;
+    max-width: none !important;
+    color: black !important;
+    background: white !important;
+  }
+
+  /* Títulos y encabezados */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-black;
+    color: black !important;
+    page-break-after: avoid;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+  }
+
+  h2 {
+    font-size: 18pt;
+    font-weight: bold;
+    border-bottom: 2pt solid black;
+    padding-bottom: 4pt;
+  }
+
+  h3 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 12pt;
+  }
+
+  /* Párrafos y texto */
+  p {
+    @apply text-black;
+    color: black !important;
+    margin-bottom: 6pt;
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* Elementos de lista */
+  ul, ol {
+    margin-bottom: 8pt;
+  }
+
+  li {
+    @apply text-black;
+    color: black !important;
+    margin-bottom: 2pt;
+  }
+
+  /* Secciones del reporte */
+  section {
+    page-break-inside: avoid;
+    margin-bottom: 16pt;
+  }
+
+  /* Tablas y contenido estructurado */
+  .grid {
+    display: block !important;
+  }
+
+  .grid > div {
+    display: block !important;
+    margin-bottom: 4pt;
+  }
+
+  /* Elementos con bordes y fondos */
+  .border,
+  .border-gray-600,
+  .border-gray-700 {
+    border-color: black !important;
+  }
+
+  .bg-gray-700,
+  .bg-gray-800,
+  .bg-gray-700\/40,
+  .bg-gray-800\/50 {
+    background-color: #f5f5f5 !important;
+    border: 1pt solid black !important;
+  }
+
+  /* Texto destacado */
+  strong,
+  .font-semibold,
+  .font-bold {
+    @apply text-black;
+    color: black !important;
+    font-weight: bold;
+  }
+
+  /* Elementos con colores específicos */
+  .text-red-400,
+  .text-yellow-400,
+  .text-green-400,
+  .text-blue-300,
+  .text-blue-400 {
+    color: black !important;
+    font-weight: bold;
+  }
+
+  /* Separadores */
+  hr {
+    border-color: black !important;
+    margin: 12pt 0;
+  }
+
+  /* Evitar saltos de página en elementos importantes */
+  .page-break-avoid {
+    page-break-inside: avoid;
+  }
+
+  /* Forzar salto de página si es necesario */
+  .page-break {
+    page-break-before: always;
+  }
+
+  /* Configuración de página */
+  @page {
+    margin: 1in;
+    size: A4;
+  }
+
+  /* Ocultar elementos decorativos */
+  .backdrop-blur-sm,
+  .shadow-lg,
+  .rounded-lg {
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Elementos específicos para impresión */
+  .print\:block {
+    display: block !important;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* Título principal del reporte en impresión */
+  .print-content h1 {
+    font-size: 24pt !important;
+    font-weight: bold !important;
+    text-align: center !important;
+    margin-bottom: 16pt !important;
+    color: black !important;
+  }
+}

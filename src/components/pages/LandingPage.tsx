@@ -247,6 +247,45 @@ export default function LandingPage() {
                 </div>
               </Link>
             </motion.div>
+
+            {/* Ejercicios EMG Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ delay: 0.15 }}
+              className="mt-5"
+            >
+              <Link
+                to="/ejercicios"
+                className="group block p-6 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-red-900/20 border-2 border-amber-200/60 dark:border-amber-700/40 hover:border-amber-400 dark:hover:border-amber-500 shadow-lg hover:shadow-xl hover:shadow-amber-200/30 dark:hover:shadow-amber-900/30 transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="flex items-start gap-5">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-2xl shadow-lg group-hover:scale-110 transition-transform">
+                    ⚡
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-slate-800 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                        Modo Ejercicio EMG
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 border border-amber-200 dark:border-amber-700/50">
+                        Nuevo
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-3">
+                      Practica diagnosticando casos clínicos aleatorios de electromiografía.
+                      Sistema de pistas, modo estudio, retroalimentación detallada y diagnóstico diferencial.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">8 Patrones</span>
+                      <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">Casos Aleatorios</span>
+                      <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300">3 Dificultades</span>
+                      <span className="px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Modo Estudio</span>
+                    </div>
+                  </div>
+                  <span className="text-slate-400 group-hover:text-amber-500 transition-colors text-xl mt-2">→</span>
+                </div>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </section>

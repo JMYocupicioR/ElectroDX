@@ -8,6 +8,7 @@ const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const ModulePage = lazy(() => import('./components/pages/ModulePage'));
 const TopicPage = lazy(() => import('./components/pages/TopicPage'));
 const PlexoCalculatorPage = lazy(() => import('./components/Plexo/PlexoCalculatorPage'));
+const ExerciseMode = lazy(() => import('../ejercicios/src/components/ExerciseMode'));
 
 function App() {
   const { isDarkMode } = useSettingsStore();
@@ -20,6 +21,7 @@ function App() {
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/ejercicios" element={<ExerciseMode />} />
               <Route path="/herramientas/plexo-braquial" element={<PlexoCalculatorPage />} />
               <Route path="/modulo/:moduleId" element={<ModulePage />} />
               <Route path="/modulo/:moduleId/*" element={<TopicPage />} />
