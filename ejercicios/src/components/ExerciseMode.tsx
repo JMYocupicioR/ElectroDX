@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ArrowLeft, Brain, Activity, Zap, CheckCircle, XCircle, ChevronRight, ChevronLeft,
   Trophy, Target, Clock, Lightbulb, BookOpen, User, Stethoscope,
-  Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle } from 'lucide-react';
+  Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle, ChevronDown } from 'lucide-react';
 import { ClinicalCaseEngine } from '../services/ClinicalCaseEngine';
 import { useExerciseStore } from '../store/exerciseStore';
 import type { ClinicalCase, Difficulty, DiagnosisOption, EvaluationResult, ExerciseAttempt } from '../types/ClinicalCase';
@@ -95,6 +95,23 @@ const ExerciseMode: React.FC = () => {
   const [showHint, setShowHint] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [showReviewPanel, setShowReviewPanel] = useState(false);
+  const [expandedFeedback, setExpandedFeedback] = useState<Record<string, boolean>>({ explanation: true, findings: false, differential: false });
+  const [animatedScore, setAnimatedScore] = useState(0);
+
+  // Animate score counter on evaluation change
+  useEffect(() => {
+    if (!evaluation) return;
+    let frame = 0;
+    const target = evaluation.score;
+    const duration = 30;
+    const step = target / duration;
+    const timer = setInterval(() => {
+      frame++;
+      setAnimatedScore(Math.min(Math.round(step * frame), target));
+      if (frame >= duration) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, [evaluation]);
 
   // ───── Keyboard navigation ──────
   useEffect(() => {
@@ -249,117 +266,120 @@ const ExerciseMode: React.FC = () => {
 
   // ─── RENDER: Config ─────────
   const renderConfig = () => (
-    <div className="max-w-2xl mx-auto text-center space-y-8">
-      <div className="space-y-2">
-        <div className="flex justify-center mb-4">
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-2xl">
-            <BookOpen className="w-12 h-12 text-white" />
+    <div className="max-w-2xl mx-auto space-y-6">
+      {/* Hero */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600/30 via-orange-600/20 to-red-600/10 border border-amber-500/20 p-6 sm:p-8 text-center">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="relative">
+          <div className="inline-flex bg-gradient-to-br from-amber-500 to-orange-600 p-4 rounded-2xl shadow-lg shadow-amber-500/30 mb-4">
+            <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
+            Modo Ejercicio EMG
+          </h1>
+          <p className="text-gray-400 mt-1 text-sm sm:text-base">Practica diagnosticando casos clínicos de electromiografía</p>
         </div>
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-orange-400">
-          Modo Ejercicio EMG
-        </h1>
-        <p className="text-gray-400">Practica diagnosticando casos clínicos de electromiografía</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700">
-          <Trophy className="w-6 h-6 text-amber-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{store.totalExercises}</div>
-          <div className="text-xs text-gray-400">Ejercicios</div>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
+        <div className="bg-gradient-to-b from-amber-950/30 to-gray-900/40 rounded-xl p-3 sm:p-4 border border-amber-800/20 text-center">
+          <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 mx-auto mb-1.5" />
+          <div className="text-xl sm:text-2xl font-bold text-white">{store.totalExercises}</div>
+          <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Ejercicios</div>
         </div>
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700">
-          <Target className="w-6 h-6 text-green-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">
+        <div className="bg-gradient-to-b from-green-950/30 to-gray-900/40 rounded-xl p-3 sm:p-4 border border-green-800/20 text-center">
+          <Target className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 mx-auto mb-1.5" />
+          <div className="text-xl sm:text-2xl font-bold text-white">
             {store.totalExercises > 0 ? Math.round(store.correctAnswers / store.totalExercises * 100) : 0}%
           </div>
-          <div className="text-xs text-gray-400">Precisión</div>
+          <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Precisión</div>
         </div>
-        <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700">
-          <Zap className="w-6 h-6 text-orange-400 mx-auto mb-2" />
-          <div className="text-2xl font-bold text-white">{store.currentStreak}</div>
-          <div className="text-xs text-gray-400">Racha</div>
+        <div className="bg-gradient-to-b from-orange-950/30 to-gray-900/40 rounded-xl p-3 sm:p-4 border border-orange-800/20 text-center">
+          <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 mx-auto mb-1.5" />
+          <div className="text-xl sm:text-2xl font-bold text-white">{store.currentStreak}</div>
+          <div className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-wider">Racha</div>
         </div>
       </div>
 
-      {/* Difficulty Selector */}
-      <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700">
-        <h3 className="text-lg font-semibold text-white mb-4">Dificultad</h3>
-        <div className="flex gap-3 justify-center">
-          {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
+      {/* Difficulty — Visual Cards */}
+      <div>
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">Dificultad</h3>
+        <div className="grid grid-cols-3 gap-2 sm:gap-3">
+          {([{ d: 'easy' as Difficulty, emoji: '🟢', label: 'Fácil', desc: '3 opciones, valores claros', border: 'border-green-500/40', bg: 'bg-green-950/20' },
+            { d: 'medium' as Difficulty, emoji: '🟡', label: 'Medio', desc: '5 opciones, borderline', border: 'border-amber-500/40', bg: 'bg-amber-950/20' },
+            { d: 'hard' as Difficulty, emoji: '🔴', label: 'Difícil', desc: '7 opciones, sutiles', border: 'border-red-500/40', bg: 'bg-red-950/20' },
+          ]).map(({ d, emoji, label, desc, border, bg }) => (
             <button key={d} onClick={() => { setDifficulty(d); store.setDifficulty(d); }}
-              className={`px-6 py-3 rounded-xl font-medium transition-all ${
+              className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-center ${
                 difficulty === d
-                  ? d === 'easy' ? 'bg-green-600 text-white ring-2 ring-green-400'
-                    : d === 'medium' ? 'bg-amber-600 text-white ring-2 ring-amber-400'
-                    : 'bg-red-600 text-white ring-2 ring-red-400'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  ? `${bg} ${border} ring-1 ring-offset-1 ring-offset-gray-900 ring-current shadow-lg`
+                  : 'bg-gray-800/40 border-gray-700/50 hover:border-gray-600'
               }`}>
-              {d === 'easy' ? '🟢 Fácil' : d === 'medium' ? '🟡 Medio' : '🔴 Difícil'}
+              <div className="text-xl sm:text-2xl mb-1">{emoji}</div>
+              <div className={`text-sm font-bold ${difficulty === d ? 'text-white' : 'text-gray-300'}`}>{label}</div>
+              <div className="text-[10px] text-gray-500 mt-0.5 hidden sm:block">{desc}</div>
             </button>
           ))}
         </div>
-        <p className="text-sm text-gray-500 mt-3">
-          {difficulty === 'easy' ? '3 opciones, valores claramente anormales'
-            : difficulty === 'medium' ? '5 opciones, valores borderline incluidos'
-            : '7 opciones, hallazgos sutiles y distractores'}
-        </p>
       </div>
 
-      {/* Category Filter */}
-      <div className="bg-gray-800/40 rounded-xl p-6 border border-gray-700">
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center justify-center gap-2">
-          <Filter className="w-5 h-5 text-purple-400" /> Filtrar por Categoría
-        </h3>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {availableCategories.map(cat => {
-            const count = cat === 'all'
-              ? CASE_TEMPLATES.length
-              : CASE_TEMPLATES.filter(t => t.category === cat).length;
-            return (
-              <button key={cat} onClick={() => setCategoryFilter(cat)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                  categoryFilter === cat
-                    ? 'bg-purple-600 text-white ring-2 ring-purple-400'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}>
-                {CATEGORY_LABELS[cat] || cat}
-                <span className="ml-1.5 text-xs opacity-70">({count})</span>
-              </button>
-            );
-          })}
+      {/* Category + Mode — Unified Card */}
+      <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden">
+        {/* Category */}
+        <div className="p-4">
+          <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+            <Filter className="w-3 h-3 text-purple-400" /> Categoría
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {availableCategories.map(cat => {
+              const count = cat === 'all' ? CASE_TEMPLATES.length : CASE_TEMPLATES.filter(t => t.category === cat).length;
+              return (
+                <button key={cat} onClick={() => setCategoryFilter(cat)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap border ${
+                    categoryFilter === cat
+                      ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/20'
+                      : 'bg-gray-800/60 text-gray-400 border-gray-700/60 hover:bg-gray-700/60 hover:text-gray-200 hover:border-gray-600'
+                  }`}>
+                  {CATEGORY_LABELS[cat] || cat}
+                  <span className="ml-1 opacity-50">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-gray-700/40 mx-4" />
+
+        {/* Study Mode */}
+        <div className="p-4">
+          <label className="flex items-center justify-between cursor-pointer">
+            <div className="flex items-center gap-2.5">
+              <div className={`p-1.5 rounded-lg ${isStudyMode ? 'bg-purple-600/20' : 'bg-gray-700/40'}`}>
+                {isStudyMode ? <BookOpen className="w-4 h-4 text-purple-400" /> : <Award className="w-4 h-4 text-gray-400" />}
+              </div>
+              <div>
+                <div className={`text-sm font-semibold ${isStudyMode ? 'text-purple-300' : 'text-gray-300'}`}>
+                  {isStudyMode ? 'Modo Estudio' : 'Modo Examen'}
+                </div>
+                <div className="text-[10px] text-gray-500">
+                  {isStudyMode ? 'Respuestas visibles — para aprender' : 'Evalúa tu conocimiento'}
+                </div>
+              </div>
+            </div>
+            <button onClick={() => setIsStudyMode(!isStudyMode)}
+              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isStudyMode ? 'bg-purple-600' : 'bg-gray-600'}`}>
+              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${isStudyMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
+            </button>
+          </label>
         </div>
       </div>
 
-      {/* Study Mode Toggle */}
-      <div className="bg-gray-800/40 rounded-xl p-4 border border-gray-700">
-        <label className="flex items-center justify-center gap-3 cursor-pointer">
-          <span className="text-gray-400 text-sm">Modo Evaluación</span>
-          <button
-            onClick={() => setIsStudyMode(!isStudyMode)}
-            className={`relative w-14 h-7 rounded-full transition-colors ${
-              isStudyMode ? 'bg-purple-600' : 'bg-gray-600'
-            }`}
-          >
-            <div className={`absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform ${
-              isStudyMode ? 'translate-x-7' : 'translate-x-0.5'
-            }`} />
-          </button>
-          <span className={`text-sm font-medium ${isStudyMode ? 'text-purple-300' : 'text-gray-500'}`}>
-            {isStudyMode ? '📖 Modo Estudio' : '✍️ Modo Examen'}
-          </span>
-        </label>
-        <p className="text-xs text-gray-500 mt-2">
-          {isStudyMode
-            ? 'Verás el diagnóstico correcto sin evaluación — ideal para aprender'
-            : 'Selecciona tu respuesta y obtén calificación'}
-        </p>
-      </div>
-
+      {/* CTA */}
       <button onClick={generateNewCase}
-        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:scale-105 shadow-lg shadow-amber-500/20">
-        <Zap className="w-5 h-5 inline mr-2" />Generar Caso Clínico
+        className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-amber-600/30 flex items-center justify-center gap-2">
+        <Zap className="w-5 h-5" /> Generar Caso Clínico
       </button>
     </div>
   );
@@ -369,7 +389,7 @@ const ExerciseMode: React.FC = () => {
     if (!clinicalCase) return null;
     const p = clinicalCase.patient;
     return (
-      <div className={`space-y-6 transition-all duration-500 ${isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+      <div className={`space-y-4 sm:space-y-6 transition-all duration-500 ${isAnimating ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         <div className="flex items-center gap-3 mb-2">
           <div className="bg-blue-600/20 p-3 rounded-xl"><User className="w-6 h-6 text-blue-400" /></div>
           <div>
@@ -378,39 +398,38 @@ const ExerciseMode: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-gray-800/60 rounded-xl p-4 border border-gray-700">
-            <div className="text-sm text-gray-400 mb-1">Paciente</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="bg-gray-800/60 rounded-xl p-4 border-l-4 border-blue-500 border-t border-r border-b border-t-gray-700/50 border-r-gray-700/50 border-b-gray-700/50">
+            <div className="text-[10px] text-blue-400 uppercase tracking-wider mb-1">Paciente</div>
             <div className="text-white font-semibold">
               {p.sex === 'male' ? '♂' : '♀'} {p.age} años — {p.occupation}
             </div>
           </div>
-          <div className="md:col-span-2 bg-gray-800/60 rounded-xl p-4 border border-gray-700">
-            <div className="text-sm text-gray-400 mb-1">Motivo de Consulta</div>
+          <div className="md:col-span-2 bg-gray-800/60 rounded-xl p-4 border-l-4 border-amber-500 border-t border-r border-b border-t-gray-700/50 border-r-gray-700/50 border-b-gray-700/50">
+            <div className="text-[10px] text-amber-400 uppercase tracking-wider mb-1">Motivo de Consulta</div>
             <div className="text-white">{p.chiefComplaint}</div>
           </div>
         </div>
 
-        <div className="bg-gray-800/40 rounded-xl p-5 border border-gray-700">
-          <div className="text-sm text-gray-400 mb-2 flex items-center gap-2">
-            <Stethoscope className="w-4 h-4" /> Historia Clínica
+        <div className="bg-gray-800/40 rounded-xl p-4 sm:p-5 border-l-4 border-teal-500 border-t border-r border-b border-t-gray-700/30 border-r-gray-700/30 border-b-gray-700/30">
+          <div className="text-[10px] text-teal-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <Stethoscope className="w-3.5 h-3.5" /> Historia Clínica
           </div>
-          <div className="text-gray-200 leading-relaxed">{p.clinicalHistory}</div>
+          <div className="text-gray-200 leading-relaxed text-sm sm:text-base">{p.clinicalHistory}</div>
         </div>
 
-        <div className="bg-gray-800/40 rounded-xl p-5 border border-gray-700">
-          <div className="text-sm text-gray-400 mb-2 flex items-center gap-2">
-            <Activity className="w-4 h-4" /> Exploración Física
+        <div className="bg-gray-800/40 rounded-xl p-4 sm:p-5 border-l-4 border-orange-500 border-t border-r border-b border-t-gray-700/30 border-r-gray-700/30 border-b-gray-700/30">
+          <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5" /> Exploración Física
           </div>
-          <div className="text-gray-200 leading-relaxed">{p.physicalExam}</div>
+          <div className="text-gray-200 leading-relaxed text-sm sm:text-base">{p.physicalExam}</div>
         </div>
 
-        {/* Study Mode: Show Correct Answer Banner */}
         {isStudyMode && (
-          <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-700/50 flex items-center gap-3">
+          <div className="bg-purple-900/20 rounded-xl p-4 border border-purple-700/40 flex items-center gap-3">
             <Eye className="w-5 h-5 text-purple-400 flex-shrink-0" />
             <div>
-              <div className="text-purple-300 font-semibold text-sm">Modo Estudio — Respuesta:</div>
+              <div className="text-purple-300 font-semibold text-xs uppercase tracking-wider">Modo Estudio — Respuesta:</div>
               <div className="text-white font-bold">{clinicalCase.correctDiagnosis.patternName}</div>
             </div>
           </div>
@@ -633,25 +652,36 @@ const ExerciseMode: React.FC = () => {
         </div>
       )}
 
-      {/* Normal exam mode */}
+      {/* Normal exam mode — Premium selection cards */}
       {!isStudyMode && (
         <>
           <div className="grid gap-3">
-            {options.map(opt => (
+            {options.map((opt, idx) => (
               <button key={opt.patternId} onClick={() => setSelectedAnswer(opt.patternId)}
-                className={`text-left p-4 rounded-xl border transition-all ${
+                className={`text-left p-4 rounded-xl border-2 transition-all relative overflow-hidden group ${
                   selectedAnswer === opt.patternId
-                    ? 'bg-amber-600/20 border-amber-500 ring-2 ring-amber-400/50'
-                    : 'bg-gray-800/40 border-gray-700 hover:border-gray-500 hover:bg-gray-800/60'
+                    ? 'bg-amber-600/15 border-amber-500/60 shadow-lg shadow-amber-500/10'
+                    : 'bg-gray-800/30 border-gray-700/50 hover:border-gray-500/60 hover:bg-gray-800/50'
                 }`}>
-                <div className="font-semibold text-white">{opt.patternName}</div>
-                <div className="text-sm text-gray-400 mt-1">{opt.description}</div>
+                <div className="flex items-start gap-3">
+                  <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-all ${
+                    selectedAnswer === opt.patternId
+                      ? 'border-amber-400 bg-amber-500 text-white scale-100'
+                      : 'border-gray-600 text-transparent group-hover:border-gray-500'
+                  }`}>
+                    {selectedAnswer === opt.patternId ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs text-gray-500">{String.fromCharCode(65 + idx)}</span>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className={`font-semibold text-sm sm:text-base ${selectedAnswer === opt.patternId ? 'text-amber-200' : 'text-white'}`}>{opt.patternName}</div>
+                    <div className="text-xs sm:text-sm text-gray-400 mt-0.5 line-clamp-2">{opt.description}</div>
+                  </div>
+                </div>
               </button>
             ))}
           </div>
 
           <button onClick={handleSubmitDiagnosis} disabled={!selectedAnswer}
-            className="w-full py-4 rounded-xl font-bold text-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-lg">
+            className="w-full py-4 rounded-2xl font-bold text-base sm:text-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-xl shadow-amber-600/20 active:scale-[0.98]">
             Confirmar Diagnóstico
           </button>
         </>
@@ -662,89 +692,133 @@ const ExerciseMode: React.FC = () => {
   // ─── RENDER: Feedback ──────
   const renderFeedback = () => {
     if (!evaluation || !clinicalCase) return null;
+
+    const toggleSection = (key: string) => {
+      setExpandedFeedback(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
     return (
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Result Banner */}
-        <div className={`rounded-2xl p-6 text-center ${evaluation.isCorrect ? 'bg-green-900/30 border border-green-700' : 'bg-red-900/30 border border-red-700'}`}>
-          <div className="flex justify-center mb-3">
-            {evaluation.isCorrect
-              ? <CheckCircle className="w-16 h-16 text-green-400" />
-              : <XCircle className="w-16 h-16 text-red-400" />}
+        <div className={`relative overflow-hidden rounded-2xl p-6 sm:p-8 text-center ${evaluation.isCorrect ? 'bg-gradient-to-br from-green-900/40 to-emerald-950/30 border border-green-700/40' : 'bg-gradient-to-br from-red-900/40 to-rose-950/30 border border-red-700/40'}`}>
+          <div className={`absolute inset-0 ${evaluation.isCorrect ? 'bg-green-500/5' : 'bg-red-500/5'}`} />
+          <div className="relative">
+            <div className="flex justify-center mb-3">
+              {evaluation.isCorrect
+                ? <CheckCircle className="w-14 h-14 sm:w-16 sm:h-16 text-green-400" />
+                : <XCircle className="w-14 h-14 sm:w-16 sm:h-16 text-red-400" />}
+            </div>
+            <h2 className={`text-2xl sm:text-3xl font-bold ${evaluation.isCorrect ? 'text-green-300' : 'text-red-300'}`}>
+              {evaluation.isCorrect ? '¡Correcto!' : 'Incorrecto'}
+            </h2>
+            <div className="text-gray-300 text-sm sm:text-base mt-1">
+              Diagnóstico: <strong className="text-white">{evaluation.correctPatternName}</strong>
+            </div>
+
+            {/* Score + Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-5">
+              <div className="bg-black/20 rounded-xl p-3">
+                <Award className="w-4 h-4 text-amber-400 mx-auto mb-1" />
+                <div className="text-xl sm:text-2xl font-bold font-mono text-white">{animatedScore}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Puntos</div>
+              </div>
+              <div className="bg-black/20 rounded-xl p-3">
+                <Clock className="w-4 h-4 text-blue-400 mx-auto mb-1" />
+                <div className="text-xl sm:text-2xl font-bold font-mono text-white">{formatTime(evaluation.timeSpent ?? 0)}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Tiempo</div>
+              </div>
+              <div className="bg-black/20 rounded-xl p-3">
+                <TrendingUp className="w-4 h-4 text-green-400 mx-auto mb-1" />
+                <div className="text-xl sm:text-2xl font-bold font-mono text-white">{store.currentStreak}</div>
+                <div className="text-[10px] text-gray-500 uppercase">Racha</div>
+              </div>
+              {hintsUsed > 0 && (
+                <div className="bg-black/20 rounded-xl p-3">
+                  <HelpCircle className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+                  <div className="text-xl sm:text-2xl font-bold font-mono text-white">-{hintsUsed * 5}</div>
+                  <div className="text-[10px] text-gray-500 uppercase">Pistas</div>
+                </div>
+              )}
+            </div>
           </div>
-          <h2 className={`text-2xl font-bold ${evaluation.isCorrect ? 'text-green-300' : 'text-red-300'}`}>
-            {evaluation.isCorrect ? '¡Correcto!' : 'Incorrecto'}
-          </h2>
-          <div className="text-white text-lg mt-1">
-            Diagnóstico correcto: <strong>{evaluation.correctPatternName}</strong>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4 mt-4 text-sm">
-            <div><Award className="w-4 h-4 inline text-amber-400" /> Puntos: {evaluation.score}</div>
-            <div><Clock className="w-4 h-4 inline text-blue-400" /> Tiempo: {formatTime(evaluation.timeSpent ?? 0)}</div>
-            <div><TrendingUp className="w-4 h-4 inline text-green-400" /> Racha: {store.currentStreak}</div>
-            {hintsUsed > 0 && (
-              <div><HelpCircle className="w-4 h-4 inline text-purple-400" /> Pistas: {hintsUsed} (-{hintsUsed * 5}pts)</div>
+        </div>
+
+        {/* Collapsible: Explanation */}
+        <div className="rounded-xl border border-gray-700/50 overflow-hidden">
+          <button onClick={() => toggleSection('explanation')} className="w-full flex items-center justify-between p-4 bg-gray-800/40 hover:bg-gray-800/60 transition-colors">
+            <div className="flex items-center gap-2 text-white font-semibold text-sm">
+              <Lightbulb className="w-4 h-4 text-amber-400" /> Explicación
+            </div>
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedFeedback.explanation ? 'rotate-180' : ''}`} />
+          </button>
+          {expandedFeedback.explanation && (
+            <div className="p-4 bg-gray-900/30 border-t border-gray-700/30">
+              <p className="text-gray-200 leading-relaxed text-sm sm:text-base">{evaluation.explanation}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Collapsible: Key Findings */}
+        {evaluation.keyFindingsHighlighted.length > 0 && (
+          <div className="rounded-xl border border-gray-700/50 overflow-hidden">
+            <button onClick={() => toggleSection('findings')} className="w-full flex items-center justify-between p-4 bg-gray-800/40 hover:bg-gray-800/60 transition-colors">
+              <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                🔑 Hallazgos Clave <span className="text-xs text-gray-500 font-normal">({evaluation.keyFindingsHighlighted.length})</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedFeedback.findings ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedFeedback.findings && (
+              <div className="p-4 bg-gray-900/30 border-t border-gray-700/30 space-y-2">
+                {evaluation.keyFindingsHighlighted.map((f, i) => (
+                  <div key={i} className="flex items-start gap-3 bg-gray-800/30 rounded-lg p-3">
+                    <span className={`px-2 py-0.5 rounded text-[10px] mt-0.5 uppercase tracking-wider font-bold flex-shrink-0 ${
+                      f.importance === 'critical' ? 'bg-red-900/50 text-red-300'
+                      : f.importance === 'major' ? 'bg-amber-900/50 text-amber-300'
+                      : 'bg-blue-900/50 text-blue-300'}`}>
+                      {f.importance === 'critical' ? 'Crítico' : f.importance === 'major' ? 'Mayor' : 'Soporte'}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-white text-xs sm:text-sm"><strong>{f.parameter}</strong> — {f.location}: <code className="text-amber-300">{f.value}</code> <span className="text-gray-500">(N: {f.normalValue})</span></div>
+                      <div className="text-gray-400 text-xs mt-0.5">{f.significance}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Explanation */}
-        <div className="bg-gray-800/40 rounded-xl p-5 border border-gray-700">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-amber-400" /> Explicación
-          </h3>
-          <p className="text-gray-200 leading-relaxed">{evaluation.explanation}</p>
-        </div>
-
-        {/* Key Findings */}
-        {evaluation.keyFindingsHighlighted.length > 0 && (
-          <div className="bg-gray-800/40 rounded-xl p-5 border border-gray-700">
-            <h3 className="font-semibold text-white mb-3">🔑 Hallazgos Clave</h3>
-            <div className="space-y-2">
-              {evaluation.keyFindingsHighlighted.map((f, i) => (
-                <div key={i} className="flex items-start gap-3 bg-gray-900/40 rounded-lg p-3">
-                  <span className={`px-2 py-0.5 rounded text-xs mt-0.5 ${
-                    f.importance === 'critical' ? 'bg-red-900/50 text-red-300'
-                    : f.importance === 'major' ? 'bg-amber-900/50 text-amber-300'
-                    : 'bg-blue-900/50 text-blue-300'}`}>
-                    {f.importance === 'critical' ? 'Crítico' : f.importance === 'major' ? 'Mayor' : 'Soporte'}
-                  </span>
-                  <div>
-                    <div className="text-white text-sm"><strong>{f.parameter}</strong> — {f.location}: <code className="text-amber-300">{f.value}</code> (normal: {f.normalValue})</div>
-                    <div className="text-gray-400 text-xs mt-1">{f.significance}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
 
-        {/* Why Not Others */}
+        {/* Collapsible: Differential */}
         {evaluation.differentialExplanations.length > 0 && (
-          <div className="bg-gray-800/40 rounded-xl p-5 border border-gray-700">
-            <h3 className="font-semibold text-white mb-3">
-              <AlertTriangle className="w-4 h-4 inline text-amber-400 mr-2" />
-              ¿Por qué no otros diagnósticos?
-            </h3>
-            <div className="space-y-3">
-              {evaluation.differentialExplanations.map((d, i) => (
-                <div key={i} className="bg-gray-900/40 rounded-lg p-3">
-                  <div className="text-amber-300 font-medium text-sm">{d.patternName}</div>
-                  <div className="text-gray-300 text-sm mt-1">{d.whyNot}</div>
-                </div>
-              ))}
-            </div>
+          <div className="rounded-xl border border-gray-700/50 overflow-hidden">
+            <button onClick={() => toggleSection('differential')} className="w-full flex items-center justify-between p-4 bg-gray-800/40 hover:bg-gray-800/60 transition-colors">
+              <div className="flex items-center gap-2 text-white font-semibold text-sm">
+                <AlertTriangle className="w-4 h-4 text-amber-400" /> ¿Por qué no otros?
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${expandedFeedback.differential ? 'rotate-180' : ''}`} />
+            </button>
+            {expandedFeedback.differential && (
+              <div className="p-4 bg-gray-900/30 border-t border-gray-700/30 space-y-2">
+                {evaluation.differentialExplanations.map((d, i) => (
+                  <div key={i} className="bg-gray-800/30 rounded-lg p-3">
+                    <div className="text-amber-300 font-medium text-sm">{d.patternName}</div>
+                    <div className="text-gray-300 text-xs sm:text-sm mt-1">{d.whyNot}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Next Case Button */}
-        <div className="flex gap-4">
-          <button onClick={() => setCurrentStep('config')}
-            className="flex-1 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-white font-medium">
-            <ArrowLeft className="w-4 h-4 inline mr-2" />Menú
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={() => setCurrentStep('case')}
+            className="py-3 sm:py-4 rounded-xl bg-gray-700/60 hover:bg-gray-600/60 text-white font-medium transition-colors text-sm sm:text-base">
+            <Eye className="w-4 h-4 inline mr-1.5" />Revisar Caso
           </button>
           <button onClick={generateNewCase}
-            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold">
-            Siguiente Caso <ChevronRight className="w-4 h-4 inline ml-2" />
+            className="py-3 sm:py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold transition-all text-sm sm:text-base">
+            Siguiente <ChevronRight className="w-4 h-4 inline ml-1" />
           </button>
         </div>
       </div>
@@ -781,15 +855,16 @@ const ExerciseMode: React.FC = () => {
       {/* Top bar with timer + clickable progress */}
       {currentStep !== 'config' && (
         <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-0 z-50">
-          <div className="max-w-5xl mx-auto px-3 sm:px-4 py-2 sm:py-3">
-            <div className="flex items-center gap-2 sm:gap-3">
+          <div className="max-w-5xl mx-auto px-3 sm:px-4">
+            {/* Top row: back + tabs + timer */}
+            <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5">
               <button onClick={() => setCurrentStep('config')}
                 className="text-gray-400 hover:text-white transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-gray-700/50">
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
-              {/* Step tabs — labels always visible */}
-              <div className="flex-1 flex gap-0.5 sm:gap-1 items-center justify-center">
+              {/* Step tabs */}
+              <div className="flex-1 flex gap-0.5 items-center justify-center">
                 {STEPS.filter(s => s !== 'config').map(s => {
                   const sIdx = STEPS.indexOf(s);
                   const isActive = s === currentStep;
@@ -800,14 +875,20 @@ const ExerciseMode: React.FC = () => {
                     <button
                       key={s}
                       onClick={() => isClickable && handleStepClick(s)}
-                      className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                        isActive ? 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40'
-                        : isVisited ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/40'
+                      className={`relative flex flex-col items-center px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        isActive ? 'text-amber-300'
+                        : isVisited ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
                         : 'text-gray-600'
                       } ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
                     >
-                      <span className="hidden sm:inline">{STEP_ICONS[s]}</span>
-                      <span>{STEP_SHORT[s]}</span>
+                      <div className="flex items-center gap-1">
+                        <span className={`hidden sm:inline transition-colors ${isActive ? 'text-amber-400' : ''}`}>{STEP_ICONS[s]}</span>
+                        <span className={isActive ? 'font-bold' : ''}>{STEP_SHORT[s]}</span>
+                      </div>
+                      {/* Active dot indicator */}
+                      {isActive && (
+                        <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50" />
+                      )}
                     </button>
                   );
                 })}
@@ -815,16 +896,31 @@ const ExerciseMode: React.FC = () => {
 
               {/* Timer */}
               {currentStep !== 'feedback' && (
-                <div className={`flex items-center gap-1 px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-mono whitespace-nowrap ${
-                  elapsedSeconds > 300 ? 'bg-red-900/40 text-red-300'
-                  : elapsedSeconds > 180 ? 'bg-amber-900/40 text-amber-300'
-                  : 'bg-gray-700/50 text-gray-400'
+                <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-mono whitespace-nowrap border ${
+                  elapsedSeconds > 300 ? 'bg-red-900/30 text-red-300 border-red-700/40'
+                  : elapsedSeconds > 180 ? 'bg-amber-900/30 text-amber-300 border-amber-700/40'
+                  : 'bg-gray-700/30 text-gray-400 border-gray-700/40'
                 }`}>
-                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  <Clock className="w-3.5 h-3.5" />
                   {formatTime(elapsedSeconds)}
                 </div>
               )}
             </div>
+
+            {/* Progress bar */}
+            {(() => {
+              const exerciseSteps = STEPS.filter(s => s !== 'config');
+              const currentIdx = exerciseSteps.indexOf(currentStep);
+              const progress = currentIdx >= 0 ? ((currentIdx + 1) / exerciseSteps.length) * 100 : 0;
+              return (
+                <div className="h-0.5 bg-gray-700/40 -mx-3 sm:-mx-4">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-500 ease-out rounded-r-full"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
