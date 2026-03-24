@@ -1250,27 +1250,31 @@ const ExerciseMode: React.FC = () => {
       )}
 
       {/* Content */}
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-32 sm:pb-28">{renderStep()}</div>
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8" style={{ paddingBottom: '12rem' }}>
+        {renderStep()}
 
-      {/* Hint display — rendered ABOVE the bottom nav, outside the fixed bar */}
-      {showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
-        <div className="fixed bottom-16 left-0 right-0 z-[39] px-3 sm:px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="max-w-5xl mx-auto">
-            <div className="bg-purple-950/95 backdrop-blur-lg rounded-xl p-3 border border-purple-700/50 shadow-xl shadow-purple-900/30 space-y-2 max-h-[30vh] overflow-y-auto">
+        {/* Hints — rendered INLINE in the content flow, never overlaps */}
+        {showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
+          <div className="mt-4">
+            <div className="bg-purple-950 rounded-xl p-4 border border-purple-700/50 shadow-lg space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Lightbulb className="w-4 h-4 text-purple-400" />
+                <span className="text-purple-300 text-xs font-semibold uppercase tracking-wider">Pistas ({hintsUsed}/{maxHints})</span>
+              </div>
               {currentHints.slice(0, hintsUsed).map((h, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <Lightbulb className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div key={i} className="flex items-start gap-2 text-sm pl-1">
+                  <span className="text-purple-500 mt-0.5">•</span>
                   <span className="text-purple-200">{h}</span>
                 </div>
               ))}
               <button onClick={() => setShowHint(false)}
-                className="text-xs text-purple-400 hover:text-purple-300 mt-1 block w-full text-center py-1">
+                className="text-xs text-purple-400 hover:text-purple-300 block w-full text-center py-1.5 mt-2 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 transition-colors">
                 Ocultar pistas
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Bottom Nav with Hints */}
       {currentStep !== 'config' && currentStep !== 'feedback' && (
