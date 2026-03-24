@@ -1148,7 +1148,7 @@ const ExerciseMode: React.FC = () => {
         <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-0 z-50">
           <div className="max-w-5xl mx-auto px-3 sm:px-4">
             {/* Top row: back + tabs + timer */}
-            <div className="flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5">
+            <div className="flex items-center gap-1 sm:gap-3 py-2 sm:py-2.5">
               <button onClick={() => setCurrentStep('config')}
                 className="text-gray-400 hover:text-white transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-gray-700/50">
                 <ArrowLeft className="w-5 h-5" />
@@ -1166,7 +1166,7 @@ const ExerciseMode: React.FC = () => {
                     <button
                       key={s}
                       onClick={() => isClickable && handleStepClick(s)}
-                      className={`relative flex flex-col items-center px-2.5 sm:px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      className={`relative flex flex-col items-center px-1.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-all ${
                         isActive ? 'text-amber-300'
                         : isVisited ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700/30'
                         : 'text-gray-600'
@@ -1218,7 +1218,7 @@ const ExerciseMode: React.FC = () => {
 
       {/* Quick-review panel on diagnosis step */}
       {showReviewPanel && currentStep === 'diagnosis' && clinicalCase && (
-        <div className="fixed inset-y-0 right-0 w-80 md:w-96 bg-gray-800/98 backdrop-blur-xl border-l border-gray-700 z-50 overflow-y-auto shadow-2xl">
+        <div className="fixed inset-y-0 right-0 w-[85vw] sm:w-80 md:w-96 bg-gray-800/98 backdrop-blur-xl border-l border-gray-700 z-50 overflow-y-auto shadow-2xl">
           <div className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-white font-bold text-sm">📋 Resumen de Datos</h3>
@@ -1250,7 +1250,27 @@ const ExerciseMode: React.FC = () => {
       )}
 
       {/* Content */}
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-6 sm:py-8 pb-28">{renderStep()}</div>
+      <div className="max-w-5xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-32 sm:pb-28">{renderStep()}</div>
+
+      {/* Hint display — rendered ABOVE the bottom nav, outside the fixed bar */}
+      {showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
+        <div className="fixed bottom-16 left-0 right-0 z-[39] px-3 sm:px-4" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-purple-950/95 backdrop-blur-lg rounded-xl p-3 border border-purple-700/50 shadow-xl shadow-purple-900/30 space-y-2 max-h-[30vh] overflow-y-auto">
+              {currentHints.slice(0, hintsUsed).map((h, i) => (
+                <div key={i} className="flex items-start gap-2 text-sm">
+                  <Lightbulb className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-purple-200">{h}</span>
+                </div>
+              ))}
+              <button onClick={() => setShowHint(false)}
+                className="text-xs text-purple-400 hover:text-purple-300 mt-1 block w-full text-center py-1">
+                Ocultar pistas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Nav with Hints */}
       {currentStep !== 'config' && currentStep !== 'feedback' && (
@@ -1292,24 +1312,6 @@ const ExerciseMode: React.FC = () => {
               </button>
             ) : <div />}
           </div>
-
-          {/* Hint display */}
-          {showHint && hintsUsed > 0 && (
-            <div className="max-w-5xl mx-auto mt-3">
-              <div className="bg-purple-900/30 rounded-lg p-3 border border-purple-700/40 space-y-2">
-                {currentHints.slice(0, hintsUsed).map((h, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm">
-                    <Lightbulb className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                    <span className="text-purple-200">{h}</span>
-                  </div>
-                ))}
-                <button onClick={() => setShowHint(false)}
-                  className="text-xs text-purple-400 hover:text-purple-300 mt-1">
-                  Ocultar pistas
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
