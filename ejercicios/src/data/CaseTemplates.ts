@@ -1,10 +1,17 @@
 // CaseTemplates.ts — Plantillas de casos clínicos para cada patrón diagnóstico
-import type { DiagnosticCategory } from '../types/ClinicalCase';
+// v3: +RNS, +LateResponses, +Temperature, +ConductionBlock, +Pitfall, +Severity
+import type { DiagnosticCategory, SeverityGrade } from '../types/ClinicalCase';
 
 export interface NCSTemplate {
   nerve: string; type: 'motor' | 'sensory'; latency: [number, number];
   amplitude: [number, number]; velocity: [number, number];
   normalRanges: { latency: [number, number]; amplitude: [number, number]; velocity: [number, number] };
+  /** Sitio de estimulación para estudio proximal/distal */
+  stimulationSite?: 'distal' | 'proximal' | 'across_elbow' | 'above_fibular_head' | 'below_fibular_head';
+  /** Amplitud proximal para BC */
+  proximalAmplitude?: [number, number];
+  conductionBlock?: boolean;
+  temporalDispersion?: boolean;
 }
 
 export interface EMGTemplate {
@@ -13,6 +20,28 @@ export interface EMGTemplate {
   fibrillations: string[]; positiveWaves: string[]; fasciculations: string[];
   duration: [number, number]; amplitude: [number, number];
   polyphasia: [number, number]; recruitment: string[];
+  myotonicDischarges?: string[];
+}
+
+export interface RNSTemplate {
+  nerve: string; muscle: string;
+  frequency: '2Hz' | '3Hz' | '5Hz' | '20Hz' | '50Hz';
+  baselineCMAP: [number, number];
+  decrementPercent: [number, number];
+  postExerciseFacilitation?: [number, number];
+  postExerciseExhaustion?: [number, number];
+}
+
+export interface LateResponseTemplate {
+  type: 'f_wave' | 'h_reflex';
+  nerve: string;
+  side?: 'left' | 'right';
+  minLatency?: [number, number];
+  persistence?: [number, number];
+  chronodispersion?: [number, number];
+  latency?: [number, number];
+  normalRange: [number, number];
+  status: ('normal' | 'abnormal' | 'absent')[];
 }
 
 export interface PatientTemplate {
@@ -26,9 +55,23 @@ export interface CaseTemplate {
   patient: PatientTemplate;
   ncs: NCSTemplate[];
   emg: EMGTemplate[];
+  /** ENR data — only for NMJ disorders */
+  rns?: RNSTemplate[];
+  /** Late responses — F-wave, H-reflex */
+  lateResponses?: LateResponseTemplate[];
   explanation: string;
   differentials: { id: string; name: string; whyNot: string }[];
   recommendations: string[];
+  /** Skin temperature (°C) — for pitfall cases */
+  skinTemperature?: [number, number];
+  /** Technical notes shown to student */
+  technicalNotes?: string[];
+  /** Is this a pitfall/trap case? */
+  isPitfall?: boolean;
+  pitfallExplanation?: string;
+  /** Severity calculation rule */
+  severityGrade?: SeverityGrade;
+  severityExplanation?: string;
 }
 
 // Helper: normal NCS ranges
@@ -282,8 +325,23 @@ export const CASE_TEMPLATES: CaseTemplate[] = [
   },
 ];
 
-// Exportar lista de opciones para el selector de diagnóstico
-export const DIAGNOSIS_OPTIONS = CASE_TEMPLATES.map(t => ({
+// Import expanded template sets
+import { EXPANDED_TEMPLATES } from './CaseTemplatesExpanded';
+import { EXPANDED_TEMPLATES_2 } from './CaseTemplatesExpanded2';
+import { EXPANDED_TEMPLATES_3 } from './CaseTemplatesExpanded3';
+import { EXPANDED_TEMPLATES_4 } from './CaseTemplatesExpanded4';
+
+// Merge all templates into single array
+export const ALL_CASE_TEMPLATES: CaseTemplate[] = [
+  ...CASE_TEMPLATES,
+  ...EXPANDED_TEMPLATES,
+  ...EXPANDED_TEMPLATES_2,
+  ...EXPANDED_TEMPLATES_3,
+  ...EXPANDED_TEMPLATES_4,
+];
+
+// Exportar lista de opciones para el selector de diagnóstico (from ALL templates)
+export const DIAGNOSIS_OPTIONS = ALL_CASE_TEMPLATES.map(t => ({
   patternId: t.patternId,
   patternName: t.patternName,
   category: t.category,

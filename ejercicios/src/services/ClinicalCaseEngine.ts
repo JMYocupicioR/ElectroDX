@@ -1,9 +1,11 @@
 // ClinicalCaseEngine.ts — Motor de generación de casos clínicos
+// v3: +RNS, +LateResponses, +Temperature, +ConductionBlock, +Pitfall, +Severity
 import type {
   ClinicalCase, Difficulty, NCSExerciseResult, EMGExerciseResult,
-  ExercisePatient, KeyFinding, CorrectDiagnosis, DiagnosisOption
+  ExercisePatient, KeyFinding, CorrectDiagnosis, DiagnosisOption,
+  LateResponseResult, RNSResult, SeverityGrade
 } from '../types/ClinicalCase';
-import { CASE_TEMPLATES, DIAGNOSIS_OPTIONS, type CaseTemplate, type NCSTemplate, type EMGTemplate } from '../data/CaseTemplates';
+import { ALL_CASE_TEMPLATES, DIAGNOSIS_OPTIONS, type CaseTemplate, type NCSTemplate, type EMGTemplate } from '../data/CaseTemplates';
 
 // ─── Utilidades ───────────────────────────────────────────────
 
@@ -45,14 +47,17 @@ function determineStatus(
 export class ClinicalCaseEngine {
 
   /** Genera un caso aleatorio */
-  static generateRandomCase(difficulty: Difficulty = 'medium'): ClinicalCase {
-    const template = pickRandom(CASE_TEMPLATES);
+  static generateRandomCase(difficulty: Difficulty = 'medium', category?: string): ClinicalCase {
+    const pool = category
+      ? ALL_CASE_TEMPLATES.filter(t => t.category === category)
+      : ALL_CASE_TEMPLATES;
+    const template = pickRandom(pool.length > 0 ? pool : ALL_CASE_TEMPLATES);
     return this.generateCaseFromTemplate(template, difficulty);
   }
 
   /** Genera un caso de un patrón específico */
   static generateCaseForPattern(patternId: string, difficulty: Difficulty = 'medium'): ClinicalCase {
-    const template = CASE_TEMPLATES.find(t => t.patternId === patternId);
+    const template = ALL_CASE_TEMPLATES.find(t => t.patternId === patternId);
     if (!template) throw new Error(`Pattern not found: ${patternId}`);
     return this.generateCaseFromTemplate(template, difficulty);
   }
@@ -64,6 +69,14 @@ export class ClinicalCaseEngine {
     const emgResults = this.generateEMG(template.emg, difficulty);
     const keyFindings = this.extractKeyFindings(ncsResults, emgResults, template);
 
+    // Generate RNS results if template has them
+    const rnsResults = template.rns ? this.generateRNS(template.rns, difficulty) : undefined;
+    // Generate late responses if template has them
+    const lateResponses = template.lateResponses ? this.generateLateResponses(template.lateResponses, difficulty) : undefined;
+    // Temperature
+    const skinTemperature = template.skinTemperature ? randomBetween(template.skinTemperature[0], template.skinTemperature[1]) : undefined;
+    const technicalNotes = template.technicalNotes ? pickRandom(template.technicalNotes) : undefined;
+
     const correctDiagnosis: CorrectDiagnosis = {
       patternId: template.patternId,
       patternName: template.patternName,
@@ -74,6 +87,8 @@ export class ClinicalCaseEngine {
         patternId: d.id, patternName: d.name, whyNot: d.whyNot
       })),
       recommendations: template.recommendations,
+      severityGrade: template.severityGrade,
+      severityExplanation: template.severityExplanation,
     };
 
     return {
@@ -82,9 +97,15 @@ export class ClinicalCaseEngine {
       patient,
       ncsResults,
       emgResults,
+      lateResponses,
+      rnsResults,
       correctDiagnosis,
       source: 'template',
       createdAt: new Date().toISOString(),
+      skinTemperature,
+      technicalNotes,
+      isPitfall: template.isPitfall,
+      pitfallExplanation: template.pitfallExplanation,
     };
   }
 
@@ -147,7 +168,11 @@ export class ClinicalCaseEngine {
         nerve: t.nerve,
         side,
         type: t.type,
+        stimulationSite: t.stimulationSite,
         latency, amplitude, velocity,
+        proximalAmplitude: t.proximalAmplitude ? randomBetween(t.proximalAmplitude[0], t.proximalAmplitude[1]) : undefined,
+        conductionBlock: t.conductionBlock,
+        temporalDispersion: t.temporalDispersion,
         normalRanges: {
           latency: { min: t.normalRanges.latency[0], max: t.normalRanges.latency[1] },
           amplitude: { min: t.normalRanges.amplitude[0], max: t.normalRanges.amplitude[1] },
@@ -187,6 +212,7 @@ export class ClinicalCaseEngine {
           positiveWaves: pw,
           fasciculations: fasc,
           complexRepetitiveDischarges: 'absent' as const,
+          myotonicDischarges: t.myotonicDischarges ? pickRandom(t.myotonicDischarges) as any : undefined,
         },
         motorUnitPotentials: {
           duration: Math.round(duration * 10) / 10,
@@ -204,9 +230,54 @@ export class ClinicalCaseEngine {
     });
   }
 
+  /** Genera resultados de ENR (Estimulación Nerviosa Repetitiva) */
+  private static generateRNS(templates: NonNullable<CaseTemplate['rns']>, _difficulty: Difficulty): RNSResult[] {
+    return templates.map(t => {
+      const baselineCMAP = randomBetween(t.baselineCMAP[0], t.baselineCMAP[1]);
+      const decrementPercent = randomBetween(t.decrementPercent[0], t.decrementPercent[1]);
+      const postExerciseFacilitation = t.postExerciseFacilitation
+        ? randomBetween(t.postExerciseFacilitation[0], t.postExerciseFacilitation[1]) : undefined;
+      const postExerciseExhaustion = t.postExerciseExhaustion
+        ? randomBetween(t.postExerciseExhaustion[0], t.postExerciseExhaustion[1]) : undefined;
+
+      const status = decrementPercent <= -10 ? 'decremental'
+        : (postExerciseFacilitation && postExerciseFacilitation > 100) ? 'incremental'
+        : 'normal';
+
+      return {
+        nerve: t.nerve, muscle: t.muscle,
+        side: pickRandom(['left', 'right'] as ('left' | 'right')[]),
+        frequency: t.frequency,
+        baselineCMAP: Math.round(baselineCMAP * 10) / 10,
+        decrementPercent: Math.round(decrementPercent),
+        postExerciseFacilitation: postExerciseFacilitation ? Math.round(postExerciseFacilitation) : undefined,
+        postExerciseExhaustion: postExerciseExhaustion ? Math.round(postExerciseExhaustion) : undefined,
+        status: status as RNSResult['status'],
+      };
+    });
+  }
+
+  /** Genera resultados de respuestas tardías (F-wave, H-reflex) */
+  private static generateLateResponses(templates: NonNullable<CaseTemplate['lateResponses']>, _difficulty: Difficulty): LateResponseResult[] {
+    return templates.map(t => {
+      const status = pickRandom(t.status);
+      return {
+        type: t.type,
+        nerve: t.nerve,
+        side: t.side || pickRandom(['left', 'right'] as ('left' | 'right')[]),
+        minLatency: t.minLatency && status !== 'absent' ? randomBetween(t.minLatency[0], t.minLatency[1]) : undefined,
+        persistence: t.persistence && status !== 'absent' ? Math.round(randomBetween(t.persistence[0], t.persistence[1])) : undefined,
+        chronodispersion: t.chronodispersion && status !== 'absent' ? randomBetween(t.chronodispersion[0], t.chronodispersion[1]) : undefined,
+        latency: t.latency && status !== 'absent' ? randomBetween(t.latency[0], t.latency[1]) : undefined,
+        normalRange: { min: t.normalRange[0], max: t.normalRange[1] },
+        status,
+      };
+    });
+  }
+
   /** Extrae hallazgos clave del caso generado */
   private static extractKeyFindings(
-    ncs: NCSExerciseResult[], emg: EMGExerciseResult[], template: CaseTemplate
+    ncs: NCSExerciseResult[], emg: EMGExerciseResult[], _template: CaseTemplate
   ): KeyFinding[] {
     const findings: KeyFinding[] = [];
 

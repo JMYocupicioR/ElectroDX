@@ -1,5 +1,6 @@
 // ============================================================
 // ClinicalCase.ts — Tipos unificados para el sistema de ejercicios
+// v3: +RNS, +Late Responses, +Severity, +Temperature, +ConductionBlock
 // ============================================================
 
 /** Nivel de dificultad del ejercicio */
@@ -16,7 +17,11 @@ export type DiagnosticCategory =
   | 'plexopathy'
   | 'entrapment'
   | 'motor_neuron_disease'
-  | 'neuromuscular_junction';
+  | 'neuromuscular_junction'
+  | 'pitfall';
+
+/** Grado de severidad estandarizado (AANEM) */
+export type SeverityGrade = 'mild' | 'moderate' | 'severe' | 'very_severe';
 
 // ─── Datos del paciente ───────────────────────────────────────
 
@@ -36,10 +41,18 @@ export interface NCSExerciseResult {
   nerve: string;
   side: 'left' | 'right' | 'bilateral';
   type: 'motor' | 'sensory';
+  /** Sitio de estimulación (para estudio proximal/distal) */
+  stimulationSite?: 'distal' | 'proximal' | 'across_elbow' | 'above_fibular_head' | 'below_fibular_head';
   latency: number;       // ms
   amplitude: number;     // mV (motor) o μV (sensory)
   velocity: number;      // m/s
-  fWaveLatency?: number; // ms
+  fWaveLatency?: number; // ms — latencia mínima de onda F
+  /** Amplitud proximal para cálculo de bloqueo de conducción */
+  proximalAmplitude?: number;
+  /** Bloqueo de conducción: caída >50% CMAP proximal vs distal */
+  conductionBlock?: boolean;
+  /** Dispersión temporal: duración CMAP proximal >30% mayor que distal */
+  temporalDispersion?: boolean;
   /** Valores normales de referencia para este nervio */
   normalRanges: {
     latency: { min: number; max: number };
@@ -48,6 +61,46 @@ export interface NCSExerciseResult {
   };
   /** Estado calculado */
   status: 'normal' | 'abnormal' | 'borderline';
+}
+
+// ─── Resultados de Respuestas Tardías ─────────────────────────
+
+export interface LateResponseResult {
+  type: 'f_wave' | 'h_reflex';
+  nerve: string;
+  side: 'left' | 'right';
+  /** Latencia mínima (ms) — para F-wave */
+  minLatency?: number;
+  /** Persistencia (%) — para F-wave */
+  persistence?: number;
+  /** Cronodispersión (ms) — para F-wave */
+  chronodispersion?: number;
+  /** Latencia (ms) — para H-reflex */
+  latency?: number;
+  /** Rango normal según talla/edad */
+  normalRange: { min: number; max: number };
+  /** Estado */
+  status: 'normal' | 'abnormal' | 'absent';
+}
+
+// ─── Resultados ENR (Estimulación Nerviosa Repetitiva) ────────
+
+export interface RNSResult {
+  nerve: string;
+  muscle: string;
+  side: 'left' | 'right';
+  /** Frecuencia de estimulación */
+  frequency: '2Hz' | '3Hz' | '5Hz' | '20Hz' | '50Hz';
+  /** CMAP basal (mV) */
+  baselineCMAP: number;
+  /** Decremento/incremento (%) — negativo = decremento */
+  decrementPercent: number;
+  /** Facilitación post-ejercicio (% incremento tras 10s ejercicio máximo) */
+  postExerciseFacilitation?: number;
+  /** Agotamiento post-ejercicio (% decremento a 2-4 min post-ejercicio) */
+  postExerciseExhaustion?: number;
+  /** Estado */
+  status: 'normal' | 'decremental' | 'incremental';
 }
 
 // ─── Resultados EMG ───────────────────────────────────────────
@@ -65,6 +118,7 @@ export interface EMGExerciseResult {
     positiveWaves: 'absent' | '1+' | '2+' | '3+' | '4+';
     fasciculations: 'absent' | 'present' | 'frequent';
     complexRepetitiveDischarges: 'absent' | 'present';
+    myotonicDischarges?: 'absent' | 'present';
   };
   /** Potenciales de unidad motora (PUMs) */
   motorUnitPotentials: {
@@ -115,6 +169,9 @@ export interface CorrectDiagnosis {
     whyNot: string;
   }[];
   recommendations: string[];
+  /** Grado de severidad del caso */
+  severityGrade?: SeverityGrade;
+  severityExplanation?: string;
 }
 
 // ─── Caso clínico completo ────────────────────────────────────
@@ -125,10 +182,21 @@ export interface ClinicalCase {
   patient: ExercisePatient;
   ncsResults: NCSExerciseResult[];
   emgResults: EMGExerciseResult[];
+  /** Respuestas tardías (F-wave, H-reflex) */
+  lateResponses?: LateResponseResult[];
+  /** Estimulación nerviosa repetitiva (para NMJ) */
+  rnsResults?: RNSResult[];
   specialStudies?: SpecialStudyResult[];
   correctDiagnosis: CorrectDiagnosis;
   source: 'template' | 'ai_generated';
   createdAt: string;
+  /** Temperatura cutánea al momento del estudio (°C) */
+  skinTemperature?: number;
+  /** Notas técnicas visibles al alumno */
+  technicalNotes?: string;
+  /** ¿Es un caso trampa/pitfall? */
+  isPitfall?: boolean;
+  pitfallExplanation?: string;
 }
 
 // ─── Opción de diagnóstico (lo que se muestra al alumno) ──────
@@ -155,6 +223,8 @@ export interface EvaluationResult {
     whyNot: string;
   }[];
   timeSpent?: number;             // seconds
+  severityGrade?: SeverityGrade;
+  severityExplanation?: string;
 }
 
 // ─── Intento de ejercicio (historial) ─────────────────────────

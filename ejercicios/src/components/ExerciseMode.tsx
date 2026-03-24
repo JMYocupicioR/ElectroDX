@@ -7,7 +7,7 @@ import { ArrowLeft, Brain, Activity, Zap, CheckCircle, XCircle, ChevronRight, Ch
 import { ClinicalCaseEngine } from '../services/ClinicalCaseEngine';
 import { useExerciseStore } from '../store/exerciseStore';
 import type { ClinicalCase, Difficulty, DiagnosisOption, EvaluationResult, ExerciseAttempt } from '../types/ClinicalCase';
-import { CASE_TEMPLATES } from '../data/CaseTemplates';
+import { ALL_CASE_TEMPLATES } from '../data/CaseTemplates';
 
 type ExerciseStep = 'config' | 'case' | 'ncs' | 'emg' | 'diagnosis' | 'feedback';
 
@@ -22,7 +22,10 @@ const CATEGORY_LABELS: Record<string, string> = {
   myopathic: 'Miopática',
   entrapment: 'Atrapamiento',
   radiculopathy: 'Radiculopatía',
+  plexopathy: 'Plexopatía',
   motor_neuron_disease: 'Enf. Motoneurona',
+  neuromuscular_junction: 'Unión NM',
+  pitfall: '⚠️ Trampa',
 };
 
 // Hints per pattern
@@ -66,6 +69,131 @@ const PATTERN_HINTS: Record<string, string[]> = {
     'Busca denervación en múltiples regiones corporales (cervical, torácica, lumbar).',
     'Las conducciones SENSITIVAS deben estar normales — MND no afecta neuronas sensitivas.',
     'Las fasciculaciones difusas + PUM gigantes + fibrilaciones = enfermedad de motoneurona.',
+  ],
+  upper_brachial_plexopathy: [
+    'Compara SNAP vs distribución motora — en plexopatía los SNAP están anormales (post-ganglionar).',
+    'Los paraespinales cervicales NORMALES excluyen radiculopatía.',
+    'Busca un patrón de tronco superior (C5-C6): deltoides, bíceps, infraespinoso.',
+  ],
+  lower_brachial_plexopathy: [
+    'El SNAP del cutáneo antebraquial medial anormal distingue plexopatía de neuropatía cubital.',
+    'Busca compromiso C8-T1 que cruce múltiples nervios periféricos.',
+    'Síndrome de Horner (ptosis, miosis) sugiere afección simpática T1.',
+  ],
+  myasthenia_gravis: [
+    'Las NCS de rutina deberían ser NORMALES — la clave está en la ENR.',
+    'Busca decremento >10% a 3Hz en musculatura proximal o facial.',
+    'La EMG de rutina debería ser normal — MG no causa denervación.',
+  ],
+  lems: [
+    'Los CMAPs basales deberían estar DIFUSAMENTE reducidos.',
+    'La PISTA clave: facilitación post-ejercicio >100% (CMAPs duplican o triplican).',
+    'Sensitivos normales + síntomas autonómicos + debilidad proximal MMII.',
+  ],
+  gbs_classic: [
+    'Busca desmielinización AGUDA DIFUSA con bloqueos de conducción.',
+    'Las ondas F son el hallazgo más precoz: ausentes o muy prolongadas.',
+    'Antecedente infeccioso 1-3 semanas antes es típico.',
+  ],
+  cidp: [
+    'Similar a GBS pero CRÓNICO (>8 semanas).',
+    'Bloqueos de conducción + dispersión temporal + F prolongadas en múltiples nervios.',
+    'Debilidad tanto proximal como distal (a diferencia de neuropatía axonal).',
+  ],
+  ulnar_neuropathy_elbow: [
+    'Compara velocidad DISTAL vs A TRAVÉS DEL CODO — la caída focal es diagnóstica.',
+    'El nervio mediano debe ser completamente normal.',
+    'FCU puede estar normal (se ramifica justo distal al codo).',
+  ],
+  peroneal_neuropathy: [
+    'Busca bloqueo de conducción al cruzar la cabeza del peroné.',
+    'CLAVE: tibial posterior NORMAL distingue de radiculopatía L5.',
+    'Nervio tibial y sural deben estar normales.',
+  ],
+  cts_severe: [
+    'SNAP mediano puede estar AUSENTE en casos severos.',
+    'Busca denervación activa en APB (fibrilaciones) — indica severidad.',
+    'El cubital DEBE ser normal — la lesión es focal en el carpo.',
+  ],
+  l5_radiculopathy: [
+    'CLAVE: tibial posterior afectado (nervio tibial) → no puede ser neuropatía peroneal.',
+    'NCS sensitivas NORMALES = lesión proximal al ganglio.',
+    'H-reflex normal distingue de S1.',
+  ],
+  s1_radiculopathy: [
+    'H-reflex prolongado o ausente UNILATERAL = hallazgo más sensible para S1.',
+    'Busca denervación en gastrocnemio y cabeza corta bíceps femoral.',
+    'Tibial anterior (L5) debería estar NORMAL.',
+  ],
+  mmn: [
+    'Bloqueo de conducción MOTOR con sensitivos NORMALES = MMN.',
+    'Disociación debilidad/atrofia: mucha debilidad, poca atrofia.',
+    'Sin signos de motoneurona superior (descarta ELA).',
+  ],
+  martin_gruber: [
+    '⚠️ CMAP mediano PROXIMAL mayor que DISTAL. ¿Eso es posible normalmente?',
+    'El CMAP cubital "cae" al cruzar el codo. ¿Es bloqueo real o variante anatómica?',
+    'EMG completamente normal. ¿Realmente hay patología?',
+  ],
+  benign_fasciculations: [
+    '⚠️ Fasciculaciones SIN fibrilaciones ni PSW. ¿Qué significa?',
+    'MUPs de morfología NORMAL. ¿Es esto compatible con ELA?',
+    'Reclutamiento NORMAL con fasciculaciones aisladas. ¿Cuál es el diagnóstico?',
+  ],
+  hypothermia_artifact: [
+    '⚠️ Latencias prolongadas PERO amplitudes AUMENTADAS. ¿Eso es desmielinización?',
+    'Revisa la nota técnica sobre temperatura. ¿Qué efecto tiene la hipotermia?',
+    'Solo afecta manos (frías), los MMII están normales. ¿Por qué?',
+  ],
+  diabetic_polyneuropathy: [
+    'Patrón LONGITUD-DEPENDIENTE: ¿cuáles son los nervios más distales afectados?',
+    'Las velocidades están solo levemente reducidas, no <70% LIN. ¿Es desmielinización o pérdida axonal secundaria?',
+    'H-reflex abolido es uno de los hallazgos más TEMPRANOS en neuropatía diabética.',
+  ],
+  radial_neuropathy_spiral_groove: [
+    'CLAVE: ¿Está el tríceps afectado? → Si NO, la lesión es DISTAL a su rama (canal de torsión).',
+    'El braquiorradial puede estar normal o afectado — se ramifica justo a nivel del canal.',
+    'SNAP radial puede caer. ¿Es compatible con radiculopatía?',
+  ],
+  myotonic_dystrophy: [
+    '🔊 Busca descargas miotónicas (sonido de "bombardero en picada").',
+    'Debilidad DISTAL en una miopatía. ¿Cuál es la excepción a la regla de "miopatía = proximal"?',
+    'Atrofia temporal + cataratas + calvicie → enfermedad MULTISISTÉMICA.',
+  ],
+  inflammatory_myopathy: [
+    'NCS completamente NORMALES, pero EMG con fibrilaciones abundantes. ¿Cómo?',
+    'MUPs CORTOS + fibrilaciones = miopatía IRRITABLE (necrosis muscular activa).',
+    'Distribución PROXIMAL simétrica — deltoides, bíceps, iliopsoas, cuádriceps.',
+  ],
+  gbs_axonal_aman: [
+    'CMAPs muy BAJOS pero velocidades PRESERVADAS. ¿Es axonal o desmielinizante?',
+    'SNAPs completamente NORMALES = solo afecta axones MOTORES.',
+    'Las F-waves pueden estar normales (vs muy anormales en AIDP).',
+  ],
+  critical_illness_polyneuromyopathy: [
+    'Patrón MIXTO: CMAPs Y SNAPs bajos (CIP) + MUPs cortos (CIM).',
+    '¿Se afecta el DIAFRAGMA? → El nervio frénico es CLAVE para el destete ventilatorio.',
+    'Contexto de UCI + sepsis + esteroides + bloqueadores NM.',
+  ],
+  inclusion_body_myositis: [
+    '⚠️ MUPs LARGOS junto con CORTOS en el mismo músculo. ¿Miopático o neurogénico?',
+    'Debilidad selectiva: cuádriceps + flexores profundos de dedos. ¿Qué enfermedad tiene este patrón?',
+    'No respondió a esteroides. ¿Puede ser polimiositis?',
+  ],
+  tarsal_tunnel_syndrome: [
+    'Latencias terminales PLANTARES prolongadas con tibial proximal NORMAL = lesión focal en tobillo.',
+    'El SURAL es NORMAL (se separa proximal al túnel del tarso).',
+    'Gastrocnemio NORMAL distingue de radiculopatía S1.',
+  ],
+  c7_radiculopathy: [
+    'Músculos afectados cruzan MÚLTIPLES nervios periféricos: tríceps (radial) + pronador (mediano).',
+    'NCS sensitivas NORMALES → lesión proximal al ganglio.',
+    'Paraespinales cervicales con denervación CONFIRMAN radiculopatía (excluyen plexopatía).',
+  ],
+  accessory_peroneal_nerve: [
+    '⚠️ CMAP proximal MAYOR que distal en peroneo. ¿Cómo es posible?',
+    'EMG completamente NORMAL. ¿Hay realmente patología?',
+    'Estimula detrás del maléolo lateral. ¿Aparece un CMAP adicional?',
   ],
 };
 
@@ -143,17 +271,17 @@ const ExerciseMode: React.FC = () => {
   }, [currentStep]);
 
   // Available categories for filter
-  const availableCategories = ['all', ...Array.from(new Set(CASE_TEMPLATES.map(t => t.category)))];
+  const availableCategories = ['all', ...Array.from(new Set(ALL_CASE_TEMPLATES.map(t => t.category)))];
 
   const generateNewCase = useCallback(() => {
     const filteredPatternId = categoryFilter !== 'all'
-      ? CASE_TEMPLATES.filter(t => t.category === categoryFilter)
-          .map(t => t.patternId)[Math.floor(Math.random() * CASE_TEMPLATES.filter(t => t.category === categoryFilter).length)]
+      ? ALL_CASE_TEMPLATES.filter(t => t.category === categoryFilter)
+          .map(t => t.patternId)[Math.floor(Math.random() * ALL_CASE_TEMPLATES.filter(t => t.category === categoryFilter).length)]
       : undefined;
 
     const newCase = filteredPatternId
       ? ClinicalCaseEngine.generateCaseFromTemplate(
-          CASE_TEMPLATES.find(t => t.patternId === filteredPatternId)!,
+          ALL_CASE_TEMPLATES.find(t => t.patternId === filteredPatternId)!,
           difficulty
         )
       : ClinicalCaseEngine.generateRandomCase(difficulty);
@@ -333,7 +461,7 @@ const ExerciseMode: React.FC = () => {
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {availableCategories.map(cat => {
-              const count = cat === 'all' ? CASE_TEMPLATES.length : CASE_TEMPLATES.filter(t => t.category === cat).length;
+              const count = cat === 'all' ? ALL_CASE_TEMPLATES.length : ALL_CASE_TEMPLATES.filter(t => t.category === cat).length;
               return (
                 <button key={cat} onClick={() => setCategoryFilter(cat)}
                   className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap border ${
@@ -507,9 +635,133 @@ const ExerciseMode: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Conduction Block indicators */}
+        {clinicalCase.ncsResults.some((r: any) => r.conductionBlock) && (
+          <div className="bg-red-950/30 border border-red-700/40 rounded-xl p-4 mt-3">
+            <div className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" /> Bloqueos de Conducción Detectados
+            </div>
+            <div className="space-y-1">
+              {clinicalCase.ncsResults.filter((r: any) => r.conductionBlock).map((r, i) => (
+                <div key={i} className="text-sm text-red-300">
+                  🔴 <strong>{r.nerve}</strong>: Bloqueo de conducción
+                  {(r as any).temporalDispersion ? ' + Dispersión temporal' : ''}
+                  {(r as any).proximalAmplitude != null && (
+                    <span className="text-red-400/70"> — Amp. proximal: {(r as any).proximalAmplitude} mV</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Late Responses (F-wave, H-reflex) */}
+        {clinicalCase.lateResponses && clinicalCase.lateResponses.length > 0 && (
+          <div className="bg-indigo-950/30 border border-indigo-700/40 rounded-xl p-4 mt-3">
+            <div className="text-indigo-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Zap className="w-4 h-4" /> Respuestas Tardías
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-indigo-300/80 text-xs uppercase">
+                  <th className="p-2 text-left">Tipo</th>
+                  <th className="p-2 text-left">Nervio</th>
+                  <th className="p-2 text-center">Latencia/Latencia mín</th>
+                  <th className="p-2 text-center">Normal</th>
+                  <th className="p-2 text-center">Persistencia</th>
+                  <th className="p-2 text-center">Estado</th>
+                </tr></thead>
+                <tbody>
+                  {clinicalCase.lateResponses.map((lr, i) => (
+                    <tr key={i} className="border-t border-indigo-800/30">
+                      <td className="p-2 text-indigo-200 font-medium">{lr.type === 'f_wave' ? 'Onda F' : 'H-Reflex'}</td>
+                      <td className="p-2 text-gray-300">{lr.nerve} {lr.side ? `(${lr.side === 'left' ? 'Izq' : 'Der'})` : ''}</td>
+                      <td className={`p-2 text-center ${lr.status === 'absent' ? 'text-red-400' : lr.status === 'abnormal' ? 'text-yellow-400' : 'text-green-400'}`}>
+                        {lr.status === 'absent' ? 'AUSENTE' : `${lr.minLatency || lr.latency || '—'} ms`}
+                      </td>
+                      <td className="p-2 text-center text-gray-400">{lr.normalRange.min}–{lr.normalRange.max} ms</td>
+                      <td className="p-2 text-center text-gray-300">{lr.persistence != null ? `${lr.persistence}%` : '—'}</td>
+                      <td className="p-2 text-center">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          lr.status === 'normal' ? 'bg-green-900/40 text-green-400' :
+                          lr.status === 'absent' ? 'bg-red-900/40 text-red-400' : 'bg-yellow-900/40 text-yellow-400'
+                        }`}>
+                          {lr.status === 'normal' ? '✓ Normal' : lr.status === 'absent' ? '✗ Ausente' : '⚠ Prolongada'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* RNS (Estimulación Nerviosa Repetitiva) */}
+        {clinicalCase.rnsResults && clinicalCase.rnsResults.length > 0 && (
+          <div className="bg-amber-950/30 border border-amber-700/40 rounded-xl p-4 mt-3">
+            <div className="text-amber-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Activity className="w-4 h-4" /> ENR — Estimulación Nerviosa Repetitiva
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-amber-300/80 text-xs uppercase">
+                  <th className="p-2 text-left">Nervio/Músculo</th>
+                  <th className="p-2 text-center">Frecuencia</th>
+                  <th className="p-2 text-center">CMAP Basal</th>
+                  <th className="p-2 text-center">Decremento</th>
+                  <th className="p-2 text-center">Facilitación Post-Ej</th>
+                  <th className="p-2 text-center">Estado</th>
+                </tr></thead>
+                <tbody>
+                  {clinicalCase.rnsResults.map((rns, i) => (
+                    <tr key={i} className="border-t border-amber-800/30">
+                      <td className="p-2 text-amber-200 font-medium">{rns.nerve} → {rns.muscle}</td>
+                      <td className="p-2 text-center text-gray-300">{rns.frequency}</td>
+                      <td className="p-2 text-center text-gray-300">{rns.baselineCMAP} mV</td>
+                      <td className={`p-2 text-center font-bold ${rns.decrementPercent <= -10 ? 'text-red-400' : 'text-green-400'}`}>
+                        {rns.decrementPercent}%
+                        {rns.decrementPercent <= -10 && <span className="text-xs text-red-400/70 block">(&gt;10% anormal)</span>}
+                      </td>
+                      <td className={`p-2 text-center font-bold ${rns.postExerciseFacilitation && rns.postExerciseFacilitation > 100 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                        {rns.postExerciseFacilitation ? `+${rns.postExerciseFacilitation}%` : '—'}
+                        {rns.postExerciseFacilitation && rns.postExerciseFacilitation > 100 && <span className="text-xs text-yellow-400/70 block">(facilitación patológica)</span>}
+                      </td>
+                      <td className="p-2 text-center">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          rns.status === 'normal' ? 'bg-green-900/40 text-green-400' :
+                          rns.status === 'decremental' ? 'bg-red-900/40 text-red-400' : 'bg-yellow-900/40 text-yellow-400'
+                        }`}>
+                          {rns.status === 'normal' ? '✓ Normal' : rns.status === 'decremental' ? '↓ Decremental' : '↑ Incremental'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Temperature warning */}
+        {clinicalCase.skinTemperature && clinicalCase.skinTemperature < 32 && (
+          <div className="bg-blue-950/30 border border-blue-600/40 rounded-xl p-3 mt-3 flex items-center gap-3">
+            <span className="text-2xl">🌡️</span>
+            <div>
+              <div className="text-blue-300 font-bold text-sm">Nota Técnica: Temperatura Cutánea</div>
+              <div className="text-blue-200/80 text-sm">
+                Temperatura registrada: <span className="font-bold text-blue-300">{clinicalCase.skinTemperature.toFixed(1)}°C</span>
+                {clinicalCase.skinTemperature < 32 && <span className="text-yellow-400 ml-2">(Normal &gt;32°C — ⚠️ BAJA)</span>}
+              </div>
+              {clinicalCase.technicalNotes && <div className="text-blue-300/60 text-xs mt-1">{clinicalCase.technicalNotes}</div>}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
+
 
   // ─── RENDER: EMG ──────
   const renderEMG = () => {
@@ -742,6 +994,45 @@ const ExerciseMode: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Severity Badge */}
+        {clinicalCase.correctDiagnosis.severityGrade && (
+          <div className={`rounded-xl p-3 flex items-center gap-3 border ${
+            clinicalCase.correctDiagnosis.severityGrade === 'very_severe' ? 'bg-red-950/40 border-red-600/50' :
+            clinicalCase.correctDiagnosis.severityGrade === 'severe' ? 'bg-red-950/30 border-red-700/40' :
+            clinicalCase.correctDiagnosis.severityGrade === 'moderate' ? 'bg-yellow-950/30 border-yellow-700/40' :
+            'bg-green-950/30 border-green-700/40'
+          }`}>
+            <span className="text-xl">{
+              clinicalCase.correctDiagnosis.severityGrade === 'very_severe' ? '🔴' :
+              clinicalCase.correctDiagnosis.severityGrade === 'severe' ? '🟠' :
+              clinicalCase.correctDiagnosis.severityGrade === 'moderate' ? '🟡' : '🟢'
+            }</span>
+            <div>
+              <div className="text-xs text-gray-400 uppercase tracking-wider">Severidad</div>
+              <div className="text-sm font-bold text-white">
+                {clinicalCase.correctDiagnosis.severityGrade === 'very_severe' ? 'Muy Severo' :
+                 clinicalCase.correctDiagnosis.severityGrade === 'severe' ? 'Severo' :
+                 clinicalCase.correctDiagnosis.severityGrade === 'moderate' ? 'Moderado' : 'Leve'}
+              </div>
+              {clinicalCase.correctDiagnosis.severityExplanation && (
+                <div className="text-xs text-gray-400 mt-0.5">{clinicalCase.correctDiagnosis.severityExplanation}</div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Pitfall Banner */}
+        {clinicalCase.isPitfall && clinicalCase.pitfallExplanation && (
+          <div className="bg-amber-950/40 border border-amber-600/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-amber-400 font-bold text-sm mb-2">
+              <AlertTriangle className="w-5 h-5" /> CASO TRAMPA — Explicación
+            </div>
+            <div className="text-amber-200/90 text-sm leading-relaxed whitespace-pre-line">
+              {clinicalCase.pitfallExplanation}
+            </div>
+          </div>
+        )}
 
         {/* Collapsible: Explanation */}
         <div className="rounded-xl border border-gray-700/50 overflow-hidden">

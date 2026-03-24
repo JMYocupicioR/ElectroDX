@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { type ResultadoDiagnostico, type HallazgoInervacionDual, type DatosEvaluacion, EXPLICACIONES_ANATOMICAS } from './plexoBraquial';
+import { generarCadenaRazonamiento } from './clinicalReasoningChain';
+import GuidedReasoningPanel from './GuidedReasoningPanel';
 
 interface Props {
   resultados: ResultadoDiagnostico[];
@@ -51,8 +53,17 @@ function CategoryBadge({ cat }: { cat: string }) {
   );
 }
 
-export default function ResultsPanel({ resultados, hallazgos }: Props) {
+export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(0);
+  const [showReasoning, setShowReasoning] = useState(false);
+
+  // Generate reasoning chain
+  const cadenaRazonamiento = useMemo(() => {
+    if (resultados.length > 0 && datos) {
+      return generarCadenaRazonamiento(datos, resultados);
+    }
+    return null;
+  }, [resultados, datos]);
 
   if (resultados.length === 0) {
     return (
@@ -238,6 +249,40 @@ export default function ResultsPanel({ resultados, hallazgos }: Props) {
           );
         })}
       </div>
+
+      {/* 🧠 Guided Clinical Reasoning */}
+      {cadenaRazonamiento && (
+        <div className="rounded-xl border-2 border-indigo-300 dark:border-indigo-600/50 overflow-hidden">
+          <button
+            onClick={() => setShowReasoning(!showReasoning)}
+            className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🧠</span>
+              <div className="text-left">
+                <h4 className="font-bold text-indigo-700 dark:text-indigo-300">Razonamiento Clínico Paso a Paso</h4>
+                <p className="text-xs text-indigo-500 dark:text-indigo-400">7 pasos para entender CÓMO se llega al diagnóstico topográfico</p>
+              </div>
+            </div>
+            <span className={`text-indigo-400 text-xl transition-transform ${showReasoning ? 'rotate-180' : ''}`}>▾</span>
+          </button>
+          <AnimatePresence>
+            {showReasoning && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="border-t border-indigo-200 dark:border-indigo-700/30"
+              >
+                <div className="p-5 bg-slate-900/80">
+                  <GuidedReasoningPanel cadena={cadenaRazonamiento} mode="reveal" />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Dual Innervation Findings */}
       {hallazgos.length > 0 && (
