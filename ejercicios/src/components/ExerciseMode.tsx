@@ -1145,7 +1145,7 @@ const ExerciseMode: React.FC = () => {
     <div className="min-h-screen bg-gray-900 text-gray-100">
       {/* Top bar with timer + clickable progress */}
       {currentStep !== 'config' && (
-        <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-0 z-50">
+        <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-0 z-50" style={{ backgroundColor: 'rgba(31, 41, 55, 0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(55, 65, 81, 0.6)' }}>
           <div className="max-w-5xl mx-auto px-3 sm:px-4">
             {/* Top row: back + tabs + timer */}
             <div className="flex items-center gap-1 sm:gap-3 py-2 sm:py-2.5">
@@ -1255,7 +1255,7 @@ const ExerciseMode: React.FC = () => {
 
         {/* Hints — rendered INLINE in the content flow, never overlaps */}
         {showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
-          <div className="mt-4">
+          <div className="mt-4" style={{ marginBottom: '5rem' }}>
             <div className="bg-purple-950 rounded-xl p-4 border border-purple-700/50 shadow-lg space-y-3">
               <div className="flex items-center gap-2 mb-1">
                 <Lightbulb className="w-4 h-4 text-purple-400" />
@@ -1278,7 +1278,7 @@ const ExerciseMode: React.FC = () => {
 
       {/* Bottom Nav with Hints */}
       {currentStep !== 'config' && currentStep !== 'feedback' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-lg border-t border-gray-700/60 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-lg border-t border-gray-700/60 z-40" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', backgroundColor: 'rgba(31, 41, 55, 0.97)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(55, 65, 81, 0.6)' }}>
           <div className="max-w-5xl mx-auto flex items-center justify-between py-3 px-3 sm:px-4">
             <button onClick={goPrev} disabled={!canGoPrev}
               className="px-3 sm:px-5 py-2.5 rounded-lg bg-gray-700 hover:bg-gray-600 disabled:opacity-30 text-white transition-colors text-sm min-h-[44px]">
