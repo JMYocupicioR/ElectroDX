@@ -128,7 +128,7 @@ export function MobileNavigation() {
         </div>
 
         <nav 
-          className="overflow-y-auto overscroll-contain h-[calc(100vh-73px)] p-4 space-y-1"
+          className="overflow-y-auto overscroll-contain h-[calc(var(--app-height,100vh)-73px)] p-4 space-y-1"
           role="navigation"
           aria-labelledby="mobile-menu-title"
         >

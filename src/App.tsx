@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react';
 import { useSettingsStore } from './stores/settingsStore';
 import { Header } from './Header';
 import { LoadingSpinner } from './components/LoadingSpinner';
+import IOSInstallBanner from './components/IOSInstallBanner';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const ModulePage = lazy(() => import('./components/pages/ModulePage'));
@@ -28,6 +29,7 @@ function App() {
             </Routes>
           </Suspense>
         </Router>
+        <IOSInstallBanner />
       </div>
     </div>
   );

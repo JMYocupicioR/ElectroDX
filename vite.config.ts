@@ -9,10 +9,17 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png'],
+      includeAssets: ['icons/*.png', 'icons/splash/*.png'],
       manifest: false, // Use the manifest.json in /public
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
+        // iOS Safari aggressively caches sw.js — these ensure instant updates
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        // SPA offline fallback — serves index.html for any navigation request
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/, /^\/icons\/splash\//],
         runtimeCaching: [
           {
             // Google Fonts stylesheets

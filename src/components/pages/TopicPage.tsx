@@ -797,7 +797,7 @@ export default function TopicPage() {
         {/* ── Desktop TOC Sidebar (sticky in grid) ── */}
         {hasChildContent && (
           <aside className="hidden lg:block">
-            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+            <div className="sticky top-24 max-h-[calc(var(--app-height,100vh)-8rem)] overflow-y-auto">
               <div className="bg-white/80 dark:bg-slate-800/70 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/30 shadow-lg p-4">
                 {/* Progress bar */}
                 <div className="mb-3 flex items-center gap-2">

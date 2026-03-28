@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { requestPersistentStorage, reCacheAppShell } from '../utils/pwaUtils';
 
 export interface ModuleCacheStatus {
   cached: boolean;
@@ -58,6 +59,13 @@ export const useOfflineStore = create<OfflineStore>()(
         // Listen for online/offline events
         window.addEventListener('online', () => set({ isOnline: true }));
         window.addEventListener('offline', () => set({ isOnline: false }));
+
+        // iOS 7-day eviction protection:
+        // Request persistent storage and re-cache the App Shell on every launch
+        if (isSupported) {
+          requestPersistentStorage();
+          reCacheAppShell();
+        }
       },
 
       cacheModule: async (moduleId: string) => {

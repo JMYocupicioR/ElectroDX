@@ -1,0 +1,145 @@
+/**
+ * PWA Utilities – iOS-hardened
+ * Handles storage persistence, standalone detection, install prompts,
+ * and App Shell re-caching on every launch.
+ */
+
+/** Detect if running in iOS standalone (installed) mode */
+export function isIOSStandalone(): boolean {
+  return (
+    ('standalone' in window.navigator &&
+      (window.navigator as any).standalone === true) ||
+    window.matchMedia('(display-mode: standalone)').matches
+  );
+}
+
+/** Detect iOS Safari (not Chrome/Firefox/Edge on iOS) */
+export function isIOSSafari(): boolean {
+  const ua = navigator.userAgent;
+  return (
+    /iP(hone|od|ad)/.test(ua) &&
+    /WebKit/.test(ua) &&
+    !/(CriOS|FxiOS|EdgiOS)/.test(ua)
+  );
+}
+
+/** Detect any iOS browser */
+export function isIOS(): boolean {
+  return /iP(hone|od|ad)/.test(navigator.userAgent);
+}
+
+/**
+ * Request persistent storage — critical for iOS 7-day eviction protection.
+ * iOS may not guarantee it, but requesting it signals intent and
+ * can prevent automatic purges on some WebKit versions.
+ */
+export async function requestPersistentStorage(): Promise<boolean> {
+  if (navigator.storage && navigator.storage.persist) {
+    try {
+      const granted = await navigator.storage.persist();
+      console.log(
+        `[PWA] Persistent storage ${granted ? 'granted ✓' : 'denied ✗'}`
+      );
+      return granted;
+    } catch (error) {
+      console.warn('[PWA] Persistent storage request failed:', error);
+      return false;
+    }
+  }
+  return false;
+}
+
+/** Estimate storage quota usage */
+export async function getStorageEstimate(): Promise<{
+  used: number;
+  quota: number;
+} | null> {
+  if (navigator.storage && navigator.storage.estimate) {
+    try {
+      const est = await navigator.storage.estimate();
+      return { used: est.usage ?? 0, quota: est.quota ?? 0 };
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Re-cache the App Shell on every launch.
+ * iOS purges Cache API after 7 days of inactivity.
+ * This ensures the core shell assets are always fresh.
+ */
+export async function reCacheAppShell(): Promise<void> {
+  if (!('caches' in window)) return;
+
+  try {
+    const shellUrls = ['/', '/index.html'];
+    const cache = await caches.open('app-shell-v1');
+
+    for (const url of shellUrls) {
+      try {
+        const response = await fetch(url, { cache: 'reload' });
+        if (response.ok) {
+          await cache.put(url, response);
+        }
+      } catch {
+        // Silently fail – we're offline or the URL isn't available
+      }
+    }
+
+    console.log('[PWA] App Shell re-cached ✓');
+  } catch (error) {
+    console.warn('[PWA] App Shell re-cache failed:', error);
+  }
+}
+
+/**
+ * Detect if user should see iOS install prompt.
+ * Returns true if: on iOS Safari, NOT already installed, and not dismissed recently.
+ */
+export function shouldShowInstallPrompt(): boolean {
+  if (!isIOSSafari()) return false;
+  if (isIOSStandalone()) return false;
+
+  const dismissed = localStorage.getItem('pwa-install-dismissed');
+  if (dismissed) {
+    const dismissedAt = parseInt(dismissed, 10);
+    const threeDays = 3 * 24 * 60 * 60 * 1000;
+    if (Date.now() - dismissedAt < threeDays) return false;
+  }
+
+  return true;
+}
+
+/** Mark install prompt as dismissed */
+export function dismissInstallPrompt(): void {
+  localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+}
+
+/**
+ * Force refresh the service worker.
+ * Useful for a manual "Update App" button in the UI.
+ */
+export async function forceUpdateServiceWorker(): Promise<boolean> {
+  if (!('serviceWorker' in navigator)) return false;
+
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.update();
+      console.log('[PWA] Service Worker update triggered ✓');
+      return true;
+    }
+  } catch (error) {
+    console.warn('[PWA] SW update failed:', error);
+  }
+  return false;
+}
+
+/**
+ * Get the current app version from the SW registration for debug/display.
+ */
+export function getAppVersion(): string {
+  return import.meta.env.VITE_APP_VERSION || '1.0.0';
+}
