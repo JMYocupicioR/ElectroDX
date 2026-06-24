@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { allModules } from '../content/modules';
 import { Topic } from '../types/content';
 import { X, Search, ChevronDown, ChevronRight, BookOpen } from 'lucide-react';
+import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
+import { QuizTopicBadge } from './quiz/QuizTopicBadge';
 
 interface CourseSidebarProps {
   isOpen: boolean;
@@ -26,8 +28,14 @@ function flattenForSearch(
   return results;
 }
 
+function topicTreeHasQuiz(topic: Topic, hasQuiz: (id: string) => boolean): boolean {
+  if (!topic.children?.length) return hasQuiz(topic.id);
+  return topic.children.some((child) => topicTreeHasQuiz(child, hasQuiz));
+}
+
 export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const location = useLocation();
+  const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
@@ -183,6 +191,9 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                           <span className={`flex-1 text-left leading-snug ${isCurrent ? 'font-semibold' : 'font-medium'}`}>
                             {mod.title}
                           </span>
+                          {moduleQuizCount(mod.id) > 0 && (
+                            <QuizTopicBadge compact />
+                          )}
                           <span className="text-[0.6rem] text-slate-400 dark:text-slate-500 font-mono flex-shrink-0 mr-1">
                             {mod.topics.length}
                           </span>
@@ -212,13 +223,14 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                     <Link
                                       key={topic.id}
                                       to={topicUrl}
-                                      className={`block px-3 py-2 rounded-lg text-[0.8rem] sm:text-sm transition-all min-h-[40px] flex items-center ${
+                                      className={`block px-3 py-2 rounded-lg text-[0.8rem] sm:text-sm transition-all min-h-[40px] flex items-center gap-2 ${
                                         isActive
                                           ? 'bg-blue-100/80 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-l-2 border-blue-500 -ml-[2px] pl-[14px]'
                                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200'
                                       }`}
                                     >
-                                      <span className="leading-snug">{topic.title}</span>
+                                      <span className="leading-snug flex-1">{topic.title}</span>
+                                      {topicTreeHasQuiz(topic, hasQuiz) && <QuizTopicBadge compact />}
                                     </Link>
                                   );
                                 })}

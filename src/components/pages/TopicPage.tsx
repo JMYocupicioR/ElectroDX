@@ -1,12 +1,20 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getModuleById } from '../../content/modules';
+import { findTopicByPath, getAllFlatTopics, findTopicInTree } from '../../services/contentMerge';
+import { useMergedModule } from '../../hooks/useMergedModule';
+import { useAuth } from '../../contexts/AuthProvider';
+import { ContributionBanner, ContributorContentActions, ProposeQuizLink } from '../editorial/TopicContribution';
+import { QuizGate } from '../quiz/QuizGate';
+import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
+import { getQuizFlagForTopic } from '../../services/quizService';
+import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, Youtube, ImageIcon } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon } from 'lucide-react';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
+import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
 
 /* ─── Rich-text renderer ─── */
 function renderInline(text: string, keyPrefix: string): (string | JSX.Element)[] {
@@ -212,114 +220,68 @@ function highlightClinical(text: string, key: string): (string | JSX.Element)[] 
 }
 
 /* ─── Video Section ─── */
-function VideoSection({ videos }: { videos: { title: string; driveId: string }[] }) {
+function topicHasVideos(topic: Topic): boolean {
+  return videoMediaToExternalList(topic).length > 0;
+}
+
+function ExternalVideosSection({ topic }: { topic: Topic }) {
+  const videos = videoMediaToExternalList(topic);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
+
+  if (videos.length === 0) return null;
 
   return (
     <div className="mt-5 space-y-3">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
         <Play className="w-3.5 h-3.5" />
-        <span>Videos demostrativos ({videos.length})</span>
+        <span>Videos ({videos.length})</span>
       </div>
       <div className={`grid gap-3 ${videos.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
-        {videos.map((video, idx) => (
-          <div key={idx} className="group">
-            {activeVideo === idx ? (
-              <div className="rounded-xl overflow-hidden border border-emerald-200/50 dark:border-emerald-700/30 shadow-lg shadow-emerald-500/5">
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={`https://drive.google.com/file/d/${video.driveId}/preview`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                    title={video.title}
-                  />
+        {videos.map((video, idx) => {
+          const parsed = parseVideoUrl(video.url);
+          if (!parsed) return null;
+          return (
+            <div key={idx} className="group">
+              {activeVideo === idx ? (
+                <div className="rounded-xl overflow-hidden border border-emerald-200/50 dark:border-emerald-700/30 shadow-lg shadow-emerald-500/5">
+                  <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                    <iframe
+                      src={getVideoEmbedSrc(parsed)}
+                      className="absolute inset-0 w-full h-full"
+                      allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                      allowFullScreen
+                      title={video.title}
+                    />
+                  </div>
+                  <div className="px-3 py-2 bg-slate-50/80 dark:bg-slate-800/80 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{video.title}</span>
+                    <button
+                      onClick={() => setActiveVideo(null)}
+                      className="text-xs text-slate-400 hover:text-red-500 transition-colors ml-2 flex-shrink-0"
+                    >
+                      Cerrar
+                    </button>
+                  </div>
                 </div>
-                <div className="px-3 py-2 bg-slate-50/80 dark:bg-slate-800/80 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{video.title}</span>
-                  <button
-                    onClick={() => setActiveVideo(null)}
-                    className="text-xs text-slate-400 hover:text-red-500 transition-colors ml-2 flex-shrink-0"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setActiveVideo(idx)}
-                className="w-full rounded-xl border border-slate-200/60 dark:border-slate-700/30 bg-gradient-to-br from-slate-50 to-emerald-50/30 dark:from-slate-800/60 dark:to-emerald-900/10 p-4 flex items-center gap-3 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-md hover:shadow-emerald-500/5 transition-all group text-left"
-              >
-                <span className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center group-hover:bg-emerald-500/20 dark:group-hover:bg-emerald-400/20 transition-colors">
-                  <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400 ml-0.5" />
-                </span>
-                <div className="min-w-0">
-                  <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
-                    {video.title}
+              ) : (
+                <button
+                  onClick={() => setActiveVideo(idx)}
+                  className="w-full rounded-xl border border-slate-200/60 dark:border-slate-700/30 bg-gradient-to-br from-slate-50 to-emerald-50/30 dark:from-slate-800/60 dark:to-emerald-900/10 p-4 flex items-center gap-3 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-md hover:shadow-emerald-500/5 transition-all group text-left"
+                >
+                  <span className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center group-hover:bg-emerald-500/20 dark:group-hover:bg-emerald-400/20 transition-colors">
+                    <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400 ml-0.5" />
                   </span>
-                  <span className="block text-[0.7rem] text-slate-400 dark:text-slate-500 mt-0.5">Click para reproducir</span>
-                </div>
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── YouTube Section ─── */
-function YouTubeSection({ videos }: { videos: { title: string; videoId: string; startTime?: number }[] }) {
-  const [activeVideo, setActiveVideo] = useState<number | null>(null);
-
-  return (
-    <div className="mt-5 space-y-3">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
-        <Youtube className="w-3.5 h-3.5" />
-        <span>Videos educativos ({videos.length})</span>
-      </div>
-      <div className={`grid gap-3 ${videos.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
-        {videos.map((video, idx) => (
-          <div key={idx} className="group">
-            {activeVideo === idx ? (
-              <div className="rounded-xl overflow-hidden border border-red-200/50 dark:border-red-700/30 shadow-lg shadow-red-500/5">
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${video.videoId}${video.startTime ? `?start=${video.startTime}` : ''}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={video.title}
-                  />
-                </div>
-                <div className="px-3 py-2 bg-slate-50/80 dark:bg-slate-800/80 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{video.title}</span>
-                  <button
-                    onClick={() => setActiveVideo(null)}
-                    className="text-xs text-slate-400 hover:text-red-500 transition-colors ml-2 flex-shrink-0"
-                  >
-                    Cerrar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setActiveVideo(idx)}
-                className="w-full rounded-xl border border-slate-200/60 dark:border-slate-700/30 bg-gradient-to-br from-slate-50 to-red-50/30 dark:from-slate-800/60 dark:to-red-900/10 p-4 flex items-center gap-3 hover:border-red-300 dark:hover:border-red-600 hover:shadow-md hover:shadow-red-500/5 transition-all group text-left"
-              >
-                <span className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/10 dark:bg-red-400/10 flex items-center justify-center group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 transition-colors">
-                  <Youtube className="w-4 h-4 text-red-600 dark:text-red-400" />
-                </span>
-                <div className="min-w-0">
-                  <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors">
-                    {video.title}
-                  </span>
-                  <span className="block text-[0.7rem] text-slate-400 dark:text-slate-500 mt-0.5">Click para reproducir</span>
-                </div>
-              </button>
-            )}
-          </div>
-        ))}
+                  <div className="min-w-0">
+                    <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                      {video.title}
+                    </span>
+                    <span className="block text-[0.7rem] text-slate-400 dark:text-slate-500 mt-0.5">Click para reproducir</span>
+                  </div>
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -452,44 +414,21 @@ function ReferencesSection({ references }: { references: Reference[] }) {
   );
 }
 
-/* ─── Helpers ─── */
-function findTopicByPath(topics: Topic[], pathParts: string[]): { topic: Topic | null; breadcrumbs: Topic[] } {
-  const breadcrumbs: Topic[] = [];
-  let current: Topic[] = topics;
-  let found: Topic | null = null;
-  for (const part of pathParts) {
-    const topic = current.find(t => t.id === part);
-    if (!topic) break;
-    breadcrumbs.push(topic);
-    found = topic;
-    current = topic.children || [];
-  }
-  return { topic: found, breadcrumbs };
-}
-
-function getAllFlatTopics(topics: Topic[], parentPath: string[] = []): { topic: Topic; path: string[] }[] {
-  const result: { topic: Topic; path: string[] }[] = [];
-  for (const t of topics) {
-    const path = [...parentPath, t.id];
-    result.push({ topic: t, path });
-    if (t.children) result.push(...getAllFlatTopics(t.children, path));
-  }
-  return result;
-}
-
 /* ─── Main Component ─── */
 export default function TopicPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const location = useLocation();
   const lang = useSettingsStore((s) => s.language);
+  const { canProposeContent, user, roles, profile } = useAuth();
+  const { module: mod, staticModule, loading: moduleLoading } = useMergedModule(moduleId);
+
   const [showTOC, setShowTOC] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
+  const [quizFlag, setQuizFlag] = useState<QuizTopicFlag | null>(null);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
   const mainRef = useRef<HTMLElement>(null);
-
-  const mod = getModuleById(moduleId || '');
 
   // Scroll tracking for scroll-to-top button and active section
   useEffect(() => {
@@ -533,6 +472,34 @@ export default function TopicPage() {
     if (el) sectionRefs.current.set(id, el);
   }, []);
 
+  const leafTopicId = useMemo(() => {
+    if (!mod) return null;
+    const basePath = `/modulo/${moduleId}/`;
+    const topicPathStr = location.pathname.replace(basePath, '');
+    const pathParts = topicPathStr.split('/').filter(Boolean);
+    const { topic: resolvedTopic } = findTopicByPath(mod.topics, pathParts);
+    if (!resolvedTopic || resolvedTopic.children?.length) return null;
+    return resolvedTopic.id;
+  }, [mod, moduleId, location.pathname]);
+
+  useEffect(() => {
+    if (!leafTopicId) {
+      setQuizFlag(null);
+      return;
+    }
+    getQuizFlagForTopic(leafTopicId)
+      .then(setQuizFlag)
+      .catch(() => setQuizFlag(null));
+  }, [leafTopicId]);
+
+  if (moduleLoading && !mod) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 pt-28 text-center text-slate-500">
+        {lang === 'en' ? 'Loading…' : 'Cargando…'}
+      </div>
+    );
+  }
+
   if (!mod) {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
@@ -561,6 +528,7 @@ export default function TopicPage() {
   }
 
   const hasChildContent = topic.children && topic.children.length > 0;
+  const isLeafTopic = !hasChildContent;
 
   // Get references for first-level topic
   const firstLevelTopicId = pathParts[0] || topic.id;
@@ -605,14 +573,69 @@ export default function TopicPage() {
           {/* Module color accent bar */}
           <div className={`h-1 w-16 rounded-full bg-gradient-to-r ${mod.color} mb-4`} />
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-2 leading-tight tracking-tight">
-            {lt.title}
-          </h1>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
+              {lt.title}
+            </h1>
+            {isLeafTopic && quizFlag && quizFlag.question_count > 0 && (
+              <QuizTopicBadge label={lang === 'en' ? 'Assessment' : 'Evaluación'} />
+            )}
+          </div>
           {lang === 'es' && topic.titleEn && (
             <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.titleEn}</p>
           )}
           {lang === 'en' && topic.title !== lt.title && (
             <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.title}</p>
+          )}
+
+          {topic.contributionMeta && (
+            <ContributionBanner meta={topic.contributionMeta} />
+          )}
+
+          {user && !canProposeContent && (
+            <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-sm text-amber-900 dark:text-amber-200">
+              {lang === 'en' ? (
+                <>
+                  Quiz creation requires an <strong>admin</strong>, <strong>editor</strong>, or{' '}
+                  <strong>verified contributor</strong> role.{' '}
+                  <Link to="/colaborador/perfil" className="underline font-medium">Complete your profile</Link>
+                  {' '}or ask an admin to assign your role in Supabase.
+                </>
+              ) : (
+                <>
+                  Para proponer cuestionarios necesitas rol de <strong>admin</strong>, <strong>editor</strong> o{' '}
+                  <strong>colaborador verificado</strong>.
+                  {roles.length === 0 && ' Tu cuenta no tiene roles asignados aún.'}
+                  {roles.includes('contributor') && !profile?.verified_at && ' Tu perfil de colaborador aún no está verificado.'}
+                  {' '}
+                  <Link to="/colaborador/perfil" className="underline font-medium">Completa tu perfil</Link>
+                  {' '}o pide a un admin que te asigne el rol en Supabase.
+                </>
+              )}
+            </div>
+          )}
+
+          {canProposeContent && mod && (
+            <div className="mb-4">
+              {hasChildContent && (
+                <p className="text-xs text-violet-600 dark:text-violet-400 mb-2">
+                  Los cuestionarios se crean por subtema. Usa &quot;Proponer cuestionario&quot; en cada sección numerada abajo,
+                  o ve a{' '}
+                  <Link to="/colaborador/cuestionario" className="underline font-medium">
+                    Colaborar → Nuevo cuestionario
+                  </Link>
+                  .
+                </p>
+              )}
+              <ContributorContentActions
+                moduleId={mod.id}
+                topicId={topic.id}
+                parentPath={pathParts}
+                parentId={pathParts.length > 1 ? pathParts[pathParts.length - 2] : null}
+                isLeafTopic={isLeafTopic}
+                showSubtopic={!isLeafTopic || !hasChildContent}
+              />
+            </div>
           )}
 
           {/* Main content */}
@@ -628,16 +651,11 @@ export default function TopicPage() {
               {topic.imageUrls && topic.imageUrls.length > 0 && (
                 <ImageGallery images={topic.imageUrls} />
               )}
-              {topic.videoUrls && topic.videoUrls.length > 0 && (
-                <VideoSection videos={topic.videoUrls} />
-              )}
-              {topic.youtubeUrls && topic.youtubeUrls.length > 0 && (
-                <YouTubeSection videos={topic.youtubeUrls} />
-              )}
+              {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
             </div>
           )}
           {/* Media without content */}
-          {!lt.content && (topic.videoUrls?.length || topic.youtubeUrls?.length || lt.clinicalPearls?.length || lt.keyPoints?.length) && (
+          {!lt.content && (topicHasVideos(topic) || lt.clinicalPearls?.length || lt.keyPoints?.length) && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
               {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
                 <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
@@ -645,12 +663,7 @@ export default function TopicPage() {
               {lt.keyPoints && lt.keyPoints.length > 0 && (
                 <KeyPointsBox points={lt.keyPoints} lang={lang} />
               )}
-              {topic.videoUrls && topic.videoUrls.length > 0 && (
-                <VideoSection videos={topic.videoUrls} />
-              )}
-              {topic.youtubeUrls && topic.youtubeUrls.length > 0 && (
-                <YouTubeSection videos={topic.youtubeUrls} />
-              )}
+              {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
             </div>
           )}
 
@@ -705,6 +718,20 @@ export default function TopicPage() {
                         )}
                       </div>
 
+                      {canProposeContent && mod && !child.children?.length && (
+                        <div className="px-5 sm:px-6 pb-3 border-b border-slate-100 dark:border-slate-700/40">
+                          <ContributorContentActions
+                            moduleId={mod.id}
+                            topicId={child.id}
+                            parentPath={[...pathParts, child.id]}
+                            parentId={topic.id}
+                            isLeafTopic
+                            showSubtopic={false}
+                            compact
+                          />
+                        </div>
+                      )}
+
                       {/* Section content — always visible */}
                       {lc.content && (
                         <div className="px-5 sm:px-6 pb-5 sm:pb-6">
@@ -719,17 +746,12 @@ export default function TopicPage() {
                             {child.imageUrls && child.imageUrls.length > 0 && (
                               <ImageGallery images={child.imageUrls} />
                             )}
-                            {child.videoUrls && child.videoUrls.length > 0 && (
-                              <VideoSection videos={child.videoUrls} />
-                            )}
-                            {child.youtubeUrls && child.youtubeUrls.length > 0 && (
-                              <YouTubeSection videos={child.youtubeUrls} />
-                            )}
+                            {topicHasVideos(child) && <ExternalVideosSection topic={child} />}
                           </div>
                         </div>
                       )}
                       {/* Media without content */}
-                      {!lc.content && (child.videoUrls?.length || child.youtubeUrls?.length || lc.clinicalPearls?.length || lc.keyPoints?.length) && (
+                      {!lc.content && (topicHasVideos(child) || lc.clinicalPearls?.length || lc.keyPoints?.length) && (
                         <div className="px-5 sm:px-6 pb-5 sm:pb-6">
                           <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4">
                             {lc.clinicalPearls && lc.clinicalPearls.length > 0 && (
@@ -738,12 +760,7 @@ export default function TopicPage() {
                             {lc.keyPoints && lc.keyPoints.length > 0 && (
                               <KeyPointsBox points={lc.keyPoints} lang={lang} />
                             )}
-                            {child.videoUrls && child.videoUrls.length > 0 && (
-                              <VideoSection videos={child.videoUrls} />
-                            )}
-                            {child.youtubeUrls && child.youtubeUrls.length > 0 && (
-                              <YouTubeSection videos={child.youtubeUrls} />
-                            )}
+                            {topicHasVideos(child) && <ExternalVideosSection topic={child} />}
                           </div>
                         </div>
                       )}
@@ -757,6 +774,10 @@ export default function TopicPage() {
           {/* ── Per-Topic Bibliography ── */}
           {references.length > 0 && (
             <ReferencesSection references={references} />
+          )}
+
+          {isLeafTopic && mod && (
+            <QuizGate topicId={topic.id} moduleId={mod.id} quizFlag={quizFlag} />
           )}
 
           {/* Prev/Next Navigation */}
@@ -816,18 +837,24 @@ export default function TopicPage() {
                 </h4>
                 <nav className="space-y-0.5">
                   {topic.children!.map((child, i) => (
-                    <button
-                      key={child.id}
-                      onClick={() => scrollToSection(child.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-start gap-2 ${
-                        activeSection === child.id
-                          ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium shadow-sm'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
-                      }`}
-                    >
-                      <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                      <span className="line-clamp-2 leading-snug">{localizedTopic(child, lang).title}</span>
-                    </button>
+                    <div key={child.id} className="space-y-1">
+                      <button
+                        onClick={() => scrollToSection(child.id)}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-start gap-2 ${
+                          activeSection === child.id
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium shadow-sm'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
+                        }`}
+                      >
+                        <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
+                        <span className="line-clamp-2 leading-snug">{localizedTopic(child, lang).title}</span>
+                      </button>
+                      {canProposeContent && mod && !child.children?.length && (
+                        <div className="pl-7 pr-1">
+                          <ProposeQuizLink moduleId={mod.id} topicId={child.id} />
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </nav>
                 {/* Back to module link */}

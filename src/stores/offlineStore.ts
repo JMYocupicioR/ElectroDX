@@ -60,9 +60,8 @@ export const useOfflineStore = create<OfflineStore>()(
         window.addEventListener('online', () => set({ isOnline: true }));
         window.addEventListener('offline', () => set({ isOnline: false }));
 
-        // iOS 7-day eviction protection:
-        // Request persistent storage and re-cache the App Shell on every launch
-        if (isSupported) {
+        // iOS 7-day eviction protection (production only — avoid SW/cache conflicts in dev)
+        if (isSupported && import.meta.env.PROD) {
           requestPersistentStorage();
           reCacheAppShell();
         }

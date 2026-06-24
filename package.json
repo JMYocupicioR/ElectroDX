@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fontsource/inter": "^5.0.16",
+    "@supabase/supabase-js": "^2.108.2",
     "@types/node": "^22.14.1",
     "framer-motion": "^12.35.1",
     "lucide-react": "^0.344.0",

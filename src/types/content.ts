@@ -12,6 +12,8 @@ export interface Topic {
   contentEn?: string;
   videoUrls?: { title: string; driveId: string }[];  // Google Drive video embeds
   youtubeUrls?: { title: string; videoId: string; startTime?: number }[];  // YouTube video embeds
+  vimeoUrls?: { title: string; videoId: string }[];  // Vimeo video embeds
+  embedUrls?: { title: string; embedUrl: string }[];  // Other platform embed URLs
   imageUrls?: { src: string; alt: string; caption?: string }[];  // Educational images/diagrams
   clinicalPearls?: string[];    // Highlighted clinical tips (💡)
   clinicalPearlsEn?: string[];
@@ -20,6 +22,12 @@ export interface Topic {
   children?: Topic[];      // Recursive sub-topics (unlimited depth)
   tags?: string[];
   keyTerms?: string[];
+  /** Set when content comes from approved community revisions */
+  contributionMeta?: {
+    version: number;
+    publishedAt: string;
+    lastEditedBy?: string | null;
+  };
 }
 
 export interface Module {

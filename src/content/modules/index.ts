@@ -1,5 +1,5 @@
 // src/content/modules/index.ts
-// Central registry of all 12 learning modules
+// Central registry of all 13 learning modules
 
 import { Module } from '../../types/content';
 import { module01 } from './module-01-fundamentals';

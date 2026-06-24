@@ -907,9 +907,9 @@ El síndrome del túnel tarsiano es difícil de diagnosticar electrodiagnóstica
 **Valores Normales Esperados:**
 | Parámetro | Valor Típico | Límite Patológico |
 |---|---|---|
-| Latencia Motora Distal (LMD) | 3.4 - 3.8 ms | >4.2 ms |
-| Amplitud (Base-Pico) | 8 - 15 mV | <4.0 mV |
-| Velocidad Conducción (VCM) | 55 - 62 m/s | <50 m/s |`,
+| Latencia Motora Distal (LMD) | 3.4 - 4.0 ms | >4.4 ms |
+| Amplitud (Base-Pico) | 5 - 15 mV | <4.0 mV |
+| Velocidad Conducción (VCM) | 52 - 65 m/s | <50 m/s |`,
           clinicalPearls: [
             'Si obtienes un CMAP con muesca o deflexión inicial positiva, mueve el G1 ligeramente hacia el lateral o distal — el punto motor del APB puede variar.',
             'En STC severo, si no hay respuesta en muñeca, intenta estimular en la PALMA (estimulación trans-ligamentaria) para confirmar viabilidad axonal.',
@@ -937,8 +937,8 @@ El síndrome del túnel tarsiano es difícil de diagnosticar electrodiagnóstica
 **Valores Normales Esperados:**
 | Parámetro | Valor Típico | Límite Patológico |
 |---|---|---|
-| Latencia Motora Distal (LMD) | 2.5 - 3.0 ms | >3.3 ms |
-| Amplitud (Base-Pico) | 7 - 12 mV | <6.0 mV |
+| Latencia Motora Distal (LMD) | 2.5 - 3.2 ms | >3.4 ms |
+| Amplitud (Base-Pico) | 6 - 16 mV | <5.0 mV |
 | VCM Antebrazo | 58 - 65 m/s | <50 m/s |
 | VCM a través del Codo | >50 m/s | <50 m/s (o caída >10 m/s vs antebrazo) |`,
           clinicalPearls: [
@@ -1039,8 +1039,8 @@ El síndrome del túnel tarsiano es difícil de diagnosticar electrodiagnóstica
 **Valores Normales Esperados:**
 | Parámetro | Valor Típico | Límite Patológico |
 |---|---|---|
-| Latencia Pico | 2.2 - 2.6 ms | >2.9 ms |
-| Amplitud (Pico-Pico) | 15 - 40 µV | <12 µV |
+| Latencia Pico | 2.1 - 2.5 ms | >2.8 ms |
+| Amplitud (Pico-Pico) | 30 - 60 µV | <15 µV |
 | Velocidad (VCS) | 55 - 65 m/s | <50 m/s |`,
           clinicalPearls: [
             'El SNAP radial es robusto y se preserva en el STC. En la Queiralgia Parestésica (atrapamiento de la SRN por pulseras/relojes apretados), este SNAP está reducido o ausente.',
@@ -1063,11 +1063,103 @@ El síndrome del túnel tarsiano es difícil de diagnosticar electrodiagnóstica
 **Valores Normales Esperados:**
 | Parámetro | Valor Típico | Límite Patológico |
 |---|---|---|
-| Latencia Motora Distal (LMD) | 3.5 - 4.5 ms | >5.8 ms |
-| Amplitud (Base-Pico) | 6 - 15 mV | <4.0 mV |
-| Velocidad Conducción (VCM) | 45 - 52 m/s | <40 m/s |`,
+| Latencia Motora Distal (LMD) | 3.8 - 5.0 ms | >5.8 ms |
+| Amplitud (Base-Pico) | 6 - 20 mV | <4.0 mV |
+| Velocidad Conducción (VCM) | 42 - 55 m/s | <40 m/s |`,
           clinicalPearls: [
             'Para obtener una Onda F limpia, estimula en el tobillo con intensidad ligeramente superior a la supramáxima del CMAP y gira el cátodo hacia PROXIMAL.',
+          ],
+        },
+        {
+          id: 'radial-motor-step',
+          title: 'Nervio Radial Motor (PAMC — EIP)',
+          content: `Protocolo para evaluar surco espiral, PIN y parálisis del sábado por la noche.
+
+**Colocación de Electrodos:**
+• **G1 (Activo):** Extensor Indicis Proprius (EIP), tercio distal antebrazo dorsal.
+• **G2 (Referencia):** Apófisis estiloides ulnar o dorso muñeca.
+• **Tierra:** Dorso mano.
+
+**Puntos de Estimulación:**
+1. **Antebrazo:** 6-8 cm proximal al G1, cara lateral del radio.
+2. **Codo:** Surco bicipital lateral.
+3. **Surco espiral:** Cara lateral húmero tercio medio-distal.
+4. **Axila/Erb:** Si sospecha lesión proximal.
+
+**Valores Normales Esperados:**
+| Parámetro | Valor Típico | Límite Patológico |
+|---|---|---|
+| LMD (EIP) | 2.5 - 3.2 ms | >3.5 ms |
+| Amplitud (Base-Pico) | 5 - 10 mV | <4.0 mV |
+| VCM antebrazo | 58 - 70 m/s | <50 m/s |
+| Caída surco espiral | <20% | >50% = bloqueo |`,
+          clinicalPearls: [
+            'Braquiorradial preservado + muñeca caída = lesión surco espiral (Saturday Night Palsy).',
+            'Muñeca y dedos normales + solo dedos débiles + sensitivo normal = PIN (arcada de Frohse).',
+          ],
+        },
+        {
+          id: 'ulnar-sensory-step',
+          title: 'Nervio Ulnar Sensitivo (PANS)',
+          content: `Estudio comparativo esencial para STC y neuropatía cubital.
+
+**Colocación (Antidrómica):**
+• **G1:** Anillo base 5º dedo. **G2:** 3-4 cm distal. **Tierra:** dorso mano.
+• **Estimulación:** Muñeca 14 cm proximal, lateral al FCU.
+
+**Valores Normales Esperados:**
+| Parámetro | Valor Típico | Límite Patológico |
+|---|---|---|
+| Latencia Pico | 2.8 - 3.3 ms | >3.5 ms |
+| Amplitud (Pico-Pico) | 15 - 50 µV | <10 µV |
+| VCS | 55 - 65 m/s | <50 m/s |
+
+**Rama dorsal cutánea ulnar:** estimular 10 cm proximal registro. Normal en canal de Guyon; reducida en codo.`,
+          clinicalPearls: [
+            'SNAP ulnar normal = control interno en STC (mediano afectado, ulnar normal).',
+            'Rama dorsal normal + SNAP dedo 5 ausente = lesión canal de Guyon.',
+          ],
+        },
+        {
+          id: 'femoral-motor-step',
+          title: 'Nervio Femoral Motor (PAMC)',
+          content: `Evaluación de cuádriceps en plexopatía lumbar y neuropatía femoral iatrogénica.
+
+**Colocación de Electrodos:**
+• **G1:** Vasto medial, 4-6 cm sobre borde medial rótula.
+• **G2:** Rótula o tendón cuádriceps.
+• **Tierra:** Muslo lateral.
+
+**Estimulación:** Pliegue inguinal, 1-2 cm **lateral** a arteria femoral (N-A-V-E-L). Duración 0.5-1.0 ms, presión firme.
+
+**Valores Normales Esperados:**
+| Parámetro | Valor Típico | Límite Patológico |
+|---|---|---|
+| LMD | 5.0 - 6.2 ms | >7.0 ms |
+| Amplitud | 4 - 15 mV | <3.0 mV |
+| Dif. lado a lado | <50% | >50% = significativo |`,
+          clinicalPearls: [
+            'Siempre comparar con contralateral. Hematoma iliopsoas + debilidad cuádriceps = urgencia.',
+          ],
+        },
+        {
+          id: 'superficial-peroneal-sensory-step',
+          title: 'Nervio Peroneo Superficial Sensitivo (PANS)',
+          content: `Clave para diferenciar neuropatía peronea (postganglionar) de radiculopatía L5.
+
+**Colocación (Antidrómica):**
+• **G1:** Dorso pie entre 1º y 2º metatarsiano. **G2:** 3-4 cm distal.
+• **Estimulación:** Tercio inferior lateral pierna, 10-14 cm proximal.
+
+**Valores Normales Esperados:**
+| Parámetro | Valor Típico | Límite Patológico |
+|---|---|---|
+| Latencia Pico | 2.6 - 3.2 ms | >3.5 ms |
+| Amplitud (Pico-Pico) | 14 - 26 µV | <8 µV |
+| VCS | ≥40 m/s | <40 m/s |`,
+          clinicalPearls: [
+            'Reducido en neuropatía peronea cabeza peroné. Normal en radiculopatía L5 (preganglionar).',
+            'Combinar con evaluación tibial posterior (EMG): débil = L5, no peroneo aislado.',
           ],
         },
         {

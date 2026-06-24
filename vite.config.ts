@@ -9,6 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: { enabled: false },
       includeAssets: ['icons/*.png', 'icons/splash/*.png'],
       manifest: false, // Use the manifest.json in /public
       workbox: {
@@ -58,5 +59,9 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  test: {
+    globals: true,
+    environment: 'node',
   },
 });
