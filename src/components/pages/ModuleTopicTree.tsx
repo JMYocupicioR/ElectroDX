@@ -43,6 +43,7 @@ function ModuleTopicRow({
   lang,
   hasQuiz,
   canProposeContent,
+  parentPath = [],
 }: {
   topic: Topic;
   moduleId: string;
@@ -52,13 +53,16 @@ function ModuleTopicRow({
   lang: 'es' | 'en';
   hasQuiz: (topicId: string) => boolean;
   canProposeContent: boolean;
+  parentPath?: string[];
 }) {
   const isLeaf = !topic.children?.length;
   const showQuizBadge = isLeaf ? hasQuiz(topic.id) : topicTreeHasQuiz(topic, hasQuiz);
   const childCount = topic.children?.length ?? 0;
   const preview = getPreview(topic);
   const lt = localizedTopic(topic, lang);
-  const topicUrl = `/modulo/${moduleId}/${topic.id}`;
+  
+  const currentPath = [...parentPath, topic.id];
+  const topicUrl = `/modulo/${moduleId}/${currentPath.join('/')}`;
 
   return (
     <div className={depth > 0 ? 'ml-4 border-l border-slate-200/60 dark:border-slate-700/40 pl-3' : ''}>
@@ -123,6 +127,7 @@ function ModuleTopicRow({
               lang={lang}
               hasQuiz={hasQuiz}
               canProposeContent={canProposeContent}
+              parentPath={currentPath}
             />
           ))}
         </div>

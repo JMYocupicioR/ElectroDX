@@ -3,9 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { allModules } from '../content/modules';
 import { Topic } from '../types/content';
-import { X, Search, ChevronDown, ChevronRight, BookOpen } from 'lucide-react';
+import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, Unlock } from 'lucide-react';
 import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from './quiz/QuizTopicBadge';
+import { useAuth } from '../contexts/AuthProvider';
+import { useCourseStore } from '../stores/courseStore';
 
 interface CourseSidebarProps {
   isOpen: boolean;
@@ -36,8 +38,14 @@ function topicTreeHasQuiz(topic: Topic, hasQuiz: (id: string) => boolean): boole
 export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const location = useLocation();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
+  const { hasPremiumAccess } = useAuth();
+  const { moduleAccess, load: loadCourse } = useCourseStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    loadCourse();
+  }, [loadCourse]);
 
   // Find current module from URL
   const currentModuleId = useMemo(() => {
@@ -175,6 +183,9 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                   {allModules.map((mod) => {
                     const isExpanded = expandedModules.has(mod.id);
                     const isCurrent = currentModuleId === mod.id;
+                    const access = moduleAccess.get(mod.id);
+                    const isPremium = access?.required_tier === 'premium';
+                    const isLocked = isPremium && !hasPremiumAccess;
 
                     return (
                       <div key={mod.id}>
@@ -191,6 +202,8 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                           <span className={`flex-1 text-left leading-snug ${isCurrent ? 'font-semibold' : 'font-medium'}`}>
                             {mod.title}
                           </span>
+                          {isLocked && <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mr-1" />}
+                          {!isPremium && <Unlock className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mr-1" />}
                           {moduleQuizCount(mod.id) > 0 && (
                             <QuizTopicBadge compact />
                           )}

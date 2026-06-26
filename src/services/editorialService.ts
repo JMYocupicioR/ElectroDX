@@ -66,6 +66,28 @@ export async function revokeContributor(userId: string) {
   if (error) throw error;
 }
 
+export async function grantPremiumAccess(
+  userId: string,
+  method = 'manual',
+  reference?: string,
+  notes?: string,
+  expiresAt?: string
+) {
+  const { error } = await supabase.rpc('grant_premium_access', {
+    target_user_id: userId,
+    p_method: method,
+    p_reference: reference ?? null,
+    p_notes: notes ?? null,
+    p_expires_at: expiresAt ?? null,
+  });
+  if (error) throw error;
+}
+
+export async function revokePremiumAccess(userId: string) {
+  const { error } = await supabase.rpc('revoke_premium_access', { target_user_id: userId });
+  if (error) throw error;
+}
+
 export async function getAuditLog(limit = 20) {
   const { data, error } = await supabase
     .from('audit_log')

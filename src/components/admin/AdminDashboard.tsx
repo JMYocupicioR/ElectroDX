@@ -56,6 +56,12 @@ export default function AdminDashboard() {
         <Link to="/colaborador/nuevo-modulo" className="px-4 py-2 rounded-xl border border-violet-300 text-violet-700 text-sm font-medium">
           Proponer módulo
         </Link>
+        <Link to="/admin/talleres" className="px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium">
+          Gestionar Talleres
+        </Link>
+        <Link to="/admin/acceso" className="px-4 py-2 rounded-xl border border-amber-300 text-amber-700 text-sm font-medium">
+          Configurar Acceso por Módulo
+        </Link>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
         <Link
@@ -84,6 +90,24 @@ export default function AdminDashboard() {
           <p className="text-sm text-slate-500">Cuestionarios publicados</p>
           <p className="text-3xl font-bold text-violet-600">{stats?.published_quizzes ?? '—'}</p>
           <p className="text-xs text-slate-400 mt-1">{stats?.quiz_attempts_total ?? 0} intentos registrados</p>
+        </Link>
+        <Link
+          to="/admin/usuarios?tab=premium"
+          className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-amber-400 transition"
+        >
+          <Users className="w-7 h-7 text-amber-500 mb-2" />
+          <p className="text-sm text-slate-500">Usuarios Premium</p>
+          <p className="text-3xl font-bold text-amber-600">{stats?.premium_users ?? '—'}</p>
+          <p className="text-xs text-slate-400 mt-1">Suscripciones activas</p>
+        </Link>
+        <Link
+          to="/admin/talleres"
+          className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-orange-400 transition"
+        >
+          <BookOpen className="w-7 h-7 text-orange-500 mb-2" />
+          <p className="text-sm text-slate-500">Talleres Programados</p>
+          <p className="text-3xl font-bold text-orange-600">{stats?.upcoming_workshops ?? '—'}</p>
+          <p className="text-xs text-slate-400 mt-1">{stats?.total_workshops ?? 0} talleres en total</p>
         </Link>
       </div>
 

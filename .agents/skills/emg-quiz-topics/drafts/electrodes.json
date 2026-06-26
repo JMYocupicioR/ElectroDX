@@ -1,0 +1,42 @@
+{
+  "revisionType": "quiz",
+  "title": "Evaluación: Electrodos de registro",
+  "quizTopicId": "electrodes",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "type": "single",
+      "stem": "En un estudio de neuroconducción motora, ¿dónde se debe ubicar idealmente el electrodo activo (G1)?",
+      "options": [
+        { "id": "el1-opt1", "text": "Sobre el tendón distal del músculo a estudiar.", "isCorrect": false },
+        { "id": "el1-opt2", "text": "Sobre el vientre muscular en el punto motor de máxima amplitud.", "isCorrect": true },
+        { "id": "el1-opt3", "text": "En el trayecto del nervio proximal a la articulación.", "isCorrect": false },
+        { "id": "el1-opt4", "text": "Junto al electrodo de tierra para reducir el ruido eléctrico.", "isCorrect": false }
+      ],
+      "explanation": "El electrodo G1 se coloca sobre el punto motor, que corresponde al sitio donde se obtiene la máxima negatividad inicial (amplitud máxima del CMAP)."
+    },
+    {
+      "type": "single",
+      "stem": "Si al registrar un CMAP motor observas una deflexión inicial positiva (hacia abajo), ¿cuál es la causa más probable?",
+      "options": [
+        { "id": "el2-opt1", "text": "El estimulador tiene la polaridad invertida.", "isCorrect": false },
+        { "id": "el2-opt2", "text": "El electrodo de tierra está colocado incorrectamente.", "isCorrect": false },
+        { "id": "el2-opt3", "text": "El electrodo activo (G1) no está exactamente sobre el punto motor.", "isCorrect": true },
+        { "id": "el2-opt4", "text": "La estimulación fue submáxima.", "isCorrect": false }
+      ],
+      "explanation": "Una deflexión inicial positiva del CMAP indica que la despolarización viaja hacia el electrodo en lugar de originarse debajo de él. Esto requiere reposicionar G1 sobre el verdadero punto motor."
+    },
+    {
+      "type": "true_false",
+      "stem": "El electrodo de tierra siempre debe posicionarse entre el sitio de estimulación y los electrodos de registro.",
+      "options": [
+        { "id": "el3-opt1", "text": "Verdadero", "isCorrect": true },
+        { "id": "el3-opt2", "text": "Falso", "isCorrect": false }
+      ],
+      "explanation": "Verdadero. La tierra debe ir entre el estímulo y el registro para drenar las corrientes de fuga y evitar un gran artefacto de estímulo que contamine la respuesta."
+    }
+  ]
+}

@@ -11,6 +11,8 @@ const ModulePage = lazy(() => import('./components/pages/ModulePage'));
 const TopicPage = lazy(() => import('./components/pages/TopicPage'));
 const PlexoCalculatorPage = lazy(() => import('./components/Plexo/PlexoCalculatorPage'));
 const ExerciseMode = lazy(() => import('../ejercicios/src/components/ExerciseMode'));
+const WorkshopsListPage = lazy(() => import('./components/pages/WorkshopsListPage'));
+const WorkshopDetailPage = lazy(() => import('./components/pages/WorkshopDetailPage'));
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
 const AuthCallbackPage = lazy(() => import('./components/auth/AuthCallbackPage'));
 const ContributorDashboard = lazy(() => import('./components/editorial/ContributorDashboard'));
@@ -20,6 +22,7 @@ const RevisionEditorPage = lazy(() => import('./components/editorial/RevisionEdi
 const SpecialistsPage = lazy(() => import('./components/editorial/SpecialistsPage'));
 const PublicProfilePage = lazy(() => import('./components/editorial/PublicProfilePage'));
 const QuizEditorPage = lazy(() => import('./components/quiz/QuizEditorPage'));
+const ClinicalCaseEditorPage = lazy(() => import('./components/editorial/ClinicalCaseEditorPage'));
 const MyProgressPage = lazy(() => import('./components/quiz/MyProgressPage'));
 const EditorialCommitteePage = lazy(() => import('./components/editorial/EditorialCommitteePage'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
@@ -27,6 +30,8 @@ const AdminReviewQueue = lazy(() => import('./components/admin/AdminReviewQueue'
 const AdminUsersPage = lazy(() => import('./components/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('./components/admin/AdminAuditPage'));
 const AdminQuizAttemptsPage = lazy(() => import('./components/admin/AdminQuizAttemptsPage'));
+const AdminWorkshopsPage = lazy(() => import('./components/admin/AdminWorkshopsPage'));
+const AdminModuleAccessPage = lazy(() => import('./components/admin/AdminModuleAccessPage'));
 const AccountPage = lazy(() => import('./components/user/AccountPage'));
 const SettingsPage = lazy(() => import('./components/user/SettingsPage'));
 
@@ -43,6 +48,8 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/ejercicios" element={<ExerciseMode />} />
               <Route path="/herramientas/plexo-braquial" element={<PlexoCalculatorPage />} />
+              <Route path="/talleres" element={<WorkshopsListPage />} />
+              <Route path="/taller/:workshopId" element={<WorkshopDetailPage />} />
               <Route path="/modulo/:moduleId" element={<ModulePage />} />
               <Route path="/modulo/:moduleId/*" element={<TopicPage />} />
 
@@ -60,9 +67,11 @@ function App() {
               <Route path="/colaborador/perfil" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
               <Route path="/colaborador/nueva-revision" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/nuevo-modulo" element={<ProtectedRoute mode="verified"><ModuleEditorPage /></ProtectedRoute>} />
-              <Route path="/colaborador/revision/:revisionId" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/cuestionario" element={<ProtectedRoute mode="verified"><QuizEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/cuestionario/:revisionId" element={<ProtectedRoute mode="verified"><QuizEditorPage /></ProtectedRoute>} />
+              <Route path="/colaborador/nuevo-caso" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
+              <Route path="/colaborador/caso-clinico/:revisionId" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
+              <Route path="/colaborador/revision/:revisionId" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
               <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><MyProgressPage /></ProtectedRoute>} />
 
               {/* Cuenta */}
@@ -75,6 +84,8 @@ function App() {
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
               <Route path="/admin/evaluaciones" element={<ProtectedRoute mode="editor"><AdminQuizAttemptsPage /></ProtectedRoute>} />
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
+              <Route path="/admin/talleres" element={<ProtectedRoute mode="admin"><AdminWorkshopsPage /></ProtectedRoute>} />
+              <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </Router>

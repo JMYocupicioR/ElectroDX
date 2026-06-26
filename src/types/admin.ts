@@ -17,6 +17,7 @@ export interface AdminProfileRow {
   enrollment_requested_at: string | null;
   created_at: string;
   roles: string[];
+  has_premium: boolean;
 }
 
 export interface AdminStats {
@@ -24,11 +25,14 @@ export interface AdminStats {
   verified_users: number;
   pending_enrollments: number;
   enrolled_physicians: number;
+  premium_users: number;
   pending_revisions: number;
   published_topics: number;
   published_quizzes: number;
   quiz_attempts_total: number;
   approved_revisions: number;
+  upcoming_workshops: number;
+  total_workshops: number;
 }
 
 export interface AuditLogEntry {

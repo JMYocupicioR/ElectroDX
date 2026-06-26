@@ -62,6 +62,24 @@ En el Síndrome de Guillain-Barré, las ondas F prolongadas o ausentes suelen se
             'Evalúa segmentos proximales inaccesibles rutinariamente.'
           ]
         },
+        { id: 'f-wave-repeaters', title: 'Repeaters (Ondas F Repetidas)', 
+          content: `Los *repeaters* son un fenómeno patológico donde se obtienen Ondas F con **morfología y latencia idénticas** en trazos sucesivos. 
+
+En un sujeto normal, la gran cantidad de motoneuronas hace que cada estímulo supramáximo active un grupo diferente al azar, resultando en ondas F que siempre varían. Sin embargo, cuando existe una **pérdida masiva e irreversible de motoneuronas del asta anterior** (ej. Esclerosis Lateral Amiotrófica - ELA), el equipo se ve obligado a reclutar iterativamente las mismas pocas unidades motoras sobrevivientes.
+
+**Utilidad diagnóstica (ELA y reinervación):**
+* Es un signo fisiopatológico de un "pool" de motoneuronas críticamente reducido con reinervación compensatoria en curso.
+* Se asocia típicamente a una disminución drástica de la persistencia de la onda F (< 50%).
+* Es invaluable para la detección temprana de daño de motoneurona inferior, incluso antes de que la EMG de aguja convencional muestre cambios crónicos definitivos (Criterios Awaji).`,
+          clinicalPearls: [
+            'Si ves la misma morfología exacta de la onda F aparecer una y otra vez (Repeaters) con una persistencia baja, debes sospechar fuertemente un proceso de pérdida neuronal progresiva tipo enfermedad de motoneurona o radiculopatía muy severa.'
+          ],
+          keyPoints: [
+            'Repeaters = Ondas F idénticas en latencia y morfología.',
+            'Indican pérdida masiva de motoneuronas (pool drásticamente reducido).',
+            'Marcador temprano y crítico en Esclerosis Lateral Amiotrófica (ELA).'
+          ]
+        },
       ]
     },
     { id: 'h-reflex', title: 'Reflejo H (Hoffmann)',
@@ -97,41 +115,60 @@ A intensidades bajas, aparece la respuesta H sin respuesta M. Al subir el estím
           content: `Valores Normales:
 *   **Latencia:** Típicamente entre 25-34 ms (evaluado con nomogramas por estatura).
 *   **Diferencia interlado:** Cualquier diferencia **>1.5 ms** (lado enfermo vs. sano) es patológica.
-*   **Relación H/M:** Amplitud normal ≤50%.
 
-Utilidad:
+Utilidad principal:
 *   Es la prueba más sensible y específica para **radiculopatía S1**.
-*   Detecta polineuropatías tempranas y plexopatías lumbosacras.
-*   Ratio H/M muy elevado sugiere hiperexcitabilidad de motoneurona superior.`,
+*   Detecta polineuropatías tempranas y plexopatías lumbosacras.`,
           clinicalPearls: [
             'La ausencia bilateral del Reflejo H en mayores de 60 años puede ser un hallazgo fisiológico correlacionado con la pérdida natural de los reflejos aquíleos.'
           ],
           keyPoints: [
             'Diferencia de latencia H >1.5 ms interlado = Patológico.',
-            'Prueba de oro para Radiculopatía S1.',
-            'Relación H/M alta → disfunción de vía piramidal.'
+            'Prueba de oro para Radiculopatía S1.'
+          ]
+        },
+        { id: 'h-reflex-hm-ratio', title: 'Relación H/M (Excitabilidad del Asta Anterior)', 
+          content: `La relación H/M ($H_{max}/M_{max}$) es el cociente entre la amplitud máxima del reflejo H y la amplitud máxima del potencial motor (onda M). Evalúa cuantitativamente la fracción del total de la piscina de motoneuronas del asta anterior que puede ser descargada por activación refleja aferente.
+
+**Fisiopatología en el Síndrome de Motoneurona Superior (Piramidal):**
+Normalmente, el reflejo H está confinado al nervio tibial (sóleo) en adultos sanos debido a la constante inhibición descendente de las vías corticoespinales sobre la médula espinal.
+Cuando ocurre un daño en la motoneurona superior (ACV, TEC, lesión medular, ELA), se pierde esta inhibición presináptica. El resultado es una **hiperexcitabilidad patológica del asta anterior** (espasticidad e hiperreflexia).
+
+**Aplicaciones diagnósticas:**
+*   **Relación H/M anormalmente alta:** (Normal usualmente < 50%). Un ratio elevado traduce espasticidad e hiperreflexia eléctrica.
+*   **Reflejo H ectópico:** El hallazgo de un reflejo H que se puede obtener fácilmente en territorios donde normalmente está suprimido en el adulto (ej. miembro superior en el flexor carpo radialis, o en el cuádriceps) es diagnóstico inequívoco de daño de motoneurona superior.`,
+          keyPoints: [
+            'Relación H/M mide excitabilidad del asta anterior.',
+            'Daño de motoneurona superior = pérdida de inhibición descendente = aumento masivo de H/M.',
+            'Aparición de Reflejo H en MS o cuádriceps confirma síndrome piramidal/espasticidad.'
           ]
         },
       ]
     },
     { id: 'axon-reflex', title: 'Reflejo Axónico (Onda A)',
       children: [
-        { id: 'a-wave-pathophysiology', title: 'Fisiopatología', 
-          content: `La Onda A es un potencial motor tardío que se visualiza durante la obtención de las Ondas F.
+        { id: 'a-wave-pathophysiology', title: 'Fisiopatología y Utilidad Clínica', 
+          content: `La Onda A (reflejo axónico) es un potencial motor tardío constante que aparece típicamente entre la onda M y la onda F. Posee morfología y latencia **absolutamente idénticas** en cada estímulo sucesivo.
 
-Un axón motor se ramifica típicamente de forma proximal. Cuando un estímulo submáximo viaja de forma antidrómica, al llegar a una ramificación, el impulso da la vuelta ("U-turn") y desciende ortodrómico por otra rama intacta, contrayendo el músculo.`,
+**Mecanismo 1: Reinervación colateral (Brotes axonales)**
+En patologías axonales crónicas (ej. radiculopatías crónicas o polineuropatías en recuperación), los axones sanos generan brotes ("sprouting") para reinervar fibras huérfanas. Al estimular el nervio, el potencial antidrómico retrocede hasta el punto de bifurcación del brote colateral, y allí se desvía bajando de forma ortodrómica hacia el músculo. Esto confirma neurofisiológicamente una **reinervación colateral exitosa**.
+
+**Mecanismo 2: Transmisión Efáptica (SGB)**
+En procesos desmielinizantes agudos inflamatorios, la Onda A no se da por brotes, sino por un "cortocircuito". El potencial de acción alcanza el área de desmielinización activa y salta lateralmente (transmisión efáptica) hacia un axón adyacente sano, descendiendo por él hasta el músculo.
+
+**Implicaciones clínicas (Guillain-Barré):**
+La presencia de múltiples Ondas A dispersas es un hallazgo clásico y sumamente sensible en los primeros días del Síndrome de Guillain-Barré (fase AIDP), permitiendo el diagnóstico temprano cuando las conducciones distales estándar pueden ser engañosamente normales.
+
+**Prueba de colisión:** Si la onda A aparece de forma constante subiendo el estímulo submáximo, al alcanzar intensidad **supramáxima**, desaparecerá por colisión (ya que todas las ramas motoras estarán bloqueadas por su propia activación antidrómica).`,
           clinicalPearls: [
-            'Inmutabilidad: A diferencia de la Onda F, la Onda A cae EXACTAMENTE en la misma latencia y tiene la MISMA morfología en todos los trazos sucesivos.'
+            'Inmutabilidad: A diferencia de la Onda F, la Onda A se superpone de manera perfecta sobre sí misma al utilizar el modo en cascada.',
+            'Ojo diagnóstico: Busca múltiples Ondas A (patrón "en enjambre") como el marcador electrofisiológico más precoz de radiculoneuritis aguda (SGB) en los primeros 3 a 5 días.'
+          ],
+          keyPoints: [
+            'Onda A constante = brote axonal crónico (regeneración).',
+            'Onda A dispersa aguda = transmisión efáptica (desmielinización).',
+            'Hallazgo crítico y temprano en el diagnóstico del Guillain-Barré.'
           ]
-        },
-        { id: 'a-vs-f-wave', title: 'Identificación y Utilidad Clínica', 
-          content: `Aparece usualmente *entre* la respuesta M y la Onda F. 
-
-**Prueba de colisión:** Si aparece de forma constante subiendo el estímulo, hay que subirlo a **supramáximo**. Si desaparece, se confirma que es un reflejo axónico (porque al haber estímulo máximo, todas las ramas discurren antidrómicamente, induciendo colisión).
-
-**Utilidad:**
-*   Signo clásico de **reinervación crónica** por brotes colaterales tras pérdida axonal.
-*   Se observa tempranamente en el Guillain-Barré por transmisión "efáptica" (salto de corriente) en sitios de desmielinización focal.`
         },
       ]
     },
@@ -148,33 +185,35 @@ Componentes:
 *   **R2 (Tardía bilateral):** Vía polisináptica que desciende hasta el núcleo espinal del V en el bulbo y cruza a la vía motora bilateral.`
         },
         { id: 'blink-technique', title: 'Técnica de Registro', 
-          content: `Técnica de 2 canales:
-1.  **Electrodos G1 (Activos):** Orbicular de los ojos, bajo el ojo.
-2.  **Electrodos G2 (Ref):** Canto externo del ojo.
-3.  **Estímulo:** Nervio supraorbitario.
+          content: `Técnica obligatoria de 2 canales:
+*   **Activos (G1):** Porción inferior del orbicular de los ojos (justo debajo de la pupila), de forma bilateral.
+*   **Referencia (G2):** Canto lateral externo del ojo.
+*   **Estímulo:** Escotadura supraorbitaria en la ceja medial. ¡Importante! El cátodo (-) debe apuntar directamente a la escotadura, y el ánodo (+) debe quedar lateral o superior, nunca apuntando al lado contralateral para evitar co-estimulación.
 
-*   Pulso de estimulación: de muy baja intensidad pero suficiente, 0.1 ms.
-*   Sensibilidad: 100-200 µV/div.
-*   Barrido: 5-10 ms/div.
-
-Se superponen de 4 a 6 trazos separados por varios segundos.`,
+**Parámetros:**
+*   Sensibilidad alta: 100-200 µV/div (respuestas de baja amplitud).
+*   Barrido: 10 ms/div (ventana amplia para atrapar R2c).
+*   Filtros: 10 Hz a 10 kHz.
+*   Pausa obligatoria: Se deben estimular y registrar de 4 a 6 barridos superpuestos esperando **al menos 15 segundos entre cada estímulo** para evitar la habituación central de la respuesta R2.`,
           clinicalPearls: [
-            'Nunca usar choque automático repetitivo: la respuesta R2 tiende a desaparecer velozmente por habituación.',
-            'Biofeedback: Si el paciente está tenso y genera artefacto basal, subir el altavoz del equipo para que escuche su tensión ayuda a relajar los músculos faciales inmediatamente.',
-            'Sincinesias: En sospecha de reinervación aberrante post-parálisis facial, coloca electrodos en el músculo mentoniano. Normalmente no se contrae al parpadear; si muestra R1/R2, hay reinervación aberrante.'
+            'Nunca usar choque automático repetitivo: la respuesta R2 tiene una vía interneuronal polisináptica que se habitúa y desaparece si no dejas descansar el cerebro.',
+            'Biofeedback: Si el paciente está tenso y genera artefacto basal grueso, sube el altavoz. Al escuchar su propio ruido, los pacientes aprenden a relajar la cara.',
+            'Sincinesias: En sospecha de reinervación aberrante tras parálisis de Bell, coloca G1 en el músculo mentoniano. Si aparece un reflejo R1/R2 en el mentón al parpadear, confirmas sinquinesis.'
           ]
         },
         { id: 'blink-patterns', title: 'Patrones Patológicos y Correlación Lesional', 
-          content: `Valores normales: R1 ≤13 ms, R2 ipsi ≤41 ms, R2 contra ≤44 ms.
+          content: `**Valores normales referenciales:** R1 ≤13 ms, R2 ipsi ≤41 ms, R2 contra ≤44 ms.
 
-Patrones lesionales:
-1.  **Lesión del V par (Trigémino):** Al estimular el lado afectado, TODOS se afectan (R1, R2 ipsi y R2 contra). Lado sano normal.
-2.  **Lesión del VII par (Facial):** Ej. Parálisis de Bell. Al estimular el lado malo: R1 ausente, R2 ipsi ausente, R2 contra normal. Al estimular el lado sano: R2 hacia la cara paralizada anormal.
-3.  **Lesión pontina focal:** Afección selectiva de R1.
-4.  **Lesión bulbar:** R2 bilaterales prolongadas, R1 intacta.`,
+**Patrones lesionales clásicos:**
+*   **Lesión Aferente Unilateral (V par - Trigémino):** Al estimular el lado afectado (ej. derecho), TODOS los potenciales se afectan (no hay entrada). R1, R2i y R2c caen. Al estimular el lado izquierdo (sano), todas las respuestas son normales en ambos ojos.
+*   **Lesión Eferente Unilateral (VII par - Facial - Parálisis de Bell):** Al estimular el lado afectado (derecho), la información entra normal (R2c en el lado sano aparece) pero no puede salir por la derecha (R1 y R2i derechas ausentes/retrasadas). Al estimular el lado sano (izquierdo), R1 y R2i están bien, pero R2c derecha (la cruzada hacia la cara paralizada) está ausente. En resumen: *todo registro del lado enfermo es anormal, independientemente de dónde estimules*.
+*   **Esclerosis Múltiple (EM):** La EM afecta primariamente vías centrales. Produce una **afectación selectiva de R1** (vía bisináptica pontina), estando marcadamente retrasada o ausente, con conservación relativa de R2.
+*   **Síndrome de Wallenberg (Lesión bulbar lateral):** Destrucción selectiva del tracto espinal del V en el bulbo o interneuronas ipsilaterales. Al estimular el lado de la lesión (derecho), **R1 es normal** (porque pasa por puente, más arriba) pero R2i derecha está retrasada/ausente. La R2c cruzada está intacta.`,
           keyPoints: [
-            'V par: Aferente "de entrada", si falla, nada sale al estimular el lado malo.',
-            'VII par: Eferente "de salida", falla la contracción del lado dañado independiente de dónde se estimule.'
+            'Lesión V par = Falla toda la respuesta cuando se estimula ese lado.',
+            'Lesión VII par = Falla el músculo de ese lado sin importar dónde estimules.',
+            'Falla aislada de R1 = Daño central en puente medio (típico de Esclerosis Múltiple).',
+            'Falla aislada de R2 ipsilateral = Síndrome de Wallenberg (bulbo).'
           ]
         },
       ]

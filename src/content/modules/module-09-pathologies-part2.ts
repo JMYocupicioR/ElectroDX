@@ -61,44 +61,56 @@ Hallazgo temprano ALTAMENTE característico (presente en 50% de AIDP en la prime
         },
         {
           id: 'aman-amsan',
-          title: 'AMAN y AMSAN (Variantes Axonales)',
+          title: 'AMAN y AMSAN (Variantes Axonales) y RCF',
           content: `**AMAN (Neuropatía Motora Axonal Aguda):**
-Forma predominante en Asia y Latinoamérica. Anticuerpos anti-GM1, anti-GD1a.
+Forma predominante en Asia y Latinoamérica. Asociada a anticuerpos IgG anti-GM1 y anti-GD1a.
 • NCS: CMAPs reducidos o ausentes con velocidades normales y sin bloqueos. SNAPs NORMALES.
-• EMG: fibrilaciones profusas difusas a las 2-3 semanas.
-• Asociación fuerte con infección previa por Campylobacter jejuni.
+• EMG: Fibrilaciones profusas a las 2-3 semanas (daño axonal verdadero).
+• Asociación muy fuerte con infección previa por Campylobacter jejuni.
 
-**Fallo de Conducción Reversible (RCF):**
-Fenómeno crucial: en la fase aguda, los anticuerpos se depositan en los Nodos de Ranvier causando fallo de conducción NODAL (no desmielinización internodal). Esto SIMULA bloqueo de conducción desmielinizante en NCS tempranas. Sin embargo, se resuelve en días-semanas (mucho más rápido que la remielinización real).
-• Implicancia: un GBS con \"bloqueos\" que se resuelven en 1-2 semanas NO es AIDP — es AMAN con RCF.
+**Falla de Conducción Reversible (RCF - Reversible Conduction Failure):**
+Concepto fisiopatológico clave que representa una fase de transición en el espectro de neuropatías axonales agudas (AMAN).
+• **Patogenia en el Nodo de Ranvier:** Los anticuerpos IgG anti-GM1/GD1a se unen al axolema del nodo de Ranvier (nodopatía). Esto activa la vía del complemento, disrumpiendo los grupos de canales de sodio (Nav) y despegando la mielina paranodal sin degeneración axonal distal.
+• **Manifestación EDX inicial:** Al perderse el aislamiento y los canales de sodio, se interrumpe la corriente saltatoria. Esto simula perfectamente un **bloqueo de conducción desmielinizante** en las primeras dos semanas.
+• **Recuperación Ultrarrápida:** Si la agresión se detiene antes del colapso del citoesqueleto, el axolema se repara en 2-5 semanas. El bloqueo desaparece, resultando en recuperación clínica rápida sin necesidad de una lenta remielinización (sin dispersión temporal prolongada).
 
 **AMSAN (Neuropatía Axonal Sensitivo-Motora Aguda):**
 La más severa. Daño axonal motor Y sensitivo.
-• CMAPs y SNAPs ausentes o muy reducidos.
-• Velocidades normales (sin desmielinización).
-• Pronóstico: el peor de todas las variantes. Recuperación lenta e incompleta.`,
+• CMAPs y SNAPs ausentes o muy reducidos. Velocidades normales.
+• Pronóstico muy pobre; recuperación extremadamente lenta.`,
           clinicalPearls: [
-            'RCF (Reversible Conduction Failure): si un GBS tiene \"bloqueos de conducción\" que desaparecen en 1-2 semanas en un estudio seriado, es AMAN con nodopatía reversible, NO AIDP verdadera. La velocidad de resolución es la pista: la remielinización real tarda meses.',
-            'AMAN con anticuerpos IgG anti-GM1: en Latinoamérica es tan frecuente como AIDP. No asumir que todo GBS es desmielinizante.',
+            'RCF (Falla de Conducción Reversible): Si en la semana 1 documentas un "bloqueo de conducción motor" que simula AIDP, pero al repetir el estudio en la semana 3 el bloqueo ha desaparecido completamente y el CMAP subió, NO era AIDP. Era una AMAN con RCF (nodopatía). La remielinización genuina tarda meses.',
+            'Los estudios seriados (repetir NCS a las 2-4 semanas) son obligatorios para diferenciar entre AIDP (bloqueos persisten), RCF (bloqueos desaparecen rápido) y degeneración axonal (las amplitudes caen a su nadir).'
           ],
         },
         {
           id: 'fisher',
           title: 'Síndrome de Miller Fisher (MFS)',
-          content: `Variante craneal del GBS. Anti-GQ1b positivo en >90%.
-Tríada clásica: oftalmoplejía + arreflexia + ataxia cerebelosa.
+          content: `Variante inmunomediada del SGB (80% presentan la tríada clásica).
+Precedido comúnmente por infección respiratoria o GI.
 
-**Hallazgos EDX:**
-• SNAPs: reducidos tempranamente (pérdida sensitiva ganglionar/axonal).
-• CMAPs: generalmente normales (la debilidad es predominantemente oculomotora, no evaluable por NCS de rutina).
-• Ondas F: ausentes desde el inicio en >70%.
-• Reflejo de parpadeo (Blink Reflex): latencias R1 y R2 prolongadas bilateralmente — refleja disfunción del tronco cerebral y nervio facial.
+**Tríada Clínica Clásica:**
+• **Oftalmoplejía:** Parálisis extraocular bilateral/simétrica. Síntoma inicial suele ser diplopía. Puede haber oftalmoplejía interna aislada con pupilas tónicas.
+• **Ataxia:** Grave, alteración severa de la marcha con fuerza motora conservada en extremidades.
+• **Arreflexia:** Pérdida difusa de reflejos osteotendinosos.
 
-**Variante Bickerstaff (encefalitis del tronco):**
-MFS + alteración de conciencia = Bickerstaff. Mismo anticuerpo (anti-GQ1b). Requiere IVIg urgente.`,
+**Biomarcador patogénico:**
+• **Anticuerpos IgG anti-GQ1b:** Presentes en >85% (especificidad 100%).
+• El gangliósido GQ1b se concentra en la mielina paranodal de nervios oculomotores (III, IV, VI), ganglios de la raíz dorsal (DRG) y terminales de los husos neuromusculares.
+
+**Hallazgos EDX Claves:**
+A diferencia del SGB clásico, las velocidades de conducción motora suelen ser NORMALES.
+• **Ausencia temprana del Reflejo H:** Es el hallazgo más consistente en extremidades. Se pierde tempranamente por daño selectivo proximal a las fibras aferentes Ia mielinizadas (que expresan abundante GQ1b) que inervan el huso neuromuscular.
+• **Afectación sensitiva selectiva:** SNAPs reducidos o ausentes (por ganglionopatía o daño axonal cerca del DRG) de forma desproporcionada a las VC distales.
+• **Reflejo de parpadeo (Blink Reflex):** Latencias R1 y R2 prolongadas bilateralmente (disfunción de pares craneales).`,
           clinicalPearls: [
-            'Anti-GQ1b es el biomarcador más específico de MFS (>90% sensibilidad). Se dirige contra gangliósidos concentrados en nervios oculomotores y husos musculares (explica oftalmoplejía + arreflexia + ataxia).',
-            'Si un paciente con MFS desarrolla debilidad de extremidades, está en \"overlap\" con GBS clásico (up to 50% pueden tenerlo). Tratar como GBS severo.',
+            'Anti-GQ1b es el biomarcador absoluto de MFS. Su diana fisiológica explica perfectamente por qué el paciente tiene arreflexia pero fuerza normal: ataca selectivamente a los husos neuromusculares y fibras aferentes Ia, no a las motoneuronas eferentes.',
+            'La ausencia del reflejo H puede ser la única anomalía electrofisiológica detectable en las extremidades durante los primeros días del MFS.'
+          ],
+          keyPoints: [
+            'Tríada: Oftalmoplejía + Ataxia + Arreflexia.',
+            'Biomarcador: IgG Anti-GQ1b (100% específico).',
+            'EDX Cardinal: Ausencia temprana del reflejo H con conducción motora y ondas F normales.'
           ],
         },
         {
@@ -222,53 +234,56 @@ Se requieren anomalías en ≥2 nervios motores (uno puede ser onda F):
     {
       id: 'mmn',
       title: 'Neuropatía Motora Multifocal (NMM)',
-      content: 'Neuropatía desmielinizante motora pura adquirida. Tratable con IVIg. CRÍTICO diferenciarla de ELA.',
+      content: 'Neuropatía autoinmune crónica motora pura (2.7:1 predomina en varones, inicio ~40 años). CRÍTICO diferenciarla de ELA porque la NMM es tratable con IVIg.',
       children: [
         {
           id: 'mmn-block',
           title: 'Bloqueo de Conducción Motor como Criterio Diagnóstico',
           content: `**Definición de bloqueo de conducción definido:**
-Caída de amplitud (área preferiblemente) del CMAP ≥ 50% entre estimulación proximal y distal, en un segmento que NO corresponde a sitio de atrapamiento habitual.
+Caída de amplitud (o área) del CMAP ≥ 50% entre estimulación proximal y distal, a lo largo de un segmento largo de nervio motor.
 
-**Localización:**
-• Los bloqueos en NMM ocurren en sitios INUSUALES: mitad del antebrazo, mitad del brazo, mitad del muslo.
-• Excluir bloqueos en codo (ulnar), túnel carpiano (mediano), cabeza de peroné (peroneo) — son atrapamientos.
+**Localización atípica indispensable:**
+• Los bloqueos en NMM ocurren en áreas que **no corresponden a sitios de atrapamiento anatómico** (ej., mitad del antebrazo, tercio medio del brazo).
+• Si el bloqueo está en codo (ulnar), túnel carpiano (mediano) o cabeza del peroné (peroneo), es probable que sea una mononeuropatía compresiva o susceptibilidad hereditaria a la parálisis por presión (HNPP).
 
-**Protocolo de búsqueda:**
-Estimulación incremental cada 3-4 cm a lo largo del nervio (inching) buscando caídas focales de CMAP. Evaluar mediano, ulnar, radial, peroneo, tibial en toda su extensión.
+**Integridad Sensorial (Criterio Estricto):**
+Los estudios de conducción sensitiva deben ser **completamente normales** a través de los mismos segmentos nerviosos donde se detectó el bloqueo motor.
 
-**Bloqueo parcial vs completo:**
-• Parcial: caída 50-99% — el más frecuente en NMM.
-• Completo: caída 100% (inexcitabilidad proximal). Raro, difícil de diferenciar de axonopatía severa.`,
+**Protocolo de búsqueda (Inching):**
+Estimulación incremental cada 3-4 cm buscando caídas focales de CMAP a lo largo de múltiples trayectos nerviosos.`,
           clinicalPearls: [
-            'Los bloqueos en NMM son MOTORES PUROS. Si estimulas el componente SENSITIVO del mismo nervio en el mismo segmento, la conducción sensitiva es PERFECTAMENTE NORMAL. Este hallazgo (bloqueo motor puro con sensitivo normal) es PATOGNOMÓNICO de NMM.',
-            'Si no encuentras bloqueos con estimulación estándar, haz inching detallado en todo el trayecto. Algunos bloqueos están en segmentos muy cortos y se \"diluyen\" con estimulación a distancias largas.',
+            'Los bloqueos en NMM son MOTORES PUROS. Este hallazgo (bloqueo motor puro en sitio atípico con sensitivo perfectamente normal) es PATOGNOMÓNICO de NMM y demuestra la afectación selectiva de fibras motoras.',
+            'Si no encuentras bloqueos con estimulación estándar pero la sospecha es alta, haz inching detallado en todo el trayecto. Algunos bloqueos focales cortos se "diluyen" con estimulación a distancias largas.'
           ],
+          keyPoints: [
+            'Requiere bloqueo motor (caída >50% amplitud) en sitio atípico (sin atrapamiento).',
+            'Conducción sensitiva debe ser estricta y completamente normal en el mismo nervio.'
+          ]
         },
         {
           id: 'anti-gm1',
           title: 'Anti-GM1 y Diferencial con ELA',
-          content: `**Anti-GM1 IgM:** Positivo en 50-80% de NMM.
-Altamente específico cuando el título es alto (>1:6,400).
+          content: `**Anticuerpos Anti-GM1 IgM:**
+Presentes en 20-85% (promedio 50%) de pacientes con NMM.
+• **Mecanismo:** El GM1 se concentra masivamente en los nodos de Ranvier de terminales motoras. El anticuerpo interfiere con los canales Na+/K+ nodales, causando el bloqueo de conducción saltatoria sin destrucción axonal primaria.
 
-**NMM vs ELA — el diagnóstico diferencial más importante:**
-| | NMM | ELA |
+**NMM vs ELA — El \"Mimetizador\" más engañoso:**
+La NMM frecuentemente causa calambres, fasciculaciones (40% de casos) y atrofia asimétrica distal en MS (como caída de muñeca o \"mano prensil\" débil), simulando a la perfección una variante pura de neurona motora inferior de la ELA (Atrofia Muscular Progresiva).
+
+**Diferenciador Electrofisiológico y Clínico:**
+| Criterio | Neuropatía Motora Multifocal (NMM) | Esclerosis Lateral Amiotrófica (ELA) |
 |---|---|---|
-| Debilidad | Asimétrica, distal MS | Difusa, progresiva |
-| Atrofia | Desproporcionada a debilidad | Proporcional |
-| Fasciculaciones | Raras | Difusas, prominentes |
-| SNAPs | NORMALES | NORMALES |
-| Bloqueos conducción | Presentes (fuera atrapamientos) | AUSENTES |
-| VCM | Normal o leve enlentecimiento focal | Normal |
-| LMN | Sí | Sí |
-| UMN | NUNCA | SÍ (signo clave) |
-| Anti-GM1 | Positivo 50-80% | Negativo |
-| Tratamiento | IVIg (excelente respuesta) | No hay tratamiento curativo |
-
-**Implicancia:** Un diagnóstico erróneo de ELA en paciente con NMM le priva de tratamiento efectivo (IVIg). Siempre buscar bloqueos antes de diagnosticar ELA.`,
+| **Signos de NMS (Espasticidad, Babinski)** | **NUNCA** | **Frecuentes** |
+| **Afectación Bulbar** | **Ausente** | Frecuente (~25% inicio) |
+| **Distribución de debilidad** | **Patrón de nervio periférico asimétrico** | Patrón miotómico |
+| **Bloqueos de Conducción Motor** | **Presentes** (multifocales persistentes) | **Ausentes** |
+| **SNAPs sensitivos** | Normales | Normales |
+| **EMG de Aguja** | Denervación limitada al territorio del nervio | Denervación generalizada (≥3 regiones) |
+| **Ecografía Neuromuscular** | Engrosamiento focal/parcheado de nervios/plexo | Atrofia difusa, sin engrosamiento focal |
+| **Tratamiento** | **IVIg (excelente respuesta)** | Fatal, neurodegenerativa |`,
           clinicalPearls: [
-            'ANTES de diagnosticar ELA, SIEMPRE descartar NMM: realizar NCS motoras completas con estimulación proximal buscando bloqueos + solicitar anti-GM1 IgM. NMM es tratable; ELA no.',
-            'Pista clínica: NMM frecuentemente causa debilidad de extensores de muñeca/dedos sin atrofia proporcional (\"mano prensil\" preservada). ELA raramente presenta este patrón.',
+            'El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal.',
+            'Cualquier "ELA" que no tenga signos de motoneurona superior (NMS), que sea asimétrica de extremidades superiores y que progrese muy lento, OBLIGA a descartar NMM exhaustivamente buscando bloqueos de conducción proximales.'
           ],
         },
       ],

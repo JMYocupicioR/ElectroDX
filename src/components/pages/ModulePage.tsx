@@ -8,6 +8,7 @@ import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
 import { useAuth } from '../../contexts/AuthProvider';
 import { ProposeSubtopicLink } from '../editorial/TopicContribution';
 import { ModuleTopicRow } from './ModuleTopicTree';
+import { PremiumGate } from '../PremiumGate';
 
 export default function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
@@ -36,8 +37,9 @@ export default function ModulePage() {
   const quizCount = moduleQuizCount(mod.id);
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-20">
-      <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
+    <PremiumGate moduleId={mod.id}>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-20">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
         <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
           <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
         </Link>
@@ -98,11 +100,12 @@ export default function ModulePage() {
         ))}
       </motion.div>
 
-      <div className="mt-10 text-center">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors min-h-[44px]">
-          {lang === 'en' ? '← Back to all modules' : '← Volver a todos los módulos'}
-        </Link>
-      </div>
-    </main>
+        <div className="mt-10 text-center">
+          <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors min-h-[44px]">
+            {lang === 'en' ? '← Back to all modules' : '← Volver a todos los módulos'}
+          </Link>
+        </div>
+      </main>
+    </PremiumGate>
   );
 }

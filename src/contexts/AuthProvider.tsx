@@ -9,7 +9,7 @@ import {
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { AppRole, EnrollmentStatus, Profile } from '../types/database';
+import type { AppRole, EnrollmentStatus, Profile, Subscription } from '../types/database';
 
 interface AuthContextValue {
   session: Session | null;
@@ -22,6 +22,8 @@ interface AuthContextValue {
   isVerifiedContributor: boolean;
   canProposeContent: boolean;
   isEnrolledPhysician: boolean;
+  hasPremiumAccess: boolean;
+  subscription: Subscription | null;
   enrollmentStatus: EnrollmentStatus;
   isEnrollmentPending: boolean;
   bootstrapAvailable: boolean;
@@ -43,11 +45,15 @@ async function fetchUserData(userId: string) {
       profile?: Profile | null;
       roles?: AppRole[];
       bootstrap_available?: boolean;
+      has_premium?: boolean;
+      subscription?: Subscription | null;
     };
     return {
       profile: payload.profile ?? null,
       roles: (payload.roles ?? []) as AppRole[],
       bootstrapAvailable: payload.bootstrap_available === true,
+      hasPremiumAccess: payload.has_premium === true,
+      subscription: payload.subscription ?? null,
     };
   }
 
@@ -66,6 +72,8 @@ async function fetchUserData(userId: string) {
     profile: (profileRes.data as Profile | null) ?? null,
     roles: (rolesRes.data?.map((r) => r.role as AppRole) ?? []) as AppRole[],
     bootstrapAvailable: bootstrapRes.data === true,
+    hasPremiumAccess: false,
+    subscription: null,
   };
 }
 
@@ -74,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [bootstrapAvailable, setBootstrapAvailable] = useState(false);
+  const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
 
   const loadUserData = useCallback(async (userId: string) => {
@@ -81,6 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(data.profile);
     setRoles(data.roles);
     setBootstrapAvailable(data.bootstrapAvailable);
+    setHasPremiumAccess(data.hasPremiumAccess);
+    setSubscription(data.subscription);
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -149,6 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setRoles([]);
     setBootstrapAvailable(false);
+    setHasPremiumAccess(false);
+    setSubscription(null);
   }, []);
 
   const claimBootstrapAdmin = useCallback(async () => {
@@ -221,6 +235,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isVerifiedContributor,
       canProposeContent,
       isEnrolledPhysician,
+      hasPremiumAccess,
+      subscription,
       enrollmentStatus,
       isEnrollmentPending: enrollmentStatus === 'pending',
       bootstrapAvailable,
@@ -236,6 +252,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       roles,
       isLoading,
+      hasPremiumAccess,
+      subscription,
       bootstrapAvailable,
       refreshProfile,
       signInWithOtp,

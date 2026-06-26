@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, FileEdit, Clock, CheckCircle, XCircle, ClipboardList } from 'lucide-react';
+import { Plus, FileEdit, Clock, CheckCircle, XCircle, ClipboardList, Stethoscope } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyRevisions } from '../../services/editorialService';
 import { ProposeModuleLink } from './TopicContribution';
@@ -70,6 +70,12 @@ export default function ContributorDashboard() {
               >
                 <ClipboardList className="w-4 h-4" /> Nuevo cuestionario
               </Link>
+              <Link
+                to="/colaborador/nuevo-caso"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-medium"
+              >
+                <Stethoscope className="w-4 h-4" /> Nuevo Caso Clínico
+              </Link>
               <ProposeModuleLink label="Nuevo módulo" />
             </>
           )}
@@ -89,6 +95,8 @@ export default function ContributorDashboard() {
                   ? `/colaborador/cuestionario/${rev.id}`
                   : rev.payload.revisionType === 'module'
                   ? `/colaborador/nuevo-modulo?revisionId=${rev.id}`
+                  : rev.payload.revisionType === 'clinical_case'
+                  ? `/colaborador/caso-clinico/${rev.id}`
                   : `/colaborador/revision/${rev.id}`;
               return (
                 <li key={rev.id}>
@@ -103,6 +111,8 @@ export default function ContributorDashboard() {
                           ? '📦 '
                           : rev.payload.revisionType === 'quiz'
                           ? '📝 '
+                          : rev.payload.revisionType === 'clinical_case'
+                          ? '🏥 '
                           : ''}
                         {rev.payload.title}
                       </p>
@@ -111,6 +121,8 @@ export default function ContributorDashboard() {
                           ? 'Módulo · '
                           : rev.payload.revisionType === 'quiz'
                           ? 'Cuestionario · '
+                          : rev.payload.revisionType === 'clinical_case'
+                          ? 'Caso Clínico · '
                           : ''}
                         {STATUS_LABEL[rev.status]} · {rev.action === 'create' ? 'Nuevo' : 'Edición'} · {new Date(rev.updated_at).toLocaleDateString('es-MX')}
                       </p>

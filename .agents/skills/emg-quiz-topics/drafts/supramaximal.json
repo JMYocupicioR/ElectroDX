@@ -1,0 +1,42 @@
+{
+  "revisionType": "quiz",
+  "title": "Evaluación: Estimulación supramáxima",
+  "quizTopicId": "supramaximal",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "type": "single",
+      "stem": "¿Cuál es la definición correcta de estimulación supramáxima?",
+      "options": [
+        { "id": "sm1-opt1", "text": "La intensidad exacta a la cual se recluta la última fibra nerviosa.", "isCorrect": false },
+        { "id": "sm1-opt2", "text": "Un 20-25% por encima de la intensidad que produce la máxima amplitud del potencial.", "isCorrect": true },
+        { "id": "sm1-opt3", "text": "Un 50% por encima de la intensidad umbral inicial.", "isCorrect": false },
+        { "id": "sm1-opt4", "text": "La máxima intensidad que el equipo puede entregar sin dolor.", "isCorrect": false }
+      ],
+      "explanation": "La estimulación supramáxima se alcanza incrementando un 20-25% extra sobre la intensidad necesaria para obtener la amplitud máxima, asegurando la activación de todas las fibras incluso si el estimulador se mueve ligeramente."
+    },
+    {
+      "type": "multiple",
+      "stem": "¿Qué consecuencias puede tener realizar un estudio de neuroconducción con estimulación submáxima? (Selecciona todas las que apliquen)",
+      "options": [
+        { "id": "sm2-opt1", "text": "Disminución falsa de la amplitud del potencial (CMAP o SNAP).", "isCorrect": true },
+        { "id": "sm2-opt2", "text": "Falso bloqueo de conducción al estimular proximalmente.", "isCorrect": true },
+        { "id": "sm2-opt3", "text": "Latencia anormalmente prolongada debido a fibras lentas aisladas.", "isCorrect": false },
+        { "id": "sm2-opt4", "text": "Activación exclusiva de las fibras más superficiales y de menor umbral.", "isCorrect": true }
+      ],
+      "explanation": "La estimulación submáxima activa solo las fibras superficiales y de bajo umbral (las más rápidas). Esto reduce la amplitud del CMAP/SNAP y puede simular un bloqueo focal al comparar sitios de estimulación."
+    },
+    {
+      "type": "true_false",
+      "stem": "Es aceptable comparar la amplitud de un CMAP obtenido con estimulación supramáxima a nivel distal con un CMAP obtenido con estimulación submáxima a nivel proximal.",
+      "options": [
+        { "id": "sm3-opt1", "text": "Verdadero", "isCorrect": false },
+        { "id": "sm3-opt2", "text": "Falso", "isCorrect": true }
+      ],
+      "explanation": "Falso. Siempre se debe comparar respuestas usando estimulación supramáxima en todos los sitios; de lo contrario, se diagnosticará incorrectamente una caída de amplitud (falso bloqueo de conducción)."
+    }
+  ]
+}

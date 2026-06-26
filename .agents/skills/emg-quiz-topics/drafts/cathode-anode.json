@@ -1,0 +1,42 @@
+{
+  "revisionType": "quiz",
+  "title": "Evaluación: Estimulación eléctrica: cátodo vs. ánodo",
+  "quizTopicId": "cathode-anode",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "type": "single",
+      "stem": "¿Por qué el cátodo debe orientarse siempre hacia los electrodos de registro en los estudios de conducción nerviosa?",
+      "options": [
+        { "id": "ca1-opt1", "text": "Porque el cátodo hiperpolariza la membrana y aumenta la velocidad.", "isCorrect": false },
+        { "id": "ca1-opt2", "text": "Porque el cátodo despolariza el nervio y evita el bloqueo anódico.", "isCorrect": true },
+        { "id": "ca1-opt3", "text": "Porque el cátodo actúa como electrodo de referencia y reduce el ruido.", "isCorrect": false },
+        { "id": "ca1-opt4", "text": "Para evitar la contracción muscular excesiva debajo del estimulador.", "isCorrect": false }
+      ],
+      "explanation": "El cátodo (negativo) produce la despolarización que genera el potencial de acción. Si el ánodo estuviese entre el cátodo y el registro, causaría hiperpolarización y un posible bloqueo anódico."
+    },
+    {
+      "type": "true_false",
+      "stem": "La inversión de la polaridad (ánodo dirigido hacia el registro) puede causar una reducción de la amplitud del CMAP y prolongación de la latencia.",
+      "options": [
+        { "id": "ca2-opt1", "text": "Verdadero", "isCorrect": true },
+        { "id": "ca2-opt2", "text": "Falso", "isCorrect": false }
+      ],
+      "explanation": "Verdadero. Al invertir la polaridad, la despolarización ocurre en el ánodo (más lejos), lo que prolonga la latencia, y el bloqueo anódico puede reducir la amplitud del potencial."
+    },
+    {
+      "type": "single",
+      "stem": "En un estudio de conducción sensitiva antidrómica, ¿cómo se debe posicionar el estimulador?",
+      "options": [
+        { "id": "ca3-opt1", "text": "El cátodo se coloca proximal al electrodo de registro.", "isCorrect": true },
+        { "id": "ca3-opt2", "text": "El ánodo se coloca distal, más cerca de los dedos.", "isCorrect": false },
+        { "id": "ca3-opt3", "text": "El cátodo debe estar sobre el punto motor del músculo.", "isCorrect": false },
+        { "id": "ca3-opt4", "text": "La polaridad no importa en los estudios antidrómicos.", "isCorrect": false }
+      ],
+      "explanation": "En un estudio sensitivo antidrómico, el estímulo viaja desde proximal hacia distal (hacia los dedos). Por tanto, el cátodo debe estar proximal, apuntando hacia los electrodos de registro distales."
+    }
+  ]
+}

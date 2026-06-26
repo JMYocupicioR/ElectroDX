@@ -553,6 +553,33 @@ La IBM combina inflamación muscular (→ PUMs miopáticos) con inclusiones prot
       ],
     },
     {
+      id: 'critical-illness',
+      title: 'Polineuropatía y Miopatía del Paciente Crítico (CIP/CIM)',
+      content: `La debilidad adquirida en la UCI se debe a Neuropatía del Paciente Crítico (CIP), Miopatía (CIM), o la superposición de ambas (Neuromiopatía NMEC). Típicamente ocurre tras sepsis severa, fallo multiorgánico o uso prolongado de corticoides + relajantes musculares.
+
+El signo cardinal es la **falla persistente en el destete ventilatorio** por debilidad de musculatura respiratoria y extremidades (tetraparesia flácida y arreflexia).
+
+**Diferenciación Neurofisiológica (CIP vs CIM):**
+
+**1. Polineuropatía del Paciente Crítico (CIP)**
+Es una axonopatía sensitivo-motora distal.
+• **NCS:** CMAPs y SNAPs muy reducidos. Velocidades normales o poco lentas (axonal).
+• **EMG:** Fibrilaciones/PSW abundantes distales + PUMs neurogénicos (grandes/polifásicos si es crónico) con reclutamiento disminuido.
+
+**2. Miopatía del Paciente Crítico (CIM / MEC)**
+Es un proceso miopático agudo (pérdida selectiva de filamentos de miosina).
+• **NCS:** CMAPs disminuidos. **SNAPs NORMALES** (clave para diferenciar de CIP). Duración del CMAP muy prolongada (>8 ms distal).
+• **EMG:** Fibrilaciones y PSW (por necrosis/segmentación de fibras). PUMs miopáticos (cortos, pequeños, muy polifásicos) con **reclutamiento precoz**.
+• **Laboratorio:** CK sérica puede estar elevada.
+
+**¿Por qué es importante diferenciarlas?**
+Aunque la recuperación de ambas puede ser lenta, la CIM pura suele tener un pronóstico de recuperación más favorable a mediano plazo que la CIP severa, ya que el músculo se regenera más rápido que el largo proceso de reinervación axonal.`,
+      clinicalPearls: [
+        'En un paciente en la UCI con tetraparesia, el estudio de conducción SENSITIVO es tu mejor amigo. Si los SNAPs están abolidos, hay polineuropatía (CIP). Si los SNAPs están preservados pero el paciente no se mueve y el CMAP es bajo, es una miopatía (CIM) o un bloqueo neuromuscular residual.',
+        'La duración del CMAP es marcadamente prolongada en CIM porque el potencial de acción se propaga lentamente por el sarcolema enfermo (pérdida de miosina). Este enlentecimiento intrínseco del músculo es una pista diagnóstica.'
+      ],
+    },
+    {
       id: 'myopathic-vs-neurogenic',
       title: 'Resumen: PUM Miopático vs Neurogénico',
       content: `**Tabla comparativa completa:**

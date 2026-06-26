@@ -822,12 +822,155 @@ Puede verse en pérdida axonal selectiva de fibras gruesas (las fibras remanente
         {
           id: 'cranial-motor', title: 'Nervios craneales motores', titleEn: 'Motor cranial nerves',
           children: [
-            { id: 'facial-motor', title: 'Nervio Facial (VII)', content: 'Registro: orbicular de los ojos o nasalis. Estimulación: preauricular. LMD <4.5 ms, amplitud ≥1 mV. Comparación lado a lado: diferencia de amplitud >50% es significativa. Esencial en parálisis de Bell.' },
-            { id: 'trigeminal-motor', title: 'Nervio Trigémino motor (V)', content: 'Registro: masetero. LMD <3 ms, amplitud ≥2 mV.' },
+            {
+              id: 'facial-motor',
+              title: 'Nervio Facial (VII)',
+              content: `El estudio motor del Nervio Facial (VII) evalúa la conducción nerviosa desde el tronco principal a sus distintas ramas faciales. Es esencial para el diagnóstico diferencial y pronóstico de la Parálisis de Bell vs. parálisis central, y otras lesiones del facial.
+
+### 1. Montaje de Electrodos y Puntos de Registro
+Se pueden emplear registros en diferentes músculos, siendo el **músculo nasal** el punto de captación óptimo por estabilidad.
+
+*   **Opción A: Músculo Nasal (Recomendado)**
+    *   **G1 (Activo):** Vientre del músculo nasal (lateral a mitad de nariz).
+    *   **G2 (Referencia):** Dorso nasal o nasal contralateral.
+    *   **E0 (Tierra):** Frente, mentón o base del cuello.
+*   **Opción B: Orbicular de los ojos**
+    *   **G1:** Debajo de la pupila o borde lateral de la órbita.
+    *   **G2:** Orbicular contralateral o puente nasal.
+*   **Opción C: Orbicular de los labios**
+    *   **G1:** Lateral al ángulo de la boca.
+    *   **G2:** Dorso nasal o barbilla.
+
+### 2. Técnica de Estimulación
+El cátodo (negro) debe mirar siempre hacia el electrodo de registro (G1).
+
+*   **Estimulación Global (Tronco Principal):** 
+    *   **Preauricular:** Delante del trago, sobre glándula parótida, por encima del ángulo mandibular.
+    *   **Postauricular (Agujero estilomastoideo):** Detrás del lóbulo inferior, por debajo de la mastoides.
+*   **Intensidad:** Debe ser **supramáxima** (+20-30%) para despolarización sincrónica.
+*   **Estimulación segmentaria (ramas):** Frontal/Temporal, Cigomática, Mandibular.
+
+### 3. Parámetros del Equipo
+*   **Sensibilidad:** 200 - 1,000 µV/div (respuestas faciales son de menor amplitud que en extremidades).
+*   **Filtros:** 8-10 Hz a 8-10 kHz.
+*   **Barrido:** 1-2 ms/div.
+*   **Duración Estímulo:** 0.1 - 0.3 ms.
+
+### 4. Valores Normales y Criterios
+*El análisis comparativo lado a lado es obligatorio y más importante que el valor absoluto.*
+
+*   **Latencia Distal (Nasalis - Preauricular):** 3.57 ± 0.35 ms (Rango: 2.8 - 4.1 ms).
+*   **Latencia Distal (Nasalis - Postauricular):** 3.88 ± 0.36 ms (Rango: 3.2 - 4.4 ms).
+*   **Latencia Distal (Orbicular ojos):** ≤ 3.1 ms.
+*   **Amplitud CMAP (Nasalis):** ≥ 1.0 mV (sanos 2-4 mV).
+*   **Asimetría (Lado sano vs afectado):** 
+    *   Diferencia de amplitud >50% es indicativa de patología / pérdida axonal significativa.
+    *   Diferencia de latencia no debe superar 20-30% (>0.6 ms).`,
+              clinicalPearls: [
+                'La evaluación pronóstica en parálisis facial periférica (ej. Parálisis de Bell) se realiza de forma óptima a partir del 6º día de evolución (idealmente días 10-14), momento en que la degeneración walleriana distal se ha completado. Evaluar antes subestima el daño.',
+                'Si el lado paralizado preserva >50% de la amplitud del lado sano en el día 10, la lesión es predominantemente desmielinizante (neuroapraxia) y el pronóstico de recuperación es excelente.',
+                'Caída de amplitud >50-75% sugiere axonotmesis severa, previendo recuperación prolongada o incompleta, con riesgo de sincinesias.',
+                '¡Cuidado con el Masetero! Un estímulo excesivo o mal posicionado cerca del trago puede despolarizar el nervio trigémino (V3) y registrar en el masetero, falseando una respuesta normal. Toca el masetero durante el estímulo para verificar.'
+              ],
+              keyPoints: [
+                'Registro óptimo: Músculo nasal (G1 vientre, G2 dorso nasal).',
+                'Estimulación: Preauricular o en agujero estilomastoideo.',
+                'Ganancia baja: 200 - 1,000 µV/div (señales pequeñas).',
+                'El factor clave es la asimetría de amplitud lado a lado (>50% caída).',
+                'Estudiar a los 10-14 días en lesiones agudas (Parálisis de Bell).',
+                'Riesgo técnico: coestimulación del masetero (V3).'
+              ]
+            },
+            {
+              id: 'trigeminal-motor',
+              title: 'Nervio Trigémino motor (V)',
+              content: `La evaluación electrodiagnóstica de la porción motora del nervio trigémino (rama mandibular, V3) difiere de los estudios de conducción nerviosa convencionales de las extremidades debido a su localización profunda y su cercanía anatómica con otras estructuras faciales.
+
+### 1. Enfoques Diagnósticos Recomendados
+Debido a la dificultad técnica de una estimulación eléctrica directa del nervio, la función trigeminal se evalúa típicamente usando tres metodologías complementarias:
+
+*   **Electromiografía de Aguja (EMG):** Es el método más directo y práctico. Se inserta una aguja concéntrica en el **músculo masetero** (dos traveses de dedo anterior y superior al ángulo de la mandíbula). Se evalúa actividad espontánea y los PAUM al pedir al paciente que apriete la mandíbula. Es altamente sensible para denervación en ELA bulbar.
+*   **Reflejo de Parpadeo (Blink Reflex):** Evalúa indirectamente la vía aferente sensitiva del trigémino (V1 oftálmica) y sus conexiones pontomedulares, registrando en el músculo orbicular de los ojos tras estimular el nervio supraorbitario.
+*   **Reflejo Maseterino (Jaw Jerk Reflex):** Evaluación de la vía monosináptica trigeminal (aferente V3 y eferente V3) mediante percusión mecánica del mentón. Latencia media normal: 7.3 ± 0.74 ms.
+
+### 2. Estudio de Neuroconducción Directa (Técnica Avanzada)
+Si bien no es un estándar universal de laboratorio, cuando se requiere medir la latencia y amplitud directas de la rama mandibular, se utiliza el siguiente protocolo:
+
+*   **Montaje de Registro (Masetero):**
+    *   **G1 (Activo):** Sobre el vientre del músculo masetero, determinado mediante palpación mientras el paciente aprieta los dientes.
+    *   **G2 (Referencia):** Sobre un punto inactivo, como la nariz, pómulo o el lóbulo de la oreja.
+    *   **E0 (Tierra):** Mentón o frente.
+*   **Estimulación:** Directa por debajo del arco cigomático (en la escotadura mandibular o fosa infratemporal).
+*   **Precaución Crítica:** Es muy fácil co-estimular accidentalmente el nervio facial debido a su proximidad. Se debe observar/palpar cuidadosamente que sea el masetero el que se contraiga de manera aislada.
+
+### 3. Valores de Referencia (Conducción Directa)
+*Nota: Los laboratorios deben establecer sus propios valores, pero la literatura aporta los siguientes promedios en adultos sanos:*
+*   **Latencia Distal:** 1.5 a 2.0 ms (Media ~1.5 ± 0.14 ms).
+*   **Amplitud CMAP:** 15 a 30 mV (Media ~25.8 ± 6.24 mV).`,
+              clinicalPearls: [
+                'La electromiografía de aguja del músculo masetero o temporal es preferible a los estudios de neuroconducción en la práctica diaria para evaluar compromiso motor trigeminal (ej. sospecha de ELA bulbar).',
+                'El músculo masetero es extremadamente fácil de activar voluntariamente para el paciente, permitiendo una excelente evaluación del reclutamiento y morfología de los PAUM.',
+                'En los estudios de neuroconducción facial (VII par), el error más frecuente es co-estimular inadvertidamente la rama mandibular del trigémino. Esto genera una respuesta maseterina engañosa (falso negativo) cuando el facial está paralizado.'
+              ],
+              keyPoints: [
+                'La evaluación funcional depende principalmente de EMG de aguja y Blink Reflex.',
+                'EMG: Músculo masetero (rama V3).',
+                'Conducción motora directa: difícil y no estandarizada universalmente.',
+                'Latencia motora directa (estimada): ~1.5 - 2.0 ms.',
+                'Reflejo maseterino: latencia media ~7.3 ms.'
+              ]
+            },
             { id: 'accessory-motor', title: 'Nervio Espinal Accesorio (XI)', content: 'Registro: ECM o trapecio. LMD 2.0-4.0 ms, amplitud 3-8 mV, VCM ≥60 m/s.' },
             { id: 'hypoglossal-motor', title: 'Nervio Hipogloso (XII)', content: 'Registro: geniogloso (aguja). LMD 2.0-3.5 ms, amplitud ≥2 mV.' },
             { id: 'glossopharyngeal-motor', title: 'Nervio Glosofaríngeo motor (IX)', content: 'Registro: faríngeos. LMD 3.0-4.5 ms, amplitud 1-3 mV.' },
             { id: 'vagus-motor', title: 'Nervio Vago motor (X)', content: 'Registro: cricotiroideo. LMD 3.0-5.0 ms, amplitud 0.5-2.5 mV. Monitorizar ritmo cardíaco.' },
+          ]
+        },
+        {
+          id: 'trunk-nerves', title: 'Nervios del Tronco y Respiratorios',
+          children: [
+            {
+              id: 'phrenic-motor',
+              title: 'Nervio Frénico y Diafragma',
+              content: `La realización del estudio de neuroconducción motora del nervio frénico evalúa la integridad del circuito eferente hacia el diafragma. Es fundamental en el diagnóstico de patologías restrictivas respiratorias neuromusculares, como la Esclerosis Lateral Amiotrófica (ELA) y en el abordaje del fracaso en la desconexión de ventilación mecánica en la UCI (weaning).
+
+### 1. Técnica de Estimulación (Cuello)
+El paciente debe estar en decúbito supino, con el cuello en posición neutra o ligeramente extendida.
+*   **Colocación del Estimulador:**
+    *   **Opción A (Lateral):** Cátodo en el borde posterior del músculo esternocleidomastoideo (ECM), en la fosa supraclavicular, ~3 cm por encima de la clavícula.
+    *   **Opción B (Anterolateral):** Entre las cabezas esternal y clavicular del ECM.
+*   **Técnica:** Se requiere presión firme para penetrar la corriente. Incrementar la intensidad gradualmente hasta estimulación supramáxima.
+*   **Precauciones:** Evitar co-estimular el nervio espinal accesorio (contracción del trapecio) o el plexo braquial (movimiento del hombro). En sujetos delgados se observará una sacudida diafragmática similar a un "hipo".
+
+### 2. Montaje de Registro (Diafragma)
+Se utiliza un montaje de "vientre-tendón" con electrodos de superficie:
+*   **G1 (Activo):** 5 cm (dos traveses de dedo) por encima de la punta de la apófisis xifoides.
+*   **G2 (Referencia):** Sobre el margen costal anterior, a 16 cm de distancia de G1 (habitualmente en el séptimo espacio intercostal).
+*   **E0 (Tierra):** Sobre la parte superior del pecho o tórax.
+*(Nota: Para mayor precisión, se puede realizar registro con aguja ecoguiada para evitar neumotórax).*
+
+### 3. Consideraciones Respiratorias
+*   El paciente debe realizar una **respiración tranquila**. La respiración profunda modifica la impedancia y posición del diafragma.
+*   Las amplitudes del CMAP son ligeramente **mayores durante la inspiración** (acortamiento de las fibras).
+
+### 4. Valores de Referencia Normales
+*   **Amplitud del CMAP:** > 320 µV (Media ~597 ± 139 µV). (En inspiración media ~1.0 mV).
+*   **Latencia Distal:** < 8.0 ms (Media ~6.3 ± 0.8 ms).
+*   **Diferencia lado a lado (Latencia):** Límite máximo de asimetría ~0.61 ms.`,
+              clinicalPearls: [
+                'En ELA, el 3% debuta con debilidad respiratoria, pero la mayoría la desarrolla al final. El CMAP frénico es un biomarcador excelente de la pérdida de masa diafragmática.',
+                'En pacientes de UCI (destete difícil), este estudio diferencia una polineuropatía del paciente crítico (bilateral) de una lesión iatrogénica del frénico (unilateral, ej. post-cirugía cardíaca con hielo).',
+                'CONTRAINDICACIÓN: No realizar en UCI si el paciente tiene marcapasos externo o una vía venosa central ipsilateral (riesgo de conducción de corriente al miocardio).',
+                'La alternativa de oro moderna en UCI es la ecografía diafragmática (Modo M), evaluando el engrosamiento (>20%) y la excursión (>1.9 cm) sin artefactos eléctricos.'
+              ],
+              keyPoints: [
+                'Estimulación: Borde posterior o entre cabezas del ECM (cuello).',
+                'Registro G1: 5 cm por encima del xifoides.',
+                'Amplitud normal: > 320 µV (es un potencial pequeño).',
+                'Latencia normal: < 8.0 ms.',
+                'Precaución: Respiración tranquila, evitar coestimulación del plexo.'
+              ]
+            }
           ]
         },
         { id: 'motor-interpretation', title: 'Interpretación: normal vs. axonal vs. desmielinizante', content: `Patrón axonal: amplitud reducida con latencias y velocidades relativamente preservadas.
@@ -1141,11 +1284,11 @@ Ortodrómica: estimulación distal, registro proximal (fisiológica). Ventaja: s
 • **CIDP:** VCS lenta con amplitudes relativamente preservadas si predomina la desmielinización.`,
               clinicalPearls: [
                 'Un SNAP sural NORMAL en presencia de síntomas sensitivos en el pie = radiculopatía S1 (lesión preganglionar). Este es uno de los principios más importantes del electrodiagnóstico.',
-                'El sural es el nervio sensitivo más importante para screening de polineuropatía: si es normal, es poco probable una polineuropatía significativa.',
+                'El sural es el nervio sensitivo más importante para screening de polineuropatía: si es normal, es poco probable una polineuropatía significativa por el principio fisiopatológico de degeneración retrógrada o "dying-back" (dependiente de la longitud).',
                 'PATRÓN SURAL-SPARING: En GBS y CIDP (neuropatías desmielinizantes), el sural puede estar preservado ("sural sparing") mientras los SNAP de MS están muy afectados. Este patrón sugiere fuertemente etiología desmielinizante adquirida.',
+                'COCIENTE SURAL/RADIAL (SRAR): En neuropatías leves/tempranas, comparar la amplitud del Sural con la del Radial sensitivo. Un cociente SRAR < 0.40 (o < 0.21) tiene 90-95% de sensibilidad/especificidad para diagnosticar polineuropatía axonal independiente de la edad.',
                 'La amplitud del sural disminuye significativamente con la edad: después de los 60 años, amplitudes de 5-8 µV pueden ser normales y la ausencia bilateral en >75 años no es necesariamente patológica.',
                 'TRUCO: El sural es superficial y fácil de estimular. Si no obtienes respuesta, verifica la temperatura (calentar la pantorrilla) y la promediación antes de asumir neuropatía.',
-                'El sural es frecuentemente biopsiado como nervio diagnóstico en neuropatías de causa desconocida. Documentar los valores basales antes de biopsia.',
                 'En neuropatía de fibras pequeñas: el SNAP sural puede ser NORMAL porque solo evalúa fibras gruesas. La normalidad del sural NO descarta neuropatía de fibras pequeñas.',
               ],
               keyPoints: [
@@ -1547,6 +1690,164 @@ La dispersión temporal asocia una caída de amplitud (pseudo-bloqueo). Al ensan
 | Reclutamiento (EMG) | Reducido (neurogénico) | Inicialmente normal |
 | Pronóstico típico | Lento (regeneración 1mm/día) | Rápido (remielinización semanas) |`,
         },
+      ]
+    },
+    {
+      id: 'nerve-conduction-special', title: 'Variantes Anatómicas y Técnicas Especiales',
+      children: [
+        {
+          id: 'martin-gruber',
+          title: 'Anastomosis de Martin-Gruber (AMG)',
+          content: `La Anastomosis de Martin-Gruber (AMG) es la variante de inervación anómala más común del miembro superior (prevalencia 15-30%). Consiste en el cruce de fibras motoras desde el nervio mediano hacia el nervio cubital (ulnar) en el antebrazo. Es asintomática, pero **causa enormes errores de interpretación electrofisiológica** si no se reconoce.
+
+### 1. Fisiología y Anatomía
+Las fibras motoras (típicamente originadas del nervio interóseo anterior) abandonan el mediano en el tercio proximal del antebrazo y se unen al cubital distalmente (5-12 cm debajo del epicóndilo medial). Esto significa que músculos habitualmente inervados por el cubital reciben axones que viajaron por el mediano en el codo, pero por el cubital en la muñeca.
+
+### 2. Tipos de AMG (Clasificación de Oh)
+Según el músculo de destino final en la mano:
+*   **Tipo I:** Destino hipotenar (Abductor del quinto dedo - AQD).
+*   **Tipo II (Más común, >80%):** Destino Primer Interóseo Dorsal (PID).
+*   **Tipo III:** Destino tenar (Aductor del pulgar o Abductor corto del pulgar).
+
+### 3. Detección Electrofisiológica y "Falso Bloqueo"
+La AMG se detecta incidentalmente durante la neuroconducción motora de rutina, generando patrones anómalos:
+
+**A. En AMG Tipos I y II (Las más comunes)**
+Al estudiar el nervio **cubital** registrando en el AQD o PID:
+*   **Estimulación en muñeca:** Amplitud normal (se activan todas las fibras, las propias del cubital y las anómalas que ya se unieron).
+*   **Estimulación bajo el codo:** Amplitud **SIGNIFICAMENTE MENOR** (>10-20% caída). Esto ocurre porque el estímulo es proximal al cruce y no activa las fibras anastomóticas (que viajan por el mediano a ese nivel).
+*   **Peligro Diagnóstico:** Imita perfectamente un **bloqueo de conducción motor en el antebrazo**, lo que puede llevar a diagnósticos erróneos de neuropatía motora multifocal o CIDP, y tratamientos injustificados.
+
+**B. Falsa neuropatía cubital en el codo (NCC)**
+Si se estimula por debajo del codo pero muy distalmente (activando la anastomosis), y luego sobre el codo (donde las fibras viajan en el mediano y no se activan), se observa una caída de amplitud a través del codo, simulando una compresión en el surco ulnar que podría terminar en cirugía innecesaria.
+
+**C. En AMG Tipo III + Síndrome de Túnel Carpiano (STC) severo**
+Al estudiar el nervio **mediano**:
+*   El estímulo proximal (codo) tiene **MAYOR** amplitud que el distal (muñeca).
+*   La velocidad de conducción motora en el antebrazo aparece **falsamente muy rápida (>70 m/s)** o incluso con latencia proximal más corta que la distal, debido a que las fibras anastomóticas evitan el túnel carpiano viajando por el cubital.
+*   Aparece una deflexión inicial positiva ("dip") al estimular en el codo.
+
+### 4. Técnica de Corrección (Regla de Oro)
+Ante cualquier caída de amplitud del cubital >10% en el antebrazo:
+1.  **NO asuma bloqueo de conducción.**
+2.  Mantenga el registro en el músculo cubital (AQD o PID).
+3.  Estimule el nervio **mediano** en la fosa antecubital.
+4.  Si se obtiene un CMAP claro, y su amplitud es igual a la caída de amplitud observada en el estudio del cubital, la AMG queda confirmada.`,
+          clinicalPearls: [
+            'La prevalencia de AMG es mucho mayor (hasta 50-60%) en pacientes referidos por Síndrome del Túnel Carpiano.',
+            'Siempre que diagnostique un "bloqueo de conducción" en el nervio cubital en el antebrazo, debe descartar obligatoriamente una AMG estimulando el mediano.',
+            'Para evitar falsas neuropatías cubitales en codo, asegúrese de que el estímulo por debajo del codo sea estrictamente a 3 cm distal al epicóndilo medial (evitando estimular distal a la anastomosis).',
+            'Para medir la latencia proximal del mediano cuando hay AMG Tipo III, coloque el marcador en el punto donde la señal cruza la línea de base (baseline crossing) ignorando el "dip" inicial positivo.'
+          ],
+          keyPoints: [
+            'Cruce motor: Mediano a Cubital en el antebrazo.',
+            'Tipo más común: Hacia el primer interóseo dorsal (PID).',
+            'Simula: Bloqueo de conducción cubital en antebrazo.',
+            'Solución: Estimular el mediano en el codo registrando en músculo cubital.'
+          ]
+        },
+        {
+          id: 'inching-technique',
+          title: 'Técnica de Inching Segmentario',
+          content: `La técnica de inching segmentario (o estudios de segmentos cortos) consiste en estimular un nervio periférico a intervalos muy pequeños y exactos (1 a 2 cm) a lo largo de su trayecto anatómico. Su objetivo es identificar variaciones abruptas de latencia o amplitud para **localizar con precisión milimétrica** el sitio de una compresión o desmielinización focal.
+
+### 1. Protocolo de Ejecución (Ej. Nervio Cubital en Codo)
+*   **Mapeo del nervio:** Usando corriente submáxima, se estimula alrededor de la zona sospechosa. El punto de mayor amplitud del CMAP dicta el trayecto anatómico real del nervio, que se marca en la piel.
+*   **Marcación de segmentos:** Se marca el punto "cero" (ej. epicóndilo medial/surco cubital). A partir de ahí, se dibujan líneas cada 1 cm, desde 4 cm distal hasta 4-6 cm proximal al codo.
+*   **Estimulación en cascada:** Se aplica estimulación supramáxima centímetro a centímetro, de distal a proximal. Las ondas se superponen en pantalla (rastered display) para visualizar el cambio milisegundo a milisegundo.
+
+### 2. Criterios de Anormalidad
+La clave no es la velocidad absoluta promedio, sino el salto brusco entre dos segmentos adyacentes de 1 cm:
+*   **Nervio Cubital (Codo):** Un "salto" abrupto de latencia (ej. > 0.5 - 0.8 ms en un solo centímetro) o una caída drástica de amplitud/área del CMAP localiza el bloqueo o enlentecimiento focal. Ayuda a distinguir compresión en el surco retrocondíleo vs. aponeurosis humerocubital.
+*   **Nervio Mediano (Muñeca):** En condiciones normales, la latencia aumenta ~0.16 a 0.21 ms/cm. Un incremento de **≥0.4 ms** en un solo segmento de 1 cm es anormal y localiza el atrapamiento focal en el STC.
+
+### 3. Consideraciones Técnicas y Pitfalls
+*   **Precisión de medida:** Un error de 2-3 mm al medir en piel causa márgenes de error enormes al calcular velocidades en segmentos de 10 mm. Use calibradores rígidos.
+*   **Difusión de estímulo (Coestimulación):** Usar demasiada corriente despolarizará el nervio centímetros más allá del cátodo, distorsionando la latencia verdadera. El mapeo previo reduce la necesidad de corrientes excesivas.
+*   **Subluxación del nervio:** Al flexionar el codo, el nervio cubital puede saltar sobre el epicóndilo medial, haciendo que la distancia medida con cinta métrica sea mayor que el nervio real. El inching evita la falsa medición de velocidad (falso negativo) al seguir el nervio real.`,
+          clinicalPearls: [
+            'El inching es el estándar de oro neurofisiológico para localizar con precisión la neuropatía cubital en el codo cuando los estudios de rutina (que miden 10 cm de golpe) solo muestran pérdida axonal inespecífica o bloqueos dudosos.',
+            'Un incremento de latencia ≥0.4 ms a través de 1 cm en el túnel carpiano confirma la compresión focal.',
+            'Cuidado con el "artefacto de estímulo": al estimular a distancias cortas, el estímulo puede oscurecer el inicio del CMAP. Separe bien los cables del estimulador y de registro.'
+          ],
+          keyPoints: [
+            'Estímulos seriados cada 1 cm.',
+            'Busca saltos de latencia o caídas de amplitud abruptas.',
+            'Invaluable para Neuropatía Cubital en codo (precisa el punto exacto).',
+            'Medición rigurosa: errores de 1 mm afectan drásticamente el cálculo.'
+          ]
+        },
+        {
+          id: 'palm-studies',
+          title: 'Estudios en Palma (Nervio Mixto Mediano vs. Cubital)',
+          content: `El estudio de conducción de nervio mixto en la palma es una técnica de comparación interna altamente sensible para el diagnóstico del Síndrome del Túnel Carpiano (STC) muy temprano o leve.
+
+### 1. Técnica de Realización (Distancia Fija 8 cm)
+El montaje se basa en estimular el nervio en la palma y registrar la respuesta ortodrómica en la muñeca, usando una distancia idéntica y estricta de **8 cm** para ambos nervios:
+*   **Nervio Mediano Palmar Mixto:**
+    *   **Registro (G1):** En la muñeca (entre tendones del flexor radial del carpo y palmar largo).
+    *   **Estimulación:** En la palma, a 8 cm exactos de G1, sobre la línea hacia el espacio entre los dedos 2º y 3º.
+*   **Nervio Cubital Palmar Mixto (Control Interno):**
+    *   **Registro (G1):** En la muñeca medial (adyacente al flexor cubital del carpo).
+    *   **Estimulación:** En la palma, a 8 cm exactos de G1, sobre la línea hacia el espacio entre los dedos 4º y 5º.
+
+### 2. Fundamento Fisiológico: ¿Por qué es superior?
+Esta técnica supera a los estudios de rutina (sensitivos de 14 cm a los dedos) por tres razones:
+1.  **Evaluación de Fibras Tipo Ia:** Los estudios de nervio mixto evalúan las aferentes sensitivas del músculo (Ia). Al ser las más grandes y de conducción más rápida, son las primeras fibras en verse afectadas por compresión. Los estudios rutinarios no evalúan estas fibras.
+2.  **Menor "Dilución" del Enlentecimiento:** En un segmento corto de 8 cm, el tiempo de conducción corresponde casi exclusivamente al trayecto a través del túnel carpiano. En estudios largos de 14 cm, el segmento normal (muñeca a dedo) "diluye" matemáticamente el retraso.
+3.  **Neutralización de Variables:** Usar el cubital de la misma mano como control interno elimina sesgos por edad, temperatura o polineuropatías sistémicas.
+
+### 3. Valores de Referencia y Criterios Diagnósticos
+*   **Valor Normal (Mediano vs. Cubital):** La diferencia de latencia de pico debe ser **≤ 0.3 ms**.
+*   **Confirmación de Patología (STC):** Una diferencia de latencia de pico **≥ 0.4 ms** es categóricamente anormal y confirma el STC, incluso si todos los demás estudios rutinarios son normales.
+*   **Latencia Absoluta:** La latencia de pico normal para ambos a 8 cm es **≤ 2.2 ms**.`,
+          clinicalPearls: [
+            'Este es el estudio electrofisiológico más sensible para STC. Debe utilizarse cuando la clínica es muy sugerente pero el SNAP mediano convencional del dedo 2 o 3 es normal.',
+            'Un error de 1 cm al medir la distancia en la palma puede causar una falsa diferencia de latencia de 0.2 ms. La medición con cinta o calibrador debe ser meticulosa.',
+            'Al estimular, evite usar intensidades muy altas para no co-estimular el nervio adyacente en la palma, lo cual podría anular artificialmente la diferencia de latencia.'
+          ],
+          keyPoints: [
+            'Estudio de nervio mixto ortodrómico (palma a muñeca).',
+            'Distancia estándar estricta: 8 cm.',
+            'Evalúa las fibras gruesas Ia, las primeras en afectarse.',
+            'Diferencia de latencia pico ≥ 0.4 ms confirma STC.'
+          ]
+        },
+        {
+          id: 'lumbrical-interosseous',
+          title: 'Estudio Lumbrical-Interóseo (L2-INT1)',
+          content: `El estudio comparativo motor entre el segundo lumbrical (mediano) y el primer interóseo palmar (cubital) es una de las técnicas más robustas para diagnosticar el Síndrome del Túnel Carpiano (STC) cuando las respuestas convencionales están ausentes (STC severo o polineuropatía).
+
+### 1. ¿Por qué es tan útil en STC Severo?
+*   **"Lumbrical Sparing":** Las fibras motoras del nervio mediano que inervan el segundo lumbrical (2L) son notablemente más resistentes a la compresión mecánica y a la isquemia dentro del túnel carpiano que las fibras que van al abductor corto del pulgar (tenar) o las fibras sensitivas.
+*   **Ideal cuando "no hay respuesta":** En STC severo, los potenciales sensitivos y la respuesta motora tenar pueden estar ausentes. Sin embargo, el 2L frecuentemente se preserva, permitiendo obtener una respuesta motora del mediano y calcular una latencia.
+*   **Polineuropatías:** Dado que los potenciales motores de mano suelen preservarse más tiempo que los sensitivos en polineuropatías, este estudio es el control interno óptimo cuando todos los sensitivos están ausentes.
+
+### 2. Técnica de Realización (Montaje Único)
+Aprovecha una ventaja anatómica: el segundo lumbrical está físicamente encima del primer interóseo palmar. Se usa una sola posición de registro para evaluar ambos nervios:
+*   **Registro (G1):** Lateral respecto al punto medio del tercer metacarpiano (en la palma). Mueva ligeramente el electrodo hasta obtener la inflexión inicial más rápida y negativa.
+*   **Referencia (G2):** Articulación interfalángica proximal (IFP) del dedo índice.
+*   **Estimulación (Misma Distancia):**
+    *   **Nervio Mediano:** En la muñeca (mitad lateral).
+    *   **Nervio Cubital:** En la muñeca medial.
+    *   **Distancia:** Debe ser **exactamente igual** para ambos nervios, típicamente de **8 a 10 cm**.
+
+### 3. Valores de Referencia y Anormalidad
+*   **Límite de Normalidad:** La diferencia de latencia distal (Mediano - Cubital) debe ser **< 0.5 ms**.
+*   **Patología (STC):** Una diferencia **≥ 0.5 ms** (lumbrical más lento) es **definitivamente anormal** y confirma STC.
+*   **Inversión (Canal de Guyon):** Si el interóseo palmar (cubital) está más lento que el lumbrical por > 0.4 ms, sugiere atrapamiento del nervio cubital en la muñeca.`,
+          clinicalPearls: [
+            'Si en un estudio de rutina no obtiene CMAP tenar ni SNAP del mediano, no concluya "STC severo" sin antes intentar el estudio lumbrical. Frecuentemente encontrará una respuesta preservada.',
+            'A sensibilidades altas, puede ver un pequeño pico rápido justo antes de la respuesta motora del lumbrical. Es el nervio mixto palmar del mediano; ignórelo y marque el inicio del potencial motor.',
+            'Evite estímulos excesivamente altos para prevenir la co-estimulación de ambos nervios simultáneamente en la muñeca.'
+          ],
+          keyPoints: [
+            'Compara 2° Lumbrical (Mediano) vs. 1° Interóseo Palmar (Cubital).',
+            'Mismo montaje de registro en la palma para ambos nervios.',
+            'Altamente resistente a la compresión (Lumbrical Sparing).',
+            'Diferencia de latencia ≥ 0.5 ms confirma STC.'
+          ]
+        }
       ]
     },
     {

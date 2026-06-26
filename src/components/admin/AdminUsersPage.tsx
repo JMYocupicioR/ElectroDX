@@ -20,23 +20,31 @@ import {
   revokePhysicianEnrollment,
   grantRole,
   revokeContributor,
+  grantPremiumAccess,
+  revokePremiumAccess,
 } from '../../services/editorialService';
 import type { AdminProfileRow } from '../../types/admin';
 import type { AppRole } from '../../types/database';
 import { isEnrollmentProfileComplete, isProfileComplete } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
 
-type Tab = 'enrollment_pending' | 'enrolled' | 'contributors';
+type Tab = 'enrollment_pending' | 'enrolled' | 'contributors' | 'premium';
 
 const TAB_LABELS: Record<Tab, string> = {
   enrollment_pending: 'Inscripciones pendientes',
   enrolled: 'Médicos inscritos',
   contributors: 'Colaboradores',
+  premium: 'Usuarios Premium',
 };
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState<Tab>('enrollment_pending');
+  
+  // Get initial tab from URL if present
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialTab = (searchParams.get('tab') as Tab) || 'enrollment_pending';
+  
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [users, setUsers] = useState<AdminProfileRow[]>([]);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -138,6 +146,11 @@ export default function AdminUsersPage() {
                             {r}
                           </span>
                         ))}
+                        {u.has_premium && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+                            ✨ Premium
+                          </span>
+                        )}
                         {tab === 'enrollment_pending' && !enrollmentComplete && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 text-xs">
                             <AlertTriangle className="w-3 h-3" /> Perfil incompleto
@@ -227,6 +240,36 @@ export default function AdminUsersPage() {
                             <UserX className="w-4 h-4" /> Revocar colaborador
                           </button>
                         </>
+                      )}
+                      
+                      {!u.has_premium && tab !== 'enrollment_pending' && (
+                        <button
+                          type="button"
+                          disabled={loadingId === u.id}
+                          onClick={() => {
+                            const method = window.prompt('Método de pago (ej. stripe, manual, transferencia):', 'manual');
+                            if (method === null) return;
+                            const ref = window.prompt('Referencia/Folio de pago (opcional):', '');
+                            run(u.id, () => grantPremiumAccess(u.id, method || 'manual', ref || undefined));
+                          }}
+                          className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm transition shadow-sm"
+                        >
+                          <Shield className="w-4 h-4" /> Otorgar Premium
+                        </button>
+                      )}
+
+                      {u.has_premium && (
+                        <button
+                          type="button"
+                          disabled={loadingId === u.id}
+                          onClick={() => {
+                            if (!confirm('¿Revocar suscripción premium?')) return;
+                            run(u.id, () => revokePremiumAccess(u.id));
+                          }}
+                          className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 text-sm transition"
+                        >
+                          <UserX className="w-4 h-4" /> Revocar Premium
+                        </button>
                       )}
                     </div>
                   )}

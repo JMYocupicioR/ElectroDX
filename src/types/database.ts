@@ -7,6 +7,8 @@ export type RevisionStatus =
   | 'changes_requested';
 export type RevisionAction = 'create' | 'update' | 'delete';
 export type EnrollmentStatus = 'none' | 'pending' | 'approved' | 'rejected';
+export type AccessTier = 'free' | 'premium';
+export type WorkshopStatus = 'draft' | 'scheduled' | 'live' | 'completed' | 'cancelled';
 
 export interface Profile {
   id: string;
@@ -46,7 +48,7 @@ export interface TopicMedia {
 import type { QuizQuestionDraft } from './quiz';
 
 export interface RevisionPayload {
-  revisionType?: 'topic' | 'module' | 'quiz';
+  revisionType?: 'topic' | 'module' | 'quiz' | 'clinical_case';
   id?: string;
   slug?: string;
   title: string;
@@ -81,6 +83,10 @@ export interface RevisionPayload {
   shuffleQuestions?: boolean;
   shuffleOptions?: boolean;
   questions?: QuizQuestionDraft[];
+  /** Clinical Case only fields */
+  clinicalCaseJson?: any;
+  clinicalDiagnosis?: string;
+  clinicalQuestions?: string[];
 }
 
 export interface ContentRevision {
@@ -142,6 +148,56 @@ export interface PublishedTopic {
   published_by: string | null;
   last_edited_by: string | null;
   source_revision_id: string | null;
+  video_url: string | null;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  tier: AccessTier;
+  starts_at: string;
+  expires_at: string | null;
+  payment_method: string | null;
+  payment_reference: string | null;
+  notes: string | null;
+  granted_by: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface ModuleAccess {
+  module_id: string;
+  required_tier: AccessTier;
+  preview_topic_ids: string[];
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface LiveWorkshop {
+  id: string;
+  module_id: string;
+  topic_id: string | null;
+  title: string;
+  description: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  stream_url: string | null;
+  recording_url: string | null;
+  max_capacity: number | null;
+  clinical_case_revision_id: string | null;
+  clinical_case_json: Record<string, unknown> | null;
+  status: WorkshopStatus;
+  created_by: string;
+  updated_at: string;
+  created_at: string;
+}
+
+export interface WorkshopRegistration {
+  id: string;
+  workshop_id: string;
+  user_id: string;
+  registered_at: string;
+  attended: boolean;
 }
 
 export interface Database {
@@ -255,8 +311,23 @@ export interface Database {
           profile: Profile | null;
           roles: AppRole[];
           bootstrap_available: boolean;
+          has_premium: boolean;
+          subscription: Subscription | null;
         } | null;
       };
+      has_premium_access: { Args: { check_user_id?: string }; Returns: boolean };
+      can_access_module: { Args: { p_module_id: string; check_user_id?: string }; Returns: boolean };
+      grant_premium_access: {
+        Args: {
+          target_user_id: string;
+          p_method?: string;
+          p_reference?: string | null;
+          p_notes?: string | null;
+          p_expires_at?: string | null;
+        };
+        Returns: void;
+      };
+      revoke_premium_access: { Args: { target_user_id: string }; Returns: void };
     };
   };
 }

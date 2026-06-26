@@ -172,36 +172,59 @@ En la MG, la caída de amplitud es máxima alrededor del 4to estímulo, seguida 
       title: 'Trastornos Presinápticos (LEMS)',
       children: [
         {
-          id: 'facilitation-increment',
-          title: 'Incremento y Facilitación masiva',
-          content: `En los trastornos presinápticos, el problema principal es la liberación insuficiente de ACh, no la pérdida de receptores.
+          id: 'lems-protocol',
+          title: 'Protocolo LEMS Clásico (Estimulación a 20-50 Hz)',
+          content: `En los trastornos presinápticos como el Síndrome de Lambert-Eaton (LEMS), el defecto está en los canales de calcio tipo P/Q. La entrada de calcio está mermada, reduciendo masivamente la liberación basal de ACh, lo que produce un PAMC basal clásicamente muy bajo.
 
-**Síndrome de Lambert-Eaton (LEMS):**
-* **Causa:** Anticuerpos contra los canales de Calcio tipo P/Q del terminal nervioso.
-* **Consecuencia:** La entrada de Calcio está severamente reducida, lo que disminuye drásticamente el contenido cuántico (m). El EPP basal apenas alcanza el umbral, y muchas fibras presentan bloqueo.
-* **CMAP basal:** Característicamente muy bajo (habitualmente 2-3 mV o menos, cuando lo normal es mayor de 5 mV).
+El protocolo clásico emplea la **estimulación repetitiva de alta frecuencia (20 a 50 Hz)** para forzar de forma masiva el ingreso de calcio:
+* Se aplican estímulos rápidos continuos durante **5 a 10 segundos** (250-500 choques).
+* Esto provoca un influjo de calcio que supera la capacidad de amortiguación celular y se acumula en el terminal, elevando la liberación de cuantos de ACh con cada estímulo.
+* Fibras musculares bloqueadas se reactivan, causando una elevación dramática de amplitud y área del PAMC.
 
-**Prueba de facilitación:**
-* Se registra un CMAP basal con estimulación supramáxima (paciente completamente relajado).
-* Se pide al paciente ejercicio máximo isométrico durante exactamente 10 segundos.
-* Se registra un segundo CMAP inmediatamente después.
-* **Criterio diagnóstico:** Un **incremento mayor del 100%** (es decir, el CMAP post-ejercicio es más del doble del basal) es diagnóstico de LEMS. En muchos casos, el incremento puede superar el 400%.
+**Fórmula del incremento:**
+Incremento (%) = [(Amplitud Máxima - Amplitud Inicial) / Amplitud Inicial] × 100
 
-**Estimulación a alta frecuencia (20-50 Hz):**
-Es una alternativa a la prueba de ejercicio cuando el paciente no puede colaborar (debilidad extrema, sedación). Sin embargo, es extremadamente dolorosa y rara vez se utiliza como primera opción.
+**Criterios diagnósticos:**
+* **Incremento > 100%:** Hallazgo clásico y confirmatorio (diagnóstico definitivo de trastorno presináptico). A menudo en LEMS llega al 150-400% e incluso >2000%.
+* **Incremento > 60%:** Aceptado históricamente como altamente sugestivo, especialmente si el PAMC basal es muy bajo y hay un decremento a baja frecuencia.
+* **< 40%:** Normal o inespecífico.
 
-**Botulismo:**
-* También presenta un patrón presináptico similar al LEMS (CMAP bajo, facilitación), pero la causa es el bloqueo directo de las proteínas SNARE por la toxina botulínica.
-* La facilitación en botulismo suele ser menor que en LEMS (generalmente 30-100%).`,
+**Limitación crítica:** La estimulación a 50 Hz es **extremadamente dolorosa** y los pacientes la toleran muy mal. Las guías actuales indican que esta técnica **solo debe reservarse para pacientes no colaboradores** (niños pequeños, sedados, intubados en UCI).`,
           clinicalPearls: [
-            '**Facilitación vs Pseudofacilitación:** En la facilitación real (LEMS), tanto la **Amplitud como el Área** del CMAP aumentan, porque realmente se están activando más fibras. En la pseudofacilitación (fenómeno normal), la amplitud sube pero el **Área se mantiene igual** porque solo hay una mejor sincronización de las fibras que ya estaban activas.',
-            'Asegúrate de que el paciente esté 100% relajado antes de medir el CMAP basal. Si está tensando el músculo inconscientemente (auto-facilitación silente), el CMAP basal sube falsamente y el porcentaje de incremento se subestima.',
+            'Botulismo: También produce facilitación por bloqueo de proteínas SNARE, pero su incremento suele ser menor (30-100%) y clínicamente se asocia a compromiso autonómico precoz severo y parálisis flácida descendente.',
+            'Un error común es intentar diagnosticar LEMS solo con estimulación lenta (3 Hz). A esa frecuencia, el LEMS produce el mismo "decremento" que la Miastenia Gravis, induciendo un diagnóstico erróneo catastrófico si no se hace facilitación.'
           ],
           keyPoints: [
-            'LEMS: CMAP basal muy bajo + Incremento mayor del 100% post-ejercicio = Diagnóstico.',
-            'El mecanismo: La acumulación masiva de Calcio residual compensa el defecto de los canales P/Q.',
-            'Facilitación real = Sube Amplitud Y Área. Pseudofacilitación = Solo sube Amplitud.',
-            'Botulismo: Patrón similar pero facilitación generalmente menor (30-100%).',
+            'Fórmula: ((PAMC final - PAMC inicial) / PAMC inicial) × 100.',
+            'Criterio confirmatorio = Incremento > 100%.',
+            'Reservado SOLO para pacientes sedados o que no pueden colaborar, por el dolor extremo.'
+          ]
+        },
+        {
+          id: 'exercise-test-short',
+          title: 'Prueba de Ejercicio Corto (10s)',
+          content: `Debido al extremo dolor de la estimulación a 50 Hz, la **prueba de ejercicio corto (contracción de 10 segundos)** es la técnica de elección (gold standard) para la facilitación presináptica. Aprovecha la activación voluntaria del paciente para inundar el terminal de calcio sin provocar dolor.
+
+**Técnica de Contracción Isométrica Máxima:**
+1.  **Línea base indispensable:** Se estimula el nervio en reposo absoluto (PAMC basal).
+2.  Se pide al paciente **contracción voluntaria isométrica máxima durante exactamente 10 segundos** contra resistencia firme. (Isométrica evita el desplazamiento del electrodo).
+3.  Inmediatamente después de soltar (antes de que pasen 10 segundos), se da **un único choque supramáximo**.
+4.  Se mide el PAMC post-ejercicio y se aplica la fórmula del incremento.
+
+Fisiológicamente, 10 segundos de contracción máxima equivalen a la estimulación nerviosa repetitiva de alta frecuencia. En un paciente con LEMS, se producirá la misma movilización inmediata masiva de acetilcolina.
+
+**Diferenciación de Pseudo-facilitación:**
+En sujetos sanos, un ejercicio máximo puede sincronizar temporalmente las fibras musculares originando un aumento en la amplitud del PAMC de hasta un 40% (pseudofacilitación fisiológica).
+Sin embargo, en la pseudofacilitación el **área** del potencial se mantiene igual o incluso disminuye. En la verdadera facilitación presináptica del LEMS, **tanto la amplitud como el área** crecen dramáticamente por encima del 100%.`,
+          clinicalPearls: [
+            'El paciente debe estar completamente relajado antes de obtener la línea basal. Si está discretamente tenso, se estará auto-facilitando sin darte cuenta, lo que elevará tu línea base y te arruinará el cálculo del incremento (falso negativo).',
+            'El reloj es vital: Si te demoras 30-40 segundos en estimular después de que el paciente se relaje, habrás perdido la ventana y el calcio ya se habrá recapitulado. Tienes que estimular de inmediato.'
+          ],
+          keyPoints: [
+            'Alternativa de elección, totalmente indolora.',
+            'Contracción isométrica máxima por exactamente 10 segundos.',
+            'Estímulo post-ejercicio inmediato (< 10 segundos).',
+            'Facilitación real = Aumento de amplitud Y de área.'
           ]
         }
       ]

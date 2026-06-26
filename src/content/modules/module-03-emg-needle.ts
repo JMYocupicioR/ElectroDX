@@ -1960,23 +1960,243 @@ Se evalúa visualmente observando la variación entre trazados superpuestos. Con
       children: [
         { id: 'upper-limb-muscles', title: 'Miembro superior',
           children: [
-            { id: 'fdi', title: 'Primer interóseo dorsal', content: 'Inervado por nervio ulnar (C8-T1). Fácilmente accesible, útil para evaluar C8-T1, tronco inferior, cordón medial, nervio ulnar.' },
-            { id: 'apb', title: 'Abductor corto del pulgar', content: 'Inervado por nervio mediano (C8-T1). Músculo estándar para registro en NCS del mediano motor. Evaluación de túnel carpiano y lesión C8-T1.' },
-            { id: 'biceps', title: 'Bíceps braquial', content: 'Inervado por nervio musculocutáneo (C5-C6). Músculo proxi del MS para evaluar raíces C5-C6, tronco superior, cordón lateral.' },
-            { id: 'triceps', title: 'Tríceps braquial', content: 'Inervado por nervio radial (C6-C8). Evalúa raíz C7, tronco medio, cordón posterior, nervio radial.' },
-            { id: 'deltoid', title: 'Deltoides', content: 'Inervado por nervio axilar (C5-C6). Músculo proxi para evaluar C5-C6 y nervio axilar post-luxación de hombro.' },
+            { id: 'fdi', title: 'Primer interóseo dorsal (FDI / PID)',
+              content: `**Inervación:** Nervio cubital, cordón medial, tronco inferior, raíces C8-T1.
+
+**Punto de inserción anatómico:**
+Dorso de la mano, exactamente a medio camino entre la primera y la segunda articulación metacarpofalángica.
+
+**Maniobra de activación:**
+Abducción del dedo índice (separar el índice lateralmente).
+
+**Aplicación clínica:**
+Músculo de gran relevancia, frecuentemente afectado en neuropatías cubitales en codo o canal de Guyon, plexopatías de tronco inferior y radiculopatías C8-T1.`,
+              clinicalPearls: [
+                'De todos los músculos intrínsecos de la mano, el primer interóseo dorsal es típicamente el menos doloroso de explorar.',
+                'Cuidado con la profundidad: si la aguja se introduce demasiado profundo, puede atravesar el músculo y registrar actividad del aductor del pulgar (también inervado por el cubital).'
+              ],
+              keyPoints: [
+                'Cubital, C8-T1.',
+                'Activación: abducir dedo índice.',
+                'Generalmente el menos doloroso de la mano.',
+                'No profundizar demasiado para evitar el aductor del pulgar.'
+              ]
+            },
+            { id: 'apb', title: 'Abductor corto del pulgar (APB)',
+              content: `**Inervación:** Nervio mediano, cordón medial, tronco inferior, raíces C8-T1.
+
+**Punto de inserción anatómico:**
+Con el antebrazo y mano en supinación, inserción tangencial en la eminencia tenar lateral, justo en el punto medio del primer metacarpiano.
+
+**Maniobra de activación:**
+Abducción del pulgar (elevar el pulgar hacia el techo manteniendo la mano en supinación).
+
+**Aplicación clínica:**
+Crucial para diagnóstico de Síndrome del Túnel Carpiano severo y diferenciación de lesiones C8-T1 o tronco inferior.`,
+              clinicalPearls: [
+                'El APB es percibido como mucho más doloroso que otros músculos de la mano. Se aconseja entrenar al paciente y NO comenzar la exploración con este músculo si hay ansiedad.',
+                'Desviación medial: Si la aguja se inserta muy medial, puede registrar el flexor corto del pulgar (inervación dual mediano/cubital), confundiendo el diagnóstico.',
+                'Desviación profunda: Si se profundiza demasiado, registra el oponente del pulgar.',
+                'A diferencia del STC, este músculo se preserva intacto en las lesiones puras del nervio interóseo anterior.'
+              ],
+              keyPoints: [
+                'Mediano, C8-T1.',
+                'Músculo muy doloroso a la punción.',
+                'Insertar superficial y lateral para no registrar flexor u oponente.',
+                'Anormal en STC severo, normal en lesión de interóseo anterior.'
+              ]
+            },
+            { id: 'biceps', title: 'Bíceps braquial',
+              content: `**Inervación:** Nervio musculocutáneo, cordón lateral, tronco superior, raíces C5-C6.
+
+**Punto de inserción anatómico:**
+Con antebrazo en supinación, en el punto medio entre el tendón distal del bíceps (fosa antecubital) y la parte anterior del hombro.
+
+**Maniobra de activación:**
+Flexión del codo con el antebrazo en supinación. Contracción isométrica aplicando resistencia.
+
+**Aplicación clínica:**
+Músculo proximal clave para evaluar raíces C5-C6, tronco superior y cordón lateral del plexo braquial.`,
+              clinicalPearls: [
+                '¡SEGURIDAD CRÍTICA! La aguja debe insertarse estrictamente desde un abordaje ANTERIOR. El abordaje medial está absolutamente contraindicado por el altísimo riesgo de pinchar la arteria braquial o el nervio mediano.',
+                'Para minimizar el dolor por desplazamiento muscular ("muscle roll"), estabiliza el codo del paciente y pide una contracción puramente isométrica contra tu mano.'
+              ],
+              keyPoints: [
+                'Musculocutáneo, C5-C6.',
+                'Abordaje estrictamente ANTERIOR.',
+                'Peligro de abordaje medial: paquete neurovascular braquial.',
+                'Usar contracción isométrica para reducir dolor.'
+              ]
+            },
+            { id: 'triceps', title: 'Tríceps braquial (Cabeza lateral)',
+              content: `**Inervación:** Nervio radial, cordón posterior, troncos superior/medio/inferior, raíces C6-C7-C8 (predominantemente C7).
+
+**Punto de inserción anatómico:**
+Con el brazo en pronación y codo flexionado, la aguja se inserta justo por debajo del punto medio entre el epicóndilo lateral del húmero y el hombro, apuntando a la cabeza lateral del tríceps.
+
+**Maniobra de activación:**
+Extensión del codo contra resistencia.
+
+**Aplicación clínica:**
+Es el músculo que se afecta con mayor consistencia en presencia de una radiculopatía C7. También útil para evaluar nervio radial proximal a la espiral humeral.`,
+              clinicalPearls: [
+                'La cabeza lateral es técnicamente la más accesible y fácil de estudiar de las tres porciones del tríceps.',
+                'Evite inserciones demasiado distales (cerca del codo), ya que el tejido se vuelve tendinoso y significativamente más doloroso para el paciente.',
+                'Un abordaje estrictamente lateral hace que la exploración sea muy segura, libre de riesgo vascular o nervioso principal.'
+              ],
+              keyPoints: [
+                'Radial, C6-C8 (principalmente C7).',
+                'Explorar preferentemente la cabeza lateral.',
+                'Abordaje lateral muy seguro.',
+                'No insertar cerca del codo (tendón = mucho dolor).'
+              ]
+            },
+            { id: 'deltoid', title: 'Deltoides (Cabeza media)',
+              content: `**Inervación:** Nervio axilar, cordón posterior, tronco superior, raíces C5-C6.
+
+**Punto de inserción anatómico:**
+En la cara lateral del hombro, en el vientre muscular de la cabeza media del deltoides.
+
+**Maniobra de activación:**
+Abducción del hombro (elevar el brazo lateralmente) a 90 grados.
+
+**Aplicación clínica:**
+Evaluación de radiculopatía C5-C6, plexopatía de tronco superior, y lesión del nervio axilar post-luxación de hombro.`,
+              clinicalPearls: [
+                'La cabeza media es la más fácil de localizar y estudiar de las tres porciones deltoideas.',
+                'Atención a la morfología normal: En sujetos sanos, los PUM registrados en el deltoides pueden presentar de forma natural y fisiológica una polifasia aumentada. No sobreinterprete esto como patología.',
+                'El abordaje lateral es seguro, sin grandes vasos ni nervios en la vecindad inmediata.'
+              ],
+              keyPoints: [
+                'Axilar, C5-C6.',
+                'Cabeza media es de elección.',
+                'Polifasia aumentada puede ser fisiológica aquí.',
+                'Seguro de puncionar (cara lateral).'
+              ]
+            },
             { id: 'forearm-extensors', title: 'Extensores del antebrazo', content: 'Inervados por nervio radial (rama interósea posterior). Evalúa radiculopatía C7 y síndrome del interóseo posterior.' },
-            { id: 'cervical-paraspinals', title: 'Paraespinales cervicales', content: 'Inervados por ramos dorsales. Cruciales para confirmar radiculopatía (fibrilaciones en paraespinales) vs. plexopatía (paraespinales normales).', videoUrls: [{ title: 'Actividad motora de paraespinales', driveId: '19pO6_gBt72i80aSm-m9DSicNY6MMhrNZ' }] },
+            { id: 'cervical-paraspinals', title: 'Paraespinales cervicales',
+              videoUrls: [{ title: 'Actividad motora de paraespinales', driveId: '19pO6_gBt72i80aSm-m9DSicNY6MMhrNZ' }],
+              content: `**Inervación:** Ramas primarias dorsales de los nervios espinales cervicales correspondientes.
+
+**Punto de inserción anatómico (Capa profunda - Multifidus):**
+Paciente en decúbito lateral (en "posición fetal", con cuello flexionado para relajar musculatura). Se inserta la aguja a dos traveses de dedo de la línea media vertebral, con leve inclinación medial, hasta tocar la lámina vertebral ósea, retirando sutilmente.
+
+**Maniobra de activación:**
+Extensión leve del cuello (elevar la cabeza ligeramente).
+
+**Aplicación clínica:**
+Cruciales para confirmar una radiculopatía (presencia de denervación aquí indica lesión proximal al plexo) y diferenciarla de plexopatía (paraespinales normales).`,
+              clinicalPearls: [
+                '¡RIESGO DE NEUMOTÓRAX! En C6-C7, si la aguja se inserta demasiado lateral, puede pinchar el ápex pulmonar (que puede estar a solo 3.3 cm de profundidad en personas delgadas con cuello largo). Mantenga la aguja SIEMPRE cerca de la línea media y con leve dirección medial.',
+                'Mapeo segmentario impreciso: Por el gran solapamiento de la capa superficial, una fibrilación aquí confirma lesión proximal, pero no define el nivel exacto de la raíz con precisión (se define con los músculos de extremidades).',
+                'Si inserta muy superficialmente, registrará trapecio superior, no paraespinales.',
+                'En pacientes post-cirugía de columna, las fibrilaciones pueden persistir años por cicatrización quirúrgica, restándole valor diagnóstico para lesiones nuevas.'
+              ],
+              keyPoints: [
+                'Inervados por ramas dorsales posteriores.',
+                'Confirma radiculopatía vs. plexopatía.',
+                'Riesgo altísimo de neumotórax si la inserción C6-C7 es muy lateral.',
+                'No tienen valor diagnóstico si hubo cirugía de columna previa a ese nivel.'
+              ]
+            },
           ]
         },
         { id: 'lower-limb-muscles', title: 'Miembro inferior',
           children: [
-            { id: 'tibialis-anterior', title: 'Tibial anterior', content: 'Inervado por nervio peroneo profundo (L4-L5). Músculo clave para evaluar L5 y neuropatía peronea.' },
-            { id: 'medial-gastrocnemius', title: 'Gastrocnemio medial', content: 'Inervado por nervio tibial (S1-S2). Evalúa radiculopatía S1.' },
+            { id: 'tibialis-anterior', title: 'Tibial anterior',
+              content: `**Inervación:** Nervio peroneo profundo, división peroneal del ciático, raíces L4-L5 (predominantemente L5).
+
+**Punto de inserción anatómico:**
+Inmediatamente lateral a la cresta tibial ósea, aproximadamente a dos tercios de la distancia hacia arriba (medido desde el tobillo hacia la rodilla).
+
+**Maniobra de activación:**
+Flexión dorsal del tobillo.
+
+**Aplicación clínica:**
+Es el músculo clave y de referencia obligatoria en pacientes con "pie caído" (déficit de dorsiflexión), permitiendo evaluar neuropatías del peroneo común, ciático o radiculopatías L5.`,
+              clinicalPearls: [
+                'Abordaje seguro: Mientras la aguja se mantenga estrictamente anterolateral (adyacente a la tibia), el procedimiento es libre de riesgo vascular importante.',
+                'Es el músculo inervado por el peroneo profundo más sencillo de localizar y aislar clínicamente en el EMG.',
+                'En un paciente con pie caído, combinar el Tibial Anterior (anormal) con el Tibial Posterior (normal en lesión peronea, anormal en radiculopatía L5) es la clave diagnóstica.'
+              ],
+              keyPoints: [
+                'Peroneo profundo, L4-L5.',
+                'Insertar lateral a la cresta tibial en el tercio superior.',
+                'Estudio obligatorio en el síndrome de "pie caído".',
+                'Abordaje anterolateral muy seguro.'
+              ]
+            },
+            { id: 'medial-gastrocnemius', title: 'Gastrocnemio medial',
+              content: `**Inervación:** Nervio tibial (división tibial del nervio ciático mayor), raíces S1-S2.
+
+**Punto de inserción anatómico:**
+Parte rostral, medial y posterior de la pantorrilla.
+
+**Maniobra de activación:**
+Flexión plantar del tobillo.
+
+**Aplicación clínica:**
+Músculo de elección para evaluar radiculopatías S1.`,
+              clinicalPearls: [
+                'Suele ser un músculo difícil de activar voluntariamente para algunos pacientes. Un truco es flexionar primero la rodilla del paciente pasivamente y luego pedirle la flexión plantar, lo que facilita enormemente la activación.'
+              ],
+              keyPoints: [
+                'Tibial, S1-S2.',
+                'Clave en radiculopatía S1.',
+                'Activación: flexión plantar.',
+                'Si cuesta activarlo, flexionar rodilla pasivamente primero.'
+              ]
+            },
+            { id: 'biceps-femoris-short', title: 'Bíceps femoral (Cabeza corta)',
+              content: `**Inervación:** División peroneal del nervio ciático mayor, raíces L5-S1.
+
+**Punto de inserción anatómico:**
+Tres o cuatro traveses de dedo proximales a la cara lateral de la rodilla, justo medial al tendón prominente de la cabeza larga del bíceps femoral.
+
+**Maniobra de activación:**
+Flexión de la rodilla. Para ubicar el tendón de la cabeza larga previamente, pedir leve flexión que lo hace resaltar.
+
+**Aplicación clínica:**
+Es el músculo clave definitivo para el diagnóstico diferencial entre una lesión del ciático proximal vs. lesión del peroneo común en la rodilla (pie caído).`,
+              clinicalPearls: [
+                '¡DIFERENCIAL CLAVE!: Es el ÚNICO músculo inervado por la división peroneal por ENCIMA de la cabeza del peroné. En una neuropatía del peroneo común en rodilla estará NORMAL. En una lesión del ciático (que suele simular pie caído) estará ANORMAL.',
+                'Riesgo: Si la aguja se introduce con dirección demasiado medial y profunda, existe un riesgo severo de lesionar de forma directa el tronco principal del nervio ciático.'
+              ],
+              keyPoints: [
+                'Ciático (división peroneal), L5-S1.',
+                'Normal en neuropatía del peroneo común.',
+                'Anormal en lesión ciática o radiculopatía L5-S1.',
+                'Riesgo de lesionar nervio ciático si se inserta muy profundo/medial.'
+              ]
+            },
             { id: 'vastus-lateralis', title: 'Vasto lateral', content: 'Inervado por nervio femoral (L2-L4). Músculo proxi para evaluar L3-L4 y neuropatía femoral.' },
             { id: 'gluteus-medius', title: 'Glúteo medio', content: 'Inervado por nervio glúteo superior (L4-S1). Evalúa plexopatía y radiculopatía lumbar alta.' },
             { id: 'ehl', title: 'Extensor largo del hallux', content: 'Inervado por nervio peroneo profundo (L5). Muy específico para evaluación de raíz L5.' },
-            { id: 'lumbar-paraspinals', title: 'Paraespinales lumbares', content: 'Ramos dorsales (L3-S1). Confirman radiculopatía. Explorar a 2-3 cm lateral a la apófisis espinosa.' },
+            { id: 'lumbar-paraspinals', title: 'Paraespinales lumbares',
+              content: `**Inervación:** Ramas primarias dorsales de los nervios raquídeos correspondientes.
+
+**Punto de inserción anatómico:**
+Paciente en decúbito lateral (posición fetal). Aguja a dos traveses de dedo (aprox 2.5 cm) lateral a la apófisis espinosa, con orientación levemente medial. Avanzar hasta tocar la lámina ósea y retirar 1-2 mm para quedar en la capa profunda (multifidus).
+
+**Maniobra de activación:**
+Extensión de cadera con pierna estirada.
+
+**Aplicación clínica:**
+Confirman que una lesión radicular es verdaderamente proximal (afecta rama dorsal), excluyendo plexopatías.`,
+              clinicalPearls: [
+                'Falta de relajación: El paciente suele tensarse. La posición fetal (decúbito lateral con columna flexionada) es obligatoria para relajar la musculatura y valorar la actividad de reposo.',
+                'Mapeo segmentario impreciso: Por el solapamiento de inervación en las capas superficiales, confirman nivel radicular pero NO definen el segmento exacto con precisión absoluta.',
+                'Falsos positivos por cirugía: Evitar explorar o concluir cerca de cicatrices de laminectomía previa (el trauma operatorio denerva).',
+                'Falsos positivos por envejecimiento: 40% de mayores de 40 años pueden tener descargas breves (PSW/fibrilaciones) benignas en niveles lumbosacros bajos.'
+              ],
+              keyPoints: [
+                'Ramos dorsales, confirman radiculopatía.',
+                'Posición fetal clave para lograr relajación.',
+                'Inútil diagnosticar lesión nueva si hay cirugía de columna previa en ese nivel.',
+                'Mapeo segmentario orientativo, no absoluto.'
+              ]
+            },
           ]
         },
         { id: 'cranial-muscles', title: 'Cráneo y cuello',
