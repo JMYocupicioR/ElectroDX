@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Crown, Mail, Settings, Shield, User } from 'lucide-react';
+import { Crown, Mail, Settings, Shield, User, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
   ENROLLMENT_META,
@@ -20,6 +21,8 @@ export default function AccountPage() {
     bootstrapAvailable,
     claimBootstrapAdmin,
   } = useAuth();
+
+  const [avatarImgFailed, setAvatarImgFailed] = useState(false);
 
   const permissions = getPermissionSummary({
     roles,
@@ -75,8 +78,13 @@ export default function AccountPage() {
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 p-5 mb-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            {profile?.avatar_url && !avatarImgFailed ? (
+              <img
+                src={profile.avatar_url}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={() => setAvatarImgFailed(true)}
+              />
             ) : (
               (profile?.display_name ?? 'U').charAt(0).toUpperCase()
             )}
@@ -92,7 +100,8 @@ export default function AccountPage() {
             {profile?.credentials && (
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 {profile.credentials}
-                {profile.institution ? ` · ${profile.institution}` : ''}
+                {profile.institution ? ` · Sede: ${profile.institution}` : ''}
+                {profile.academic_institution ? ` · Egreso: ${profile.academic_institution}` : ''}
               </p>
             )}
           </div>
@@ -104,6 +113,83 @@ export default function AccountPage() {
           <User className="w-4 h-4" />
           Editar perfil profesional
         </Link>
+      </section>
+
+      {/* ─── EXPEDIENTE PROFESIONAL & CÉDULA SEP ─── */}
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 p-5 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+            <Shield className="w-4 h-4 text-cyan-500" />
+            Expediente Profesional & Cédula
+          </h2>
+          {profile?.cedula_verified ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Cédula Verificada (SEP)
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+              <AlertCircle className="w-3.5 h-3.5" /> Cédula No Verificada
+            </span>
+          )}
+        </div>
+
+        {profile?.cedula_verified ? (
+          <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-xs space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-slate-500 dark:text-slate-400">Número de Cédula Oficial:</p>
+                <p className="text-sm font-mono font-bold text-slate-900 dark:text-white">
+                  #{profile.cedula_profesional}
+                </p>
+              </div>
+              {profile.cedula_data?.anioRegistro && (
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Año de Expedición:</p>
+                  <p className="font-medium text-slate-800 dark:text-slate-200">
+                    {profile.cedula_data.anioRegistro}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {profile.cedula_data?.profesion && (
+              <div>
+                <p className="text-slate-500 dark:text-slate-400">Título / Especialidad Registrada:</p>
+                <p className="font-semibold text-slate-800 dark:text-slate-100">
+                  {profile.cedula_data.profesion}
+                </p>
+              </div>
+            )}
+
+            {profile.cedula_data?.institucion && (
+              <div>
+                <p className="text-slate-500 dark:text-slate-400">Institución de Egreso:</p>
+                <p className="font-medium text-slate-800 dark:text-slate-200">
+                  {profile.cedula_data.institucion}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+              Tu expediente está registrado como <strong>Cédula no verificada</strong>. Tienes acceso normal a tus cursos, temas y evaluaciones.
+            </p>
+            {profile?.cedula_profesional && (
+              <p className="mt-1 text-slate-500 dark:text-slate-400 font-mono">
+                Cédula ingresada: #{profile.cedula_profesional} (Pendiente de validación ante la SEP)
+              </p>
+            )}
+            <div className="mt-3">
+              <Link
+                to="/colaborador/perfil"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition"
+              >
+                Validar mi Cédula ante la SEP
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 p-5 mb-6">

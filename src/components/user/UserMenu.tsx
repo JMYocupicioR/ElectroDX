@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  BarChart3,
   ChevronDown,
   ClipboardList,
   LogOut,
@@ -11,6 +10,7 @@ import {
   User,
   UserCircle,
   Crown,
+  GraduationCap,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
@@ -37,7 +37,12 @@ export function UserMenu() {
   const [open, setOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
+  const [imgFailed, setImgFailed] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [profile?.avatar_url]);
 
   useEffect(() => {
     if (!open) return;
@@ -59,8 +64,8 @@ export function UserMenu() {
 
   if (!user) return null;
 
-  const displayName = profile?.display_name ?? user.email?.split('@')[0] ?? 'Usuario';
-  const initials = displayName.charAt(0).toUpperCase();
+  const displayName = profile?.display_name || user.email?.split('@')[0] || 'Usuario';
+  const initials = displayName.slice(0, 2).toUpperCase();
   const permissions = getPermissionSummary({
     roles,
     verifiedAt: profile?.verified_at ?? null,
@@ -71,11 +76,11 @@ export function UserMenu() {
   });
 
   const handleClaimAdmin = async () => {
-    setClaiming(true);
     setClaimError(null);
-    const result = await claimBootstrapAdmin();
+    setClaiming(true);
+    const res = await claimBootstrapAdmin();
     setClaiming(false);
-    if (result.error) setClaimError(result.error);
+    if (res.error) setClaimError(res.error);
     else setOpen(false);
   };
 
@@ -90,8 +95,13 @@ export function UserMenu() {
         aria-label="Menú de usuario"
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 overflow-hidden flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+          {profile?.avatar_url && !imgFailed ? (
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="w-full h-full object-cover"
+              onError={() => setImgFailed(true)}
+            />
           ) : (
             initials
           )}
@@ -167,20 +177,20 @@ export function UserMenu() {
           )}
 
           <div className="py-1">
+            <MenuLink to="/dashboard" icon={GraduationCap} onClick={() => setOpen(false)}>
+              Mi Portal de Alumno
+            </MenuLink>
             <MenuLink to="/cuenta" icon={UserCircle} onClick={() => setOpen(false)}>
               Mi cuenta
             </MenuLink>
             <MenuLink to="/colaborador/perfil" icon={User} onClick={() => setOpen(false)}>
               Editar perfil
             </MenuLink>
-            {isEnrolledPhysician && (
-              <MenuLink to="/mi-progreso" icon={BarChart3} onClick={() => setOpen(false)}>
-                Mi progreso
+            {canProposeContent && (
+              <MenuLink to="/colaborador" icon={PenLine} onClick={() => setOpen(false)}>
+                Colaborar
               </MenuLink>
             )}
-            <MenuLink to="/colaborador" icon={PenLine} onClick={() => setOpen(false)}>
-              Colaborar
-            </MenuLink>
             {canProposeContent && (
               <MenuLink to="/colaborador/cuestionario" icon={ClipboardList} onClick={() => setOpen(false)}>
                 Cuestionarios

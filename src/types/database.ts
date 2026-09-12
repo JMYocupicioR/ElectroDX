@@ -15,6 +15,7 @@ export interface Profile {
   display_name: string;
   credentials: string | null;
   institution: string | null;
+  academic_institution?: string | null;
   specialty: string | null;
   residency_year: string | null;
   cedula_profesional: string | null;
@@ -25,8 +26,9 @@ export interface Profile {
   verified_at: string | null;
   enrollment_status: EnrollmentStatus;
   enrollment_verified_at: string | null;
-  enrollment_verified_by: string | null;
   enrollment_requested_at: string | null;
+  cedula_verified?: boolean | null;
+  cedula_data?: Record<string, any> | null;
   created_at: string;
   updated_at: string;
 }

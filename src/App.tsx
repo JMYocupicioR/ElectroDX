@@ -27,6 +27,7 @@ const PublicProfilePage = lazy(() => import('./components/editorial/PublicProfil
 const QuizEditorPage = lazy(() => import('./components/quiz/QuizEditorPage'));
 const ClinicalCaseEditorPage = lazy(() => import('./components/editorial/ClinicalCaseEditorPage'));
 const MyProgressPage = lazy(() => import('./components/quiz/MyProgressPage'));
+const StudentDashboard = lazy(() => import('./components/student/StudentDashboard'));
 const EditorialCommitteePage = lazy(() => import('./components/editorial/EditorialCommitteePage'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const AdminReviewQueue = lazy(() => import('./components/admin/AdminReviewQueue'));
@@ -37,6 +38,9 @@ const AdminWorkshopsPage = lazy(() => import('./components/admin/AdminWorkshopsP
 const AdminModuleAccessPage = lazy(() => import('./components/admin/AdminModuleAccessPage'));
 const AccountPage = lazy(() => import('./components/user/AccountPage'));
 const SettingsPage = lazy(() => import('./components/user/SettingsPage'));
+const ExamConfigPage = lazy(() => import('./components/exam/ExamConfigPage'));
+const ExamSessionPage = lazy(() => import('./components/exam/ExamSessionPage'));
+const ExamResultsPage = lazy(() => import('./components/exam/ExamResultsPage'));
 
 function App() {
   const { isDarkMode } = useSettingsStore();
@@ -56,6 +60,12 @@ function App() {
               <Route path="/modulo/:moduleId" element={<ProtectedRoute mode="enrolled"><ModulePage /></ProtectedRoute>} />
               <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
               <Route path="/ejercicios" element={<ProtectedRoute mode="enrolled"><ExerciseMode /></ProtectedRoute>} />
+
+              {/* Simulador de Examen — exclusivo para alumnos */}
+              <Route path="/examenes" element={<ProtectedRoute mode="enrolled"><ExamConfigPage /></ProtectedRoute>} />
+              <Route path="/examenes/configurar" element={<ProtectedRoute mode="enrolled"><ExamConfigPage /></ProtectedRoute>} />
+              <Route path="/examenes/sesion" element={<ProtectedRoute mode="enrolled"><ExamSessionPage /></ProtectedRoute>} />
+              <Route path="/examenes/resultados" element={<ProtectedRoute mode="enrolled"><ExamResultsPage /></ProtectedRoute>} />
 
               {/* Herramientas y talleres */}
               <Route path="/herramientas/plexo-braquial" element={<PlexoCalculatorPage />} />
@@ -87,7 +97,12 @@ function App() {
               <Route path="/colaborador/nuevo-caso" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/caso-clinico/:revisionId" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/revision/:revisionId" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
-              <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><MyProgressPage /></ProtectedRoute>} />
+              <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><StudentDashboard /></ProtectedRoute>} />
+
+              {/* Portal del Estudiante / Alumno */}
+              <Route path="/dashboard" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/estudiante" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/portal" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
 
               {/* Cuenta */}
               <Route path="/cuenta" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />

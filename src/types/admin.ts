@@ -6,6 +6,7 @@ export interface AdminProfileRow {
   display_name: string;
   credentials: string | null;
   institution: string | null;
+  academic_institution?: string | null;
   specialty: string | null;
   bio: string | null;
   avatar_url: string | null;
@@ -20,6 +21,8 @@ export interface AdminProfileRow {
   created_at: string;
   roles: string[];
   has_premium: boolean;
+  cedula_verified?: boolean | null;
+  cedula_data?: Record<string, any> | null;
 }
 
 export interface AdminStats {

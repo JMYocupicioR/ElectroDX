@@ -64,7 +64,7 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
       navigate(nextPath, { replace: true });
       return;
     }
-    navigate(isAdmin ? '/admin' : '/mi-progreso', { replace: true });
+    navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
   }, [user, isAdmin, isEnrolledPhysician, nextPath, navigate]);
 
   useEffect(() => {

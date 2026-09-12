@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react';
-import { useSettingsStore } from './stores/settingsStore';
+import { useSettingsStore } from '../stores/settingsStore';
 
 export function useTheme() {
   const { isDarkMode } = useSettingsStore();

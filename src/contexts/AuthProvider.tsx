@@ -17,10 +17,13 @@ export interface StudentRegistrationData {
   fullName: string;
   credentials?: string;
   institution: string;
+  academicInstitution?: string;
   specialty?: string;
   residencyYear?: string;
   cedulaProfesional?: string;
   comefyrMemberId?: string;
+  cedulaVerified?: boolean;
+  cedulaData?: Record<string, any> | null;
 }
 
 interface AuthContextValue {
@@ -196,10 +199,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fullName,
         credentials,
         institution,
+        academicInstitution,
         specialty,
         residencyYear,
         cedulaProfesional,
         comefyrMemberId,
+        cedulaVerified,
+        cedulaData,
       } = data;
 
       const { data: signUpData, error } = await supabase.auth.signUp({
@@ -210,10 +216,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             full_name: fullName.trim(),
             credentials: credentials?.trim() || null,
             institution: institution.trim(),
+            academic_institution: academicInstitution?.trim() || null,
             specialty: specialty?.trim() || null,
             residency_year: residencyYear?.trim() || null,
             cedula_profesional: cedulaProfesional?.trim() || null,
             comefyr_member_id: comefyrMemberId?.trim() || null,
+            cedula_verified: cedulaVerified ?? false,
+            cedula_data: cedulaData ?? null,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -274,10 +283,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (updates: Partial<Profile>) => {
       if (!session?.user.id) return { error: 'No autenticado' };
-      const { error } = await supabase
+      let { error } = await supabase
         .from('profiles')
         .update(updates)
         .eq('id', session.user.id);
+
+      // Si la columna academic_institution aún no existe en Supabase (PGRST204 / 42703), reintentar sin ella
+      if (error && (error.message?.includes('academic_institution') || (error as any).code === 'PGRST204')) {
+        const { academic_institution, ...fallbackUpdates } = updates as any;
+        const retry = await supabase
+          .from('profiles')
+          .update(fallbackUpdates)
+          .eq('id', session.user.id);
+        if (!retry.error) {
+          await refreshProfile();
+          return { error: null };
+        }
+        error = retry.error;
+      }
+
       if (!error) await refreshProfile();
       return { error: error?.message ?? null };
     },
@@ -299,7 +323,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('avatars')
         .upload(path, file, { upsert: true, contentType: file.type });
 
-      if (uploadError) return { url: null, error: uploadError.message };
+      if (uploadError) {
+        const msg = (uploadError.message || '').toLowerCase();
+        if (msg.includes('bucket not found') || (uploadError as any).status === 400 || (uploadError as any).statusCode === '404') {
+          return {
+            url: null,
+            error: 'El bucket de almacenamiento "avatars" no existe en Supabase. Ejecuta el script SQL en el panel de Supabase para crearlo con sus permisos públicos.',
+          };
+        }
+        if (msg.includes('row-level security') || (uploadError as any).statusCode === '403') {
+          return {
+            url: null,
+            error: 'Permiso de almacenamiento restringido en Supabase Storage. Ejecuta el script SQL en Supabase para habilitar permisos en el bucket avatars.',
+          };
+        }
+        return { url: null, error: uploadError.message };
+      }
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
@@ -311,10 +350,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AuthContextValue>(() => {
     const userEmail = (session?.user?.email ?? '').toLowerCase().trim();
-    const isSuperAdminEmail =
-      userEmail === 'jmyocupicior@gmail.com' ||
-      userEmail.startsWith('jmyocupicior') ||
-      userEmail.includes('jmyocupicio');
+    // SuperAdmin bypass estricto únicamente para la cuenta principal del director
+    const isSuperAdminEmail = userEmail === 'jmyocupicior@gmail.com';
 
     const hasContributorRole = roles.includes('contributor');
     const isAdmin = roles.includes('admin') || isSuperAdminEmail;

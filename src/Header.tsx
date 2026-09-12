@@ -92,6 +92,16 @@ export function Header() {
                 )}
               </Link>
             )}
+            {isSupabaseConfigured && user && !isAdmin && (
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-sm"
+                title="Ir a Mi Portal de Estudiante"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                <span className="hidden sm:inline">Mi Portal</span>
+              </Link>
+            )}
             {isSupabaseConfigured && user ? (
               <UserMenu />
             ) : isSupabaseConfigured ? (

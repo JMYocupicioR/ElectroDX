@@ -9,6 +9,7 @@ export interface QuizOption {
   text: string;
   textEn?: string;
   isCorrect: boolean;
+  feedback?: string;
 }
 
 export interface QuizQuestionDraft {

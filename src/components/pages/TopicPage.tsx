@@ -10,9 +10,10 @@ import { getQuizFlagForTopic } from '../../services/quizService';
 import { PremiumGate } from '../PremiumGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2 } from 'lucide-react';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { isTopicCompleted, toggleTopicCompleted, setLastVisitedTopic } from '../../services/studentService';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
@@ -428,6 +429,7 @@ export default function TopicPage() {
   const [activeSection, setActiveSection] = useState('');
   const [readingProgress, setReadingProgress] = useState(0);
   const [quizFlag, setQuizFlag] = useState<QuizTopicFlag | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
   const mainRef = useRef<HTMLElement>(null);
 
@@ -473,25 +475,54 @@ export default function TopicPage() {
     if (el) sectionRefs.current.set(id, el);
   }, []);
 
-  const leafTopicId = useMemo(() => {
-    if (!mod) return null;
+  const currentTopicCandidates = useMemo(() => {
+    if (!mod) return [];
     const basePath = `/modulo/${moduleId}/`;
     const topicPathStr = location.pathname.replace(basePath, '');
     const pathParts = topicPathStr.split('/').filter(Boolean);
-    const { topic: resolvedTopic } = findTopicByPath(mod.topics, pathParts);
-    if (!resolvedTopic || resolvedTopic.children?.length) return null;
-    return resolvedTopic.id;
+    const { topic: resolvedTopic, breadcrumbs } = findTopicByPath(mod.topics, pathParts);
+    if (!resolvedTopic) return [];
+
+    // Candidates in priority order:
+    // 1. Current resolved topic ID
+    // 2. Nearest ancestors (reverse breadcrumbs)
+    // 3. Child subtopics (if parent container)
+    const list: string[] = [resolvedTopic.id];
+    for (let i = breadcrumbs.length - 2; i >= 0; i--) {
+      if (breadcrumbs[i]?.id) list.push(breadcrumbs[i].id);
+    }
+    if (resolvedTopic.children && resolvedTopic.children.length > 0) {
+      for (const ch of resolvedTopic.children) {
+        if (ch.id) list.push(ch.id);
+      }
+    }
+    return Array.from(new Set(list));
   }, [mod, moduleId, location.pathname]);
 
   useEffect(() => {
-    if (!leafTopicId) {
+    if (!currentTopicCandidates.length) {
       setQuizFlag(null);
       return;
     }
-    getQuizFlagForTopic(leafTopicId)
-      .then(setQuizFlag)
-      .catch(() => setQuizFlag(null));
-  }, [leafTopicId]);
+    let isMounted = true;
+    (async () => {
+      for (const tid of currentTopicCandidates) {
+        try {
+          const flag = await getQuizFlagForTopic(tid);
+          if (flag && flag.question_count > 0 && isMounted) {
+            setQuizFlag(flag);
+            return;
+          }
+        } catch {
+          // continue search
+        }
+      }
+      if (isMounted) setQuizFlag(null);
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [currentTopicCandidates]);
 
   if (moduleLoading && !mod) {
     return (
@@ -539,6 +570,20 @@ export default function TopicPage() {
   const lt = localizedTopic(topic, lang);
   const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
 
+  useEffect(() => {
+    if (user && mod && topic) {
+      setLastVisitedTopic(user.id, {
+        moduleId: mod.id,
+        moduleTitle: mod.title,
+        topicId: topic.id,
+        topicTitle: localizedTopic(topic, lang).title,
+        url: location.pathname,
+        updatedAt: new Date().toISOString(),
+      });
+      setIsCompleted(isTopicCompleted(user.id, topic.id));
+    }
+  }, [user, mod, topic, location.pathname, lang]);
+
   return (
     <PremiumGate moduleId={moduleId!} topicId={topic.id}>
       <main ref={mainRef} className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 pt-20 sm:pt-24 pb-24">
@@ -578,7 +623,7 @@ export default function TopicPage() {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
               {lt.title}
             </h1>
-            {isLeafTopic && quizFlag && quizFlag.question_count > 0 && (
+            {quizFlag && quizFlag.question_count > 0 && (
               <QuizTopicBadge label={lang === 'en' ? 'Assessment' : 'Evaluación'} />
             )}
           </div>
@@ -593,28 +638,6 @@ export default function TopicPage() {
             <ContributionBanner meta={topic.contributionMeta} />
           )}
 
-          {user && !canProposeContent && (
-            <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-sm text-amber-900 dark:text-amber-200">
-              {lang === 'en' ? (
-                <>
-                  Quiz creation requires an <strong>admin</strong>, <strong>editor</strong>, or{' '}
-                  <strong>verified contributor</strong> role.{' '}
-                  <Link to="/colaborador/perfil" className="underline font-medium">Complete your profile</Link>
-                  {' '}or ask an admin to assign your role in Supabase.
-                </>
-              ) : (
-                <>
-                  Para proponer cuestionarios necesitas rol de <strong>admin</strong>, <strong>editor</strong> o{' '}
-                  <strong>colaborador verificado</strong>.
-                  {roles.length === 0 && ' Tu cuenta no tiene roles asignados aún.'}
-                  {roles.includes('contributor') && !profile?.verified_at && ' Tu perfil de colaborador aún no está verificado.'}
-                  {' '}
-                  <Link to="/colaborador/perfil" className="underline font-medium">Completa tu perfil</Link>
-                  {' '}o pide a un admin que te asigne el rol en Supabase.
-                </>
-              )}
-            </div>
-          )}
 
           {canProposeContent && mod && (
             <div className="mb-4">
@@ -777,8 +800,48 @@ export default function TopicPage() {
             <ReferencesSection references={references} />
           )}
 
-          {isLeafTopic && mod && (
-            <QuizGate topicId={topic.id} moduleId={mod.id} quizFlag={quizFlag} />
+          {quizFlag && quizFlag.question_count > 0 && mod && (
+            <QuizGate
+              topicId={quizFlag.topic_id}
+              moduleId={mod.id}
+              quizFlag={quizFlag}
+              onPass={() => setIsCompleted(true)}
+              nextTopicUrl={nextTopic ? `/modulo/${mod.id}/${nextTopic.path.join('/')}` : `/modulo/${mod.id}`}
+            />
+          )}
+
+          {/* Lesson Completion Action Button */}
+          {user && (
+            <div className="my-8 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 bg-gradient-to-r from-blue-50/50 via-slate-50 to-indigo-50/50 dark:from-slate-800/40 dark:to-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
+              <div className="space-y-0.5 text-center sm:text-left">
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center justify-center sm:justify-start gap-2">
+                  <CheckCircle2 className={`w-4 h-4 ${isCompleted ? 'text-emerald-500 fill-emerald-500 text-white' : 'text-slate-400'}`} />
+                  {isCompleted ? 'Lección completada' : '¿Terminaste de estudiar esta lección?'}
+                </p>
+                <p className="text-xs text-slate-500">
+                  {isCompleted
+                    ? 'Esta lección ya suma a tu porcentaje de avance y créditos CME en tu portal de alumno.'
+                    : 'Márcala como completada para registrar tu progreso en tu portal de estudiante.'}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user || !topic) return;
+                  const nextState = toggleTopicCompleted(user.id, topic.id);
+                  setIsCompleted(nextState);
+                }}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 ${
+                  isCompleted
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 hover:bg-emerald-200'
+                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25'
+                }`}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {isCompleted ? 'Completada (desmarcar)' : 'Marcar como completada'}
+              </button>
+            </div>
           )}
 
           {/* Prev/Next Navigation */}

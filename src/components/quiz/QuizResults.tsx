@@ -1,176 +1,250 @@
-import { useMemo, useState } from 'react';
-import { CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Lightbulb,
+  ChevronRight,
+  BookOpen,
+  Award,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import type { QuizAnswerRecord, QuizQuestion, QuizWithQuestions } from '../../types/quiz';
-import { isQuestionCorrect } from '../../utils/quizScoring';
+
+interface QuizResultsProps {
+  quiz: QuizWithQuestions;
+  displayQuestions: QuizQuestion[];
+  result: { score: number; passed: boolean; answers: QuizAnswerRecord[] };
+  responses: Record<string, string[]>;
+  nextTopicUrl?: string;
+  onRetry?: () => void;
+}
+
+const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
 export function QuizResults({
   quiz,
   displayQuestions,
   result,
   responses,
-}: {
-  quiz: QuizWithQuestions;
-  displayQuestions: QuizQuestion[];
-  result: { score: number; passed: boolean; answers: QuizAnswerRecord[] };
-  responses: Record<string, string[]>;
-}) {
+  nextTopicUrl,
+  onRetry,
+}: QuizResultsProps) {
   const lang = useSettingsStore((s) => s.language);
-  const [reviewMode, setReviewMode] = useState(false);
-  const [reviewIndex, setReviewIndex] = useState(0);
+  const [expandedQuestion, setExpandedQuestion] = useState<string | null>(null);
 
-  const wrongQuestions = useMemo(
-    () => displayQuestions.filter((q) => !isQuestionCorrect(q, responses[q.id] ?? [])),
-    [displayQuestions, responses]
-  );
-
-  const reviewList = reviewMode ? wrongQuestions : displayQuestions;
-  const current = reviewList[reviewIndex];
+  const totalQuestions = displayQuestions.length;
+  const correctCount = result.answers.filter((a) => a.correct).length;
 
   return (
-    <section className="mt-10 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/60 overflow-hidden">
+    <section className="mt-10 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-xl overflow-hidden transition-all">
+      {/* ─── Cabecera de Resultado ────────────────────────────────────────── */}
       <div
-        className={`px-6 py-5 ${
+        className={`px-6 py-8 text-center border-b ${
           result.passed
-            ? 'bg-emerald-50 dark:bg-emerald-950/30 border-b border-emerald-200 dark:border-emerald-800'
-            : 'bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800'
+            ? 'bg-gradient-to-b from-emerald-500/15 via-emerald-500/5 to-transparent border-emerald-500/20'
+            : 'bg-gradient-to-b from-amber-500/15 via-amber-500/5 to-transparent border-amber-500/20'
         }`}
       >
-        <div className="flex items-center gap-3">
+        <div
+          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border ${
+            result.passed
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+              : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+          }`}
+        >
           {result.passed ? (
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
+            <>
+              <Award className="w-3.5 h-3.5" />
+              {lang === 'en' ? 'Lesson Acredited' : 'Lección Acreditada'}
+            </>
           ) : (
-            <XCircle className="w-8 h-8 text-amber-500" />
+            <>
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {lang === 'en' ? 'Needs Review' : 'Requiere Repaso'}
+            </>
           )}
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              {result.passed
-                ? lang === 'en'
-                  ? 'Passed!'
-                  : '¡Aprobado!'
-                : lang === 'en'
-                ? 'Not passed'
-                : 'No aprobado'}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300">
-              {lang === 'en' ? 'Score' : 'Puntaje'}: <strong>{result.score}%</strong> (
-              {lang === 'en' ? 'minimum' : 'mínimo'} {quiz.pass_score}%)
-            </p>
+        </div>
+
+        {/* Círculo / Marcador de Puntaje */}
+        <div className="relative w-28 h-28 mx-auto mb-3 flex items-center justify-center">
+          <div
+            className={`w-28 h-28 rounded-full border-4 flex flex-col items-center justify-center shadow-inner ${
+              result.passed
+                ? 'border-emerald-500/40 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400'
+                : 'border-amber-500/40 bg-amber-500/5 text-amber-600 dark:text-amber-400'
+            }`}
+          >
+            <span className="text-3xl font-black">{result.score}%</span>
+            <span className="text-[10px] text-slate-400 font-medium">
+              {correctCount} / {totalQuestions}
+            </span>
           </div>
+        </div>
+
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+          {result.passed
+            ? lang === 'en'
+              ? 'Congratulations! You passed the evaluation.'
+              : '¡Felicidades! Evaluación aprobada'
+            : lang === 'en'
+            ? 'Score below threshold'
+            : 'Puntaje insuficiente para acreditar'}
+        </h2>
+
+        <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+          {result.passed
+            ? lang === 'en'
+              ? 'This lesson has been marked as completed and added to your module progress.'
+              : 'Esta lección ha sido marcada como completada automáticamente y sumada al progreso de tu módulo.'
+            : lang === 'en'
+            ? `Minimum required: ${quiz.pass_score}%. Review the clinical pearls below and try again.`
+            : `Mínimo requerido: ${quiz.pass_score}%. Revisa las perlas clínicas y explicaciones a continuación para volver a intentarlo.`}
+        </p>
+
+        {/* Acciones principales */}
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {result.passed && nextTopicUrl && (
+            <Link
+              to={nextTopicUrl}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+            >
+              <span>{lang === 'en' ? 'Next Lesson' : 'Continuar a la siguiente lección'}</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          )}
+
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold transition-all active:scale-95"
+            >
+              <RotateCcw className="w-4 h-4 text-slate-500" />
+              <span>{lang === 'en' ? 'Retry Evaluation' : 'Reintentar evaluación'}</span>
+            </button>
+          )}
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
-        {!reviewMode && (
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Tu resultado ha sido guardado. Revisa las explicaciones clínicas a continuación.
-          </p>
-        )}
+      {/* ─── Revisión Detallada con Perlas Clínicas ────────────────────────── */}
+      <div className="p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-sm">
+          <BookOpen className="w-4 h-4 text-cyan-500" />
+          <span>{lang === 'en' ? 'Clinical Answers Review' : 'Revisión y Perlas Clínicas'}</span>
+        </div>
 
-        {wrongQuestions.length > 0 && !reviewMode && (
-          <button
-            type="button"
-            onClick={() => {
-              setReviewMode(true);
-              setReviewIndex(0);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-indigo-300 text-indigo-700 text-sm"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Repasar {wrongQuestions.length} pregunta(s) fallida(s)
-          </button>
-        )}
-
-        {current && (
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
-            {reviewMode && (
-              <p className="text-xs text-slate-400">
-                Repaso {reviewIndex + 1} de {reviewList.length}
-              </p>
-            )}
-            <p className="font-medium">{current.stem}</p>
-            {current.image_url && (
-              <img
-                src={current.image_url}
-                alt={current.image_alt ?? ''}
-                className="max-h-48 rounded-lg border border-slate-200 dark:border-slate-700"
-              />
-            )}
-            <ul className="space-y-1 text-sm">
-              {current.options.map((o) => (
-                <li
-                  key={o.id}
-                  className={
-                    o.isCorrect
-                      ? 'text-emerald-700 dark:text-emerald-400 font-medium'
-                      : (responses[current.id] ?? []).includes(o.id)
-                      ? 'text-red-600'
-                      : 'text-slate-500'
-                  }
-                >
-                  {o.isCorrect ? '✓ ' : (responses[current.id] ?? []).includes(o.id) ? '✗ ' : '○ '}
-                  {o.text}
-                </li>
-              ))}
-            </ul>
-            {current.explanation && (
-              <p className="text-sm text-slate-600 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700 pt-3">
-                {current.explanation}
-              </p>
-            )}
-          </div>
-        )}
-
-        {reviewMode && reviewList.length > 1 && (
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={reviewIndex === 0}
-              onClick={() => setReviewIndex((i) => i - 1)}
-              className="px-3 py-2 rounded-lg border text-sm disabled:opacity-40"
-            >
-              Anterior
-            </button>
-            <button
-              type="button"
-              disabled={reviewIndex >= reviewList.length - 1}
-              onClick={() => setReviewIndex((i) => i + 1)}
-              className="px-3 py-2 rounded-lg border text-sm disabled:opacity-40"
-            >
-              Siguiente
-            </button>
-            <button
-              type="button"
-              onClick={() => setReviewMode(false)}
-              className="px-3 py-2 rounded-lg text-sm text-slate-500 ml-auto"
-            >
-              Ver resumen completo
-            </button>
-          </div>
-        )}
-
-        {!reviewMode &&
-          displayQuestions.map((q) => {
+        <div className="space-y-3">
+          {displayQuestions.map((q, idx) => {
             const answer = result.answers.find((a) => a.questionId === q.id);
+            const isCorrect = answer?.correct ?? false;
+            const selectedOptIds = responses[q.id] ?? [];
+            const isExpanded = expandedQuestion === q.id;
+
             return (
-              <details
+              <div
                 key={q.id}
-                className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 text-sm"
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 overflow-hidden"
               >
-                <summary className="cursor-pointer font-medium flex items-center gap-2">
-                  {answer?.correct ? (
-                    <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  ) : (
-                    <XCircle className="w-4 h-4 text-red-500" />
-                  )}
-                  {q.stem}
-                </summary>
-                {q.explanation && (
-                  <p className="mt-2 text-slate-600 dark:text-slate-300 pl-6">{q.explanation}</p>
+                <button
+                  type="button"
+                  onClick={() => setExpandedQuestion(isExpanded ? null : q.id)}
+                  className="w-full flex items-start gap-3 p-4 text-left transition-colors hover:bg-slate-100/50 dark:hover:bg-slate-800/30"
+                >
+                  <div
+                    className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 text-xs font-bold ${
+                      isCorrect
+                        ? 'bg-emerald-500/20 text-emerald-500'
+                        : 'bg-red-500/20 text-red-500'
+                    }`}
+                  >
+                    {isCorrect ? (
+                      <CheckCircle className="w-4 h-4" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs text-slate-400 font-medium mb-1">
+                      {lang === 'en' ? 'Question' : 'Pregunta'} {idx + 1}
+                    </div>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 leading-snug line-clamp-2">
+                      {q.stem}
+                    </p>
+                  </div>
+
+                  <div className="shrink-0 text-slate-400 mt-1">
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
+                  </div>
+                </button>
+
+                {isExpanded && (
+                  <div className="px-4 pb-4 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 space-y-3">
+                    {/* Opciones */}
+                    <div className="space-y-1.5">
+                      {q.options.map((opt, oIdx) => {
+                        const isSelected = selectedOptIds.includes(opt.id);
+                        const isOptCorrect = opt.isCorrect;
+
+                        return (
+                          <div
+                            key={opt.id}
+                            className={`flex items-start gap-3 p-3 rounded-lg text-xs font-medium border ${
+                              isOptCorrect
+                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                                : isSelected && !isOptCorrect
+                                ? 'bg-red-500/10 border-red-500/30 text-red-800 dark:text-red-300'
+                                : 'bg-white/40 dark:bg-slate-800/40 border-transparent text-slate-500'
+                            }`}
+                          >
+                            <span className="shrink-0 font-bold w-5 h-5 rounded-md border flex items-center justify-center text-[10px]">
+                              {OPTION_LETTERS[oIdx] ?? oIdx + 1}
+                            </span>
+                            <span className="flex-1 leading-relaxed">{opt.text}</span>
+                            {isOptCorrect && (
+                              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                                ✓ Correcta
+                              </span>
+                            )}
+                            {isSelected && !isOptCorrect && (
+                              <span className="text-[10px] font-bold text-red-600 dark:text-red-400 shrink-0">
+                                ✗ Tu respuesta
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Explicación / Perla clínica */}
+                    {q.explanation && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5">
+                        <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                        <div className="text-xs">
+                          <span className="font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide block mb-0.5">
+                            Perla Clínica Oficial
+                          </span>
+                          <p className="text-slate-700 dark:text-amber-200/90 leading-relaxed">
+                            {q.explanation}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </details>
+              </div>
             );
           })}
+        </div>
       </div>
     </section>
   );

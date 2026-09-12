@@ -40,11 +40,11 @@ export function ProtectedRoute({
   }
 
   if (mode === 'editor' && !isAdmin && !isEditor) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (mode === 'admin' && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

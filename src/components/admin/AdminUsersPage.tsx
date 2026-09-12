@@ -11,6 +11,7 @@ import {
   Stethoscope,
   XCircle,
   GraduationCap,
+  CheckCircle2,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -131,11 +132,30 @@ export default function AdminUsersPage() {
                       </p>
                       {u.credentials && (
                         <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
-                          {u.credentials} · {u.institution}
+                          {u.credentials} · Sede: {u.institution}
+                          {u.academic_institution && u.academic_institution !== u.institution && (
+                            <span className="text-xs text-slate-400"> (Egreso: {u.academic_institution})</span>
+                          )}
                         </p>
                       )}
                       {u.cedula_profesional && (
-                        <p className="text-xs text-slate-500 mt-1">Cédula: {u.cedula_profesional}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <span className="text-xs text-slate-500">Cédula: <strong>{u.cedula_profesional}</strong></span>
+                          {u.cedula_verified ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Verificada SEP
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-500">
+                              No verificada
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {u.cedula_data && (
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          🏛️ <span className="font-medium">{u.cedula_data.profesion || u.cedula_data.profession}</span> · {u.cedula_data.institucion || u.cedula_data.institution} ({u.cedula_data.anioRegistro || u.cedula_data.registrationYear})
+                        </p>
                       )}
                       {u.residency_year && (
                         <p className="text-xs text-slate-500 mt-0.5">Nivel/Residencia: {u.residency_year}</p>

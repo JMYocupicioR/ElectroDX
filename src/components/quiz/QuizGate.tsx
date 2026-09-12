@@ -9,10 +9,14 @@ export function QuizGate({
   topicId,
   moduleId,
   quizFlag,
+  onPass,
+  nextTopicUrl,
 }: {
   topicId: string;
   moduleId: string;
   quizFlag: QuizTopicFlag | null;
+  onPass?: () => void;
+  nextTopicUrl?: string;
 }) {
   const location = useLocation();
   const {
@@ -35,86 +39,30 @@ export function QuizGate({
     );
   }
 
-  if (!user) {
-    return (
-      <LockedCard
-        icon={<Lock className="w-6 h-6 text-indigo-500" />}
-        title="Evaluación del tema"
-        description={`Este tema incluye ${quizFlag.question_count} pregunta(s). Acceso reservado para médicos inscritos y verificados.`}
-        action={
-          <Link
-            to={loginUrl}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium"
-          >
-            <LogIn className="w-4 h-4" /> Iniciar sesión como médico
-          </Link>
-        }
-      />
-    );
-  }
-
-  if (!profile || !isEnrollmentProfileComplete(profile)) {
-    return (
-      <LockedCard
-        icon={<ClipboardList className="w-6 h-6 text-amber-500" />}
-        title="Completa tu perfil profesional"
-        description="Para acceder a las evaluaciones necesitas registrar tu cédula profesional y datos clínicos."
-        action={
-          <Link
-            to="/colaborador/perfil"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-medium"
-          >
-            Completar perfil
-          </Link>
-        }
-      />
-    );
-  }
-
-  if (enrollmentStatus === 'pending') {
-    return (
-      <LockedCard
-        icon={<Clock className="w-6 h-6 text-amber-500" />}
-        title="Solicitud en revisión"
-        description="Tu inscripción médica está pendiente de aprobación por un administrador. Podrás acceder a la evaluación cuando sea aprobada."
-      />
-    );
-  }
-
-  if (enrollmentStatus === 'rejected') {
-    return (
-      <LockedCard
-        icon={<XCircle className="w-6 h-6 text-red-500" />}
-        title="Inscripción no aprobada"
-        description="Tu solicitud de inscripción fue rechazada. Actualiza tu perfil o contacta al administrador."
-        action={
-          <Link
-            to="/colaborador/perfil"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
-          >
-            Revisar perfil
-          </Link>
-        }
-      />
-    );
-  }
-
-  if (!isEnrolledPhysician) {
-    return (
-      <LockedCard
-        icon={<Lock className="w-6 h-6 text-indigo-500" />}
-        title="Acceso restringido"
-        description="Las evaluaciones están disponibles solo para médicos inscritos verificados."
-      />
-    );
-  }
-
   return (
-    <QuizPlayer
-      topicId={topicId}
-      moduleId={moduleId}
-      quizFlag={quizFlag}
-    />
+    <div className="mt-10">
+      {!user && (
+        <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+          <span><strong>Modo Formativo:</strong> Estás realizando esta evaluación en modo práctica. Inicia sesión para guardar tu historial oficial y créditos CME.</span>
+          <Link to={loginUrl} className="shrink-0 font-semibold underline hover:text-amber-600">Iniciar sesión</Link>
+        </div>
+      )}
+
+      {user && !isEnrolledPhysician && (
+        <div className="mb-4 p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-800 dark:text-indigo-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+          <span><strong>Evaluación Formativa:</strong> Tus aciertos sumarán a tu avance del módulo. Para aval CME oficial, completa tu cédula profesional en tu perfil.</span>
+          <Link to="/colaborador/perfil" className="shrink-0 font-semibold underline hover:text-indigo-600">Completar perfil</Link>
+        </div>
+      )}
+
+      <QuizPlayer
+        topicId={topicId}
+        moduleId={moduleId}
+        quizFlag={quizFlag}
+        onPass={onPass}
+        nextTopicUrl={nextTopicUrl}
+      />
+    </div>
   );
 }
 
