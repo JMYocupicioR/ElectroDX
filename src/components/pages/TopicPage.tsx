@@ -10,13 +10,19 @@ import { getQuizFlagForTopic } from '../../services/quizService';
 import { PremiumGate } from '../PremiumGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock } from 'lucide-react';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { isTopicCompleted, toggleTopicCompleted, setLastVisitedTopic } from '../../services/studentService';
+import {
+  isTopicCompleted,
+  toggleTopicCompleted,
+  setLastVisitedTopic,
+  TOPIC_PROGRESS_EVENT,
+  getAllTopicIds,
+} from '../../services/studentService';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
+import { useTopicProgress } from '../../hooks/useTopicProgress';
 
 /* ─── Rich-text renderer ─── */
 function renderInline(text: string, keyPrefix: string): (string | JSX.Element)[] {
@@ -570,6 +576,12 @@ export default function TopicPage() {
   const lt = localizedTopic(topic, lang);
   const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
 
+  const { isCompleted: isTopicDoneHook, getModuleStats } = useTopicProgress();
+  const modStats = useMemo(() => {
+    return mod ? getModuleStats(mod.topics) : null;
+  }, [mod, getModuleStats]);
+  const isModuleCompleted = modStats?.isFullyCompleted ?? false;
+
   useEffect(() => {
     if (user && mod && topic) {
       setLastVisitedTopic(user.id, {
@@ -584,6 +596,16 @@ export default function TopicPage() {
     }
   }, [user, mod, topic, location.pathname, lang]);
 
+  useEffect(() => {
+    const handleProgress = () => {
+      if (user && topic) {
+        setIsCompleted(isTopicCompleted(user.id, topic.id));
+      }
+    };
+    window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
+    return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
+  }, [user, topic]);
+
   return (
     <PremiumGate moduleId={moduleId!} topicId={topic.id}>
       <main ref={mainRef} className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 pt-20 sm:pt-24 pb-24">
@@ -597,8 +619,15 @@ export default function TopicPage() {
             <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
           </Link>
           <ChevronRight className="w-3 h-3 flex-shrink-0" />
-          <Link to={`/modulo/${mod.id}`} className="hover:text-blue-500 transition-colors truncate max-w-[120px] sm:max-w-none min-h-[2rem] inline-flex items-center">
-            {mod.emoji} {modTitle}
+          <Link to={`/modulo/${mod.id}`} className="hover:text-blue-500 transition-colors truncate max-w-[140px] sm:max-w-none min-h-[2rem] inline-flex items-center gap-1.5">
+            {isModuleCompleted ? (
+              <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                {mod.emoji} {modTitle}
+              </span>
+            ) : (
+              <span>{mod.emoji} {modTitle}</span>
+            )}
           </Link>
           {breadcrumbs.map((bc, i) => (
             <span key={bc.id} className="flex items-center gap-1">
@@ -616,8 +645,12 @@ export default function TopicPage() {
 
         {/* Topic Header */}
         <motion.article initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          {/* Module color accent bar */}
-          <div className={`h-1 w-16 rounded-full bg-gradient-to-r ${mod.color} mb-4`} />
+          {/* Module color accent bar: green if completed, original mod.color if not */}
+          <div className={`h-1.5 w-20 rounded-full transition-colors duration-500 ${
+            isModuleCompleted
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm shadow-emerald-500/30'
+              : `bg-gradient-to-r ${mod.color}`
+          } mb-4`} />
 
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 dark:text-white leading-tight tracking-tight">
@@ -628,10 +661,54 @@ export default function TopicPage() {
             )}
           </div>
           {lang === 'es' && topic.titleEn && (
-            <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.titleEn}</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-4">{topic.titleEn}</p>
           )}
           {lang === 'en' && topic.title !== lt.title && (
-            <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-6">{topic.title}</p>
+            <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-4">{topic.title}</p>
+          )}
+
+          {/* Sticky/Prominent Student Lesson Status Bar */}
+          {user && (
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6 p-3 sm:p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/50 backdrop-blur-sm shadow-xs">
+              <div className="flex items-center gap-2.5">
+                {isCompleted ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/70 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    {lang === 'en' ? 'Lesson Completed' : 'Lección Completada'}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/70 dark:border-amber-800">
+                    <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                    {lang === 'en' ? 'Lesson Pending' : 'Lección Pendiente'}
+                  </span>
+                )}
+                <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
+                  {isCompleted
+                    ? (lang === 'en' ? 'Registered in your study curriculum' : 'Registrada en tu progreso curricular y créditos CME')
+                    : (lang === 'en' ? 'Mark as completed when you finish studying' : 'Márcala como completada al concluir tu lectura')}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user || !topic) return;
+                  const childIds = topic.children ? getAllTopicIds(topic.children) : [];
+                  const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
+                  setIsCompleted(nextState);
+                }}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 ${
+                  isCompleted
+                    ? 'bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                }`}
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                {isCompleted
+                  ? (lang === 'en' ? 'Mark as pending' : 'Marcar como pendiente')
+                  : (lang === 'en' ? 'Mark as completed' : 'Marcar como completada')}
+              </button>
+            </div>
           )}
 
           {topic.contributionMeta && (
@@ -829,7 +906,8 @@ export default function TopicPage() {
                 type="button"
                 onClick={() => {
                   if (!user || !topic) return;
-                  const nextState = toggleTopicCompleted(user.id, topic.id);
+                  const childIds = topic.children ? getAllTopicIds(topic.children) : [];
+                  const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
                   setIsCompleted(nextState);
                 }}
                 className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 ${
@@ -884,43 +962,87 @@ export default function TopicPage() {
           <aside className="hidden lg:block">
             <div className="sticky top-24 max-h-[calc(var(--app-height,100vh)-8rem)] overflow-y-auto">
               <div className="bg-white/80 dark:bg-slate-800/70 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-slate-700/30 shadow-lg p-4">
-                {/* Progress bar */}
-                <div className="mb-3 flex items-center gap-2">
-                  <div className="flex-1 h-1 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300 ease-out"
-                      style={{ width: `${readingProgress}%` }}
-                    />
-                  </div>
-                  <span className="text-[0.6rem] font-mono text-slate-400 dark:text-slate-500 tabular-nums">
-                    {readingProgress}%
-                  </span>
-                </div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
-                  <List className="w-3.5 h-3.5" /> Contenido
-                </h4>
-                <nav className="space-y-0.5">
-                  {topic.children!.map((child, i) => (
-                    <div key={child.id} className="space-y-1">
-                      <button
-                        onClick={() => scrollToSection(child.id)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-start gap-2 ${
-                          activeSection === child.id
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium shadow-sm'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
-                        }`}
-                      >
-                        <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                        <span className="line-clamp-2 leading-snug">{localizedTopic(child, lang).title}</span>
-                      </button>
-                      {canProposeContent && mod && !child.children?.length && (
-                        <div className="pl-7 pr-1">
-                          <ProposeQuizLink moduleId={mod.id} topicId={child.id} />
+                {/* Progress bar in TOC */}
+                {(() => {
+                  const completedChildrenCount = topic.children
+                    ? topic.children.filter((c) => isTopicDoneHook(c.id)).length
+                    : 0;
+                  const totalChildrenCount = topic.children?.length ?? 0;
+                  const childrenCompletionPct = totalChildrenCount > 0
+                    ? Math.round((completedChildrenCount / totalChildrenCount) * 100)
+                    : 0;
+                  const isAllChildrenDone = totalChildrenCount > 0 && completedChildrenCount === totalChildrenCount;
+
+                  return (
+                    <>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <div className="flex-1 h-1.5 rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ease-out ${
+                              isAllChildrenDone
+                                ? 'bg-emerald-500 shadow-sm shadow-emerald-500/40'
+                                : 'bg-gradient-to-r from-blue-500 to-indigo-500'
+                            }`}
+                            style={{ width: `${Math.max(readingProgress, childrenCompletionPct)}%` }}
+                          />
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </nav>
+                        <span className={`text-[0.65rem] font-mono tabular-nums font-bold ${
+                          isAllChildrenDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'
+                        }`}>
+                          {completedChildrenCount}/{totalChildrenCount} ({childrenCompletionPct}%)
+                        </span>
+                      </div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 flex items-center justify-between">
+                        <span className="flex items-center gap-1.5">
+                          <List className="w-3.5 h-3.5" /> Contenido
+                        </span>
+                        {isAllChildrenDone && (
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                            ✓ Completado
+                          </span>
+                        )}
+                      </h4>
+                      <nav className="space-y-1">
+                        {topic.children!.map((child, i) => {
+                          const childDone = isTopicDoneHook(child.id);
+                          return (
+                            <div key={child.id} className="space-y-1">
+                              <button
+                                onClick={() => scrollToSection(child.id)}
+                                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all duration-200 flex items-start gap-2.5 ${
+                                  activeSection === child.id
+                                    ? childDone
+                                      ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-medium border-l-2 border-emerald-500 shadow-xs'
+                                      : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-l-2 border-blue-500 shadow-xs'
+                                    : childDone
+                                    ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 font-medium'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                              >
+                                {childDone ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                ) : (
+                                  <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
+                                )}
+                                <span className="line-clamp-2 leading-snug flex-1">{localizedTopic(child, lang).title}</span>
+                                {childDone && (
+                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                              {canProposeContent && mod && !child.children?.length && (
+                                <div className="pl-7 pr-1">
+                                  <ProposeQuizLink moduleId={mod.id} topicId={child.id} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </nav>
+                    </>
+                  );
+                })()}
                 {/* Back to module link */}
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/40">
                   <Link
@@ -974,20 +1096,36 @@ export default function TopicPage() {
                 </button>
               </div>
               <nav className="overflow-y-auto max-h-[calc(70vh-4rem)] p-4 space-y-1">
-                {topic.children!.map((child, i) => (
-                  <button
-                    key={child.id}
-                    onClick={() => scrollToSection(child.id)}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all flex items-start gap-3 min-h-[44px] ${
-                      activeSection === child.id
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
-                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                    <span className="leading-snug">{localizedTopic(child, lang).title}</span>
-                  </button>
-                ))}
+                {topic.children!.map((child, i) => {
+                  const childDone = isTopicDoneHook(child.id);
+                  return (
+                    <button
+                      key={child.id}
+                      onClick={() => scrollToSection(child.id)}
+                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all flex items-start gap-3 min-h-[44px] ${
+                        activeSection === child.id
+                          ? childDone
+                            ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-medium'
+                            : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
+                          : childDone
+                          ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-medium'
+                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      {childDone ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <span className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
+                      )}
+                      <span className="leading-snug flex-1">{localizedTopic(child, lang).title}</span>
+                      {childDone && (
+                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                          ✓
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </nav>
             </motion.div>
           </>

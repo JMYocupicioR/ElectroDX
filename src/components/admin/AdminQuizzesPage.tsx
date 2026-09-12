@@ -1,0 +1,52 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { AdminLayout } from './AdminLayout';
+import { AdminQuizCatalog } from './quiz/AdminQuizCatalog';
+import { AdminQuizEditor } from './quiz/AdminQuizEditor';
+
+export default function AdminQuizzesPage() {
+  const { topicId: routeTopicId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const queryTopicId = searchParams.get('topicId');
+  const activeTopicId = routeTopicId || queryTopicId || null;
+
+  const [selectedTopicId, setSelectedTopicId] = useState<string | null>(activeTopicId);
+
+  useEffect(() => {
+    if (activeTopicId) {
+      setSelectedTopicId(activeTopicId);
+    }
+  }, [activeTopicId]);
+
+  const handleSelectTopic = (topicId: string) => {
+    setSelectedTopicId(topicId);
+    navigate(`/admin/quizzes/${topicId}`);
+  };
+
+  const handleBackToCatalog = () => {
+    setSelectedTopicId(null);
+    navigate('/admin/quizzes');
+  };
+
+  return (
+    <AdminLayout
+      title={selectedTopicId ? 'Editor de Cuestionario' : 'Gestión y Edición de Quizzes'}
+      subtitle={
+        selectedTopicId
+          ? 'Redacta viñetas clínicas, opciones de respuesta, perlas COMEFYR y publica en vivo para alumnos.'
+          : 'Supervisa y edita los cuestionarios de evaluación de los 13 módulos del temario NeuroSAFE MX.'
+      }
+    >
+      {selectedTopicId ? (
+        <AdminQuizEditor
+          initialTopicId={selectedTopicId}
+          onBackToCatalog={handleBackToCatalog}
+        />
+      ) : (
+        <AdminQuizCatalog onSelectTopic={handleSelectTopic} />
+      )}
+    </AdminLayout>
+  );
+}

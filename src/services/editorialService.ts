@@ -15,10 +15,15 @@ export async function getPublicProfiles(): Promise<Profile[]> {
     .from('profiles')
     .select('*')
     .eq('is_public', true)
-    .not('verified_at', 'is', null)
+    .eq('enrollment_status', 'approved')
     .order('display_name');
   if (error) throw error;
-  return (data ?? []) as Profile[];
+  const seen = new Set<string>();
+  return ((data ?? []) as Profile[]).filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
 }
 
 export async function getProfileById(id: string): Promise<Profile | null> {
@@ -39,11 +44,11 @@ export async function getPendingProfiles(): Promise<Profile[]> {
 
 export async function getAdminProfiles(
   pendingOnly = false,
-  enrollmentFilter?: 'enrollment_pending' | 'enrolled' | 'contributor_pending' | 'contributors'
+  enrollmentFilter?: 'all' | 'enrollment_pending' | 'enrolled' | 'comite' | 'contributors' | 'premium'
 ) {
   const { data, error } = await supabase.rpc('admin_list_profiles', {
     pending_only: pendingOnly,
-    enrollment_filter: enrollmentFilter ?? null,
+    enrollment_filter: enrollmentFilter === 'all' ? null : (enrollmentFilter ?? null),
   });
   if (error) throw error;
   return (data ?? []) as import('../types/admin').AdminProfileRow[];
@@ -119,6 +124,11 @@ export async function revokePremiumAccess(userId: string) {
   if (error) throw error;
 }
 
+export async function adminDeleteUser(userId: string): Promise<void> {
+  const { error } = await (supabase.rpc as any)('admin_delete_user', { target_user_id: userId });
+  if (error) throw error;
+}
+
 export async function getAuditLog(limit = 20) {
   try {
     const { data, error } = await supabase
@@ -180,7 +190,10 @@ export async function revokePhysicianEnrollment(userId: string) {
   if (error) throw error;
 }
 
-export async function getPublishedQuizForTopic(topicId: string) {
+export async function getPublishedQuizForTopic(topicId: string): Promise<{
+  quiz: import('../types/quiz').PublishedQuiz;
+  questions: import('../types/quiz').QuizQuestion[];
+} | null> {
   const { data: quiz, error: quizError } = await supabase
     .from('published_quizzes')
     .select('*')
@@ -189,14 +202,19 @@ export async function getPublishedQuizForTopic(topicId: string) {
   if (quizError) throw quizError;
   if (!quiz) return null;
 
+  const typedQuiz = quiz as import('../types/quiz').PublishedQuiz;
+
   const { data: questions, error: qError } = await supabase
     .from('quiz_questions')
     .select('*')
-    .eq('quiz_id', quiz.id)
+    .eq('quiz_id', typedQuiz.id)
     .order('sort_order');
   if (qError) throw qError;
 
-  return { quiz, questions: questions ?? [] };
+  return {
+    quiz: typedQuiz,
+    questions: ((questions ?? []) as unknown) as import('../types/quiz').QuizQuestion[],
+  };
 }
 
 export async function grantRole(userId: string, role: AppRole) {
@@ -205,6 +223,51 @@ export async function grantRole(userId: string, role: AppRole) {
     target_role: role,
   });
   if (error) throw error;
+}
+
+export async function revokeRole(userId: string, role: AppRole) {
+  const { error } = await supabase.rpc('revoke_user_role', {
+    target_user_id: userId,
+    target_role: role,
+  });
+  if (error) throw error;
+}
+
+export async function toggleEditorialCommitteeVisibility(userId: string, show: boolean) {
+  const { error } = await (supabase.rpc as any)('admin_toggle_editorial_committee', {
+    target_user_id: userId,
+    show,
+  });
+  if (error) throw error;
+}
+
+export async function toggleSpecialistVisibility(userId: string, isPublic: boolean) {
+  const { error } = await (supabase.rpc as any)('admin_toggle_specialist_visibility', {
+    target_user_id: userId,
+    show: isPublic,
+  });
+  if (error) throw error;
+}
+
+export async function getCommitteeMembers(): Promise<Profile[]> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('show_in_editorial_committee', true)
+      .order('created_at', { ascending: true });
+    if (!error && data) {
+      const seen = new Set<string>();
+      return (data as Profile[]).filter((p) => {
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+    }
+  } catch (e) {
+    console.warn('[getCommitteeMembers] error:', e);
+  }
+  return [];
 }
 
 export async function getMyRevisions(authorId: string): Promise<ContentRevision[]> {
@@ -335,3 +398,146 @@ export async function getPublishedTopic(id: string): Promise<PublishedTopic | nu
   if (error) throw error;
   return (data as PublishedTopic | null) ?? null;
 }
+
+// ─── GESTIÓN DIRECTA DE QUIZZES (ADMINISTRACIÓN) ──────────────────────────────
+
+export async function getAllPublishedQuizzes(): Promise<import('../types/quiz').PublishedQuiz[]> {
+  try {
+    const { data, error } = await supabase
+      .from('published_quizzes')
+      .select('*')
+      .order('published_at', { ascending: false });
+    if (!error && data) return data as import('../types/quiz').PublishedQuiz[];
+  } catch (e) {
+    console.warn('[editorialService] Error fetching published_quizzes:', e);
+  }
+  return [];
+}
+
+export async function getQuizEditorDataForTopic(topicId: string): Promise<{
+  source: 'database' | 'fallback' | 'empty';
+  title: string;
+  passScore: number;
+  maxAttempts: number | null;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  questions: import('../types/quiz').QuizQuestionDraft[];
+  version: number;
+  questionCount: number;
+}> {
+  // 1. Intentar cargar de Supabase
+  try {
+    const published = await getPublishedQuizForTopic(topicId);
+    if (published && published.questions && published.questions.length > 0) {
+      const { publishedQuestionsToDraft } = await import('../utils/quizScoring');
+      return {
+        source: 'database',
+        title: published.quiz.title ?? 'Evaluación del tema',
+        passScore: published.quiz.pass_score ?? 70,
+        maxAttempts: published.quiz.max_attempts,
+        shuffleQuestions: published.quiz.shuffle_questions ?? true,
+        shuffleOptions: published.quiz.shuffle_options ?? true,
+        version: published.quiz.version ?? 1,
+        questionCount: published.quiz.question_count ?? published.questions.length,
+        questions: publishedQuestionsToDraft(published.questions),
+      };
+    }
+  } catch (e) {
+    console.warn('[getQuizEditorDataForTopic] Error al consultar Supabase, probando fallback:', e);
+  }
+
+  // 2. Fallback local estructurado con las 85 preguntas
+  try {
+    const { getLocalQuizForTopic } = await import('./localQuizzesFallback');
+    const { publishedQuestionsToDraft } = await import('../utils/quizScoring');
+    const local = getLocalQuizForTopic(topicId);
+    if (local && local.questions && local.questions.length > 0) {
+      return {
+        source: 'fallback',
+        title: local.title ?? 'Evaluación del tema',
+        passScore: local.pass_score ?? 70,
+        maxAttempts: local.max_attempts,
+        shuffleQuestions: local.shuffle_questions ?? true,
+        shuffleOptions: local.shuffle_options ?? true,
+        version: local.version ?? 1,
+        questionCount: local.question_count ?? local.questions.length,
+        questions: publishedQuestionsToDraft(local.questions),
+      };
+    }
+  } catch (e) {
+    console.warn('[getQuizEditorDataForTopic] Fallback error:', e);
+  }
+
+  // 3. Vacío por defecto
+  return {
+    source: 'empty',
+    title: 'Evaluación del tema',
+    passScore: 70,
+    maxAttempts: null,
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    version: 1,
+    questionCount: 0,
+    questions: [],
+  };
+}
+
+export async function publishAdminQuizDirectly(input: {
+  topicId: string;
+  moduleId: string;
+  title: string;
+  passScore: number;
+  maxAttempts: number | null;
+  shuffleQuestions: boolean;
+  shuffleOptions: boolean;
+  questions: import('../types/quiz').QuizQuestionDraft[];
+  authorId: string;
+  revisionId?: string;
+}): Promise<void> {
+  const fullPayload: RevisionPayload = {
+    revisionType: 'quiz',
+    title: input.title,
+    quizTopicId: input.topicId,
+    passScore: input.passScore,
+    maxAttempts: input.maxAttempts,
+    shuffleQuestions: input.shuffleQuestions,
+    shuffleOptions: input.shuffleOptions,
+    questions: input.questions,
+  };
+
+  const saved = await saveRevision({
+    id: input.revisionId,
+    targetTopicId: input.topicId,
+    moduleId: input.moduleId,
+    action: 'update',
+    payload: fullPayload,
+    authorId: input.authorId,
+  });
+
+  await submitRevision(saved.id);
+  await reviewRevision(saved.id, 'approved', 'Publicación directa administrativa NeuroSAFE');
+}
+
+export async function deleteAdminQuizDirectly(input: {
+  topicId: string;
+  moduleId: string;
+  authorId: string;
+}): Promise<void> {
+  const fullPayload: RevisionPayload = {
+    revisionType: 'quiz',
+    quizTopicId: input.topicId,
+    title: 'Eliminar evaluación',
+  };
+
+  const saved = await saveRevision({
+    targetTopicId: input.topicId,
+    moduleId: input.moduleId,
+    action: 'delete',
+    payload: fullPayload,
+    authorId: input.authorId,
+  });
+
+  await submitRevision(saved.id);
+  await reviewRevision(saved.id, 'approved', 'Eliminación directa de evaluación en Panel Directivo');
+}
+

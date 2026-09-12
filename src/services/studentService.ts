@@ -1,4 +1,5 @@
 import { allModules } from '../content/modules';
+import { supabase } from '../lib/supabase';
 import type { Topic } from '../types/content';
 import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
@@ -49,12 +50,28 @@ export interface CertificationRequirements {
 // ─── LocalStorage Keys ───────────────────────────────────────────────────────
 
 const KEY_COMPLETED_TOPICS = 'neurosafe_student_completed_topics_';
+const KEY_VISITED_TOPICS = 'neurosafe_student_visited_topics_';
 const KEY_LAST_TOPIC = 'neurosafe_student_last_topic_';
 const KEY_NOTIFICATIONS_READ = 'neurosafe_student_notif_read_';
 
+export const TOPIC_PROGRESS_EVENT = 'neurosafe:topic-progress-updated';
+
+function notifyProgressUpdated(userId: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.dispatchEvent(
+      new CustomEvent(TOPIC_PROGRESS_EVENT, {
+        detail: { userId, timestamp: Date.now() },
+      })
+    );
+  } catch (e) {
+    console.warn('[StudentService] Error dispatching progress event:', e);
+  }
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function getAllTopicIds(topics: Topic[]): string[] {
+export function getAllTopicIds(topics: Topic[]): string[] {
   const ids: string[] = [];
   for (const t of topics) {
     ids.push(t.id);
@@ -65,7 +82,159 @@ function getAllTopicIds(topics: Topic[]): string[] {
   return ids;
 }
 
-// ─── Topic Progress ─────────────────────────────────────────────────────────
+// ─── Topic Progress (Local-First + Cloud Synchronization) ────────────────────
+
+/**
+ * Fetches completed topics from Supabase (student_completed_topics and profiles.completed_topics),
+ * merges them with any existing local topics in localStorage, and automatically syncs
+ * any locally completed topics to Supabase if they are not yet in the cloud.
+ */
+export async function fetchStudentCompletedTopics(userId: string): Promise<Set<string>> {
+  if (!userId || userId === 'anonymous_student') {
+    return getCompletedTopics(userId);
+  }
+
+  const merged = new Set<string>();
+
+  // 1. Read from localStorage first
+  const localSet = getCompletedTopics(userId);
+  localSet.forEach((id) => merged.add(id));
+
+  // 2. Read from Supabase student_completed_topics table
+  let dbTopics: string[] = [];
+  try {
+    const { data, error } = await supabase
+      .from('student_completed_topics')
+      .select('topic_id')
+      .eq('user_id', userId);
+
+    if (!error && data && Array.isArray(data)) {
+      dbTopics = data.map((r: any) => r.topic_id);
+      dbTopics.forEach((id) => merged.add(id));
+    }
+  } catch {}
+
+  // 3. Read from profiles.completed_topics as complementary/fallback source
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('completed_topics')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.completed_topics && Array.isArray(profile.completed_topics)) {
+      profile.completed_topics.forEach((id: string) => merged.add(id));
+    }
+  } catch {}
+
+  // 4. Normalize and propagate bidirectional completion between parents and children
+  for (const m of allModules) {
+    for (const t of m.topics) {
+      if (t.children && t.children.length > 0) {
+        const childIds = getAllTopicIds(t.children);
+        // If parent is marked completed, ensure all children are also in merged
+        if (merged.has(t.id)) {
+          childIds.forEach((cid) => merged.add(cid));
+        } else {
+          // If all children are marked completed, ensure parent is in merged
+          const allChildrenDone = childIds.length > 0 && childIds.every((cid) => merged.has(cid));
+          if (allChildrenDone) {
+            merged.add(t.id);
+          }
+        }
+      }
+    }
+  }
+
+  // 5. If there are topics in merged that are missing in DB, auto-sync them up to Supabase!
+  const missingInDb = Array.from(merged).filter((id) => !dbTopics.includes(id));
+  if (missingInDb.length > 0) {
+    try {
+      const rows = missingInDb.map((tid) => ({
+        user_id: userId,
+        topic_id: tid,
+        completed_at: new Date().toISOString(),
+      }));
+      await supabase.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
+    } catch {}
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          completed_topics: Array.from(merged),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+    } catch {}
+  }
+
+  // 6. Cache merged truth back into localStorage
+  try {
+    localStorage.setItem(
+      `${KEY_COMPLETED_TOPICS}${userId}`,
+      JSON.stringify(Array.from(merged))
+    );
+  } catch {}
+
+  return merged;
+}
+
+/**
+ * Background helper to persist topic completions/deletions to Supabase.
+ */
+async function syncTopicCompletionToSupabase(
+  userId: string,
+  topicIds: string[],
+  isCompleted: boolean,
+  fullCurrentSet: Set<string>
+) {
+  if (!userId || userId === 'anonymous_student') return;
+
+  // 1. Update profiles.completed_topics
+  try {
+    await supabase
+      .from('profiles')
+      .update({
+        completed_topics: Array.from(fullCurrentSet),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+  } catch (e) {
+    console.warn('[StudentService] Error updating profiles.completed_topics:', e);
+  }
+
+  // 2. Insert/Delete in student_completed_topics
+  try {
+    if (isCompleted) {
+      const rows = topicIds.map((tid) => ({
+        user_id: userId,
+        topic_id: tid,
+        completed_at: new Date().toISOString(),
+      }));
+      await supabase.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
+    } else {
+      for (const tid of topicIds) {
+        await supabase
+          .from('student_completed_topics')
+          .delete()
+          .eq('user_id', userId)
+          .eq('topic_id', tid);
+      }
+    }
+  } catch (e) {
+    console.warn('[StudentService] Error syncing student_completed_topics:', e);
+  }
+
+  // 3. Log to student_activity_logs
+  try {
+    await supabase.from('student_activity_logs').insert({
+      user_id: userId,
+      action: isCompleted ? 'topic_completed' : 'topic_uncompleted',
+      details: { topicIds, count: topicIds.length },
+    });
+  } catch {}
+}
 
 export function getCompletedTopics(userId: string): Set<string> {
   if (!userId) return new Set();
@@ -82,25 +251,41 @@ export function isTopicCompleted(userId: string, topicId: string): boolean {
   return getCompletedTopics(userId).has(topicId);
 }
 
-export function toggleTopicCompleted(userId: string, topicId: string): boolean {
+export function toggleTopicCompleted(
+  userId: string,
+  topicId: string,
+  childTopicIds?: string[]
+): boolean {
   if (!userId || !topicId) return false;
   const current = getCompletedTopics(userId);
   let isNowCompleted = false;
+  const affectedIds = [topicId, ...(childTopicIds || [])];
+
   if (current.has(topicId)) {
-    current.delete(topicId);
+    for (const cid of affectedIds) {
+      current.delete(cid);
+    }
     isNowCompleted = false;
   } else {
-    current.add(topicId);
+    for (const cid of affectedIds) {
+      current.add(cid);
+    }
     isNowCompleted = true;
   }
+
   try {
     localStorage.setItem(
       `${KEY_COMPLETED_TOPICS}${userId}`,
       JSON.stringify(Array.from(current))
     );
+    notifyProgressUpdated(userId);
   } catch (e) {
     console.warn('[StudentService] Error saving completed topics:', e);
   }
+
+  // Sync to Supabase in background
+  syncTopicCompletionToSupabase(userId, affectedIds, isNowCompleted, current).catch(console.warn);
+
   return isNowCompleted;
 }
 
@@ -114,8 +299,99 @@ export function markTopicCompleted(userId: string, topicId: string): void {
         `${KEY_COMPLETED_TOPICS}${userId}`,
         JSON.stringify(Array.from(current))
       );
+      notifyProgressUpdated(userId);
     } catch (e) {
       console.warn('[StudentService] Error saving completed topics:', e);
+    }
+    syncTopicCompletionToSupabase(userId, [topicId], true, current).catch(console.warn);
+  }
+}
+
+export function markTopicPending(userId: string, topicId: string): void {
+  if (!userId || !topicId) return;
+  const current = getCompletedTopics(userId);
+  if (current.has(topicId)) {
+    current.delete(topicId);
+    try {
+      localStorage.setItem(
+        `${KEY_COMPLETED_TOPICS}${userId}`,
+        JSON.stringify(Array.from(current))
+      );
+      notifyProgressUpdated(userId);
+    } catch (e) {
+      console.warn('[StudentService] Error updating pending topic:', e);
+    }
+    syncTopicCompletionToSupabase(userId, [topicId], false, current).catch(console.warn);
+  }
+}
+
+export function markMultipleTopics(
+  userId: string,
+  topicIds: string[],
+  completed: boolean
+): void {
+  if (!userId || !topicIds.length) return;
+  const current = getCompletedTopics(userId);
+  let changed = false;
+
+  for (const tid of topicIds) {
+    if (completed) {
+      if (!current.has(tid)) {
+        current.add(tid);
+        changed = true;
+      }
+    } else {
+      if (current.has(tid)) {
+        current.delete(tid);
+        changed = true;
+      }
+    }
+  }
+
+  if (changed) {
+    try {
+      localStorage.setItem(
+        `${KEY_COMPLETED_TOPICS}${userId}`,
+        JSON.stringify(Array.from(current))
+      );
+      notifyProgressUpdated(userId);
+    } catch (e) {
+      console.warn('[StudentService] Error batch updating topics:', e);
+    }
+    syncTopicCompletionToSupabase(userId, topicIds, completed, current).catch(console.warn);
+  }
+}
+
+// ─── Visited Topics ─────────────────────────────────────────────────────────
+
+export function getVisitedTopics(userId: string): Set<string> {
+  if (!userId) return new Set();
+  try {
+    const raw = localStorage.getItem(`${KEY_VISITED_TOPICS}${userId}`);
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw));
+  } catch {
+    return new Set();
+  }
+}
+
+export function isTopicVisited(userId: string, topicId: string): boolean {
+  return getVisitedTopics(userId).has(topicId);
+}
+
+export function markTopicVisited(userId: string, topicId: string): void {
+  if (!userId || !topicId) return;
+  const current = getVisitedTopics(userId);
+  if (!current.has(topicId)) {
+    current.add(topicId);
+    try {
+      localStorage.setItem(
+        `${KEY_VISITED_TOPICS}${userId}`,
+        JSON.stringify(Array.from(current))
+      );
+      notifyProgressUpdated(userId);
+    } catch (e) {
+      console.warn('[StudentService] Error saving visited topics:', e);
     }
   }
 }
@@ -137,6 +413,7 @@ export function setLastVisitedTopic(userId: string, data: LastVisitedTopic): voi
   if (!userId) return;
   try {
     localStorage.setItem(`${KEY_LAST_TOPIC}${userId}`, JSON.stringify(data));
+    markTopicVisited(userId, data.topicId);
   } catch (e) {
     console.warn('[StudentService] Error saving last visited topic:', e);
   }
@@ -146,9 +423,10 @@ export function setLastVisitedTopic(userId: string, data: LastVisitedTopic): voi
 
 export function calculateStudentMetrics(
   userId: string,
-  moduleProgressList: ModuleQuizProgress[] = []
+  moduleProgressList: ModuleQuizProgress[] = [],
+  customCompletedTopics?: Set<string>
 ) {
-  const completed = getCompletedTopics(userId);
+  const completed = customCompletedTopics ?? getCompletedTopics(userId);
   let totalCurriculumTopics = 0;
   let totalCompletedCurriculumTopics = 0;
 

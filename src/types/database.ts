@@ -23,12 +23,23 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   is_public: boolean;
+  show_in_editorial_committee?: boolean | null;
   verified_at: string | null;
   enrollment_status: EnrollmentStatus;
   enrollment_verified_at: string | null;
   enrollment_requested_at: string | null;
   cedula_verified?: boolean | null;
   cedula_data?: Record<string, any> | null;
+  subspecialty?: string | null;
+  specialty_cedula?: string | null;
+  cmmr_certified?: boolean | null;
+  cmmr_number?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  orcid_id?: string | null;
+  clinical_interests?: string[] | null;
+  admin_notes?: string | null;
+  completed_topics?: string[] | null;
   created_at: string;
   updated_at: string;
 }

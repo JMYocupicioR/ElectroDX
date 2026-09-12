@@ -85,6 +85,13 @@ export default function ProfileSetupPage() {
     is_public: profile?.is_public ?? true,
     cedula_verified: profile?.cedula_verified ?? false,
     cedula_data: profile?.cedula_data ?? null,
+    subspecialty: profile?.subspecialty ?? '',
+    specialty_cedula: profile?.specialty_cedula ?? '',
+    cmmr_certified: profile?.cmmr_certified ?? false,
+    cmmr_number: profile?.cmmr_number ?? '',
+    phone: profile?.phone ?? '',
+    linkedin_url: profile?.linkedin_url ?? '',
+    orcid_id: profile?.orcid_id ?? '',
   });
 
   // Categoría médica asistida
@@ -142,6 +149,13 @@ export default function ProfileSetupPage() {
       is_public: profile.is_public ?? true,
       cedula_verified: profile.cedula_verified ?? false,
       cedula_data: profile.cedula_data ?? null,
+      subspecialty: profile.subspecialty ?? '',
+      specialty_cedula: profile.specialty_cedula ?? '',
+      cmmr_certified: profile.cmmr_certified ?? false,
+      cmmr_number: profile.cmmr_number ?? '',
+      phone: profile.phone ?? '',
+      linkedin_url: profile.linkedin_url ?? '',
+      orcid_id: profile.orcid_id ?? '',
     });
 
     if (profile.cedula_verified && profile.cedula_data) {
@@ -937,6 +951,120 @@ export default function ProfileSetupPage() {
               placeholder="ej. Médico especialista enfocado en electrodiagnóstico, plexopatías y trastornos neuromusculares. Profesor de posgrado..."
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 text-sm focus:border-cyan-500 outline-none transition"
             />
+          </div>
+
+          {/* ─── EXPEDIENTE CURRICULAR Y ACREDITACIONES MÉDICAS ─── */}
+          <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 space-y-4">
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-cyan-500" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                Ampliación de Currículum y Acreditación Médica
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Subespecialidad / Fellowships
+                </label>
+                <input
+                  type="text"
+                  value={form.subspecialty ?? ''}
+                  onChange={(e) => setForm({ ...form, subspecialty: e.target.value })}
+                  placeholder="ej. Electrodiagnóstico y Patología Neuromuscular"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Cédula Profesional de Especialidad (SEP)
+                </label>
+                <input
+                  type="text"
+                  value={form.specialty_cedula ?? ''}
+                  onChange={(e) => setForm({ ...form, specialty_cedula: e.target.value })}
+                  placeholder="ej. 87654321"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Certificación Consejo Mexicano (CMMR)
+                </label>
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="cmmr_checkbox"
+                    checked={form.cmmr_certified}
+                    onChange={(e) => setForm({ ...form, cmmr_certified: e.target.checked })}
+                    className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300 dark:border-slate-700"
+                  />
+                  <label htmlFor="cmmr_checkbox" className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Certificación CMMR vigente
+                  </label>
+                </div>
+              </div>
+
+              {form.cmmr_certified && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Número de Folio / Registro CMMR
+                  </label>
+                  <input
+                    type="text"
+                    value={form.cmmr_number ?? ''}
+                    onChange={(e) => setForm({ ...form, cmmr_number: e.target.value })}
+                    placeholder="ej. CMMR-2024-998"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white font-mono"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Teléfono de Contacto Profesional
+                </label>
+                <input
+                  type="tel"
+                  value={form.phone ?? ''}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  placeholder="ej. +52 999 123 4567"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Enlace Perfil LinkedIn
+                </label>
+                <input
+                  type="url"
+                  value={form.linkedin_url ?? ''}
+                  onChange={(e) => setForm({ ...form, linkedin_url: e.target.value })}
+                  placeholder="https://linkedin.com/in/..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Identificador ORCID (Investigación)
+                </label>
+                <input
+                  type="text"
+                  value={form.orcid_id ?? ''}
+                  onChange={(e) => setForm({ ...form, orcid_id: e.target.value })}
+                  placeholder="0000-0002-..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white font-mono"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Checkboxes de visibilidad y declaración */}

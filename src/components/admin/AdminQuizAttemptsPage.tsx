@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList, CheckCircle, XCircle } from 'lucide-react';
+import { ClipboardList, CheckCircle, XCircle, GraduationCap } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { getAdminQuizAttempts } from '../../services/editorialService';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
@@ -20,6 +20,21 @@ export default function AdminQuizAttemptsPage() {
 
   return (
     <AdminLayout title="Intentos de evaluación">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Auditoría de Evaluaciones COMEFYR</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Registro de calificaciones y duración de exámenes respondidos por los alumnos.
+          </p>
+        </div>
+        <Link
+          to="/admin/quizzes"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition shrink-0"
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>Editor de Quizzes</span>
+        </Link>
+      </div>
       {loading && <p className="text-sm text-slate-500">Cargando intentos…</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 

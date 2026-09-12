@@ -11,6 +11,7 @@ export interface AdminProfileRow {
   bio: string | null;
   avatar_url: string | null;
   is_public: boolean;
+  show_in_editorial_committee: boolean;
   cedula_profesional: string | null;
   residency_year?: string | null;
   comefyr_member_id?: string | null;
@@ -23,6 +24,15 @@ export interface AdminProfileRow {
   has_premium: boolean;
   cedula_verified?: boolean | null;
   cedula_data?: Record<string, any> | null;
+  subspecialty?: string | null;
+  specialty_cedula?: string | null;
+  cmmr_certified?: boolean | null;
+  cmmr_number?: string | null;
+  phone?: string | null;
+  linkedin_url?: string | null;
+  orcid_id?: string | null;
+  clinical_interests?: string[] | null;
+  admin_notes?: string | null;
 }
 
 export interface AdminStats {

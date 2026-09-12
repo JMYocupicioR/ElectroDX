@@ -90,12 +90,7 @@ export default function QuizEditorPage() {
           maxAttempts: published.quiz.max_attempts,
           shuffleQuestions: published.quiz.shuffle_questions,
           shuffleOptions: published.quiz.shuffle_options,
-          questions: publishedQuestionsToDraft(
-            published.questions.map((q) => ({
-              ...q,
-              options: q.options as import('../../types/quiz').QuizOption[],
-            }))
-          ),
+          questions: publishedQuestionsToDraft(published.questions),
         });
       } else {
         setPayload(emptyPayload(topic?.title));

@@ -10,6 +10,7 @@ import {
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { AppRole, EnrollmentStatus, Profile, Subscription } from '../types/database';
+import { recordUserActivity } from '../services/studentPlanService';
 
 export interface StudentRegistrationData {
   email: string;
@@ -42,6 +43,9 @@ interface AuthContextValue {
   subscription: Subscription | null;
   enrollmentStatus: EnrollmentStatus;
   isEnrollmentPending: boolean;
+  isPendingApproval: boolean;
+  isRejected: boolean;
+  isCommitteeMember: boolean;
   bootstrapAvailable: boolean;
   refreshProfile: () => Promise<void>;
   signInWithOtp: (email: string, nextPath?: string) => Promise<{ error: string | null }>;
@@ -134,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!mounted) return;
         setSession(data.session);
         if (data.session?.user) {
+          recordUserActivity(data.session.user.id, 'user_session_active', { source: 'app_launch' });
           loadUserData(data.session.user.id).finally(() => {
             if (mounted) setIsLoading(false);
           });
@@ -150,6 +155,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(nextSession);
       if (event === 'INITIAL_SESSION') return;
       if (nextSession?.user) {
+        if (event === 'SIGNED_IN') {
+          recordUserActivity(nextSession.user.id, 'user_login', { source: 'auth_event' });
+        }
         loadUserData(nextSession.user.id);
       } else {
         setProfile(null);
@@ -366,9 +374,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       : (profile?.enrollment_status ?? 'none');
     const isEnrolledPhysician =
       isSuperAdminEmail ||
-      isVerifiedContributor ||
-      isStudent ||
+      isAdmin ||
+      isEditor ||
       (enrollmentStatus === 'approved' && Boolean(profile?.enrollment_verified_at));
+    const isPendingApproval =
+      !isSuperAdminEmail && !isAdmin && !isEditor && (enrollmentStatus === 'pending' || enrollmentStatus === 'none');
+    const isRejected =
+      !isSuperAdminEmail && !isAdmin && !isEditor && enrollmentStatus === 'rejected';
+    const isCommitteeMember = isAdmin || isEditor;
     const effectivePremium = hasPremiumAccess || isSuperAdminEmail;
 
     return {
@@ -387,6 +400,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       subscription,
       enrollmentStatus,
       isEnrollmentPending: enrollmentStatus === 'pending',
+      isPendingApproval,
+      isRejected,
+      isCommitteeMember,
       bootstrapAvailable,
       refreshProfile,
       signInWithOtp,

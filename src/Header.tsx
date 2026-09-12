@@ -17,7 +17,8 @@ import {
   Stethoscope,
   ChevronRight,
   BrainCircuit,
-  Wrench
+  Wrench,
+  Lock,
 } from 'lucide-react';
 import { CourseSidebar } from './components/CourseSidebar';
 import { OfflineIndicator } from './components/OfflineButton';
@@ -29,7 +30,7 @@ import { isSupabaseConfigured } from './lib/supabase';
 export function Header() {
   const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
   const initializeOffline = useOfflineStore(s => s.initialize);
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isPendingApproval } = useAuth();
   const { totalPending } = useAdminPendingCounts();
   const location = useLocation();
 
@@ -143,7 +144,18 @@ export function Header() {
               </Link>
             )}
 
-            {isSupabaseConfigured && user && !isAdmin && (
+            {isSupabaseConfigured && user && !isAdmin && isPendingApproval && (
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/80 hover:bg-amber-100/60 transition-all shadow-xs"
+                title="En espera de aprobación por el Comité"
+              >
+                <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>En espera de admisión</span>
+              </Link>
+            )}
+
+            {isSupabaseConfigured && user && !isAdmin && !isPendingApproval && (
               <Link
                 to="/dashboard"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-xs"
@@ -255,6 +267,15 @@ export function Header() {
                       >
                         <Shield className="w-3.5 h-3.5" />
                         Ir a Panel de Administración
+                      </Link>
+                    ) : isPendingApproval ? (
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold shadow-xs"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        Ver Estado de Admisión (Candado)
                       </Link>
                     ) : (
                       <Link

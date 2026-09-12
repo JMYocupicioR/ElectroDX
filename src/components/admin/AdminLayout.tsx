@@ -10,6 +10,8 @@ import {
   Lock,
   ArrowLeft,
   CheckCircle2,
+  GraduationCap,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
@@ -47,6 +49,14 @@ export function AdminLayout({
       adminOnly: true,
     },
     {
+      to: '/admin/alumnos',
+      label: 'Progreso de Alumnos',
+      icon: Activity,
+      exact: false,
+      badge: 0,
+      adminOnly: false,
+    },
+    {
       to: '/admin/revisiones',
       label: 'Cola Editorial',
       icon: FileCheck,
@@ -54,9 +64,9 @@ export function AdminLayout({
       badge: pendingRevisions,
     },
     {
-      to: '/admin/evaluaciones',
-      label: 'Evaluaciones (CME)',
-      icon: ClipboardList,
+      to: '/admin/quizzes',
+      label: 'Editor de Quizzes',
+      icon: GraduationCap,
       exact: false,
       badge: 0,
     },

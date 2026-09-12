@@ -3,11 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { allModules } from '../content/modules';
 import { Topic } from '../types/content';
-import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, Unlock } from 'lucide-react';
+import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, Unlock, CheckCircle2, Circle } from 'lucide-react';
 import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from './quiz/QuizTopicBadge';
 import { useAuth } from '../contexts/AuthProvider';
 import { useCourseStore } from '../stores/courseStore';
+import { useTopicProgress } from '../hooks/useTopicProgress';
 
 interface CourseSidebarProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const { hasPremiumAccess } = useAuth();
   const { moduleAccess, load: loadCourse } = useCourseStore();
+  const { isCompleted, getModuleStats } = useTopicProgress();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
@@ -208,7 +210,10 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                             <QuizTopicBadge compact />
                           )}
                           <span className="text-[0.6rem] text-slate-400 dark:text-slate-500 font-mono flex-shrink-0 mr-1">
-                            {mod.topics.length}
+                            {(() => {
+                              const s = getModuleStats(mod.topics);
+                              return s.completed > 0 ? `${s.completed}/${s.total}` : `${s.total}`;
+                            })()}
                           </span>
                           {isExpanded ? (
                             <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -231,6 +236,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                 {mod.topics.map((topic) => {
                                   const topicUrl = `/modulo/${mod.id}/${topic.id}`;
                                   const isActive = location.pathname.startsWith(topicUrl);
+                                  const done = isCompleted(topic.id);
 
                                   return (
                                     <Link
@@ -242,7 +248,14 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200'
                                       }`}
                                     >
-                                      <span className="leading-snug flex-1">{topic.title}</span>
+                                      {done ? (
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                                      ) : (
+                                        <Circle className="w-3 h-3 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                                      )}
+                                      <span className={`leading-snug flex-1 ${done ? 'font-medium text-slate-800 dark:text-slate-200' : ''}`}>
+                                        {topic.title}
+                                      </span>
                                       {topicTreeHasQuiz(topic, hasQuiz) && <QuizTopicBadge compact />}
                                     </Link>
                                   );

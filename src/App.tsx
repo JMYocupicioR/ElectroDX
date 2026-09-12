@@ -34,6 +34,7 @@ const AdminReviewQueue = lazy(() => import('./components/admin/AdminReviewQueue'
 const AdminUsersPage = lazy(() => import('./components/admin/AdminUsersPage'));
 const AdminAuditPage = lazy(() => import('./components/admin/AdminAuditPage'));
 const AdminQuizAttemptsPage = lazy(() => import('./components/admin/AdminQuizAttemptsPage'));
+const AdminQuizzesPage = lazy(() => import('./components/admin/AdminQuizzesPage'));
 const AdminWorkshopsPage = lazy(() => import('./components/admin/AdminWorkshopsPage'));
 const AdminModuleAccessPage = lazy(() => import('./components/admin/AdminModuleAccessPage'));
 const AccountPage = lazy(() => import('./components/user/AccountPage'));
@@ -41,6 +42,8 @@ const SettingsPage = lazy(() => import('./components/user/SettingsPage'));
 const ExamConfigPage = lazy(() => import('./components/exam/ExamConfigPage'));
 const ExamSessionPage = lazy(() => import('./components/exam/ExamSessionPage'));
 const ExamResultsPage = lazy(() => import('./components/exam/ExamResultsPage'));
+const AdminStudentsListPage = lazy(() => import('./components/admin/AdminStudentsListPage'));
+const AdminStudentProgressPage = lazy(() => import('./components/admin/AdminStudentProgressPage'));
 
 function App() {
   const { isDarkMode } = useSettingsStore();
@@ -103,9 +106,9 @@ function App() {
               <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><StudentDashboard /></ProtectedRoute>} />
 
               {/* Portal del Estudiante / Alumno */}
-              <Route path="/dashboard" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
-              <Route path="/estudiante" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
-              <Route path="/portal" element={<ProtectedRoute mode="auth"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/estudiante" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/portal" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
 
               {/* Cuenta */}
               <Route path="/cuenta" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
@@ -115,6 +118,12 @@ function App() {
               <Route path="/admin" element={<ProtectedRoute mode="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/revisiones" element={<ProtectedRoute mode="editor"><AdminReviewQueue /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
+              <Route path="/admin/alumnos" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
+              <Route path="/admin/alumnos/:studentId" element={<ProtectedRoute mode="editor"><AdminStudentProgressPage /></ProtectedRoute>} />
+              <Route path="/admin/progreso" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
+              <Route path="/admin/progreso/:studentId" element={<ProtectedRoute mode="editor"><AdminStudentProgressPage /></ProtectedRoute>} />
+              <Route path="/admin/quizzes" element={<ProtectedRoute mode="editor"><AdminQuizzesPage /></ProtectedRoute>} />
+              <Route path="/admin/quizzes/:topicId" element={<ProtectedRoute mode="editor"><AdminQuizzesPage /></ProtectedRoute>} />
               <Route path="/admin/evaluaciones" element={<ProtectedRoute mode="editor"><AdminQuizAttemptsPage /></ProtectedRoute>} />
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
               <Route path="/admin/talleres" element={<ProtectedRoute mode="admin"><AdminWorkshopsPage /></ProtectedRoute>} />

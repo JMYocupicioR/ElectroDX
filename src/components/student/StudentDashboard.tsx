@@ -25,6 +25,10 @@ import {
   FileText,
   Brain,
   Zap,
+  Flame,
+  Target,
+  Send,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
@@ -38,9 +42,18 @@ import {
   markNotificationAsRead,
   isTopicCompleted,
   toggleTopicCompleted,
+  getCompletedTopics,
+  fetchStudentCompletedTopics,
+  TOPIC_PROGRESS_EVENT,
   type LastVisitedTopic,
   type StudentNotification,
 } from '../../services/studentService';
+import {
+  getStudentAssignments,
+  submitAssignment,
+  getStudentActivityAndStreak,
+} from '../../services/studentPlanService';
+import type { StudentAssignment, StudentStreakInfo } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
@@ -49,19 +62,27 @@ import type { LiveWorkshop } from '../../types/database';
 export default function StudentDashboard() {
   const { user, profile } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'summary' | 'modules' | 'quizzes' | 'notifications' | 'certificate'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'modules' | 'quizzes' | 'assignments' | 'notifications' | 'certificate'>('summary');
   const [loading, setLoading] = useState(true);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [moduleProgress, setModuleProgress] = useState<ModuleQuizProgress[]>([]);
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [notifications, setNotifications] = useState<StudentNotification[]>([]);
+  const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
+  const [streak, setStreak] = useState<StudentStreakInfo | null>(null);
+  const [submittingAsg, setSubmittingAsg] = useState<StudentAssignment | null>(null);
+  const [submitNotes, setSubmitNotes] = useState('');
+  const [savingSubmission, setSavingSubmission] = useState(false);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
   const [searchModuleQuery, setSearchModuleQuery] = useState('');
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
   const [quizFilter, setQuizFilter] = useState<'all' | 'pending' | 'passed'>('all');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [completedTopicsSet, setCompletedTopicsSet] = useState<Set<string>>(() =>
+    user ? getCompletedTopics(user.id) : new Set()
+  );
 
-  // Load user data
+  // Load user data & sync cloud topics
   useEffect(() => {
     if (!user) return;
 
@@ -70,11 +91,19 @@ export default function StudentDashboard() {
       getMyAttempts(user.id),
       getMyProgressByModule(user.id),
       getUpcomingWorkshops(5),
+      getStudentAssignments(user.id),
+      getStudentActivityAndStreak(user.id),
+      fetchStudentCompletedTopics(user.id),
     ])
-      .then(([att, modProg, ws]) => {
+      .then(([att, modProg, ws, asgs, stk, syncedTopics]) => {
         setAttempts(att);
         setModuleProgress(modProg);
         setWorkshops(ws);
+        setAssignments(asgs);
+        setStreak(stk);
+        if (syncedTopics) {
+          setCompletedTopicsSet(syncedTopics);
+        }
 
         // Notifications
         const notifs = getStudentNotifications(user.id, profile, ws);
@@ -91,8 +120,8 @@ export default function StudentDashboard() {
   // Derived metrics
   const metrics = useMemo(() => {
     if (!user) return null;
-    return calculateStudentMetrics(user.id, moduleProgress);
-  }, [user, moduleProgress, refreshTrigger]);
+    return calculateStudentMetrics(user.id, moduleProgress, completedTopicsSet);
+  }, [user, moduleProgress, completedTopicsSet, refreshTrigger]);
 
   const certRequirements = useMemo(() => {
     if (!metrics) return null;
@@ -120,10 +149,38 @@ export default function StudentDashboard() {
     return notifications.filter((n) => !n.isRead).length;
   }, [notifications]);
 
-  const handleToggleTopic = (topicId: string, e: React.MouseEvent) => {
+  const pendingAssignmentsCount = useMemo(() => {
+    return assignments.filter((a) => a.status === 'pending').length;
+  }, [assignments]);
+
+  const handleSubmitAssignment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!submittingAsg || !user) return;
+    setSavingSubmission(true);
+    try {
+      await submitAssignment(submittingAsg.id, user.id, submitNotes);
+      setSubmittingAsg(null);
+      setSubmitNotes('');
+      setRefreshTrigger((prev) => prev + 1);
+    } catch {
+      alert('Error al enviar la tarea');
+    } finally {
+      setSavingSubmission(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleProgress = () => {
+      setRefreshTrigger((prev) => prev + 1);
+    };
+    window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
+    return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
+  }, []);
+
+  const handleToggleTopic = (topicId: string, e: React.MouseEvent, childIds?: string[]) => {
     e.stopPropagation();
     if (!user) return;
-    toggleTopicCompleted(user.id, topicId);
+    toggleTopicCompleted(user.id, topicId, childIds);
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -181,6 +238,12 @@ export default function StudentDashboard() {
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                   <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
                   Cédula Verificada SEP
+                </span>
+              )}
+              {streak && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/25 text-orange-300 border border-orange-400/40 shadow-xs">
+                  <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 animate-pulse" />
+                  Racha: {streak.currentStreak} {streak.currentStreak === 1 ? 'día' : 'días'}
                 </span>
               )}
             </div>
@@ -408,7 +471,24 @@ export default function StudentDashboard() {
           }`}
         >
           <CheckCircle2 className="w-4 h-4" />
-          Tareas y Evaluaciones ({quizzesList.length})
+          Quizzes del Curso ({quizzesList.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab('assignments')}
+          className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
+            activeTab === 'assignments'
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Calendar className="w-4 h-4" />
+          Tareas Asignadas
+          {pendingAssignmentsCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500 text-white">
+              {pendingAssignmentsCount}
+            </span>
+          )}
         </button>
 
         <button
@@ -801,34 +881,69 @@ export default function StudentDashboard() {
                           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                             Lecciones del módulo:
                           </p>
-                          <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                          <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                             {fullModule.topics.map((t) => {
-                              const done = user ? isTopicCompleted(user.id, t.id) : false;
+                              const childIds = t.children?.map((c) => c.id) || [];
+                              const done = user ? isTopicCompleted(user.id, t.id) || (childIds.length > 0 && childIds.every((cid) => isTopicCompleted(user.id, cid))) : false;
                               return (
-                                <li
-                                  key={t.id}
-                                  className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                                >
-                                  <Link
-                                    to={`/modulo/${mod.moduleId}/${t.id}`}
-                                    className="flex-1 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 line-clamp-1 pr-2"
+                                <React.Fragment key={t.id}>
+                                  <li
+                                    className="flex items-center justify-between text-xs p-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
                                   >
-                                    {t.title}
-                                  </Link>
-                                  <button
-                                    onClick={(e) => handleToggleTopic(t.id, e)}
-                                    className={`shrink-0 p-1 rounded-md transition ${
-                                      done
-                                        ? 'text-emerald-500 hover:text-emerald-600'
-                                        : 'text-slate-300 hover:text-slate-500 dark:text-slate-600'
-                                    }`}
-                                    title={done ? 'Lección completada' : 'Marcar lección como completada'}
-                                  >
-                                    <CheckCircle2
-                                      className={`w-4 h-4 ${done ? 'fill-emerald-500 text-white' : ''}`}
-                                    />
-                                  </button>
-                                </li>
+                                    <Link
+                                      to={`/modulo/${mod.moduleId}/${t.id}`}
+                                      className="flex-1 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 line-clamp-1 pr-2"
+                                    >
+                                      {t.title}
+                                    </Link>
+                                    <button
+                                      onClick={(e) => handleToggleTopic(t.id, e, childIds.length > 0 ? childIds : undefined)}
+                                      className={`shrink-0 p-1 rounded-md transition ${
+                                        done
+                                          ? 'text-emerald-500 hover:text-emerald-600'
+                                          : 'text-slate-300 hover:text-slate-500 dark:text-slate-600'
+                                      }`}
+                                      title={done ? 'Lección completada' : 'Marcar lección como completada'}
+                                    >
+                                      <CheckCircle2
+                                        className={`w-4 h-4 ${done ? 'fill-emerald-500 text-white' : ''}`}
+                                      />
+                                    </button>
+                                  </li>
+                                  {t.children && t.children.length > 0 && (
+                                    <ul className="pl-4 space-y-1 border-l border-slate-200/60 dark:border-slate-700/40 ml-2 my-1">
+                                      {t.children.map((sub) => {
+                                        const subDone = user ? isTopicCompleted(user.id, sub.id) : false;
+                                        return (
+                                          <li
+                                            key={sub.id}
+                                            className="flex items-center justify-between text-[11px] p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                                          >
+                                            <Link
+                                              to={`/modulo/${mod.moduleId}/${t.id}/${sub.id}`}
+                                              className="flex-1 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 line-clamp-1 pr-2"
+                                            >
+                                              {sub.title}
+                                            </Link>
+                                            <button
+                                              onClick={(e) => handleToggleTopic(sub.id, e)}
+                                              className={`shrink-0 p-0.5 rounded transition ${
+                                                subDone
+                                                  ? 'text-emerald-500 hover:text-emerald-600'
+                                                  : 'text-slate-300 hover:text-slate-500 dark:text-slate-600'
+                                              }`}
+                                              title={subDone ? 'Subtema completado' : 'Marcar subtema como completado'}
+                                            >
+                                              <CheckCircle2
+                                                className={`w-3.5 h-3.5 ${subDone ? 'fill-emerald-500 text-white' : ''}`}
+                                              />
+                                            </button>
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  )}
+                                </React.Fragment>
                               );
                             })}
                           </ul>
@@ -999,6 +1114,269 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── TAB: Tareas y Evaluaciones Asignadas ─── */}
+      {activeTab === 'assignments' && (
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <span>Tareas y Exámenes Personalizados Asignados</span>
+              </h2>
+              <p className="text-sm text-slate-500">
+                Actividades clínicas y exámenes calendarizados por tus profesores y directores académicos
+              </p>
+            </div>
+            <span className="text-xs px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800 w-fit">
+              {assignments.length} actividades asignadas
+            </span>
+          </div>
+
+          {assignments.length === 0 ? (
+            <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 space-y-3 bg-white/40 dark:bg-slate-900/20">
+              <Calendar className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+              <h3 className="text-base font-bold text-slate-700 dark:text-slate-300">
+                ¡Estás al día! No tienes tareas pendientes
+              </h3>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                Tus profesores te asignarán lecturas dirigidas, casos clínicos o exámenes de refuerzo conforme avances en los módulos.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {assignments.map((asg) => {
+                const dueTime = new Date(asg.due_date).getTime();
+                const now = Date.now();
+                const isOverdue = dueTime < now && asg.status === 'pending';
+                const daysRemaining = Math.ceil((dueTime - now) / 86400000);
+
+                return (
+                  <div
+                    key={asg.id}
+                    className={`p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
+                      asg.status === 'approved'
+                        ? 'border-emerald-200/80 dark:border-emerald-900/50 bg-emerald-50/20 dark:bg-emerald-950/10'
+                        : asg.status === 'submitted'
+                        ? 'border-indigo-200/80 dark:border-indigo-900/50 bg-indigo-50/20 dark:bg-indigo-950/10'
+                        : isOverdue
+                        ? 'border-red-200 dark:border-red-900/60 bg-red-50/20 dark:bg-red-950/10'
+                        : 'border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 shadow-xs'
+                    }`}
+                  >
+                    <div className="space-y-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                            asg.type === 'exam'
+                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                              : asg.type === 'clinical_case'
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                              : asg.type === 'emg_report'
+                              ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
+                              : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {asg.type === 'exam'
+                            ? 'Examen Asignado'
+                            : asg.type === 'clinical_case'
+                            ? 'Caso Clínico'
+                            : asg.type === 'emg_report'
+                            ? 'Reporte de Trazo EMG'
+                            : 'Tarea de Lectura'}
+                        </span>
+
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                            asg.status === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : asg.status === 'submitted'
+                              ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                              : isOverdue
+                              ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                          }`}
+                        >
+                          {asg.status === 'approved'
+                            ? 'Aprobada ✓'
+                            : asg.status === 'submitted'
+                            ? 'Entregada (En revisión)'
+                            : isOverdue
+                            ? 'Entrega Vencida'
+                            : 'Pendiente de Entrega'}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        {asg.title}
+                      </h3>
+
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        {asg.description}
+                      </p>
+
+                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs space-y-1">
+                        <p className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-indigo-500" />
+                          Fecha de entrega:{' '}
+                          <span className="font-bold">
+                            {new Date(asg.due_date).toLocaleString('es-MX', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </p>
+
+                        <p className="text-[11px] text-slate-500">
+                          {asg.status === 'approved' || asg.status === 'submitted' ? (
+                            <span className="text-emerald-600 font-medium">
+                              Entregada el {asg.submitted_at ? new Date(asg.submitted_at).toLocaleDateString('es-MX') : 'recientemente'}
+                            </span>
+                          ) : isOverdue ? (
+                            <span className="text-red-500 font-bold">
+                              ⚠️ Plazo límite expirado. Puedes entregarla con retraso.
+                            </span>
+                          ) : daysRemaining <= 1 ? (
+                            <span className="text-amber-600 font-bold">
+                              ⏰ ¡Vence hoy o en menos de 24 horas!
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 font-medium">
+                              Quedan {daysRemaining} días para la entrega.
+                            </span>
+                          )}
+                        </p>
+                      </div>
+
+                      {/* Grade & Teacher Feedback Display */}
+                      {asg.feedback && (
+                        <div className="p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              Evaluación del Profesor:
+                            </span>
+                            {asg.grade != null && (
+                              <span className="px-2 py-0.5 rounded-lg bg-emerald-600 text-white font-extrabold text-[11px]">
+                                {asg.grade}/100 pts
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-slate-700 dark:text-slate-200 italic">
+                            "{asg.feedback}"
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="pt-2">
+                      {asg.status === 'approved' ? (
+                        <div className="w-full py-2 rounded-xl bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center">
+                          Actividad Aprobada
+                        </div>
+                      ) : asg.type === 'exam' ? (
+                        <Link
+                          to="/simulador"
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5" />
+                          <span>Realizar Examen Asignado</span>
+                        </Link>
+                      ) : asg.status === 'submitted' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubmittingAsg(asg);
+                            setSubmitNotes(asg.student_notes || '');
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-xs font-semibold transition cursor-pointer"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Modificar Entrega Enviada</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubmittingAsg(asg);
+                            setSubmitNotes('');
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Entregar Tarea / Conclusiones</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Modal para que el Alumno entregue su Tarea */}
+          {submittingAsg && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Send className="w-4 h-4 text-blue-600" />
+                    <span>Entregar Tarea: {submittingAsg.title}</span>
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setSubmittingAsg(null)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  {submittingAsg.description}
+                </p>
+
+                <form onSubmit={handleSubmitAssignment} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Conclusiones, Respuesta o Enlace del Caso Clínico
+                    </label>
+                    <textarea
+                      rows={6}
+                      required
+                      value={submitNotes}
+                      onChange={(e) => setSubmitNotes(e.target.value)}
+                      placeholder="Escribe tus hallazgos neurofisiológicos, diagnóstico topográfico o pega el enlace a tu reporte de trazo..."
+                      className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setSubmittingAsg(null)}
+                      className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-semibold"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={savingSubmission}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition disabled:opacity-50"
+                    >
+                      {savingSubmission ? 'Enviando...' : 'Confirmar Entrega'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
