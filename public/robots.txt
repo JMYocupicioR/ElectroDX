@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /temario
+Allow: /programa
+Allow: /talleres
+Allow: /especialistas
+Allow: /comite-editorial
+Allow: /registro
+
+# Rutas protegidas (requieren login)
+Disallow: /modulo/
+Disallow: /ejercicios
+Disallow: /examenes
+Disallow: /herramientas/
+Disallow: /dashboard
+Disallow: /estudiante
+Disallow: /portal
+Disallow: /mi-progreso
+Disallow: /perfil
+Disallow: /colaborador
+Disallow: /admin
+Disallow: /cuenta
+Disallow: /auth/
+
+Sitemap: https://neurosafemx.com/sitemap.xml
