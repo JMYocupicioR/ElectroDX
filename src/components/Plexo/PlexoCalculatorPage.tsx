@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthProvider';
+import { PremiumGate } from '../PremiumGate';
 import { usePlexoBraquialAssessment } from './usePlexoBraquialAssessment';
 import StepMuscles from './steps/StepMuscles';
 import StepSymptoms from './steps/StepSymptoms';
@@ -18,6 +20,9 @@ const STEPS = [
 ];
 
 export default function PlexoCalculatorPage() {
+  const { hasPremiumAccess, isEnrolledPhysician } = useAuth();
+  const canAccess = hasPremiumAccess || isEnrolledPhysician;
+
   const {
     datosEvaluacion,
     currentStep,
@@ -43,6 +48,25 @@ export default function PlexoCalculatorPage() {
   } = usePlexoBraquialAssessment();
 
   const [showCases, setShowCases] = useState(false);
+
+  if (!canAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 pt-20 pb-20">
+        <div className="max-w-5xl mx-auto px-4">
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+            <Link to="/" className="hover:text-blue-500 transition-colors">🏠 Inicio</Link>
+            <span>/</span>
+            <span className="text-slate-800 dark:text-white font-medium">Calculadora Plexo Braquial</span>
+          </nav>
+          <PremiumGate
+            moduleId="plexo-braquial"
+            title="Calculadora Diagnóstica de Plexo Braquial"
+            description="Herramienta avanzada de aprendizaje clínico y localización topográfica de lesiones del plexo braquial (C5-T1, troncos y cordones). Acceso exclusivo para alumnos y médicos con suscripción activa."
+          />
+        </div>
+      </div>
+    );
+  }
 
   const renderStep = () => {
     switch (currentStep) {

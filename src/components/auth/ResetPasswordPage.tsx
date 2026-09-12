@@ -165,7 +165,7 @@ export default function ResetPasswordPage() {
                 Tu nueva contraseña ha sido guardada de forma segura. Ya puedes acceder a las clases y módulos clínicos con tus nuevas credenciales.
               </p>
               <button
-                onClick={() => navigate('/mi-progreso', { replace: true })}
+                onClick={() => navigate('/dashboard', { replace: true })}
                 className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs uppercase tracking-wider hover:opacity-95 transition shadow-lg shadow-emerald-500/20"
               >
                 Continuar a la Plataforma

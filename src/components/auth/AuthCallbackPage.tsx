@@ -9,7 +9,9 @@ async function getPostLoginPath(userId: string, next?: string | null): Promise<s
   const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId);
   const roles = data?.map((r) => r.role) ?? [];
   if (roles.includes('admin')) return '/admin';
-  return '/colaborador';
+  if (roles.includes('editor')) return '/admin/revisiones';
+  if (roles.includes('contributor')) return '/colaborador';
+  return '/dashboard';
 }
 
 export default function AuthCallbackPage() {

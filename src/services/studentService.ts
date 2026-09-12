@@ -252,7 +252,7 @@ export function getStudentNotifications(
       type: 'cedula',
       severity: 'warning',
       createdAt: '2026-09-10T08:00:00Z',
-      linkUrl: '/colaborador/perfil',
+      linkUrl: '/perfil',
       isRead: !!readMap['notif_cedula_missing'],
     });
   }

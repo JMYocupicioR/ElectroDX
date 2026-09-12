@@ -107,7 +107,7 @@ export default function AccountPage() {
           </div>
         </div>
         <Link
-          to="/colaborador/perfil"
+          to="/perfil"
           className="inline-flex items-center gap-2 mt-4 text-sm text-blue-600 hover:underline"
         >
           <User className="w-4 h-4" />
@@ -182,7 +182,7 @@ export default function AccountPage() {
             )}
             <div className="mt-3">
               <Link
-                to="/colaborador/perfil"
+                to="/perfil"
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs transition"
               >
                 Validar mi Cédula ante la SEP

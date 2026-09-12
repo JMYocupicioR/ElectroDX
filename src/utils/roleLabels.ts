@@ -62,7 +62,11 @@ export function getPermissionSummary(input: {
   if (input.roles.includes('editor')) items.push('Revisión editorial');
   if (input.canProposeContent) items.push('Crear propuestas de contenido');
   if (input.isEnrolledPhysician) items.push('Evaluaciones y progreso');
-  if (input.verifiedAt) items.push('Perfil verificado como colaborador');
+  if (input.roles.includes('contributor') && input.verifiedAt) {
+    items.push('Perfil verificado como colaborador');
+  } else if (input.verifiedAt) {
+    items.push('Expediente profesional verificado');
+  }
   if (input.enrollmentStatus === 'pending') items.push('Solicitud de inscripción enviada');
 
   if (!items.length) items.push('Acceso básico de lectura');

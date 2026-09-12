@@ -165,10 +165,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadUserData]);
 
   const signInWithOtp = useCallback(async (email: string, nextPath?: string) => {
-    const next = nextPath && nextPath.startsWith('/') ? nextPath : undefined;
-    const redirectTo = next
-      ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`
-      : `${window.location.origin}/auth/callback`;
+    const next = nextPath && nextPath.startsWith('/') ? nextPath : '/dashboard';
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirectTo },
@@ -224,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             cedula_verified: cedulaVerified ?? false,
             cedula_data: cedulaData ?? null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
       });
 

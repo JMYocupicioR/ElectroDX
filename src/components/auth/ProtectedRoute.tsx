@@ -1,9 +1,9 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
 import { LoadingSpinner } from '../LoadingSpinner';
-import { isEnrollmentProfileComplete } from '../../utils/adminUtils';
+import { PremiumGate } from '../PremiumGate';
 
-type GuardMode = 'auth' | 'verified' | 'admin' | 'editor' | 'enrolled';
+type GuardMode = 'auth' | 'verified' | 'admin' | 'editor' | 'enrolled' | 'contributor';
 
 export function ProtectedRoute({
   children,
@@ -12,7 +12,16 @@ export function ProtectedRoute({
   children: React.ReactNode;
   mode?: GuardMode;
 }) {
-  const { user, profile, isLoading, isVerifiedContributor, isAdmin, isEditor, isEnrolledPhysician } = useAuth();
+  const {
+    user,
+    isLoading,
+    isVerifiedContributor,
+    isAdmin,
+    isEditor,
+    roles,
+    isEnrolledPhysician,
+    hasPremiumAccess,
+  } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -28,15 +37,23 @@ export function ProtectedRoute({
     return <Navigate to={`/auth/login?next=${next}`} replace />;
   }
 
-  if (mode === 'verified' && !isVerifiedContributor) {
-    return <Navigate to="/colaborador/perfil" replace />;
+  // Rutas exclusivas del equipo editorial / colaboradores
+  if (mode === 'contributor' && !isAdmin && !isEditor && !roles.includes('contributor')) {
+    return <Navigate to="/dashboard" replace />;
   }
 
-  if (mode === 'enrolled' && !isEnrolledPhysician) {
-    if (!profile || !isEnrollmentProfileComplete(profile)) {
-      return <Navigate to="/colaborador/perfil" replace />;
+  if (mode === 'verified') {
+    if (!isAdmin && !isEditor && !roles.includes('contributor')) {
+      return <Navigate to="/dashboard" replace />;
     }
-    return <Navigate to="/colaborador/perfil" replace />;
+    if (!isVerifiedContributor) {
+      return <Navigate to="/perfil" replace />;
+    }
+  }
+
+  const canAccessEnrolled = isEnrolledPhysician || hasPremiumAccess;
+  if (mode === 'enrolled' && !canAccessEnrolled) {
+    return <PremiumGate />;
   }
 
   if (mode === 'editor' && !isAdmin && !isEditor) {
@@ -49,3 +66,4 @@ export function ProtectedRoute({
 
   return <>{children}</>;
 }
+

@@ -68,7 +68,7 @@ function App() {
               <Route path="/examenes/resultados" element={<ProtectedRoute mode="enrolled"><ExamResultsPage /></ProtectedRoute>} />
 
               {/* Herramientas y talleres */}
-              <Route path="/herramientas/plexo-braquial" element={<PlexoCalculatorPage />} />
+              <Route path="/herramientas/plexo-braquial" element={<ProtectedRoute mode="enrolled"><PlexoCalculatorPage /></ProtectedRoute>} />
               <Route path="/talleres" element={<WorkshopsListPage />} />
               <Route path="/taller/:workshopId" element={<WorkshopDetailPage />} />
 
@@ -87,9 +87,12 @@ function App() {
               <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-              {/* Colaboradores */}
-              <Route path="/colaborador" element={<ProtectedRoute><ContributorDashboard /></ProtectedRoute>} />
+              {/* Perfil del Usuario / Médico */}
+              <Route path="/perfil" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
               <Route path="/colaborador/perfil" element={<ProtectedRoute><ProfileSetupPage /></ProtectedRoute>} />
+
+              {/* Colaboradores (Solo accesible para usuarios autorizados por el Administrador) */}
+              <Route path="/colaborador" element={<ProtectedRoute mode="contributor"><ContributorDashboard /></ProtectedRoute>} />
               <Route path="/colaborador/nueva-revision" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/nuevo-modulo" element={<ProtectedRoute mode="verified"><ModuleEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/cuestionario" element={<ProtectedRoute mode="verified"><QuizEditorPage /></ProtectedRoute>} />

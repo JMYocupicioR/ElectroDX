@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FileEdit, Clock, CheckCircle, XCircle, ClipboardList, Stethoscope } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyRevisions } from '../../services/editorialService';
@@ -23,13 +23,25 @@ const STATUS_ICON: Record<RevisionStatus, typeof Clock> = {
 };
 
 export default function ContributorDashboard() {
-  const { user, profile, canProposeContent, roles } = useAuth();
+  const { user, profile, canProposeContent, roles, isAdmin, isEditor, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const isEditorial = isAdmin || isEditor || roles.includes('contributor');
   const [revisions, setRevisions] = useState<ContentRevision[]>([]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!isLoading && user && !isEditorial) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isLoading, user, isEditorial, navigate]);
+
+  useEffect(() => {
+    if (!user || !isEditorial) return;
     getMyRevisions(user.id).then(setRevisions).catch(console.error);
-  }, [user]);
+  }, [user, isEditorial]);
+
+  if (!isEditorial) {
+    return null;
+  }
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
@@ -41,19 +53,16 @@ export default function ContributorDashboard() {
           <p className="text-sm text-slate-500 mt-1">
             {canProposeContent
               ? 'Puedes proponer contenido y cuestionarios. Todo pasa por revisión antes de publicarse.'
-              : 'Tu perfil está pendiente de verificación por un administrador.'}
+              : 'Tu perfil de colaborador está pendiente de verificación por un administrador.'}
           </p>
           {!canProposeContent && (
             <p className="text-xs text-amber-700 dark:text-amber-300 mt-2 max-w-xl">
-              Roles actuales: {roles.length ? roles.join(', ') : 'ninguno'}.
-              {roles.includes('contributor') && !profile?.verified_at
-                ? ' Completa tu perfil y espera verificación para crear cuestionarios.'
-                : ' Un administrador debe asignarte rol admin, editor o colaborador en Supabase.'}
+              Tu rol como colaborador requiere que tu perfil sea verificado por el administrador académico antes de publicar propuestas.
             </p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link to="/colaborador/perfil" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm">
+          <Link to="/perfil" className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm">
             Mi perfil
           </Link>
           {canProposeContent && (

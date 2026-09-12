@@ -210,7 +210,7 @@ export default function RevisionEditorPage() {
     return (
       <div className="pt-24 px-4 max-w-lg mx-auto text-center">
         <p className="text-slate-600 mb-4">Necesitas verificación de administrador para proponer contenido.</p>
-        <Link to="/colaborador/perfil" className="text-blue-600 underline">Completar perfil</Link>
+        <Link to="/perfil" className="text-blue-600 underline">Completar perfil</Link>
       </div>
     );
   }

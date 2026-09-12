@@ -51,7 +51,7 @@ export function QuizGate({
       {user && !isEnrolledPhysician && (
         <div className="mb-4 p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-800 dark:text-indigo-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
           <span><strong>Evaluación Formativa:</strong> Tus aciertos sumarán a tu avance del módulo. Para aval CME oficial, completa tu cédula profesional en tu perfil.</span>
-          <Link to="/colaborador/perfil" className="shrink-0 font-semibold underline hover:text-indigo-600">Completar perfil</Link>
+          <Link to="/perfil" className="shrink-0 font-semibold underline hover:text-indigo-600">Completar perfil</Link>
         </div>
       )}
 

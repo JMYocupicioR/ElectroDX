@@ -183,7 +183,7 @@ export function UserMenu() {
             <MenuLink to="/cuenta" icon={UserCircle} onClick={() => setOpen(false)}>
               Mi cuenta
             </MenuLink>
-            <MenuLink to="/colaborador/perfil" icon={User} onClick={() => setOpen(false)}>
+            <MenuLink to="/perfil" icon={User} onClick={() => setOpen(false)}>
               Editar perfil
             </MenuLink>
             {canProposeContent && (

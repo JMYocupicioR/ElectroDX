@@ -310,7 +310,7 @@ export default function SyllabusPage() {
               </Link>
             ) : user ? (
               <Link
-                to="/colaborador/perfil"
+                to="/perfil"
                 className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02]"
               >
                 <GraduationCap className="w-5 h-5" />
