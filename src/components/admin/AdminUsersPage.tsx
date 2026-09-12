@@ -10,6 +10,7 @@ import {
   Users,
   Stethoscope,
   XCircle,
+  GraduationCap,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -136,6 +137,12 @@ export default function AdminUsersPage() {
                       {u.cedula_profesional && (
                         <p className="text-xs text-slate-500 mt-1">Cédula: {u.cedula_profesional}</p>
                       )}
+                      {u.residency_year && (
+                        <p className="text-xs text-slate-500 mt-0.5">Nivel/Residencia: {u.residency_year}</p>
+                      )}
+                      {u.comefyr_member_id && (
+                        <p className="text-xs text-blue-600 dark:text-cyan-400 mt-0.5 font-medium">Socio COMEFYR: {u.comefyr_member_id}</p>
+                      )}
                       {u.specialty && <p className="text-xs text-slate-400">{u.specialty}</p>}
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {u.roles.map((r) => (
@@ -188,17 +195,51 @@ export default function AdminUsersPage() {
                         </>
                       )}
                       {tab === 'enrolled' && (
-                        <button
-                          type="button"
-                          disabled={loadingId === u.id}
-                          onClick={() => {
-                            if (!confirm('¿Revocar inscripción médica? Perderá acceso a evaluaciones.')) return;
-                            run(u.id, () => revokePhysicianEnrollment(u.id));
-                          }}
-                          className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-sm"
-                        >
-                          <UserX className="w-4 h-4" /> Revocar inscripción
-                        </button>
+                        <>
+                          {!u.roles.includes('admin') && (
+                            <div className="flex flex-wrap gap-1 mb-1">
+                              {!u.roles.includes('contributor') && (
+                                <button
+                                  type="button"
+                                  disabled={loadingId === u.id}
+                                  onClick={() => run(u.id, () => grantRole(u.id, 'contributor' as AppRole))}
+                                  className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-200 text-blue-600 text-xs hover:bg-blue-50"
+                                >
+                                  <GraduationCap className="w-3.5 h-3.5" /> Hacer Colaborador
+                                </button>
+                              )}
+                              {!u.roles.includes('editor') && (
+                                <button
+                                  type="button"
+                                  disabled={loadingId === u.id}
+                                  onClick={() => run(u.id, () => grantRole(u.id, 'editor' as AppRole))}
+                                  className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg border border-violet-200 text-violet-600 text-xs hover:bg-violet-50"
+                                >
+                                  <PenLine className="w-3.5 h-3.5" /> Hacer Editor
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                disabled={loadingId === u.id}
+                                onClick={() => run(u.id, () => grantRole(u.id, 'admin' as AppRole))}
+                                className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg border border-indigo-200 text-indigo-600 text-xs hover:bg-indigo-50"
+                              >
+                                <Shield className="w-3.5 h-3.5" /> Hacer Admin
+                              </button>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            disabled={loadingId === u.id}
+                            onClick={() => {
+                              if (!confirm('¿Revocar inscripción médica? Perderá acceso a evaluaciones.')) return;
+                              run(u.id, () => revokePhysicianEnrollment(u.id));
+                            }}
+                            className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-lg border border-red-200 text-red-600 text-sm"
+                          >
+                            <UserX className="w-4 h-4" /> Revocar inscripción
+                          </button>
+                        </>
                       )}
                       {tab === 'contributors' && !u.verified_at && (
                         <button

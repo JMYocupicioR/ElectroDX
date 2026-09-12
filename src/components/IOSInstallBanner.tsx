@@ -46,7 +46,7 @@ export default function IOSInstallBanner() {
                   <Plus className="w-4 h-4 text-blue-400" />
                 </div>
                 <span className="text-white font-semibold text-sm">
-                  Instalar EMG EducativApp
+                  Instalar NeuroSAFEMX
                 </span>
               </div>
               <button

@@ -1,7 +1,7 @@
 {
-  "name": "EMG EducativApp — Plataforma de Neurofisiología Clínica",
-  "short_name": "EMG EducativApp",
-  "description": "Plataforma educativa interactiva de Electromiografía y Estudios de Neuroconducción",
+  "name": "NeuroSAFEMX — Recursos de Neurorehabilitación y Electrodiagnóstico (COMEFYR)",
+  "short_name": "NeuroSAFEMX",
+  "description": "Plataforma interactiva de recursos de neurorehabilitación y cursos de electrodiagnóstico avalada por la COMEFYR",
   "start_url": "/",
   "scope": "/",
   "id": "/",

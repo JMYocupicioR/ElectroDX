@@ -11,6 +11,8 @@ export interface AdminProfileRow {
   avatar_url: string | null;
   is_public: boolean;
   cedula_profesional: string | null;
+  residency_year?: string | null;
+  comefyr_member_id?: string | null;
   verified_at: string | null;
   enrollment_status: EnrollmentStatus;
   enrollment_verified_at: string | null;

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, BookOpen, ClipboardList } from 'lucide-react';
 import { Topic } from '../../types/content';
@@ -55,6 +55,7 @@ function ModuleTopicRow({
   canProposeContent: boolean;
   parentPath?: string[];
 }) {
+  const navigate = useNavigate();
   const isLeaf = !topic.children?.length;
   const showQuizBadge = isLeaf ? hasQuiz(topic.id) : topicTreeHasQuiz(topic, hasQuiz);
   const childCount = topic.children?.length ?? 0;
@@ -64,21 +65,41 @@ function ModuleTopicRow({
   const currentPath = [...parentPath, topic.id];
   const topicUrl = `/modulo/${moduleId}/${currentPath.join('/')}`;
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('a, button')) {
+      return;
+    }
+    navigate(topicUrl);
+  };
+
   return (
     <div className={depth > 0 ? 'ml-4 border-l border-slate-200/60 dark:border-slate-700/40 pl-3' : ''}>
       <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}>
-        <Link
-          to={topicUrl}
-          className="group flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm hover:shadow-lg transition-all duration-300"
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={handleCardClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              if ((e.target as HTMLElement).closest('a, button')) return;
+              e.preventDefault();
+              navigate(topicUrl);
+            }
+          }}
+          className="group flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
         >
           <div className="flex-shrink-0 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300 font-mono text-xs sm:text-sm font-bold">
             {indexPath}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h3 className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm sm:text-base leading-snug">
+              <Link
+                to={topicUrl}
+                className="font-semibold text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm sm:text-base leading-snug"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {lt.title}
-              </h3>
+              </Link>
               {showQuizBadge && <QuizTopicBadge compact label={lang === 'en' ? 'Quiz' : 'Evaluación'} />}
             </div>
             {preview && (
@@ -100,18 +121,18 @@ function ModuleTopicRow({
               </div>
             )}
             {canProposeContent && isLeaf && (
-              <div className="mt-2" onClick={(e) => e.preventDefault()}>
+              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                 <ProposeQuizLink moduleId={moduleId} topicId={topic.id} />
               </div>
             )}
             {canProposeContent && depth === 0 && (
-              <div className="mt-2" onClick={(e) => e.preventDefault()}>
+              <div className="mt-2" onClick={(e) => e.stopPropagation()}>
                 <ProposeSubtopicLink moduleId={moduleId} parentId={topic.id} />
               </div>
             )}
           </div>
           <ChevronRight className="w-5 h-5 text-slate-300 dark:text-slate-600 group-hover:text-blue-500 transition-colors flex-shrink-0 mt-0.5" />
-        </Link>
+        </div>
       </motion.div>
 
       {topic.children && topic.children.length > 0 && (

@@ -1,0 +1,766 @@
+import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  BookOpen,
+  Check,
+  GraduationCap,
+  ArrowRight,
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Lock,
+  Sparkles,
+  Award,
+  Zap,
+  Layers,
+  Stethoscope,
+  Activity,
+  Sliders,
+  ShieldCheck,
+  FileCheck,
+  CheckCircle2,
+  Users,
+  Compass,
+} from 'lucide-react';
+import { allModules } from '../../content/modules';
+import { Topic } from '../../types/content';
+import { useAuth } from '../../contexts/AuthProvider';
+import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
+import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
+
+/* ── Flatten topics for search ── */
+function flattenTopics(
+  topics: Topic[],
+  moduleId: string,
+  moduleTitle: string,
+  parentTitles: string[] = []
+): { id: string; title: string; description?: string; moduleId: string; moduleTitle: string; breadcrumb: string }[] {
+  const list: { id: string; title: string; description?: string; moduleId: string; moduleTitle: string; breadcrumb: string }[] = [];
+  for (const t of topics) {
+    const currentBreadcrumb = [...parentTitles, t.title].join(' › ');
+    list.push({
+      id: t.id,
+      title: t.title,
+      description: t.description,
+      moduleId,
+      moduleTitle,
+      breadcrumb: currentBreadcrumb,
+    });
+    if (t.children) {
+      list.push(...flattenTopics(t.children, moduleId, moduleTitle, [...parentTitles, t.title]));
+    }
+  }
+  return list;
+}
+
+function countTotalTopics(topics: Topic[]): number {
+  let count = 0;
+  for (const t of topics) {
+    count++;
+    if (t.children) count += countTotalTopics(t.children);
+  }
+  return count;
+}
+
+/* ── Resumen rápido y simplificado por pilares ── */
+const SIMPLIFIED_PILLARS = [
+  {
+    id: 'biofisica',
+    number: '01',
+    title: 'Fundamentos Bioeléctricos e Instrumentación',
+    modules: 'Módulos 01 y 13',
+    badge: 'Base Fisiológica',
+    color: 'from-blue-600 to-indigo-600',
+    borderColor: 'border-blue-200 dark:border-blue-900/60',
+    bgLight: 'bg-blue-50/60 dark:bg-blue-950/20',
+    icon: Sliders,
+    summary:
+      'Comprensión rigurosa de cómo se originan los biopotenciales de membrana y cómo se configuran adecuadamente los filtros, la ganancia, el barrido y la tierra del electromiógrafo.',
+    keyPoints: [
+      'Configuración de filtros pasa-altas y pasa-bajas para evitar distorsión de latencia y fase.',
+      'Eliminación de interferencia a 60 Hz y reducción de impedancia piel-electrodo.',
+      'Prevención de artefactos por volumen conductor y sobreestimulación.',
+      'Normas de bioseguridad eléctrica en pacientes con marcapasos o DAI.',
+    ],
+    outcome:
+      'Dominarás la calibración del equipo para obtener registros fidedignos sin artefactos que simulen patología.',
+  },
+  {
+    id: 'ncs',
+    number: '02',
+    title: 'Estudios de Neuroconducción Periférica (NCS)',
+    modules: 'Módulos 02 y 04',
+    badge: 'Conducción Nerviosa',
+    color: 'from-emerald-600 to-teal-600',
+    borderColor: 'border-emerald-200 dark:border-emerald-900/60',
+    bgLight: 'bg-emerald-50/60 dark:bg-emerald-950/20',
+    icon: Zap,
+    summary:
+      'Protocolos estandarizados de neuroconducción motora y sensitiva en extremidades superiores e inferiores, incluyendo técnicas segmentarias de alta resolución.',
+    keyPoints: [
+      'Parámetros normativos: latencia distal, amplitud CMAP / SNAP y velocidad de conducción.',
+      'Diferenciación cuantitativa: pérdida axonal vs desmielinización vs bloqueo de conducción.',
+      'Respuestas tardías: análisis de persistencia y cronodispersión de Onda F, y Reflejo H.',
+      'Técnicas comparativas de segmento corto (Inching) para atrapamientos focales.',
+    ],
+    outcome:
+      'Podrás localizar con precisión milimétrica el sitio de lesión y categorizar el mecanismo fisiopatológico primario.',
+  },
+  {
+    id: 'emg',
+    number: '03',
+    title: 'Electromiografía de Aguja y Mapeo Miopático/Neuropático',
+    modules: 'Módulos 03 y 05',
+    badge: 'Mapeo Muscular',
+    color: 'from-amber-600 to-orange-600',
+    borderColor: 'border-amber-200 dark:border-amber-900/60',
+    bgLight: 'bg-amber-50/60 dark:bg-amber-950/20',
+    icon: Activity,
+    summary:
+      'Exploración muscular sistemática con aguja concéntrica en las 4 fases clásicas: inserción, reposo, activación voluntaria mínima y esfuerzo máximo.',
+    keyPoints: [
+      'Reconocimiento de actividad espontánea anormal: fibrilaciones, ondas agudas positivas y CRDs.',
+      'Identificación de descargas miotónicas, fasciculaciones y mioquimias.',
+      'Análisis morfométrico del PUM (Potencial de Unidad Motora): duración, fases y amplitud.',
+      'Graduación del patrón de reclutamiento e interferencia (pérdida de unidades vs reclutamiento precoz).',
+    ],
+    outcome:
+      'Distinguirás con seguridad afecciones neuropáticas (denervación activa vs reinervación) de procesos miopáticos primarios.',
+  },
+  {
+    id: 'unm',
+    number: '04',
+    title: 'Unión Neuromuscular y Respuestas Especiales',
+    modules: 'Módulos 05 y 07',
+    badge: 'Transmisión Sináptica',
+    color: 'from-purple-600 to-indigo-600',
+    borderColor: 'border-purple-200 dark:border-purple-900/60',
+    bgLight: 'bg-purple-50/60 dark:bg-purple-950/20',
+    icon: Layers,
+    summary:
+      'Evaluación neurofisiológica de trastornos postsinápticos y presinápticos mediante estimulación nerviosa repetitiva y pruebas dinámicas.',
+    keyPoints: [
+      'Estimulación repetitiva a baja frecuencia (3 Hz): detección de decremento mayor al 10%.',
+      'Prueba de ejercicio breve (10 s) para agotamiento pos-ejercicio vs facilitación.',
+      'Estimulación a alta frecuencia (20-50 Hz) o post-ejercicio prolongado en síndromes presinápticos.',
+      'Protocolos diferenciales para Miastenia Gravis, Lambert-Eaton y Botulismo.',
+    ],
+    outcome:
+      'Aprenderás a ejecutar e interpretar las pruebas diagnósticas con sensibilidad óptima evitando falsos negativos por temperatura o fatiga.',
+  },
+  {
+    id: 'patologias',
+    number: '05',
+    title: 'Diagnóstico Topográfico de Patologías Frecuentes',
+    modules: 'Módulos 08, 09 y 10',
+    badge: 'Casos Clínicos y Criterios',
+    color: 'from-rose-600 to-pink-600',
+    borderColor: 'border-rose-200 dark:border-rose-900/60',
+    bgLight: 'bg-rose-50/60 dark:bg-rose-950/20',
+    icon: Stethoscope,
+    summary:
+      'Algoritmos de decisión para las principales neuropatías focales, radiculopatías, plexopatías y enfermedades de motoneurona bajo directrices internacionales.',
+    keyPoints: [
+      'Síndrome del Túnel Carpiano: criterios de severidad AANEM y pruebas de sensibilidad cruzada.',
+      'Neuropatía ulnar en codo (túnel cubital vs arcada de Struthers) y nervio radial.',
+      'Radiculopatías cervicales y lumbosacras: muestreo miotomal de Aguja y exclusión de plexopatía.',
+      'Criterios Gold Coast (2019) para Esclerosis Lateral Amiotrófica (ELA) y EAN/PNS (2021) para CIDP.',
+    ],
+    outcome:
+      'Desarrollarás criterio clínico resolutivo para fundamentar diagnósticos certeros con impacto directo en el pronóstico del paciente.',
+  },
+  {
+    id: 'avanzados',
+    number: '06',
+    title: 'Potenciales Evocados, Ultrasonido y Control de Calidad',
+    modules: 'Módulos 06, 07 y 13',
+    badge: 'Técnicas Multimodales',
+    color: 'from-cyan-600 to-blue-600',
+    borderColor: 'border-cyan-200 dark:border-cyan-900/60',
+    bgLight: 'bg-cyan-50/60 dark:bg-cyan-950/20',
+    icon: Compass,
+    summary:
+      'Integración de vías sensoriales centrales (PESS, PEV, PEATC) con ecografía neuromuscular de alta resolución para correlación morfológica.',
+    keyPoints: [
+      'Potenciales Evocados Somatosensoriales (PESS): latencias N9, N13, N20 y P37.',
+      'Ultrasonido Neuromuscular: medición del área de sección transversal (CSA) y ecoestructura nerviosa.',
+      'Escala Heckmatt para miopatías y protocolos combinados EMG-ecografía.',
+      'Checklist de control de calidad para emisión de reportes médicos de validez legal y académica.',
+    ],
+    outcome:
+      'Complementarás el estudio electrofisiológico funcional con imagen anatómica en tiempo real para diagnósticos de máxima certidumbre.',
+  },
+];
+
+export default function SyllabusPage() {
+  const { isEnrolledPhysician, user } = useAuth();
+  const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
+  const [activeTab, setActiveTab] = useState<'temario' | 'resumen' | 'inscripcion'>('temario');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(allModules.map((m) => m.id)));
+
+  // Total stats
+  const totalModulesCount = allModules.length;
+  const totalTopicsCount = useMemo(() => {
+    return allModules.reduce((acc, mod) => acc + countTotalTopics(mod.topics), 0);
+  }, []);
+
+  // Search indexing
+  const searchableTopics = useMemo(() => {
+    return allModules.flatMap((mod) => flattenTopics(mod.topics, mod.id, mod.title));
+  }, []);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return null;
+    const q = searchQuery.toLowerCase();
+    return searchableTopics.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        (t.description && t.description.toLowerCase().includes(q)) ||
+        t.moduleTitle.toLowerCase().includes(q)
+    );
+  }, [searchQuery, searchableTopics]);
+
+  const toggleModule = (id: string) => {
+    setExpandedModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const expandAll = () => setExpandedModules(new Set(allModules.map((m) => m.id)));
+  const collapseAll = () => setExpandedModules(new Set());
+
+  return (
+    <div className="min-h-screen pt-20 sm:pt-24 pb-24">
+      {/* ── Hero Section ── */}
+      <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto mb-12">
+        <div className="text-center max-w-4xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6 border border-blue-500/20"
+          >
+            <Sparkles className="w-4 h-4 text-blue-500" />
+            <span>Programa Académico Oficial · Avalado por COMEFYR</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-5"
+          >
+            Temario Completo y Resumen del Curso
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed mb-8"
+          >
+            Formación especializada de alto nivel en Electrodiagnóstico, Conducción Nerviosa y Electromiografía Clínica.
+            Todo el material didáctico interactivo, simuladores y evaluaciones es de acceso exclusivo mediante suscripción para médicos en formación y especialistas.
+          </motion.p>
+
+          {/* Quick Metrics */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto mb-10 text-left"
+          >
+            {[
+              { label: 'Módulos Clínicos', value: `${totalModulesCount}`, icon: BookOpen, color: 'text-blue-500' },
+              { label: 'Temas Detallados', value: `${totalTopicsCount}+`, icon: Layers, color: 'text-indigo-500' },
+              { label: 'Aval Académico', value: 'COMEFYR', icon: Award, color: 'text-emerald-500' },
+              { label: 'Acceso Exclusivo', value: 'Suscripción', icon: Lock, color: 'text-amber-500' },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="p-4 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-sm shadow-sm"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                  <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</span>
+                </div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{stat.label}</span>
+              </div>
+            ))}
+          </motion.div>
+
+          {/* Primary Action Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="flex flex-wrap items-center justify-center gap-4"
+          >
+            {isEnrolledPhysician ? (
+              <Link
+                to="/modulo/01-fundamentos"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02]"
+              >
+                <Check className="w-5 h-5" />
+                Ya estás inscrito — Entrar a las lecciones
+              </Link>
+            ) : user ? (
+              <Link
+                to="/colaborador/perfil"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02]"
+              >
+                <GraduationCap className="w-5 h-5" />
+                Completar mi suscripción de alumno
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <Link
+                to="/auth/registro"
+                className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02]"
+              >
+                <GraduationCap className="w-5 h-5" />
+                Inscribirme como Alumno (Aval COMEFYR)
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
+
+            {!user && (
+              <Link
+                to="/auth/login"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white dark:hover:bg-slate-800 transition-all"
+              >
+                Ya tengo cuenta · Iniciar sesión
+              </Link>
+            )}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── Navigation Tabs ── */}
+      <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-10">
+        <div className="flex flex-wrap items-center justify-center p-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 max-w-xl mx-auto">
+          {[
+            { id: 'temario', label: 'Temario Completo (13 Módulos)' },
+            { id: 'resumen', label: 'Resumen Rápido y Simplificado' },
+            { id: 'inscripcion', label: 'Beneficios y Aval' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                activeTab === tab.id
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Tab 1: Temario Completo ── */}
+      {activeTab === 'temario' && (
+        <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          {/* Search bar and controls */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-8">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar tema (ej. túnel carpiano, aguja, onda F, ELA)..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 text-slate-800 dark:text-slate-100 shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs">
+              <button
+                onClick={expandAll}
+                className="px-3 py-2 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium transition"
+              >
+                Expandir todos
+              </button>
+              <button
+                onClick={collapseAll}
+                className="px-3 py-2 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium transition"
+              >
+                Colapsar todos
+              </button>
+            </div>
+          </div>
+
+          {/* If searching */}
+          {searchResults !== null ? (
+            <div className="mb-12">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                Se encontraron <span className="font-bold text-blue-600 dark:text-blue-400">{searchResults.length}</span> temas relacionados con "{searchQuery}":
+              </p>
+              {searchResults.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl bg-white/60 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-700/40">
+                  <p className="text-slate-500 dark:text-slate-400">No encontramos coincidencias para esa búsqueda en el temario.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {searchResults.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-4 rounded-xl bg-white/80 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60 flex items-start justify-between gap-4 shadow-sm"
+                    >
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
+                          {item.moduleTitle}
+                        </span>
+                        <h4 className="font-semibold text-slate-900 dark:text-white text-base mb-1">{item.title}</h4>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">{item.breadcrumb}</p>
+                        {item.description && (
+                          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 line-clamp-2">{item.description}</p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-lg border border-amber-200/60 dark:border-amber-800/40">
+                        <Lock className="w-3 h-3" />
+                        <span>Suscripción</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Module Accordions */
+            <div className="space-y-4">
+              {allModules.map((mod) => {
+                const isExpanded = expandedModules.has(mod.id);
+                const topicCount = countTotalTopics(mod.topics);
+                const quizCount = moduleQuizCount(mod.id);
+
+                return (
+                  <div
+                    key={mod.id}
+                    id={`modulo-${mod.id}`}
+                    className="rounded-2xl border border-slate-200/70 dark:border-slate-700/50 bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm overflow-hidden shadow-sm transition-all"
+                  >
+                    {/* Header */}
+                    <button
+                      onClick={() => toggleModule(mod.id)}
+                      className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50/70 dark:hover:bg-slate-750 transition-colors"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div
+                          className={`w-12 h-12 rounded-xl bg-gradient-to-br ${mod.color} text-white text-2xl flex items-center justify-center flex-shrink-0 shadow-md`}
+                        >
+                          {mod.emoji}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500">
+                              MÓDULO {String(mod.number).padStart(2, '0')}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
+                              {topicCount} temas
+                            </span>
+                            {quizCount > 0 && <QuizTopicBadge compact />}
+                          </div>
+                          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
+                            {mod.title}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
+                            {mod.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                        <span className="hidden sm:inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-lg border border-amber-200/50 dark:border-amber-800/40">
+                          <Lock className="w-3 h-3" />
+                          Acceso con suscripción
+                        </span>
+                        {isExpanded ? (
+                          <ChevronDown className="w-5 h-5 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Topics Drawer */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="border-t border-slate-100 dark:border-slate-700/60 bg-slate-50/50 dark:bg-slate-900/30 px-5 py-4"
+                        >
+                          <div className="space-y-3">
+                            {mod.topics.map((t, idx) => (
+                              <div
+                                key={t.id}
+                                className="p-3.5 rounded-xl bg-white/90 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/40"
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                                        {mod.number}.{idx + 1}
+                                      </span>
+                                      <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
+                                        {t.title}
+                                      </h4>
+                                      {hasQuiz(t.id) && <QuizTopicBadge compact />}
+                                    </div>
+                                    {t.description && (
+                                      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                        {t.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <span className="text-slate-300 dark:text-slate-600 flex-shrink-0 mt-0.5">
+                                    <Lock className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+
+                                {/* Subtopics if any */}
+                                {t.children && t.children.length > 0 && (
+                                  <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-700/30 grid sm:grid-cols-2 gap-1.5">
+                                    {t.children.map((sub, sIdx) => (
+                                      <div
+                                        key={sub.id}
+                                        className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 py-1 px-2 rounded-lg bg-slate-50 dark:bg-slate-900/40"
+                                      >
+                                        <span className="font-mono text-[10px] text-slate-400">
+                                          {mod.number}.{idx + 1}.{sIdx + 1}
+                                        </span>
+                                        <span className="truncate">{sub.title}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Footer Action for Module */}
+                          <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+                            <span className="text-slate-500 dark:text-slate-400">
+                              Lecciones completas, perlas clínicas y evaluaciones disponibles para alumnos inscritos.
+                            </span>
+                            <Link
+                              to={isEnrolledPhysician ? `/modulo/${mod.id}` : '/auth/registro'}
+                              className="inline-flex items-center gap-1.5 font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              {isEnrolledPhysician ? 'Entrar a este módulo' : 'Inscribirme para cursar este módulo'}
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Tab 2: Resumen Rápido y Simplificado ── */}
+      {activeTab === 'resumen' && (
+        <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
+          <div className="mb-8 text-center max-w-3xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+              Visión Ejecutiva del Programa
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+              Una síntesis estructurada en 6 ejes temáticos para comprender con rapidez qué conceptos, protocolos prácticos y habilidades diagnósticas se adquieren a lo largo del curso.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {SIMPLIFIED_PILLARS.map((pillar) => (
+              <div
+                key={pillar.id}
+                className={`p-6 rounded-3xl border ${pillar.borderColor} ${pillar.bgLight} backdrop-blur-sm shadow-sm flex flex-col justify-between`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-300">
+                      EJE {pillar.number} · {pillar.modules}
+                    </span>
+                    <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-white/80 dark:bg-slate-800/80 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40">
+                      {pillar.badge}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl bg-gradient-to-br ${pillar.color} text-white flex items-center justify-center shadow-md`}
+                    >
+                      <pillar.icon className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">
+                      {pillar.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                    {pillar.summary}
+                  </p>
+
+                  <div className="space-y-2 mb-5">
+                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
+                      Aspectos prácticos clave:
+                    </p>
+                    {pillar.keyPoints.map((pt, idx) => (
+                      <div key={idx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        <span>{pt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-200/60 dark:border-slate-700/40">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <span className="font-bold text-blue-600 dark:text-blue-400">Competencia adquirida: </span>
+                    {pillar.outcome}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Flow Banner */}
+          <div className="p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white shadow-2xl border border-indigo-500/20 text-center max-w-4xl mx-auto">
+            <h3 className="text-xl sm:text-2xl font-bold mb-3">
+              ¿Quieres acceder a todos los protocolos clínicos y casos de estudio?
+            </h3>
+            <p className="text-slate-300 text-sm max-w-2xl mx-auto mb-6">
+              El contenido integral, con valores normativos de referencia, tablas de cálculo de latencias y simulador de casos está disponible exclusivamente para alumnos inscritos.
+            </p>
+            <Link
+              to="/auth/registro"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 font-bold transition shadow-lg shadow-indigo-500/30"
+            >
+              <GraduationCap className="w-5 h-5" />
+              Inscribirme como Alumno
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </section>
+      )}
+
+      {/* ── Tab 3: Beneficios, Aval y Suscripción ── */}
+      {activeTab === 'inscripcion' && (
+        <section className="px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+              Acreditación Médica y Modelo de Suscripción
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+              NeuroSAFEMX está respaldado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR) para garantizar estándares de excelencia académica en electrofisiología.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {[
+              {
+                icon: ShieldCheck,
+                title: 'Aval Oficial COMEFYR',
+                desc: 'Programa alineado a las directrices de enseñanza del Colegio Mexicano de Medicina de Rehabilitación.',
+              },
+              {
+                icon: FileCheck,
+                title: 'Evaluaciones y Certificación',
+                desc: 'Exámenes clínicos interactivos al final de cada tema para constatar el aprovechamiento del médico.',
+              },
+              {
+                icon: Users,
+                title: 'Comité Editorial de Expertos',
+                desc: 'Contenidos revisados y validados continuamente por especialistas activos en neurofisiología clínica.',
+              },
+            ].map((card, i) => (
+              <div
+                key={i}
+                className="p-6 rounded-2xl bg-white/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 shadow-sm text-center"
+              >
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto mb-4">
+                  <card.icon className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2">{card.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{card.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Three steps */}
+          <div className="p-8 rounded-3xl bg-white/80 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-700/60 shadow-md mb-12">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 text-center">
+              ¿Cómo funciona la inscripción como Alumno?
+            </h3>
+            <div className="grid sm:grid-cols-3 gap-6">
+              {[
+                {
+                  step: '01',
+                  title: 'Registro Profesional',
+                  desc: 'Completa tu registro con correo, institución hospitalaria y cédula profesional o número COMEFYR.',
+                },
+                {
+                  step: '02',
+                  title: 'Verificación Académica',
+                  desc: 'El comité valida tu perfil médico como residente o especialista en formación electrodiagnóstica.',
+                },
+                {
+                  step: '03',
+                  title: 'Acceso Total al Curso',
+                  desc: 'Desbloquea los 13 módulos, evaluaciones por tema, simuladores diagnósticos y registro de progreso.',
+                },
+              ].map((s) => (
+                <div key={s.step} className="text-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <span className="inline-block text-sm font-mono font-extrabold text-blue-600 dark:text-blue-400 mb-2">
+                    PASO {s.step}
+                  </span>
+                  <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{s.title}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link
+                to="/auth/registro"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition shadow-md shadow-blue-500/25"
+              >
+                <GraduationCap className="w-5 h-5" />
+                Iniciar mi Registro de Alumno
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Footer Link to Home ── */}
+      <div className="text-center mt-12">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors"
+        >
+          ← Volver a la página principal
+        </Link>
+      </div>
+    </div>
+  );
+}

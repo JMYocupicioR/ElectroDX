@@ -1,45 +1,51 @@
-# Configuración Supabase — Plataforma editorial EMG
+# Configuración Supabase — NeuroSAFEMX
 
-## Credenciales
+Plataforma de recursos de neurorehabilitación y cursos de electrodiagnóstico avalada por la COMEFYR.
 
-Copia `.env.example` a `.env` y configura:
+## Credenciales del Proyecto
+
+Configuradas en `.env`:
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your_publishable_or_anon_key
+VITE_SUPABASE_URL=https://pubodzfmiqmawrfnmrce.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable_KRurFJ2qlMynInI4XGyAUA_wwu8s5AN
 ```
+
+**Project Ref:** `pubodzfmiqmawrfnmrce`
+
+---
 
 ## Pasos obligatorios en el dashboard de Supabase
 
-### 1. URL de redirección para magic link
+### 1. URL de redirección para autenticación
 
 En **Authentication → URL Configuration**:
 
 | Campo | Valor |
 |-------|--------|
-| Site URL | `http://localhost:5173` (dev) o tu dominio de producción |
+| Site URL | `http://localhost:5173` (desarrollo) o dominio en producción |
 | Redirect URLs | `http://localhost:5173/auth/callback`, `https://tu-dominio.com/auth/callback` |
 
-### 2. Habilitar Email (magic link)
+### 2. Habilitar proveedor Email (Magic Link y Contraseñas)
 
 En **Authentication → Providers → Email**: activar **Email**.
 
-### 3. Aplicar migraciones
+### 3. Migraciones del Sistema
 
-Ejecuta el SQL de `supabase/migrations/` en orden (SQL Editor o Supabase CLI):
+El esquema completo de base de datos se encuentra consolidado y endurecido en:
+`supabase/migrations/20260911000000_neurosafemx_core_schema.sql`
 
-1. `20250621000000_editorial_platform.sql`
-2. `20250621000001_rpc_grants.sql`
-3. `20250622000000_admin_rpc.sql`
-4. `20250623000000_published_modules.sql`
-5. `20250624000000_quizzes_enrollment.sql`
-6. `20250624000001_quiz_rpc_grants.sql`
-7. `20250624000002_fix_quiz_topic_flags_security.sql`
-8. `20250624000003_security_linter_fixes.sql`
-9. `20250624000004_quiz_hardening.sql`
-10. `20250624000005_verified_contributor_fix.sql`
-11. `20250624000006_table_grants_bootstrap.sql`
-12. `20250624000007_fix_rls_helper_grants.sql`
+Para aplicar cambios directamente mediante Supabase CLI:
+
+```bash
+# Push con conexión directa
+npx supabase db push --db-url "postgresql://postgres:[PASSWORD]@db.pubodzfmiqmawrfnmrce.supabase.co:5432/postgres"
+
+# O vinculando el proyecto con CLI
+npx supabase login
+npx supabase link --project-ref pubodzfmiqmawrfnmrce
+npx supabase db push
+```
 
 ### Protección de contraseñas filtradas (dashboard)
 

@@ -7,6 +7,7 @@ import IOSInstallBanner from './components/IOSInstallBanner';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
+const SyllabusPage = lazy(() => import('./components/pages/SyllabusPage'));
 const ModulePage = lazy(() => import('./components/pages/ModulePage'));
 const TopicPage = lazy(() => import('./components/pages/TopicPage'));
 const PlexoCalculatorPage = lazy(() => import('./components/Plexo/PlexoCalculatorPage'));
@@ -14,6 +15,8 @@ const ExerciseMode = lazy(() => import('../ejercicios/src/components/ExerciseMod
 const WorkshopsListPage = lazy(() => import('./components/pages/WorkshopsListPage'));
 const WorkshopDetailPage = lazy(() => import('./components/pages/WorkshopDetailPage'));
 const LoginPage = lazy(() => import('./components/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./components/auth/RegisterPage'));
+const ResetPasswordPage = lazy(() => import('./components/auth/ResetPasswordPage'));
 const AuthCallbackPage = lazy(() => import('./components/auth/AuthCallbackPage'));
 const ContributorDashboard = lazy(() => import('./components/editorial/ContributorDashboard'));
 const ProfileSetupPage = lazy(() => import('./components/editorial/ProfileSetupPage'));
@@ -46,12 +49,18 @@ function App() {
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
-              <Route path="/ejercicios" element={<ExerciseMode />} />
+              <Route path="/temario" element={<SyllabusPage />} />
+              <Route path="/programa" element={<SyllabusPage />} />
+
+              {/* Contenido formativo exclusivo para alumnos con suscripción */}
+              <Route path="/modulo/:moduleId" element={<ProtectedRoute mode="enrolled"><ModulePage /></ProtectedRoute>} />
+              <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
+              <Route path="/ejercicios" element={<ProtectedRoute mode="enrolled"><ExerciseMode /></ProtectedRoute>} />
+
+              {/* Herramientas y talleres */}
               <Route path="/herramientas/plexo-braquial" element={<PlexoCalculatorPage />} />
               <Route path="/talleres" element={<WorkshopsListPage />} />
               <Route path="/taller/:workshopId" element={<WorkshopDetailPage />} />
-              <Route path="/modulo/:moduleId" element={<ModulePage />} />
-              <Route path="/modulo/:moduleId/*" element={<TopicPage />} />
 
               {/* Público */}
               <Route path="/especialistas" element={<SpecialistsPage />} />
@@ -60,6 +69,12 @@ function App() {
 
               {/* Auth */}
               <Route path="/auth/login" element={<LoginPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/auth/registro" element={<RegisterPage />} />
+              <Route path="/registro" element={<RegisterPage />} />
+              <Route path="/auth/recuperar-password" element={<LoginPage initialMode="recovery" />} />
+              <Route path="/auth/actualizar-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
               {/* Colaboradores */}

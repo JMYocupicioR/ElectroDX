@@ -259,10 +259,17 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
             </nav>
 
             {/* Footer */}
-            <div className="flex-shrink-0 px-5 py-3 border-t border-slate-100 dark:border-slate-800/40">
+            <div className="flex-shrink-0 px-4 py-3 border-t border-slate-100 dark:border-slate-800/40 space-y-2">
+              <Link
+                to="/temario"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all font-semibold min-h-[44px]"
+              >
+                <BookOpen className="w-4 h-4" />
+                Ver temario y resumen del curso
+              </Link>
               <Link
                 to="/"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-medium min-h-[44px]"
+                className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
               >
                 Ir al inicio
               </Link>

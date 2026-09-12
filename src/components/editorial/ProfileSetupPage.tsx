@@ -17,7 +17,9 @@ export default function ProfileSetupPage() {
     credentials: profile?.credentials ?? '',
     institution: profile?.institution ?? '',
     specialty: profile?.specialty ?? '',
+    residency_year: profile?.residency_year ?? '',
     cedula_profesional: profile?.cedula_profesional ?? '',
+    comefyr_member_id: profile?.comefyr_member_id ?? '',
     bio: profile?.bio ?? '',
     is_public: profile?.is_public ?? true,
   });
@@ -33,7 +35,9 @@ export default function ProfileSetupPage() {
       credentials: profile.credentials ?? '',
       institution: profile.institution ?? '',
       specialty: profile.specialty ?? '',
+      residency_year: profile.residency_year ?? '',
       cedula_profesional: profile.cedula_profesional ?? '',
+      comefyr_member_id: profile.comefyr_member_id ?? '',
       bio: profile.bio ?? '',
       is_public: profile.is_public ?? true,
     });
@@ -126,11 +130,13 @@ export default function ProfileSetupPage() {
 
         <form onSubmit={handleSave} className="space-y-4">
           {[
-            ['display_name', 'Nombre para mostrar', 'Dr. Juan Pérez', true],
-            ['credentials', 'Credenciales', 'MD, Electrofisiólogo', true],
-            ['institution', 'Institución', 'Hospital General de México', true],
-            ['specialty', 'Especialidad', 'Neurofisiología clínica', false],
+            ['display_name', 'Nombre completo', 'Dr. Juan Pérez', true],
+            ['credentials', 'Credenciales médicas', 'MD, Especialista en Medicina de Rehabilitación', true],
+            ['institution', 'Sede hospitalaria / Institución', 'Hospital General de México / UNAM', true],
+            ['specialty', 'Especialidad', 'Medicina de Rehabilitación / Neurofisiología', false],
+            ['residency_year', 'Año de residencia o categoría académica', 'ej. R2 Residente, Médico Adscrito', false],
             ['cedula_profesional', 'Cédula profesional', '12345678', true],
+            ['comefyr_member_id', 'Número de socio COMEFYR (opcional para constancias avaladas)', 'ej. CM-12345', false],
           ].map(([key, label, placeholder, required]) => (
             <label key={key} className="block">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>

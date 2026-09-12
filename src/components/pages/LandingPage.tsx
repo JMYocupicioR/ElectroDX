@@ -77,17 +77,21 @@ const SUBSCRIPTION_BENEFITS = [
 
 const FREE_VS_PREMIUM = [
 
-  { feature: 'Lectura de todos los temas', free: true, premium: true },
+  { feature: 'Temario oficial y resumen del programa', visitor: true, student: true },
 
-  { feature: 'Herramientas interactivas y ejercicios', free: true, premium: true },
+  { feature: 'Directorio de especialistas y aval COMEFYR', visitor: true, student: true },
 
-  { feature: 'Evaluaciones al final de cada tema', free: false, premium: true },
+  { feature: 'Contenido clínico completo (13 módulos · 200+ temas)', visitor: false, student: true },
 
-  { feature: 'Panel Mi progreso', free: false, premium: true },
+  { feature: 'Simuladores y Modo Ejercicio EMG interactivo', visitor: false, student: true },
 
-  { feature: 'Descarga offline de módulos', free: true, premium: true },
+  { feature: 'Evaluaciones y exámenes clínicos por tema', visitor: false, student: true },
 
-  { feature: 'Verificación de cédula profesional', free: false, premium: true },
+  { feature: 'Panel personalizado de progreso y seguimiento', visitor: false, student: true },
+
+  { feature: 'Descarga offline para estudio sin conexión', visitor: false, student: true },
+
+  { feature: 'Acreditación académica avalada por COMEFYR', visitor: false, student: true },
 
 ];
 
@@ -129,7 +133,7 @@ export default function LandingPage() {
 
 
 
-  const enrollUrl = '/auth/login?next=' + encodeURIComponent('/colaborador/perfil');
+  const enrollUrl = '/auth/registro';
 
   const totalTopics = useMemo(
 
@@ -181,11 +185,11 @@ export default function LandingPage() {
 
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
 
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6 backdrop-blur-sm border border-blue-500/20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6 backdrop-blur-sm border border-blue-500/20 shadow-sm">
 
-              <Sparkles className="w-4 h-4" />
+              <Award className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
 
-              Curso en línea · Electrodiagnóstico clínico
+              <span>Avalado por la COMEFYR · Colegio Mexicano de Medicina de Rehabilitación</span>
 
             </div>
 
@@ -203,11 +207,11 @@ export default function LandingPage() {
 
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 dark:from-blue-400 dark:via-indigo-400 dark:to-cyan-400 bg-clip-text text-transparent">
 
-              Curso ENMG
+              NeuroSAFE
 
             </span>{' '}
 
-            <span className="text-slate-800 dark:text-white">DeepLuxMed</span>
+            <span className="text-slate-800 dark:text-white">MX</span>
 
           </motion.h1>
 
@@ -221,15 +225,13 @@ export default function LandingPage() {
 
           >
 
-            La plataforma más completa para dominar{' '}
+            Plataforma integral de recursos de{' '}
 
-            <strong className="text-slate-800 dark:text-white">electroconducción nerviosa</strong>,{' '}
+            <strong className="text-slate-800 dark:text-white">neurorehabilitación</strong> y formación médica de excelencia en{' '}
 
-            <strong className="text-slate-800 dark:text-white">electromiografía</strong> y{' '}
+            <strong className="text-slate-800 dark:text-white">cursos de electrodiagnóstico</strong> (neuroconducción, EMG y potenciales evocados).
 
-            <strong className="text-slate-800 dark:text-white">potenciales evocados</strong>.
-
-            Explora gratis · Suscríbete para evaluaciones y certificación de avance.
+            Explora el temario completo, simuladores y casos clínicos con retroalimentación inmediata.
 
           </motion.p>
 
@@ -273,25 +275,25 @@ export default function LandingPage() {
 
                 <GraduationCap className="w-5 h-5" />
 
-                Inscribirme al curso
+                Registro de Estudiante (Aval COMEFYR)
 
               </Link>
 
             ) : null}
 
-            <a
+            <Link
 
-              href="#modulos"
+              to="/temario"
 
-              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 font-medium hover:bg-white dark:hover:bg-slate-800 transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-600 transition-all shadow-sm"
 
             >
 
-              Explorar temario gratis
+              Explorar temario y programa
 
               <ArrowRight className="w-4 h-4" />
 
-            </a>
+            </Link>
 
           </motion.div>
 
@@ -435,8 +437,6 @@ export default function LandingPage() {
 
             </div>
 
-            <DownloadAllButton moduleIds={modules.map(m => m.id)} />
-
           </motion.div>
 
         </div>
@@ -475,9 +475,7 @@ export default function LandingPage() {
 
             <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg">
 
-              El temario es abierto para consulta. La suscripción desbloquea evaluaciones por tema,
-
-              seguimiento de avance y acceso completo como médico inscrito.
+              El acceso completo a las clases, casos prácticos, simuladores y evaluaciones es exclusivo mediante la suscripción como alumno con aval de COMEFYR.
 
             </p>
 
@@ -639,9 +637,12 @@ export default function LandingPage() {
 
 
 
-              <p className="text-xs text-slate-500 text-center mt-4">
+              <p className="text-xs text-slate-400 text-center mt-4">
 
-                ¿Solo quieres consultar? El temario completo es gratuito sin registro.
+                ¿Deseas conocer todo el contenido antes de inscribirte?{' '}
+                <Link to="/temario" className="text-indigo-400 hover:underline font-semibold">
+                  Consulta el temario completo y resumen del curso aquí.
+                </Link>
 
               </p>
 
@@ -667,13 +668,13 @@ export default function LandingPage() {
 
               <div className="p-4 text-center text-slate-600 dark:text-slate-400 flex items-center justify-center gap-1.5">
 
-                <Unlock className="w-4 h-4" /> Gratis
+                <BookOpen className="w-4 h-4" /> Visitante
 
               </div>
 
               <div className="p-4 text-center text-indigo-600 dark:text-indigo-400 flex items-center justify-center gap-1.5 bg-indigo-50/50 dark:bg-indigo-950/30">
 
-                <Lock className="w-4 h-4" /> Suscripción
+                <GraduationCap className="w-4 h-4" /> Alumno Inscrito
 
               </div>
 
@@ -693,13 +694,13 @@ export default function LandingPage() {
 
                 <div className="p-3.5 flex justify-center">
 
-                  {row.free ? <Check className="w-4 h-4 text-emerald-500" /> : <span className="text-slate-300 dark:text-slate-600">—</span>}
+                  {row.visitor ? <Check className="w-4 h-4 text-emerald-500" /> : <span className="text-slate-300 dark:text-slate-600">—</span>}
 
                 </div>
 
                 <div className="p-3.5 flex justify-center bg-indigo-50/30 dark:bg-indigo-950/20">
 
-                  {row.premium ? <Check className="w-4 h-4 text-indigo-500" /> : <span className="text-slate-300">—</span>}
+                  {row.student ? <Check className="w-4 h-4 text-indigo-500" /> : <span className="text-slate-300">—</span>}
 
                 </div>
 
@@ -863,7 +864,7 @@ export default function LandingPage() {
 
                   <Link
 
-                    to={`/modulo/${mod.id}`}
+                    to={isEnrolledPhysician ? `/modulo/${mod.id}` : `/temario#modulo-${mod.id}`}
 
                     className="group block h-full p-5 rounded-2xl bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 hover:border-blue-300 dark:hover:border-blue-600 shadow-sm hover:shadow-xl hover:shadow-blue-100/50 dark:hover:shadow-blue-900/20 transition-all duration-300 hover:-translate-y-1"
 
@@ -915,17 +916,25 @@ export default function LandingPage() {
 
                       </span>
 
-                      <span className="text-xs text-blue-500 dark:text-blue-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                      {isEnrolledPhysician ? (
 
-                        Explorar →
+                        <span className="text-xs text-blue-500 dark:text-blue-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
 
-                      </span>
+                          Entrar al módulo →
 
-                    </div>
+                        </span>
 
-                    <div className="mt-3 pt-3 border-t border-slate-100/60 dark:border-slate-700/30" onClick={(e) => e.preventDefault()}>
+                      ) : (
 
-                      <OfflineButton moduleId={mod.id} compact />
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-800/40">
+
+                          <Lock className="w-3 h-3" />
+
+                          Suscripción
+
+                        </span>
+
+                      )}
 
                     </div>
 
@@ -1167,7 +1176,7 @@ export default function LandingPage() {
 
             >
 
-              Inscribirme al curso ENMG
+              Inscribirme a NeuroSAFEMX
 
               <ArrowRight className="w-5 h-5" />
 
@@ -1183,11 +1192,15 @@ export default function LandingPage() {
 
       <footer className="px-4 py-8 border-t border-slate-200/60 dark:border-slate-800/60">
 
-        <div className="max-w-6xl mx-auto text-center text-sm text-slate-400 dark:text-slate-500">
+        <div className="max-w-6xl mx-auto text-center text-sm text-slate-400 dark:text-slate-500 space-y-1">
 
-          <p className="mb-1">Curso en Línea de ENMG — DeepLuxMed</p>
+          <p className="font-medium text-slate-600 dark:text-slate-400">
+            NeuroSAFEMX · Recursos de Neurorehabilitación y Cursos de Electrodiagnóstico
+          </p>
 
-          <p>Temario abierto · Suscripción médica para evaluaciones y progreso</p>
+          <p className="text-xs">
+            Avalado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR)
+          </p>
 
         </div>
 

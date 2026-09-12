@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import { Lock, ShieldAlert, Sparkles, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthProvider';
-import { useCourseStore } from '../stores/courseStore';
 import { Link } from 'react-router-dom';
 
 interface PremiumGateProps {
@@ -10,19 +9,10 @@ interface PremiumGateProps {
   children: ReactNode;
 }
 
-export function PremiumGate({ moduleId, topicId, children }: PremiumGateProps) {
-  const { hasPremiumAccess } = useAuth();
-  const { moduleAccess } = useCourseStore();
+export function PremiumGate({ moduleId: _moduleId, topicId: _topicId, children }: PremiumGateProps) {
+  const { hasPremiumAccess, isEnrolledPhysician } = useAuth();
 
-  const access = moduleAccess.get(moduleId);
-  const isPremium = access?.required_tier === 'premium';
-  
-  // If no topic is specified, we are checking the module level.
-  // If a topic IS specified, we should allow it if it's in preview_topic_ids.
-  // Currently preview_topic_ids is stored as string[], but we will just check if topicId is in it.
-  const isPreview = topicId && access?.preview_topic_ids?.includes(topicId);
-
-  const canAccess = !isPremium || hasPremiumAccess || isPreview;
+  const canAccess = hasPremiumAccess || isEnrolledPhysician;
 
   if (canAccess) {
     return <>{children}</>;
@@ -35,11 +25,11 @@ export function PremiumGate({ moduleId, topicId, children }: PremiumGateProps) {
       </div>
       
       <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-        Contenido Exclusivo Premium
+        Contenido Exclusivo para Alumnos Inscritos
       </h1>
       
       <p className="text-lg text-slate-600 dark:text-slate-400 mb-8 max-w-xl mx-auto">
-        Este módulo pertenece a la colección de especialidad clínica. Actualiza tu cuenta a DeepLux Premium para desbloquear el temario completo y los talleres en vivo.
+        El contenido completo de los módulos, lecciones prácticas, perlas clínicas y evaluaciones es de acceso exclusivo mediante suscripción para médicos en formación y especialistas.
       </p>
 
       <div className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-900/50 rounded-3xl p-6 sm:p-10 text-left max-w-2xl mx-auto shadow-sm relative overflow-hidden">
@@ -49,15 +39,15 @@ export function PremiumGate({ moduleId, topicId, children }: PremiumGateProps) {
         
         <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <ShieldAlert className="w-5 h-5 text-amber-500" />
-          Beneficios Premium
+          Beneficios de la Suscripción como Alumno
         </h3>
         
         <ul className="space-y-4 mb-8">
           {[
-            'Acceso ilimitado a todos los módulos y patologías',
-            'Participación en talleres híbridos de discusión de casos reales',
-            'Exámenes de evaluación continua con créditos de CME (Próximamente)',
-            'Soporte prioritario y revisión de propuestas clínicas'
+            'Acceso ilimitado a los 13 módulos clínicos y más de 200 temas',
+            'Simuladores de Plexo Braquial y Modo Ejercicio EMG interactivo',
+            'Evaluaciones diagnósticas al final de cada tema con retroalimentación',
+            'Programa con respaldo académico y aval COMEFYR'
           ].map((benefit, i) => (
             <li key={i} className="flex items-start gap-3">
               <div className="mt-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 p-1 rounded-full shrink-0">
@@ -70,16 +60,16 @@ export function PremiumGate({ moduleId, topicId, children }: PremiumGateProps) {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
           <Link
-            to="/cuenta"
-            className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-semibold shadow-sm text-center transition"
+            to="/auth/registro"
+            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-semibold shadow-sm text-center transition"
           >
-            Gestionar Suscripción
+            Inscribirme como Alumno
           </Link>
           <Link
-            to="/"
+            to="/temario"
             className="px-8 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-semibold text-center transition"
           >
-            Explorar módulos gratuitos
+            Ver temario y resumen del curso
           </Link>
         </div>
       </div>

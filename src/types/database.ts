@@ -1,4 +1,4 @@
-export type AppRole = 'contributor' | 'editor' | 'admin';
+export type AppRole = 'contributor' | 'editor' | 'admin' | 'student';
 export type RevisionStatus =
   | 'draft'
   | 'pending_review'
@@ -16,7 +16,9 @@ export interface Profile {
   credentials: string | null;
   institution: string | null;
   specialty: string | null;
+  residency_year: string | null;
   cedula_profesional: string | null;
+  comefyr_member_id: string | null;
   avatar_url: string | null;
   bio: string | null;
   is_public: boolean;
@@ -272,9 +274,12 @@ export interface Database {
     };
     Functions: {
       is_admin: { Args: { check_user_id?: string }; Returns: boolean };
+      is_editor: { Args: { check_user_id?: string }; Returns: boolean };
+      is_student: { Args: { check_user_id?: string }; Returns: boolean };
       has_role: { Args: { required_role: AppRole; check_user_id?: string }; Returns: boolean };
       is_verified_contributor: { Args: { check_user_id?: string }; Returns: boolean };
       grant_user_role: { Args: { target_user_id: string; target_role: AppRole }; Returns: void };
+      revoke_user_role: { Args: { target_user_id: string; target_role: AppRole }; Returns: void };
       verify_contributor: { Args: { target_user_id: string }; Returns: void };
       submit_revision: { Args: { revision_id: string }; Returns: void };
       review_revision: {
