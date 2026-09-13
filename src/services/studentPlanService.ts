@@ -9,6 +9,7 @@ import type {
   StudentFullDossier,
   StudentDomainAssessment,
   AssignmentStatus,
+  ActiveExamLock,
 } from '../types/studentPlan';
 import type { QuizAttempt } from '../types/quiz';
 import type { ExamSession } from '../types/exam';
@@ -17,13 +18,13 @@ import { getMyAttempts, getMyProgressByModule } from './quizService';
 import { calculateStudentMetrics, checkCertificationEligibility, fetchStudentCompletedTopics } from './studentService';
 import { LOCAL_PUBLISHED_QUIZZES } from './localQuizzesFallback';
 import { EMG_QUESTIONS_FALLBACK } from '../data/emgQuestionsFallback';
-import { allModules } from '../content/modules';
 
 // ─── LocalStorage Keys for Resilient Fallback ────────────────────────────────
 const KEY_LOCAL_PLANS = 'neurosafe_learning_plans_';
 const KEY_LOCAL_ASSIGNMENTS = 'neurosafe_assignments_';
 const KEY_LOCAL_ACTIVITY = 'neurosafe_activity_';
 const KEY_LOCAL_ADMIN_NOTES = 'neurosafe_admin_notes_';
+const KEY_LOCAL_ACTIVE_EXAM = 'neurosafe_active_exam_lock_';
 
 // ─── Activity & Streak Logging ──────────────────────────────────────────────
 
@@ -67,6 +68,8 @@ export async function recordUserActivity(
     // Silencioso si la tabla aún no se ha ejecutado en Supabase
   }
 }
+
+export const logStudentActivity = recordUserActivity;
 
 export async function getStudentActivityAndStreak(userId: string): Promise<StudentStreakInfo> {
   const datesSet = new Set<string>();
@@ -412,6 +415,345 @@ export async function createAssignment(
   } catch {}
 
   return newAssignment;
+}
+
+export async function createBatchAssignments(
+  studentIds: string[],
+  assignmentData: Omit<StudentAssignment, 'id' | 'created_at' | 'updated_at' | 'student_id'>
+): Promise<StudentAssignment[]> {
+  const results: StudentAssignment[] = [];
+  for (const sId of studentIds) {
+    try {
+      const created = await createAssignment({
+        ...assignmentData,
+        student_id: sId,
+      });
+      results.push(created);
+    } catch (e) {
+      console.warn(`[createBatchAssignments] Error creating assignment for student ${sId}:`, e);
+    }
+  }
+  return results;
+}
+
+// ─── Active Exam Lock Management (Anti-abandono & Cronómetro continuo) ────────
+
+export function getActiveExamLock(studentId: string): ActiveExamLock | null {
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ACTIVE_EXAM}${studentId}`);
+    if (!raw) return null;
+    const lock: ActiveExamLock = JSON.parse(raw);
+    return lock;
+  } catch {
+    return null;
+  }
+}
+
+export function setActiveExamLock(studentId: string, lock: ActiveExamLock): void {
+  try {
+    localStorage.setItem(`${KEY_LOCAL_ACTIVE_EXAM}${studentId}`, JSON.stringify(lock));
+  } catch (e) {
+    console.warn('[setActiveExamLock] Error:', e);
+  }
+}
+
+export function clearActiveExamLock(studentId: string): void {
+  try {
+    localStorage.removeItem(`${KEY_LOCAL_ACTIVE_EXAM}${studentId}`);
+  } catch {}
+}
+
+export async function startAssignedExam(
+  assignmentId: string,
+  studentId: string,
+  timeLimitMinutes: number,
+  meta?: Partial<ActiveExamLock>
+): Promise<ActiveExamLock> {
+  const now = new Date();
+  const startedAt = now.toISOString();
+  const expiresAt = new Date(now.getTime() + timeLimitMinutes * 60 * 1000).toISOString();
+
+  const lock: ActiveExamLock = {
+    assignmentId,
+    studentId,
+    assignmentTitle: meta?.assignmentTitle || 'Examen Asignado',
+    startedAt,
+    expiresAt,
+    timeLimitMinutes,
+    selectedQuestionIds: meta?.selectedQuestionIds,
+    config: meta?.config || {},
+    moduleId: meta?.moduleId,
+    topicTitle: meta?.topicTitle,
+    subtopicTitle: meta?.subtopicTitle,
+  };
+
+  setActiveExamLock(studentId, lock);
+
+  // Update in local assignments list
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (raw) {
+      const list: StudentAssignment[] = JSON.parse(raw);
+      const idx = list.findIndex((a) => a.id === assignmentId);
+      if (idx !== -1) {
+        list[idx].target_exam_config = {
+          ...list[idx].target_exam_config,
+          startedAt,
+          expiresAt,
+        };
+        list[idx].updated_at = startedAt;
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  // Update in Supabase
+  try {
+    await supabase
+      .from('student_assignments')
+      .update({
+        updated_at: startedAt,
+      })
+      .eq('id', assignmentId);
+  } catch {}
+
+  return lock;
+}
+
+export async function completeAssignedExam(
+  assignmentId: string,
+  studentId: string,
+  score: number,
+  durationSeconds: number,
+  feedback?: string
+): Promise<void> {
+  clearActiveExamLock(studentId);
+
+  const completedAt = new Date().toISOString();
+  let updatedConfig: any = null;
+
+  // Local
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (raw) {
+      const list: StudentAssignment[] = JSON.parse(raw);
+      const idx = list.findIndex((a) => a.id === assignmentId);
+      if (idx !== -1) {
+        const prevCfg = list[idx].target_exam_config || {};
+        const newAttempts = (prevCfg.attemptsCount || 0) + 1;
+        updatedConfig = {
+          ...prevCfg,
+          attemptsCount: newAttempts,
+        };
+
+        const minPassing = list[idx].min_score || 70;
+        const passed = score >= minPassing;
+        list[idx] = {
+          ...list[idx],
+          target_exam_config: updatedConfig,
+          grade: score,
+          status: passed ? 'approved' : 'submitted',
+          submitted_at: completedAt,
+          reviewed_at: completedAt,
+          reviewed_by: 'Sistema Evaluador NeuroSAFE',
+          feedback: feedback || `Evaluación completada. Calificación obtenida: ${score}/100 pts. Tiempo: ${Math.round(durationSeconds / 60)} min.`,
+          updated_at: completedAt,
+        };
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  // Supabase
+  try {
+    const updatePayload: any = {
+      grade: score,
+      status: score >= 70 ? 'approved' : 'submitted',
+      submitted_at: completedAt,
+      reviewed_at: completedAt,
+      reviewed_by: 'Sistema Evaluador NeuroSAFE',
+      feedback: feedback || `Evaluación completada. Calificación: ${score}/100 pts.`,
+      updated_at: completedAt,
+    };
+    if (updatedConfig) {
+      updatePayload.target_exam_config = updatedConfig;
+    }
+
+    await supabase
+      .from('student_assignments')
+      .update(updatePayload)
+      .eq('id', assignmentId);
+  } catch {}
+}
+
+/**
+ * El alumno solicita formalmente permiso al profesor para repetir un examen asignado
+ */
+export async function requestExamRetake(
+  assignmentId: string,
+  studentId: string,
+  reason: string
+): Promise<void> {
+  const now = new Date().toISOString();
+  let newConfig: any = null;
+
+  // Local
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (raw) {
+      const list: StudentAssignment[] = JSON.parse(raw);
+      const idx = list.findIndex((a) => a.id === assignmentId);
+      if (idx !== -1) {
+        newConfig = {
+          ...(list[idx].target_exam_config || {}),
+          retakeStatus: 'requested',
+          retakeReason: reason,
+          retakeRequestedAt: now,
+        };
+        list[idx] = {
+          ...list[idx],
+          target_exam_config: newConfig,
+          updated_at: now,
+        };
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  // Supabase
+  try {
+    if (newConfig) {
+      await supabase
+        .from('student_assignments')
+        .update({
+          target_exam_config: newConfig,
+          updated_at: now,
+        })
+        .eq('id', assignmentId);
+    }
+  } catch {}
+
+  await logStudentActivity(studentId, 'Solicitud de reintento de examen enviada', {
+    assignmentId,
+    reason,
+  });
+}
+
+/**
+ * El profesor o administrador aprueba el reintento del examen
+ */
+export async function approveExamRetake(
+  assignmentId: string,
+  studentId: string,
+  adminId?: string,
+  additionalAttempts = 1,
+  notes?: string
+): Promise<void> {
+  const now = new Date().toISOString();
+  let newConfig: any = null;
+
+  // Local
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (raw) {
+      const list: StudentAssignment[] = JSON.parse(raw);
+      const idx = list.findIndex((a) => a.id === assignmentId);
+      if (idx !== -1) {
+        const currentMax = list[idx].target_exam_config?.maxAttempts || 1;
+        newConfig = {
+          ...(list[idx].target_exam_config || {}),
+          retakeStatus: 'approved',
+          retakeReviewedAt: now,
+          retakeReviewedBy: adminId || 'Profesor Titular',
+          retakeReviewNotes: notes || 'Reintento autorizado por el cuerpo docente.',
+          maxAttempts: currentMax + additionalAttempts,
+        };
+        list[idx] = {
+          ...list[idx],
+          target_exam_config: newConfig,
+          status: 'pending', // Se reabre para que pueda resolverlo
+          updated_at: now,
+        };
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  // Supabase
+  try {
+    if (newConfig) {
+      await supabase
+        .from('student_assignments')
+        .update({
+          target_exam_config: newConfig,
+          status: 'pending',
+          updated_at: now,
+        })
+        .eq('id', assignmentId);
+    }
+  } catch {}
+
+  await logStudentActivity(studentId, 'Reintento de examen autorizado por el profesor', {
+    assignmentId,
+    adminId,
+    additionalAttempts,
+  });
+}
+
+/**
+ * El profesor o administrador rechaza el reintento del examen
+ */
+export async function rejectExamRetake(
+  assignmentId: string,
+  studentId: string,
+  adminId?: string,
+  reason?: string
+): Promise<void> {
+  const now = new Date().toISOString();
+  let newConfig: any = null;
+
+  // Local
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (raw) {
+      const list: StudentAssignment[] = JSON.parse(raw);
+      const idx = list.findIndex((a) => a.id === assignmentId);
+      if (idx !== -1) {
+        newConfig = {
+          ...(list[idx].target_exam_config || {}),
+          retakeStatus: 'rejected',
+          retakeReviewedAt: now,
+          retakeReviewedBy: adminId || 'Profesor Titular',
+          retakeReviewNotes: reason || 'Solicitud de reintento no autorizada para este periodo.',
+        };
+        list[idx] = {
+          ...list[idx],
+          target_exam_config: newConfig,
+          updated_at: now,
+        };
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+      }
+    }
+  } catch {}
+
+  // Supabase
+  try {
+    if (newConfig) {
+      await supabase
+        .from('student_assignments')
+        .update({
+          target_exam_config: newConfig,
+          updated_at: now,
+        })
+        .eq('id', assignmentId);
+    }
+  } catch {}
+
+  await logStudentActivity(studentId, 'Solicitud de reintento de examen denegada', {
+    assignmentId,
+    adminId,
+    reason,
+  });
 }
 
 export async function submitAssignment(

@@ -13,6 +13,8 @@ interface UseExamRunnerOptions {
   config: ExamConfig;
   resumeAttemptId?: string | null;
   initialState?: Partial<ExamAttemptState>;
+  expiresAt?: string | null;
+  assignmentId?: string | null;
   onSubmit?: (answers: Record<string, number>, durationSeconds: number, attemptId: string | null) => void;
 }
 
@@ -40,18 +42,43 @@ export function useExamRunner({
   config,
   resumeAttemptId = null,
   initialState,
+  expiresAt = null,
+  assignmentId = null,
   onSubmit,
 }: UseExamRunnerOptions): UseExamRunnerReturn {
   const { user } = useAuth();
 
   const [currentIndex, setCurrentIndex] = useState(initialState?.currentQuestionIndex ?? 0);
-  const [answers, setAnswers] = useState<Record<string, number>>(initialState?.answers ?? {});
+  
+  // Recuperar respuestas cacheadas para esta asignación si existen
+  const [answers, setAnswers] = useState<Record<string, number>>(() => {
+    if (assignmentId) {
+      try {
+        const cached = localStorage.getItem(`neurosafe_asg_answers_${assignmentId}`);
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return initialState?.answers ?? {};
+  });
+
   const [flagged, setFlagged] = useState<Record<string, boolean>>(initialState?.flagged ?? {});
-  const [timeLeft, setTimeLeft] = useState<number | null>(
-    initialState?.timeRemainingSeconds !== undefined
-      ? initialState.timeRemainingSeconds
-      : config.timeLimitSeconds ?? null
+  
+  const expiresAtMs = useRef<number | null>(
+    expiresAt ? new Date(expiresAt).getTime() : null
   );
+
+  // Inicializar tiempo restante calculando contra expiresAt si está definido
+  const [timeLeft, setTimeLeft] = useState<number | null>(() => {
+    if (expiresAt) {
+      const ms = new Date(expiresAt).getTime();
+      return Math.max(0, Math.floor((ms - Date.now()) / 1000));
+    }
+    if (initialState?.timeRemainingSeconds !== undefined) {
+      return initialState.timeRemainingSeconds;
+    }
+    return config.timeLimitSeconds ?? null;
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attemptId, setAttemptId] = useState<string | null>(resumeAttemptId);
   const startedAtRef = useRef<number>(Date.now());
@@ -79,21 +106,33 @@ export function useExamRunner({
     });
   }, [user, questions.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ─── Temporizador ───────────────────────────────────────────────────────────
+  // ─── Temporizador Continuo en Tiempo Real ────────────────────────────────────
   useEffect(() => {
-    if (config.timeLimitSeconds == null || questions.length === 0) return;
+    if (questions.length === 0) return;
+    if (!expiresAtMs.current && config.timeLimitSeconds == null) return;
 
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev === null) return null;
-        if (prev <= 1) {
-          // Auto-envío al agotar el tiempo
+    const tick = () => {
+      if (expiresAtMs.current) {
+        // Cálculo absoluto contra la marca de tiempo límite
+        const remaining = Math.max(0, Math.floor((expiresAtMs.current - Date.now()) / 1000));
+        setTimeLeft(remaining);
+        if (remaining <= 0) {
           if (!submittingRef.current) handleSubmit();
-          return 0;
         }
-        return prev - 1;
-      });
-    }, 1000);
+      } else {
+        setTimeLeft(prev => {
+          if (prev === null) return null;
+          if (prev <= 1) {
+            if (!submittingRef.current) handleSubmit();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }
+    };
+
+    tick();
+    timerRef.current = setInterval(tick, 1000);
 
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [questions.length, config.timeLimitSeconds]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -126,8 +165,16 @@ export function useExamRunner({
   // ─── Acciones ───────────────────────────────────────────────────────────────
 
   const selectAnswer = useCallback((questionId: string, optionIndex: number) => {
-    setAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
-  }, []);
+    setAnswers(prev => {
+      const next = { ...prev, [questionId]: optionIndex };
+      if (assignmentId) {
+        try {
+          localStorage.setItem(`neurosafe_asg_answers_${assignmentId}`, JSON.stringify(next));
+        } catch {}
+      }
+      return next;
+    });
+  }, [assignmentId]);
 
   const toggleFlag = useCallback((questionId: string) => {
     setFlagged(prev => ({ ...prev, [questionId]: !prev[questionId] }));

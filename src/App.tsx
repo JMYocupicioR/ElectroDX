@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
+import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
 import { useSettingsStore } from './stores/settingsStore';
 import { Header } from './Header';
 import { LoadingSpinner } from './components/LoadingSpinner';
@@ -44,6 +45,7 @@ const ExamSessionPage = lazy(() => import('./components/exam/ExamSessionPage'));
 const ExamResultsPage = lazy(() => import('./components/exam/ExamResultsPage'));
 const AdminStudentsListPage = lazy(() => import('./components/admin/AdminStudentsListPage'));
 const AdminStudentProgressPage = lazy(() => import('./components/admin/AdminStudentProgressPage'));
+const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerciseCasesPage'));
 
 function App() {
   const { isDarkMode } = useSettingsStore();
@@ -62,7 +64,10 @@ function App() {
               {/* Contenido formativo exclusivo para alumnos con suscripción */}
               <Route path="/modulo/:moduleId" element={<ProtectedRoute mode="enrolled"><ModulePage /></ProtectedRoute>} />
               <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
-              <Route path="/ejercicios" element={<ProtectedRoute mode="enrolled"><ExerciseMode /></ProtectedRoute>} />
+              
+              {/* Simuladores y herramientas con candado exclusivo Premium */}
+              <Route path="/ejercicios" element={<ProtectedRoute mode="premium"><ExerciseMode /></ProtectedRoute>} />
+              <Route path="/herramientas/plexo-braquial" element={<ProtectedRoute mode="premium"><PlexoCalculatorPage /></ProtectedRoute>} />
 
               {/* Simulador de Examen — exclusivo para alumnos */}
               <Route path="/examenes" element={<ProtectedRoute mode="enrolled"><ExamConfigPage /></ProtectedRoute>} />
@@ -70,8 +75,7 @@ function App() {
               <Route path="/examenes/sesion" element={<ProtectedRoute mode="enrolled"><ExamSessionPage /></ProtectedRoute>} />
               <Route path="/examenes/resultados" element={<ProtectedRoute mode="enrolled"><ExamResultsPage /></ProtectedRoute>} />
 
-              {/* Herramientas y talleres */}
-              <Route path="/herramientas/plexo-braquial" element={<ProtectedRoute mode="enrolled"><PlexoCalculatorPage /></ProtectedRoute>} />
+              {/* Talleres */}
               <Route path="/talleres" element={<WorkshopsListPage />} />
               <Route path="/taller/:workshopId" element={<WorkshopDetailPage />} />
 
@@ -128,6 +132,7 @@ function App() {
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
               <Route path="/admin/talleres" element={<ProtectedRoute mode="admin"><AdminWorkshopsPage /></ProtectedRoute>} />
               <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
+              <Route path="/admin/ejercicios" element={<ProtectedRoute mode="editor"><AdminExerciseCasesPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </Router>

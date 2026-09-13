@@ -92,6 +92,9 @@ export function Header() {
             >
               <Wrench className="w-4 h-4" />
               <span>Simuladores</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                PRO
+              </span>
             </Link>
 
             {isSupabaseConfigured && (
@@ -337,7 +340,10 @@ export function Header() {
                       <Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       <span>Calculadora de Plexo Braquial</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">Premium</span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
                   </Link>
 
                   <Link
@@ -349,7 +355,10 @@ export function Header() {
                       <Stethoscope className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                       <span>Modo Ejercicio & Trazos EMG</span>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">Premium</span>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </div>
                   </Link>
 
                   {isSupabaseConfigured && (

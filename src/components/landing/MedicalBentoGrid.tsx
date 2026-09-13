@@ -11,6 +11,7 @@ import {
   Check,
   Stethoscope,
   Lock,
+  Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -55,9 +56,14 @@ export function MedicalBentoGrid() {
                     </h3>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
-                  470+ Trazos Reales
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                    <Sparkles className="w-3 h-3 text-amber-500" /> Premium
+                  </span>
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
+                    470+ Trazos Reales
+                  </span>
+                </div>
               </div>
 
               <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mb-6 leading-relaxed">
@@ -248,8 +254,8 @@ export function MedicalBentoGrid() {
                     <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-emerald-600 dark:text-emerald-400">
                       Algoritmo Topográfico
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
-                      <Lock className="w-2.5 h-2.5" /> Suscripción
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20">
+                      <Sparkles className="w-2.5 h-2.5 text-amber-500" /> Premium
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">

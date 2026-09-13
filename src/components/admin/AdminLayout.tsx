@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   GraduationCap,
   Activity,
+  Stethoscope,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
@@ -55,6 +56,13 @@ export function AdminLayout({
       exact: false,
       badge: 0,
       adminOnly: false,
+    },
+    {
+      to: '/admin/ejercicios',
+      label: 'Casos y Simulador',
+      icon: Stethoscope,
+      exact: false,
+      badge: 0,
     },
     {
       to: '/admin/revisiones',

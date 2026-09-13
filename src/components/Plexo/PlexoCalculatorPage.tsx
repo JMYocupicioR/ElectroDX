@@ -20,8 +20,8 @@ const STEPS = [
 ];
 
 export default function PlexoCalculatorPage() {
-  const { hasPremiumAccess, isEnrolledPhysician } = useAuth();
-  const canAccess = hasPremiumAccess || isEnrolledPhysician;
+  const { hasPremiumAccess, isAdmin, isEditor } = useAuth();
+  const canAccess = hasPremiumAccess || isAdmin || isEditor;
 
   const {
     datosEvaluacion,
@@ -59,9 +59,10 @@ export default function PlexoCalculatorPage() {
             <span className="text-slate-800 dark:text-white font-medium">Calculadora Plexo Braquial</span>
           </nav>
           <PremiumGate
+            requiresStrictPremium
             moduleId="plexo-braquial"
             title="Calculadora Diagnóstica de Plexo Braquial"
-            description="Herramienta avanzada de aprendizaje clínico y localización topográfica de lesiones del plexo braquial (C5-T1, troncos y cordones). Acceso exclusivo para alumnos y médicos con suscripción activa."
+            description="Herramienta avanzada de aprendizaje clínico y localización topográfica de lesiones del plexo braquial (C5-T1, troncos y cordones). Acceso exclusivo para miembros con suscripción Premium activa."
           />
         </div>
       </div>

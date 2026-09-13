@@ -3,7 +3,7 @@
 import type {
   ClinicalCase, Difficulty, NCSExerciseResult, EMGExerciseResult,
   ExercisePatient, KeyFinding, CorrectDiagnosis, DiagnosisOption,
-  LateResponseResult, RNSResult, SeverityGrade
+  LateResponseResult, RNSResult
 } from '../types/ClinicalCase';
 import { ALL_CASE_TEMPLATES, DIAGNOSIS_OPTIONS, type CaseTemplate, type NCSTemplate, type EMGTemplate } from '../data/CaseTemplates';
 
@@ -46,18 +46,20 @@ function determineStatus(
 
 export class ClinicalCaseEngine {
 
-  /** Genera un caso aleatorio */
-  static generateRandomCase(difficulty: Difficulty = 'medium', category?: string): ClinicalCase {
-    const pool = category
-      ? ALL_CASE_TEMPLATES.filter(t => t.category === category)
-      : ALL_CASE_TEMPLATES;
-    const template = pickRandom(pool.length > 0 ? pool : ALL_CASE_TEMPLATES);
+  /** Genera un caso aleatorio (soporta pool dinámico de plantillas) */
+  static generateRandomCase(difficulty: Difficulty = 'medium', category?: string, customPool?: CaseTemplate[]): ClinicalCase {
+    const templates = customPool && customPool.length > 0 ? customPool : ALL_CASE_TEMPLATES;
+    const pool = category && category !== 'all'
+      ? templates.filter(t => t.category === category)
+      : templates;
+    const template = pickRandom(pool.length > 0 ? pool : templates);
     return this.generateCaseFromTemplate(template, difficulty);
   }
 
-  /** Genera un caso de un patrón específico */
-  static generateCaseForPattern(patternId: string, difficulty: Difficulty = 'medium'): ClinicalCase {
-    const template = ALL_CASE_TEMPLATES.find(t => t.patternId === patternId);
+  /** Genera un caso de un patrón específico (soporta pool dinámico) */
+  static generateCaseForPattern(patternId: string, difficulty: Difficulty = 'medium', customPool?: CaseTemplate[]): ClinicalCase {
+    const templates = customPool && customPool.length > 0 ? customPool : ALL_CASE_TEMPLATES;
+    const template = templates.find(t => t.patternId === patternId);
     if (!template) throw new Error(`Pattern not found: ${patternId}`);
     return this.generateCaseFromTemplate(template, difficulty);
   }
@@ -184,7 +186,7 @@ export class ClinicalCaseEngine {
   }
 
   /** Genera resultados EMG con variabilidad por dificultad */
-  private static generateEMG(templates: EMGTemplate[], difficulty: Difficulty): EMGExerciseResult[] {
+  private static generateEMG(templates: EMGTemplate[], _difficulty: Difficulty): EMGExerciseResult[] {
     return templates.map(t => {
       const duration = randomBetween(t.duration[0], t.duration[1]);
       const amplitude = randomBetween(t.amplitude[0], t.amplitude[1]);
@@ -356,11 +358,20 @@ export class ClinicalCaseEngine {
   }
 
   /** Obtiene las opciones incluyendo distractores para un caso dado */
-  static getOptionsForCase(correctPatternId: string, difficulty: Difficulty): DiagnosisOption[] {
-    const correct = DIAGNOSIS_OPTIONS.find(o => o.patternId === correctPatternId);
-    if (!correct) return DIAGNOSIS_OPTIONS;
+  static getOptionsForCase(correctPatternId: string, difficulty: Difficulty, customPool?: CaseTemplate[]): DiagnosisOption[] {
+    const optionsPool = customPool && customPool.length > 0
+      ? customPool.map(t => ({
+          patternId: t.patternId,
+          patternName: t.patternName,
+          category: t.category,
+          description: t.explanation.split('.')[0] + '.',
+        }))
+      : DIAGNOSIS_OPTIONS;
 
-    const others = DIAGNOSIS_OPTIONS.filter(o => o.patternId !== correctPatternId);
+    const correct = optionsPool.find(o => o.patternId === correctPatternId);
+    if (!correct) return optionsPool;
+
+    const others = optionsPool.filter(o => o.patternId !== correctPatternId);
 
     // Number of options by difficulty
     const numOptions = { easy: 3, medium: 5, hard: 7 }[difficulty];

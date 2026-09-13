@@ -99,7 +99,25 @@ export async function loadFailedQuestions(userId: string): Promise<{ questions: 
   }
 }
 
-/** Construye la lista de preguntas según configuración (filtra, mezcla, limita) */
+/** Mezcla aleatoria de elementos de un arreglo usando Fisher-Yates */
+export function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/** Mezcla el orden de las opciones de una pregunta sin alterar su consistencia */
+export function shuffleQuestionOptions(question: ExamQuestion): ExamQuestion {
+  return {
+    ...question,
+    options: shuffleArray(question.options),
+  };
+}
+
+/** Construye la lista de preguntas según configuración (filtra, mezcla preguntas y mezcla opciones) */
 export function buildExamQuestions(
   allQuestions: ExamQuestion[],
   config: ExamConfig
@@ -114,18 +132,16 @@ export function buildExamQuestions(
     pool = pool.filter(q => config.topicNames!.includes(q.topic_name));
   }
 
-  // Mezcla aleatoria (Fisher-Yates)
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
-  }
+  // Mezcla aleatoria de preguntas (Fisher-Yates)
+  pool = shuffleArray(pool);
 
   // Limitar cantidad
   if (config.questionCount && config.questionCount > 0) {
     pool = pool.slice(0, config.questionCount);
   }
 
-  return pool;
+  // Mezclar obligatoriamente el orden de las opciones para cada reactivo
+  return pool.map(shuffleQuestionOptions);
 }
 
 // ─── Gestión de Intentos en Curso ─────────────────────────────────────────────

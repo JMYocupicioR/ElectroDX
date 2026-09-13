@@ -4,7 +4,7 @@ import { LoadingSpinner } from '../LoadingSpinner';
 import { PremiumGate } from '../PremiumGate';
 import { PendingApprovalGate } from './PendingApprovalGate';
 
-type GuardMode = 'auth' | 'verified' | 'admin' | 'editor' | 'enrolled' | 'contributor' | 'student';
+type GuardMode = 'auth' | 'verified' | 'admin' | 'editor' | 'enrolled' | 'contributor' | 'student' | 'premium';
 
 export function ProtectedRoute({
   children,
@@ -42,8 +42,16 @@ export function ProtectedRoute({
 
   // Si es un médico en espera de admisión o rechazado intentando entrar al curso o portal
   if (!isAdmin && !isEditor && (isPendingApproval || isRejected)) {
-    if (mode === 'enrolled' || mode === 'student' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/modulo') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes')) {
+    if (mode === 'enrolled' || mode === 'student' || mode === 'premium' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/modulo') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes') || location.pathname.startsWith('/herramientas')) {
       return <PendingApprovalGate />;
+    }
+  }
+
+  // Rutas exclusivas con candado Premium (Simuladores, Calculadora de Plexo)
+  if (mode === 'premium') {
+    const hasPremiumPrivilege = hasPremiumAccess || isAdmin || isEditor;
+    if (!hasPremiumPrivilege) {
+      return <PremiumGate requiresStrictPremium />;
     }
   }
 

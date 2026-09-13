@@ -13,22 +13,59 @@ import {
   Building2,
   Stethoscope,
   Users,
+  Sliders,
+  Calendar,
+  FileText,
+  UserCheck,
+  AlertTriangle,
+  BookOpen,
+  Sparkles,
+  FileQuestion,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { getAdminProfiles } from '../../services/editorialService';
+import { getCohortAcademicSummaries } from '../../services/gradebookService';
+import GradebookConfigModal from './GradebookConfigModal';
+import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
+import AttendanceTrackerModal from './AttendanceTrackerModal';
+import StudentKardexModal from './StudentKardexModal';
+import AssignExamModal from './AssignExamModal';
+import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
 import type { AdminProfileRow } from '../../types/admin';
+import type { StudentCohortSummary } from '../../types/academicGradebook';
 
 export default function AdminStudentsListPage() {
   const [profiles, setProfiles] = useState<AdminProfileRow[]>([]);
+  const [summaries, setSummaries] = useState<Map<string, StudentCohortSummary>>(new Map());
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterResidency, setFilterResidency] = useState<string>('all');
+  const [filterCompliance, setFilterCompliance] = useState<string>('all');
+
+  // Modals state
+  const [showRubricsModal, setShowRubricsModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [showAssignExamModal, setShowAssignExamModal] = useState(false);
+  const [showAssignCaseModal, setShowAssignCaseModal] = useState(false);
+  const [kardexStudent, setKardexStudent] = useState<AdminProfileRow | null>(null);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const data = await getAdminProfiles(false, 'all');
+      setProfiles(data);
+      const summMap = await getCohortAcademicSummaries(data);
+      setSummaries(summMap);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getAdminProfiles(false, 'all')
-      .then(setProfiles)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    loadData();
   }, []);
 
   const filtered = useMemo(() => {
@@ -45,9 +82,52 @@ export default function AdminStudentsListPage() {
           ? true
           : (p.residency_year || '').toLowerCase().includes(filterResidency.toLowerCase());
 
-      return matchSearch && matchResidency;
+      const sSummary = summaries.get(p.id);
+      const matchCompliance =
+        filterCompliance === 'all'
+          ? true
+          : sSummary?.complianceStatus === filterCompliance;
+
+      return matchSearch && matchResidency && matchCompliance;
     });
-  }, [profiles, search, filterResidency]);
+  }, [profiles, search, filterResidency, filterCompliance, summaries]);
+
+  // Cohort global aggregates
+  const cohortMetrics = useMemo(() => {
+    if (profiles.length === 0 || summaries.size === 0) {
+      return {
+        avgProgress: 0,
+        avgGrade: 0,
+        avgAttendance: 0,
+        atRiskCount: 0,
+      };
+    }
+
+    let sumProg = 0;
+    let sumGrade = 0;
+    let sumAtt = 0;
+    let atRisk = 0;
+
+    profiles.forEach((p) => {
+      const s = summaries.get(p.id);
+      if (s) {
+        sumProg += s.overallProgressPct;
+        sumGrade += s.finalWeightedGrade;
+        sumAtt += s.attendancePct;
+        if (s.complianceStatus === 'at_risk' || s.complianceStatus === 'lagging') {
+          atRisk++;
+        }
+      }
+    });
+
+    const count = profiles.length;
+    return {
+      avgProgress: Math.round(sumProg / count),
+      avgGrade: Math.round((sumGrade / count) * 10) / 10,
+      avgAttendance: Math.round(sumAtt / count),
+      atRiskCount: atRisk,
+    };
+  }, [profiles, summaries]);
 
   return (
     <AdminLayout
@@ -55,6 +135,140 @@ export default function AdminStudentsListPage() {
       subtitle="Supervisión académica de la cohorte, avance curricular, calificaciones y planes personalizados"
     >
       <div className="space-y-6 pb-20">
+        {/* Top Control Bar: Action Buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl bg-white/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md shadow-xs">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-black uppercase tracking-wider text-slate-400 mr-1">
+              Gestión Docente:
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setShowRubricsModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800 text-xs font-bold transition shadow-2xs cursor-pointer"
+            >
+              <Sliders className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+              <span>Configurar Rúbricas</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowScheduleModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/80 border border-violet-200 dark:border-violet-800 text-xs font-bold transition shadow-2xs cursor-pointer"
+            >
+              <Calendar className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+              <span>Calendarización & Checklist</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAttendanceModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition shadow-2xs cursor-pointer"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Pase de Lista</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAssignExamModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 text-xs font-bold transition shadow-xs cursor-pointer"
+            >
+              <FileQuestion className="w-3.5 h-3.5" />
+              <span>+ Asignar Examen Masivo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowAssignCaseModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 text-xs font-bold transition shadow-xs cursor-pointer"
+            >
+              <Activity className="w-3.5 h-3.5" />
+              <span>+ Asignar Caso EMG</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-slate-400">
+              Evaluación avalada por <strong>COMEFYR</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Enhanced Cohort Stats Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+              Total Médicos Cursistas
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {profiles.length}
+              </span>
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                {profiles.filter((p) => p.enrollment_status === 'approved').length} admitidos
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500">
+              {profiles.filter((p) => p.cedula_verified).length} con Cédula SEP verificada
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+              Avance Curricular Promedio
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                {cohortMetrics.avgProgress}%
+              </span>
+              <span className="text-xs font-semibold text-slate-400">Cohorte general</span>
+            </div>
+            <div className="w-full h-2.5 rounded-full bg-slate-200/80 dark:bg-slate-700/70 overflow-hidden p-0.5 border border-slate-200/50 dark:border-slate-700/50">
+              <div
+                className="h-full bg-gradient-to-r from-indigo-500 to-violet-600 rounded-full transition-all duration-500 min-w-[6px]"
+                style={{ width: `${Math.max(2, cohortMetrics.avgProgress)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+              Promedio General de Notas
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-black text-slate-900 dark:text-white">
+                {cohortMetrics.avgGrade}
+              </span>
+              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+                / 100 pts
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500">
+              Ponderación según rúbrica académica activa
+            </div>
+          </div>
+
+          <div className="p-5 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2">
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+              Asistencia & Cumplimiento
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                {cohortMetrics.avgAttendance}%
+              </span>
+              {cohortMetrics.atRiskCount > 0 ? (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
+                  <AlertTriangle className="w-3 h-3" /> {cohortMetrics.atRiskCount} con rezago
+                </span>
+              ) : (
+                <span className="text-xs font-bold text-emerald-600">Al corriente</span>
+              )}
+            </div>
+            <div className="text-[11px] text-slate-500">Sesiones clínicas y talleres en vivo</div>
+          </div>
+        </div>
+
         {/* Search & Filter Bar */}
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <div className="relative flex-1 w-full">
@@ -81,45 +295,26 @@ export default function AdminStudentsListPage() {
               <option value="R4">Residentes R4</option>
               <option value="adscrito">Médicos Adscritos</option>
             </select>
+
+            <select
+              value={filterCompliance}
+              onChange={(e) => setFilterCompliance(e.target.value)}
+              className="w-full sm:w-auto px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300"
+            >
+              <option value="all">Todo cumplimiento</option>
+              <option value="on_track">Al corriente</option>
+              <option value="at_risk">En riesgo</option>
+              <option value="lagging">Rezagado</option>
+            </select>
           </div>
         </div>
 
-        {/* Cohort Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-              Total Alumnos Registrados
-            </span>
-            <span className="text-3xl font-black text-slate-900 dark:text-white">
-              {profiles.length}
-            </span>
-          </div>
-
-          <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-              Médicos Admitidos al Curso
-            </span>
-            <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
-              {profiles.filter((p) => p.enrollment_status === 'approved').length}
-            </span>
-          </div>
-
-          <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40 space-y-1">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-              Cédula Profesional Verificada SEP
-            </span>
-            <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
-              {profiles.filter((p) => p.cedula_verified).length}
-            </span>
-          </div>
-        </div>
-
-        {/* Students List Table */}
+        {/* Enhanced Students List Table */}
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 overflow-hidden shadow-xs">
           {loading ? (
             <div className="py-20 text-center space-y-3">
               <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-xs text-slate-400">Cargando alumnos...</p>
+              <p className="text-xs text-slate-400">Cargando progreso y calificaciones de alumnos...</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-xs text-slate-400">
@@ -129,63 +324,180 @@ export default function AdminStudentsListPage() {
             <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {filtered.map((student) => {
                 const isApproved = student.enrollment_status === 'approved';
+                const sSummary = summaries.get(student.id);
+                const progressPct = sSummary?.overallProgressPct ?? 0;
+                const completedTopics = sSummary?.completedTopicsCount ?? 0;
+                const totalTopics = sSummary?.totalTopicsCount ?? 142;
 
                 return (
                   <div
                     key={student.id}
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition"
+                    className="p-5 sm:p-6 space-y-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0 overflow-hidden">
-                        {student.avatar_url ? (
-                          <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          student.display_name?.slice(0, 2).toUpperCase() || 'AL'
-                        )}
-                      </div>
-
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-sm font-bold text-slate-900 dark:text-white">
-                            {student.display_name}
-                          </p>
-                          {student.residency_year && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200">
-                              {student.residency_year}
-                            </span>
-                          )}
-                          {student.cedula_verified && (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-                              <CheckCircle2 className="w-3 h-3 text-emerald-500" /> SEP
-                            </span>
+                    {/* Fila 1: Datos del Alumno y Acciones */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {/* Identidad */}
+                      <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-blue-600 to-violet-600 text-white flex items-center justify-center font-black text-base shadow-xs shrink-0 overflow-hidden">
+                          {student.avatar_url ? (
+                            <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            student.display_name?.slice(0, 2).toUpperCase() || 'DR'
                           )}
                         </div>
 
-                        <p className="text-xs text-slate-500 truncate max-w-md">
-                          {student.email} · {student.institution || 'Sede no registrada'}
-                        </p>
+                        <div className="min-w-0 space-y-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight truncate">
+                              {student.display_name}
+                            </h3>
+                            {student.residency_year && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shrink-0">
+                                {student.residency_year}
+                              </span>
+                            )}
+                            {student.cedula_verified && (
+                              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 shrink-0">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> SEP Verificada
+                              </span>
+                            )}
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                                isApproved
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                              }`}
+                            >
+                              {isApproved ? 'Admitido' : 'Pendiente'}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-slate-500 truncate max-w-lg">
+                            {student.email} · <span className="text-slate-600 dark:text-slate-400 font-medium">{student.institution || 'Sede no registrada'}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Estado de Calendario y Botones de Acción a la derecha */}
+                      <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+                        {sSummary && (
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold shrink-0 ${
+                              sSummary.complianceStatus === 'on_track'
+                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                : sSummary.complianceStatus === 'at_risk'
+                                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                            }`}
+                          >
+                            {sSummary.complianceStatus === 'on_track' ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                            ) : sSummary.complianceStatus === 'at_risk' ? (
+                              <Clock className="w-3.5 h-3.5 text-amber-500" />
+                            ) : (
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
+                            )}
+                            <span>{sSummary.complianceLabel}</span>
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setKardexStudent(student)}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition shadow-2xs cursor-pointer"
+                          title="Ver e Imprimir Kardex Académico Oficial"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                          <span>Kardex</span>
+                        </button>
+
+                        <Link
+                          to={`/admin/alumnos/${student.id}`}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer group"
+                        >
+                          <Activity className="w-3.5 h-3.5 text-cyan-300 group-hover:scale-110 transition-transform" />
+                          <span>Ver Expediente</span>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                        </Link>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-xl font-bold ${
-                          isApproved
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                            : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        }`}
-                      >
-                        {isApproved ? 'Admitido' : 'Pendiente'}
-                      </span>
+                    {/* Fila 2: Panel de Desempeño: Barra de Progreso + Mini-Kardex */}
+                    <div className="p-4 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/60 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                      {/* Barra de Progreso Curricular (7 columnas en desktop) */}
+                      <div className="md:col-span-7 space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                            <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                            <span>Avance en Plataforma</span>
+                          </span>
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-black text-indigo-600 dark:text-indigo-400 text-sm">
+                              {progressPct}%
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-semibold">completado</span>
+                          </div>
+                        </div>
 
-                      <Link
-                        to={`/admin/alumnos/${student.id}`}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer group"
-                      >
-                        <Activity className="w-3.5 h-3.5 text-cyan-300 group-hover:scale-110 transition-transform" />
-                        <span>Ver Expediente y Progreso</span>
-                        <ChevronRight className="w-3.5 h-3.5 ml-1 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                      </Link>
+                        <div className="w-full h-2.5 rounded-full bg-slate-200/80 dark:bg-slate-700/70 overflow-hidden p-0.5">
+                          <div
+                            className="h-full bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500 rounded-full transition-all duration-500 min-w-[4px]"
+                            style={{ width: `${Math.max(2, progressPct)}%` }}
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          <span>{completedTopics} de {totalTopics} temas estudiados</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                            {Math.round((progressPct / 100) * 40 * 10) / 10} / 40 créditos CME
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Mini-Kardex (5 columnas con borde divisorio) */}
+                      <div className="md:col-span-5 border-t md:border-t-0 md:border-l border-slate-200/80 dark:border-slate-700/80 pt-3 md:pt-0 md:pl-4">
+                        {sSummary ? (
+                          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
+                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                                Exámenes
+                              </span>
+                              <span className="text-xs font-black text-slate-800 dark:text-slate-100">
+                                {sSummary.examAverage}%
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                                Tareas
+                              </span>
+                              <span className="text-xs font-black text-slate-800 dark:text-slate-100">
+                                {sSummary.assignmentsSubmitted}/{sSummary.assignmentsTotal}
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
+                                Asist.
+                              </span>
+                              <span className="text-xs font-black text-slate-800 dark:text-slate-100">
+                                {sSummary.attendancePct}%
+                              </span>
+                            </div>
+
+                            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                              <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider block">
+                                Nota Final
+                              </span>
+                              <span className="text-xs font-black text-indigo-700 dark:text-indigo-300">
+                                {sSummary.finalWeightedGrade}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-slate-400 text-center py-2">Calculando métricas...</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -194,6 +506,50 @@ export default function AdminStudentsListPage() {
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <GradebookConfigModal
+        isOpen={showRubricsModal}
+        onClose={() => setShowRubricsModal(false)}
+        onSaved={loadData}
+      />
+
+      <AcademicScheduleManagerModal
+        isOpen={showScheduleModal}
+        onClose={() => setShowScheduleModal(false)}
+        profiles={profiles}
+        onUpdated={loadData}
+      />
+
+      <AttendanceTrackerModal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        profiles={profiles}
+        onSaved={loadData}
+      />
+
+      {kardexStudent && (
+        <StudentKardexModal
+          isOpen={Boolean(kardexStudent)}
+          onClose={() => setKardexStudent(null)}
+          studentId={kardexStudent.id}
+          profile={kardexStudent}
+        />
+      )}
+
+      <AssignExamModal
+        isOpen={showAssignExamModal}
+        onClose={() => setShowAssignExamModal(false)}
+        profiles={profiles}
+        onAssigned={loadData}
+      />
+
+      <AssignClinicalCaseModal
+        isOpen={showAssignCaseModal}
+        onClose={() => setShowAssignCaseModal(false)}
+        profiles={profiles}
+        onAssigned={loadData}
+      />
     </AdminLayout>
   );
 }

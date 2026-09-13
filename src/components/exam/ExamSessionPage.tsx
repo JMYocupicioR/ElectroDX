@@ -1,14 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
-import { Loader2, Clock, Send, LayoutGrid, X, Brain, ChevronLeft } from 'lucide-react';
+import { Loader2, Clock, Send, LayoutGrid, X, Brain, ChevronLeft, ShieldAlert } from 'lucide-react';
 import type { ExamConfig, ExamAttemptRecord } from '../../types/exam';
 import {
   loadExamQuestions,
   buildExamQuestions,
   submitExam,
   loadExamAttempt,
+  shuffleArray,
+  shuffleQuestionOptions,
 } from '../../services/examService';
+import {
+  getActiveExamLock,
+  completeAssignedExam,
+} from '../../services/studentPlanService';
 import { useExamRunner } from '../../hooks/useExamRunner';
 import { ExamQuestionCard } from './ExamQuestionCard';
 import { ExamPaletteNav } from './ExamPaletteNav';
@@ -16,6 +22,12 @@ import { ExamPaletteNav } from './ExamPaletteNav';
 type LocationState = {
   config?: ExamConfig;
   resumeAttemptId?: string;
+  assignmentId?: string;
+  strictLock?: boolean;
+  expiresAt?: string;
+  startedAt?: string;
+  selectedQuestionIds?: string[];
+  assignmentTitle?: string;
 };
 
 function formatTime(seconds: number) {
@@ -38,20 +50,38 @@ export default function ExamSessionPage() {
   const [resumeAttempt, setResumeAttempt] = useState<ExamAttemptRecord | null>(null);
   const [showPalette, setShowPalette] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
+  const [showExitWarning, setShowExitWarning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Estados de Asignación y Candado Estricto
+  const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(state?.assignmentId || null);
+  const [isStrictLock, setIsStrictLock] = useState<boolean>(state?.strictLock ?? false);
+  const [expiresAt, setExpiresAt] = useState<string | null>(state?.expiresAt || null);
+  const [assignmentTitle, setAssignmentTitle] = useState<string>(state?.assignmentTitle || 'Examen Asignado');
 
   // Cargar preguntas al montar
   useEffect(() => {
     async function init() {
       setLoading(true);
 
-      // Caso: reanudar examen existente
+      // Recuperar candado guardado si el usuario recargó o volvió
+      const savedLock = user ? getActiveExamLock(user.id) : null;
+      const targetAssignmentId = state?.assignmentId || savedLock?.assignmentId || null;
+      const targetExpiresAt = state?.expiresAt || savedLock?.expiresAt || null;
+      const targetStrictLock = state?.strictLock !== undefined ? state.strictLock : Boolean(savedLock);
+      const targetQuestionIds = state?.selectedQuestionIds || savedLock?.selectedQuestionIds;
+
+      if (targetAssignmentId) setActiveAssignmentId(targetAssignmentId);
+      if (targetExpiresAt) setExpiresAt(targetExpiresAt);
+      if (targetStrictLock) setIsStrictLock(true);
+      if (savedLock?.assignmentTitle) setAssignmentTitle(savedLock.assignmentTitle);
+
+      // Caso 1: reanudar examen existente
       if (state?.resumeAttemptId) {
         const attempt = await loadExamAttempt(state.resumeAttemptId);
         if (attempt && attempt.status === 'IN_PROGRESS') {
           setResumeAttempt(attempt);
           const { questions: allQs } = await loadExamQuestions(attempt.config);
-          // Restaurar orden de preguntas usando question_ids
           const idsOrder = attempt.question_ids;
           const qMap = new Map(allQs.map(q => [q.id, q]));
           const ordered = idsOrder.map(id => qMap.get(id)).filter(Boolean) as typeof allQs;
@@ -62,25 +92,77 @@ export default function ExamSessionPage() {
         }
       }
 
-      // Caso: nuevo examen
-      if (!state?.config) {
+      // Caso 2: examen asignado o nuevo examen
+      const cfg = state?.config || (savedLock?.config as ExamConfig);
+      if (!cfg) {
         navigate('/examenes', { replace: true });
         return;
       }
-      const cfg = state.config;
       setConfig(cfg);
+
+      // Cache de preguntas preparadas (mantiene el orden de preguntas y opciones si hay recarga)
+      const sessionCacheKey = targetAssignmentId
+        ? `neurosafe_exam_qs_asg_${targetAssignmentId}`
+        : state?.resumeAttemptId
+        ? `neurosafe_exam_qs_att_${state.resumeAttemptId}`
+        : null;
+
+      if (sessionCacheKey) {
+        try {
+          const cached = localStorage.getItem(sessionCacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setQuestions(parsed);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {}
+      }
 
       const { questions: allQs } = await loadExamQuestions({
         topicNames: cfg.topicNames,
         moduleId: cfg.moduleId,
       });
 
-      const selected = buildExamQuestions(allQs, cfg);
-      setQuestions(selected);
+      let finalQuestions: ReturnType<typeof buildExamQuestions> = [];
+
+      // Si el profesor seleccionó preguntas específicas, mezclar preguntas y mezclar opciones
+      if (targetQuestionIds && targetQuestionIds.length > 0) {
+        const qMap = new Map(allQs.map(q => [q.id, q]));
+        const exact = targetQuestionIds.map(id => qMap.get(id)).filter(Boolean) as typeof allQs;
+        const base = exact.length > 0 ? exact : allQs;
+        finalQuestions = shuffleArray(base).map(shuffleQuestionOptions);
+      } else {
+        finalQuestions = buildExamQuestions(allQs, cfg);
+      }
+
+      if (sessionCacheKey && finalQuestions.length > 0) {
+        try {
+          localStorage.setItem(sessionCacheKey, JSON.stringify(finalQuestions));
+        } catch {}
+      }
+
+      setQuestions(finalQuestions);
       setLoading(false);
     }
     init();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Advertencia de navegador ante intento de cierre/recarga si es estricto
+  useEffect(() => {
+    if (!isStrictLock) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'La evaluación asignada está en curso. El cronómetro continuará corriendo en tiempo real incluso si sales.';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isStrictLock]);
 
   // Estado inicial para reanudación
   const initialState = resumeAttempt ? {
@@ -107,26 +189,46 @@ export default function ExamSessionPage() {
       attemptId,
     });
 
-    setSubmitting(false);
-    if (sessionId) {
-      navigate('/examenes/resultados', {
-        state: { sessionId, questions, config },
-        replace: true,
+    // Si es un examen asignado al alumno, calificar y asentar estado
+    if (activeAssignmentId) {
+      let correct = 0;
+      questions.forEach(q => {
+        const sel = answers[q.id];
+        if (sel !== undefined && q.options[sel]?.is_correct) {
+          correct++;
+        }
       });
-    } else {
-      // Fallback: guardar resultados localmente y navegar de todos modos
-      navigate('/examenes/resultados', {
-        state: { sessionId: null, questions, config, answers, durationSeconds },
-        replace: true,
-      });
+      const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+      await completeAssignedExam(activeAssignmentId, user.id, score, durationSeconds);
+
+      try {
+        localStorage.removeItem(`neurosafe_exam_qs_asg_${activeAssignmentId}`);
+        localStorage.removeItem(`neurosafe_asg_answers_${activeAssignmentId}`);
+      } catch {}
     }
-  }, [user, config, questions, navigate]);
+
+    setSubmitting(false);
+    // Siempre pasar answers y durationSeconds para garantizar feedback visual completo e inmediato
+    navigate('/examenes/resultados', {
+      state: {
+        sessionId: sessionId ?? null,
+        questions,
+        config,
+        answers,
+        durationSeconds,
+        assignmentId: activeAssignmentId,
+      },
+      replace: true,
+    });
+  }, [user, config, questions, navigate, activeAssignmentId]);
 
   const runner = useExamRunner({
     questions,
     config: config ?? { mode: 'FULL_SIMULATION', feedbackMode: 'immediate' },
     resumeAttemptId: resumeAttempt?.id ?? null,
     initialState,
+    expiresAt,
+    assignmentId: activeAssignmentId,
     onSubmit: handleSubmit,
   });
 
@@ -170,16 +272,29 @@ export default function ExamSessionPage() {
       {/* Barra superior */}
       <div className="fixed top-0 left-0 right-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-3">
         <button
-          onClick={() => navigate('/examenes')}
+          onClick={() => {
+            if (isStrictLock) {
+              setShowExitWarning(true);
+            } else {
+              navigate('/examenes');
+            }
+          }}
           className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all"
+          title={isStrictLock ? 'Salir de la evaluación' : 'Volver a exámenes'}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
 
         <div className="flex-1 flex items-center gap-2 min-w-0">
-          <span className="text-xs text-slate-500 hidden sm:block">
-            {config?.feedbackMode === 'immediate' ? '🎓 Modo Tutor' : '📋 Modo Examen'} ·
-          </span>
+          {isStrictLock ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0">
+              <ShieldAlert className="w-3 h-3" /> Cronometrado
+            </span>
+          ) : (
+            <span className="text-xs text-slate-500 hidden sm:block">
+              {config?.feedbackMode === 'immediate' ? '🎓 Modo Tutor' : '📋 Modo Examen'} ·
+            </span>
+          )}
           <span className="text-sm font-medium text-slate-300 truncate">
             Pregunta {currentIndex + 1} de {questions.length}
           </span>
@@ -320,6 +435,43 @@ export default function ExamSessionPage() {
                 className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 hover:from-cyan-400 hover:to-indigo-400 transition-all"
               >
                 Enviar examen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Advertencia de Salida (Modo Estricto) */}
+      {showExitWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md bg-slate-900 border border-amber-500/50 rounded-3xl p-6 text-center shadow-2xl space-y-4">
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+              <Clock className="w-7 h-7 animate-pulse" />
+            </div>
+            <h3 className="text-base font-bold text-white">
+              ¿Deseas salir de la evaluación asignada?
+            </h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Esta es una <strong>evaluación oficial obligatoria con tiempo continuo</strong>.
+              <br /><br />
+              <strong className="text-amber-400">El cronómetro seguirá corriendo en tiempo real</strong> incluso si cierras esta pestaña o sales de la plataforma.
+              <br /><br />
+              Al llegar a cero, el examen se enviará automáticamente con las respuestas guardadas hasta este momento.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExitWarning(false)}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 text-white font-bold text-xs shadow-lg shadow-cyan-500/20 cursor-pointer"
+              >
+                Permanecer en el Examen
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/mi-progreso')}
+                className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white font-semibold text-xs border border-white/10 transition cursor-pointer"
+              >
+                Salir (El tiempo no se pausa)
               </button>
             </div>
           </div>

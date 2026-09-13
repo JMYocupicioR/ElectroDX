@@ -1,6 +1,6 @@
 import type { Profile } from './database';
 import type { QuizAttempt, ModuleQuizProgress } from './quiz';
-import type { ExamSession, ExamGapAnalysis } from './exam';
+import type { ExamSession } from './exam';
 import type { StudentModuleStats } from '../services/studentService';
 
 export type AssignmentType = 'exam' | 'clinical_case' | 'reading' | 'emg_report' | 'practical_task';
@@ -30,12 +30,30 @@ export interface StudentAssignment {
   description: string;
   target_module_id?: string | null;
   target_topic_id?: string | null;
+  target_subtopic_id?: string | null;
+  target_subtopic_title?: string | null;
   target_exam_config?: {
     topicNames?: string[];
     moduleId?: string;
+    subtopicId?: string;
+    subtopicTitle?: string;
+    selectedQuestionIds?: string[];
     questionCount?: number;
+    timeLimitMinutes?: number;
     mode?: 'FULL_SIMULATION' | 'TOPIC_SPECIFIC' | 'CUSTOM' | 'FAILED_REVIEW' | 'CRITICAL_ONLY';
     minPassingScore?: number;
+    strictLock?: boolean;
+    startedAt?: string;
+    expiresAt?: string;
+    maxAttempts?: number; // 1, 2, 3, etc. (undefined o 0 = ilimitados)
+    attemptsCount?: number; // Intentos completados
+    allowRetakeRequest?: boolean; // Si puede solicitar permiso al profesor
+    retakeStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+    retakeReason?: string;
+    retakeRequestedAt?: string;
+    retakeReviewedAt?: string;
+    retakeReviewedBy?: string;
+    retakeReviewNotes?: string;
   } | null;
   due_date: string; // ISO date string
   status: AssignmentStatus;
@@ -53,6 +71,20 @@ export interface StudentAssignment {
   reviewed_by?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ActiveExamLock {
+  assignmentId: string;
+  studentId: string;
+  assignmentTitle: string;
+  startedAt: string;
+  expiresAt: string;
+  timeLimitMinutes: number;
+  selectedQuestionIds?: string[];
+  config: any;
+  moduleId?: string;
+  topicTitle?: string;
+  subtopicTitle?: string;
 }
 
 export interface StudentActivityLog {

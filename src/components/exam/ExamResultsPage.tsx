@@ -13,7 +13,10 @@ type LocationState = {
   config: ExamConfig;
   answers?: Record<string, number>; // Fallback si no se guardó en DB
   durationSeconds?: number;
+  assignmentId?: string;
 };
+
+const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 
 export default function ExamResultsPage() {
   const navigate = useNavigate();
@@ -37,24 +40,40 @@ export default function ExamResultsPage() {
     if (!state) { navigate('/examenes', { replace: true }); return; }
 
     async function computeResults() {
-      const { sessionId, questions, answers, durationSeconds } = state!;
+      const { sessionId, questions, answers, durationSeconds, assignmentId } = state!;
 
-      let sessionAnswers: Record<string, number> = answers ?? {};
+      let sessionAnswers: Record<string, number> = { ...(answers ?? {}) };
       let duration = durationSeconds ?? 0;
 
-      // Intentar cargar desde Supabase si hay sessionId
+      // Fallback si answers vino vacío: buscar en caché local de la asignación
+      if (assignmentId && Object.keys(sessionAnswers).length === 0) {
+        try {
+          const cached = localStorage.getItem(`neurosafe_asg_answers_${assignmentId}`);
+          if (cached) {
+            sessionAnswers = JSON.parse(cached);
+          }
+        } catch {}
+      }
+
+      // Intentar cargar desde Supabase si hay sessionId para enriquecer
       if (sessionId) {
         const data = await loadExamResults(sessionId, questions);
-        if (data) {
-          data.answers.forEach(a => { sessionAnswers[a.question_id] = a.selected_option_index; });
-          duration = data.session.duration_seconds;
+        if (data && data.answers && data.answers.length > 0) {
+          data.answers.forEach(a => {
+            if (a.selected_option_index !== undefined) {
+              sessionAnswers[a.question_id] = a.selected_option_index;
+            }
+          });
+          if (data.session?.duration_seconds) {
+            duration = data.session.duration_seconds;
+          }
         }
       }
 
       // Calcular estadísticas
       let correct = 0;
       const detailedAnswers = questions.map(q => {
-        const selectedIndex = sessionAnswers[q.id] ?? -1;
+        const selectedIndex = sessionAnswers[q.id] !== undefined ? sessionAnswers[q.id] : -1;
         const isCorrect = selectedIndex >= 0 && (q.options[selectedIndex]?.is_correct ?? false);
         if (isCorrect) correct++;
         return { question: q, selectedIndex, isCorrect };
@@ -207,16 +226,6 @@ export default function ExamResultsPage() {
                           ⚡ {t.criticalFailures} crít.
                         </span>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-white/10 rounded-full">
-                        <div
-                          className={`h-1.5 rounded-full transition-all ${
-                            t.accuracy >= 70 ? 'bg-emerald-500' : t.accuracy >= 50 ? 'bg-amber-500' : 'bg-red-500'
-                          }`}
-                          style={{ width: `${t.accuracy}%` }}
-                        />
-                      </div>
                       <span className={`text-xs font-bold shrink-0 ${
                         t.accuracy >= 70 ? 'text-emerald-400' : t.accuracy >= 50 ? 'text-amber-400' : 'text-red-400'
                       }`}>
@@ -224,7 +233,6 @@ export default function ExamResultsPage() {
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-slate-500 shrink-0">{t.correct}/{t.total}</span>
                 </div>
               ))}
             </div>
@@ -245,7 +253,7 @@ export default function ExamResultsPage() {
                   onClick={() => setFilter(f)}
                   className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
                     filter === f
-                      ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300'
+                      ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300 font-bold'
                       : 'bg-white/[0.03] border-white/10 text-slate-400 hover:border-white/20'
                   }`}
                 >
@@ -255,76 +263,174 @@ export default function ExamResultsPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto custom-scrollbar">
+          <div className="divide-y divide-white/5 max-h-[650px] overflow-y-auto custom-scrollbar">
             {filteredAnswers.map(({ question: q, selectedIndex, isCorrect }, i) => {
               const isExpanded = expandedQuestion === q.id;
               const correct = correctIndex(q);
 
               return (
-                <div key={q.id} className="p-4">
+                <div key={q.id} className="p-4 sm:p-5">
                   {/* Cabecera colapsable */}
                   <button
                     onClick={() => setExpandedQuestion(isExpanded ? null : q.id)}
-                    className="w-full flex items-start gap-3 text-left"
+                    className="w-full flex items-start gap-3 text-left group cursor-pointer"
                   >
-                    <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5 ${
+                    <div className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center mt-0.5 ${
                       isCorrect ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
                     }`}>
                       {isCorrect
-                        ? <CheckCircle className="w-3.5 h-3.5" />
-                        : <XCircle className="w-3.5 h-3.5" />
+                        ? <CheckCircle className="w-4 h-4" />
+                        : <XCircle className="w-4 h-4" />
                       }
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-slate-500">{q.topic_name}</span>
-                        {q.is_critical && <span className="text-[10px] text-amber-400">⚡ Crítica</span>}
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className="text-xs text-slate-400 font-medium">{q.topic_name}</span>
+                        {q.is_critical && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                            ⚡ Crítica
+                          </span>
+                        )}
+                        {!isCorrect && selectedIndex === -1 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/40">
+                            Sin responder
+                          </span>
+                        )}
                       </div>
-                      <p className="text-sm text-slate-200 line-clamp-2">{q.stem}</p>
+                      <p className="text-sm text-slate-100 font-medium line-clamp-2 group-hover:text-cyan-300 transition-colors">
+                        {q.stem}
+                      </p>
                     </div>
                     {isExpanded
-                      ? <ChevronUp className="w-4 h-4 text-slate-500 shrink-0 mt-1" />
-                      : <ChevronDown className="w-4 h-4 text-slate-500 shrink-0 mt-1" />
+                      ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                      : <ChevronDown className="w-4 h-4 text-slate-500 group-hover:text-slate-300 shrink-0 mt-1" />
                     }
                   </button>
 
                   {/* Detalle expandido */}
                   {isExpanded && (
-                    <div className="mt-4 ml-9 space-y-3">
-                      {/* Opciones */}
-                      <div className="space-y-1.5">
-                        {q.options.map((opt, idx) => (
-                          <div key={idx} className={`flex items-start gap-2 px-3 py-2.5 rounded-xl text-sm border ${
-                            idx === correct ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-300'
-                            : idx === selectedIndex && !isCorrect ? 'bg-red-500/5 border-red-500/20 text-red-300'
-                            : 'border-transparent text-slate-500'
-                          }`}>
-                            <span className="shrink-0 mt-0.5">
-                              {idx === correct ? '✓' : idx === selectedIndex && !isCorrect ? '✗' : '·'}
-                            </span>
-                            <span>{opt.text}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Explicación */}
-                      {!isCorrect && q.options[selectedIndex] && (
-                        <p className="text-sm text-slate-400 italic">{q.options[selectedIndex].feedback}</p>
-                      )}
-                      {q.options[correct] && (
-                        <p className="text-sm text-emerald-300/80">{q.options[correct].feedback}</p>
-                      )}
-
-                      {/* Perla */}
-                      {q.pearl && (
-                        <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-                          <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="text-xs font-bold text-amber-400 uppercase tracking-wide">Perla Clínica</span>
-                            <p className="text-sm text-amber-200/70 mt-0.5">{q.pearl}</p>
-                          </div>
+                    <div className="mt-4 ml-0 sm:ml-10 space-y-4 pt-3 border-t border-white/5">
+                      {/* Alerta de reactivo sin responder */}
+                      {selectedIndex === -1 && (
+                        <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-amber-300">
+                          <AlertTriangle className="w-4 h-4 shrink-0 text-amber-400" />
+                          <span>
+                            <strong>Reactivo no contestado:</strong> No marcaste ninguna opción antes del envío o el tiempo reglamentario concluyó.
+                          </span>
                         </div>
                       )}
+
+                      {/* Opciones con etiquetado claro (Tu selección vs Correcta) */}
+                      <div className="space-y-2">
+                        {q.options.map((opt, idx) => {
+                          const isThisCorrect = idx === correct;
+                          const isThisSelected = idx === selectedIndex;
+                          const label = OPTION_LABELS[idx] || String(idx + 1);
+
+                          return (
+                            <div
+                              key={idx}
+                              className={`flex items-start gap-3 p-3.5 rounded-2xl text-xs sm:text-sm border transition-all ${
+                                isThisSelected && isThisCorrect
+                                  ? 'bg-emerald-500/20 border-emerald-500/70 text-emerald-100 ring-2 ring-emerald-400/40'
+                                  : isThisCorrect
+                                  ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-200'
+                                  : isThisSelected && !isCorrect
+                                  ? 'bg-red-500/20 border-red-500/70 text-red-100 ring-2 ring-red-400/40'
+                                  : 'border-white/5 bg-white/[0.02] text-slate-400'
+                              }`}
+                            >
+                              {/* Letra o icono */}
+                              <span
+                                className={`shrink-0 w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs ${
+                                  isThisCorrect
+                                    ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/60'
+                                    : isThisSelected && !isCorrect
+                                    ? 'bg-red-500/30 text-red-300 border border-red-500/60'
+                                    : 'bg-white/5 text-slate-400 border border-white/10'
+                                }`}
+                              >
+                                {isThisCorrect ? (
+                                  <CheckCircle className="w-3.5 h-3.5 text-emerald-300" />
+                                ) : isThisSelected && !isCorrect ? (
+                                  <XCircle className="w-3.5 h-3.5 text-red-300" />
+                                ) : (
+                                  label
+                                )}
+                              </span>
+
+                              <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <span className="leading-relaxed font-normal">{opt.text}</span>
+                                <div className="shrink-0 flex items-center gap-1.5">
+                                  {isThisSelected && !isThisCorrect && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-xs">
+                                      Tu Selección (Incorrecta)
+                                    </span>
+                                  )}
+                                  {isThisSelected && isThisCorrect && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white shadow-xs">
+                                      ¡Tu Selección (Correcta)!
+                                    </span>
+                                  )}
+                                  {isThisCorrect && !isThisSelected && (
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                                      Respuesta Correcta
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Explicaciones detalladas estructuradas */}
+                      <div className="space-y-2.5 pt-1">
+                        {/* Explicación de por qué falló su respuesta */}
+                        {!isCorrect && selectedIndex >= 0 && q.options[selectedIndex] && (
+                          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/25 space-y-1">
+                            <div className="flex items-center gap-2 text-xs font-bold text-red-400 uppercase tracking-wide">
+                              <XCircle className="w-4 h-4 shrink-0" />
+                              <span>
+                                ¿Por qué tu respuesta ({OPTION_LABELS[selectedIndex]}) es incorrecta?
+                              </span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-red-200/90 pl-6 leading-relaxed">
+                              {q.options[selectedIndex].feedback ||
+                                'Esta opción no corresponde al criterio electrofisiológico ni a la respuesta clínica adecuada para este caso.'}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Fundamento de la respuesta correcta */}
+                        {q.options[correct] && (
+                          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 space-y-1">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wide">
+                              <CheckCircle className="w-4 h-4 shrink-0" />
+                              <span>
+                                Fundamento de la respuesta correcta ({OPTION_LABELS[correct]}):
+                              </span>
+                            </div>
+                            <p className="text-xs sm:text-sm text-emerald-200/90 pl-6 leading-relaxed">
+                              {q.options[correct].feedback ||
+                                'Respuesta fundamentada según los estándares de neuroconducción y electromiografía COMEFYR.'}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Perla Clínica */}
+                        {q.pearl && (
+                          <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                            <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                            <div className="space-y-0.5">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+                                Perla Clínica COMEFYR
+                              </span>
+                              <p className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">{q.pearl}</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -334,21 +440,49 @@ export default function ExamResultsPage() {
         </div>
 
         {/* ─── Acciones finales ─────────────────────────────────────────── */}
-        <div className="flex gap-3 justify-center pb-8">
-          <button
-            onClick={() => navigate('/examenes')}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm hover:bg-white/10 transition-all"
-          >
-            <Home className="w-4 h-4" />
-            Inicio
-          </button>
-          <button
-            onClick={() => navigate('/examenes/configurar')}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 transition-all"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Nuevo examen
-          </button>
+        {state?.assignmentId && (
+          <div className="mb-4 max-w-xl mx-auto p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-center text-xs text-indigo-300">
+            Esta evaluación fue asignada formalmente. Tu resultado ha sido asentado en tu expediente académico.
+            Para consultar el límite de intentos o solicitar un reintento, dirígete a tu panel de actividades asignadas.
+          </div>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pb-8">
+          {state?.assignmentId ? (
+            <>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+              >
+                <Award className="w-4 h-4" />
+                Volver a Mi Expediente y Tareas
+              </button>
+              <button
+                onClick={() => navigate('/examenes')}
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Home className="w-4 h-4" />
+                Centro de Evaluaciones
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate('/examenes')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-sm hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <Home className="w-4 h-4" />
+                Inicio
+              </button>
+              <button
+                onClick={() => navigate('/examenes/configurar')}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-white font-semibold text-sm shadow-lg shadow-cyan-500/20 transition-all cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Nuevo examen
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

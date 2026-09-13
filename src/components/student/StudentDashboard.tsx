@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   GraduationCap,
   BookOpen,
@@ -20,6 +20,7 @@ import {
   Layers,
   ArrowRight,
   ShieldCheck,
+  ShieldAlert,
   Building2,
   Video,
   FileText,
@@ -29,6 +30,10 @@ import {
   Target,
   Send,
   Check,
+  Lock,
+  AlertTriangle,
+  Edit3,
+  RotateCcw,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
@@ -52,17 +57,30 @@ import {
   getStudentAssignments,
   submitAssignment,
   getStudentActivityAndStreak,
+  getActiveExamLock,
+  startAssignedExam,
+  requestExamRetake,
 } from '../../services/studentPlanService';
-import type { StudentAssignment, StudentStreakInfo } from '../../types/studentPlan';
+import type { StudentAssignment, StudentStreakInfo, ActiveExamLock } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { LiveWorkshop } from '../../types/database';
+import StudentKardexModal from '../admin/StudentKardexModal';
+
+function formatRemainingExamTime(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
 
 export default function StudentDashboard() {
-  const { user, profile } = useAuth();
+  const navigate = useNavigate();
+  const { user, profile, hasPremiumAccess, isAdmin, isEditor } = useAuth();
+  const isPremiumUser = hasPremiumAccess || isAdmin || isEditor;
 
   const [activeTab, setActiveTab] = useState<'summary' | 'modules' | 'quizzes' | 'assignments' | 'notifications' | 'certificate'>('summary');
+  const [showKardexModal, setShowKardexModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [moduleProgress, setModuleProgress] = useState<ModuleQuizProgress[]>([]);
@@ -74,6 +92,18 @@ export default function StudentDashboard() {
   const [submitNotes, setSubmitNotes] = useState('');
   const [savingSubmission, setSavingSubmission] = useState(false);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
+
+  // Estados para examen asignado y candado estricto
+  const [activeExamLock, setActiveExamLock] = useState<ActiveExamLock | null>(null);
+  const [selectedExamForModal, setSelectedExamForModal] = useState<StudentAssignment | null>(null);
+  const [acceptedExamRules, setAcceptedExamRules] = useState<boolean>(false);
+  const [remainingActiveSeconds, setRemainingActiveSeconds] = useState<number | null>(null);
+  const [startingExam, setStartingExam] = useState<boolean>(false);
+
+  // Estado para solicitud de reintento de examen
+  const [retakeModalAssignment, setRetakeModalAssignment] = useState<StudentAssignment | null>(null);
+  const [retakeReason, setRetakeReason] = useState('');
+  const [sendingRetake, setSendingRetake] = useState(false);
   const [searchModuleQuery, setSearchModuleQuery] = useState('');
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
   const [quizFilter, setQuizFilter] = useState<'all' | 'pending' | 'passed'>('all');
@@ -169,6 +199,64 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleSendRetakeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!retakeModalAssignment || !user || !retakeReason.trim()) return;
+    try {
+      setSendingRetake(true);
+      await requestExamRetake(retakeModalAssignment.id, user.id, retakeReason.trim());
+      const updated = await getStudentAssignments(user.id);
+      setAssignments(updated);
+      setRetakeModalAssignment(null);
+      setRetakeReason('');
+      alert('Tu solicitud de reintento ha sido enviada al profesor. Recibirás respuesta en cuanto el docente revise tu justificación.');
+    } catch (err: any) {
+      console.error('Error al solicitar reintento:', err);
+      alert('Hubo un error al enviar la solicitud: ' + (err?.message || 'Intenta de nuevo'));
+    } finally {
+      setSendingRetake(false);
+    }
+  };
+
+  const handleStartStrictExam = async () => {
+    if (!selectedExamForModal || !user) return;
+    setStartingExam(true);
+    try {
+      const timeLimitMinutes = selectedExamForModal.target_exam_config?.timeLimitMinutes || 20;
+      const lock = await startAssignedExam(selectedExamForModal.id, user.id, timeLimitMinutes);
+      setActiveExamLock(lock);
+      const targetConfig = selectedExamForModal.target_exam_config || {
+        mode: 'FULL_SIMULATION',
+        feedbackMode: 'end',
+        timeLimitMinutes,
+      };
+      const examAssignment = selectedExamForModal;
+      setSelectedExamForModal(null);
+      setAcceptedExamRules(false);
+      navigate('/examenes/sesion', {
+        state: {
+          assignmentId: examAssignment.id,
+          config: {
+            ...targetConfig,
+            timeLimitMinutes,
+            strictLock: true,
+            expiresAt: lock.expiresAt,
+            selectedQuestionIds: targetConfig.selectedQuestionIds,
+          },
+          expiresAt: lock.expiresAt,
+          strictLock: true,
+          selectedQuestionIds: targetConfig.selectedQuestionIds,
+          assignmentTitle: examAssignment.title,
+        },
+      });
+    } catch (err) {
+      console.error('Error starting strict exam:', err);
+      alert('No se pudo iniciar el examen. Por favor intenta de nuevo.');
+    } finally {
+      setStartingExam(false);
+    }
+  };
+
   useEffect(() => {
     const handleProgress = () => {
       setRefreshTrigger((prev) => prev + 1);
@@ -176,6 +264,31 @@ export default function StudentDashboard() {
     window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
     return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
   }, []);
+
+  // Monitoreo de examen asignado en curso (tiempo continuo)
+  useEffect(() => {
+    if (!user) return;
+    const checkLock = () => {
+      const lock = getActiveExamLock(user.id);
+      if (lock) {
+        const ms = new Date(lock.expiresAt).getTime();
+        const diff = Math.max(0, Math.floor((ms - Date.now()) / 1000));
+        if (diff > 0) {
+          setActiveExamLock(lock);
+          setRemainingActiveSeconds(diff);
+        } else {
+          setActiveExamLock(null);
+          setRemainingActiveSeconds(0);
+        }
+      } else {
+        setActiveExamLock(null);
+        setRemainingActiveSeconds(null);
+      }
+    };
+    checkLock();
+    const interval = setInterval(checkLock, 1000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const handleToggleTopic = (topicId: string, e: React.MouseEvent, childIds?: string[]) => {
     e.stopPropagation();
@@ -315,6 +428,52 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+      {/* ─── BANNER DE EXAMEN ASIGNADO EN CURSO (TIEMPO CONTINUO) ─── */}
+      {activeExamLock && remainingActiveSeconds !== null && remainingActiveSeconds > 0 && (
+        <div className="mb-6 p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-red-500/15 to-indigo-500/15 border-2 border-amber-500/60 dark:border-amber-500/50 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30">
+              <Clock className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600 text-white animate-pulse">
+                  Evaluación Activa
+                </span>
+                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                  {activeExamLock.assignmentTitle}
+                </span>
+              </div>
+              <p className="text-xs text-slate-700 dark:text-slate-300 mt-1">
+                Tiempo restante:{' '}
+                <strong className="text-red-600 dark:text-red-400 font-mono font-black text-sm tracking-wide">
+                  {formatRemainingExamTime(remainingActiveSeconds)}
+                </strong>
+                . El cronómetro corre de forma continua en tiempo real.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              navigate('/examenes/sesion', {
+                state: {
+                  assignmentId: activeExamLock.assignmentId,
+                  config: activeExamLock.config,
+                  expiresAt: activeExamLock.expiresAt,
+                  strictLock: true,
+                  selectedQuestionIds: activeExamLock.selectedQuestionIds,
+                  assignmentTitle: activeExamLock.assignmentTitle,
+                },
+              });
+            }}
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white text-xs font-black shadow-lg shadow-red-600/30 transition cursor-pointer text-center whitespace-nowrap"
+          >
+            Reanudar Examen Ahora →
+          </button>
+        </div>
+      )}
+
       {/* ─── 4 Academic KPI Cards ─── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
         {/* 1. Progreso Global */}
@@ -427,12 +586,20 @@ export default function StudentDashboard() {
               ? 'Cédula profesional validada'
               : 'Requiere validación de cédula'}
           </p>
-          <button
-            onClick={() => setActiveTab('certificate')}
-            className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline flex items-center gap-1"
-          >
-            Ver requisitos y diploma <ChevronRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center gap-3 pt-1">
+            <button
+              onClick={() => setActiveTab('certificate')}
+              className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              Requisitos y Diploma <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setShowKardexModal(true)}
+              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <FileCheck className="w-3.5 h-3.5" /> Mi Kardex Oficial
+            </button>
+          </div>
         </div>
       </div>
 
@@ -739,9 +906,19 @@ export default function StudentDashboard() {
                     className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/60 hover:shadow-md transition group"
                   >
                     <div className="space-y-0.5">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
-                        Calculadora de Plexo Braquial
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition">
+                          Calculadora de Plexo Braquial
+                        </p>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          isPremiumUser
+                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300/40'
+                            : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                        }`}>
+                          {isPremiumUser ? <Sparkles className="w-2.5 h-2.5 text-amber-500" /> : <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                          Premium
+                        </span>
+                      </div>
                       <p className="text-[11px] text-slate-500">
                         Algoritmo ponderado de 5 pasos raíces/cordones
                       </p>
@@ -749,14 +926,24 @@ export default function StudentDashboard() {
                     <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition" />
                   </Link>
 
-                    <Link
+                  <Link
                     to="/ejercicios"
                     className="flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-100 dark:border-blue-900/60 hover:shadow-md transition group"
                   >
                     <div className="space-y-0.5">
-                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition">
-                        Simulador de Casos Clínicos EMG
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition">
+                          Simulador de Casos Clínicos EMG
+                        </p>
+                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          isPremiumUser
+                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-300/40'
+                            : 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20'
+                        }`}>
+                          {isPremiumUser ? <Sparkles className="w-2.5 h-2.5 text-amber-500" /> : <Lock className="w-2.5 h-2.5 text-amber-500" />}
+                          Premium
+                        </span>
+                      </div>
                       <p className="text-[11px] text-slate-500">
                         Ejercicios prácticos interactivos con trazos
                       </p>
@@ -1156,6 +1343,13 @@ export default function StudentDashboard() {
                 const isOverdue = dueTime < now && asg.status === 'pending';
                 const daysRemaining = Math.ceil((dueTime - now) / 86400000);
 
+                const isExam = asg.type === 'exam';
+                const maxAttempts = asg.target_exam_config?.maxAttempts ?? 1;
+                const attemptsCount = asg.target_exam_config?.attemptsCount ?? (asg.submitted_at || asg.status === 'submitted' || asg.status === 'approved' ? 1 : 0);
+                const isAttemptsLimited = maxAttempts > 0;
+                const attemptsExhausted = isAttemptsLimited && attemptsCount >= maxAttempts;
+                const retakeStatus = asg.target_exam_config?.retakeStatus || 'none';
+
                 return (
                   <div
                     key={asg.id}
@@ -1193,19 +1387,31 @@ export default function StudentDashboard() {
 
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                            asg.status === 'approved'
+                            isExam && retakeStatus === 'requested'
+                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                              : isExam && retakeStatus === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : isExam && retakeStatus === 'rejected'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                              : asg.status === 'approved'
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                               : asg.status === 'submitted'
-                              ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                              ? (isExam && attemptsExhausted ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300')
                               : isOverdue
                               ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
                               : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                           }`}
                         >
-                          {asg.status === 'approved'
+                          {isExam && retakeStatus === 'requested'
+                            ? 'Reintento Solicitado ⏳'
+                            : isExam && retakeStatus === 'approved'
+                            ? 'Reintento Autorizado ✓'
+                            : isExam && retakeStatus === 'rejected'
+                            ? 'Reintento Denegado'
+                            : asg.status === 'approved'
                             ? 'Aprobada ✓'
                             : asg.status === 'submitted'
-                            ? 'Entregada (En revisión)'
+                            ? (isExam && attemptsExhausted ? 'Examen Finalizado' : 'Entregada (En revisión)')
                             : isOverdue
                             ? 'Entrega Vencida'
                             : 'Pendiente de Entrega'}
@@ -1219,6 +1425,39 @@ export default function StudentDashboard() {
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                         {asg.description}
                       </p>
+
+                      {/* Tags de configuración del examen */}
+                      {asg.type === 'exam' && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          {asg.target_exam_config?.subtopicTitle && (
+                            <span className="px-2 py-0.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[10px] font-bold border border-purple-200 dark:border-purple-800">
+                              Subtema: {asg.target_exam_config.subtopicTitle}
+                            </span>
+                          )}
+                          {asg.target_exam_config?.questionCount && (
+                            <span className="px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-200 dark:border-blue-800">
+                              {asg.target_exam_config.questionCount} reactivos
+                            </span>
+                          )}
+                          {asg.target_exam_config?.timeLimitMinutes && (
+                            <span className="px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-bold border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" /> {asg.target_exam_config.timeLimitMinutes} min
+                            </span>
+                          )}
+                          <span className="px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                            Mínimo: {asg.min_score || 70}%
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
+                              attemptsExhausted
+                                ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                                : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                            }`}
+                          >
+                            Intentos: {attemptsCount} / {maxAttempts > 0 ? maxAttempts : 'Ilimitados'}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs space-y-1">
                         <p className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
@@ -1279,18 +1518,186 @@ export default function StudentDashboard() {
 
                     {/* Action Button */}
                     <div className="pt-2">
-                      {asg.status === 'approved' ? (
+                      {asg.type === 'exam' ? (
+                        activeExamLock && activeExamLock.assignmentId === asg.id ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigate('/examenes/sesion', {
+                                state: {
+                                  assignmentId: asg.id,
+                                  config: asg.target_exam_config || { mode: 'FULL_SIMULATION', feedbackMode: 'end' },
+                                  expiresAt: activeExamLock.expiresAt,
+                                  strictLock: true,
+                                  selectedQuestionIds: asg.target_exam_config?.selectedQuestionIds,
+                                  assignmentTitle: asg.title,
+                                },
+                              });
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white text-xs font-bold transition shadow-xs cursor-pointer animate-pulse"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-white" />
+                            <span>
+                              Continuar Examen en Curso ({formatRemainingExamTime(remainingActiveSeconds || 0)})
+                            </span>
+                          </button>
+                        ) : attemptsExhausted && retakeStatus === 'requested' ? (
+                          <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-center space-y-1">
+                            <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-200">
+                              <Clock className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+                              <span>Solicitud de Reintento en Revisión</span>
+                            </div>
+                            <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                              Has solicitado permiso para repetir esta evaluación ({attemptsCount}/{maxAttempts} intentos). El docente revisará tu justificación académica.
+                            </p>
+                          </div>
+                        ) : attemptsExhausted && retakeStatus === 'rejected' ? (
+                          <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-center space-y-1.5">
+                            <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-rose-800 dark:text-rose-200">
+                              <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                              <span>Reintento No Autorizado</span>
+                            </div>
+                            <p className="text-[11px] text-rose-700 dark:text-rose-300">
+                              {asg.target_exam_config?.retakeReviewNotes
+                                ? `Motivo: ${asg.target_exam_config.retakeReviewNotes}`
+                                : 'El cuerpo docente ha determinado no otorgar intentos adicionales para este examen.'}
+                            </p>
+                            {asg.target_exam_config?.allowRetakeRequest !== false && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRetakeModalAssignment(asg);
+                                  setRetakeReason('');
+                                }}
+                                className="inline-flex items-center gap-1 text-[11px] text-rose-700 dark:text-rose-300 font-bold underline hover:opacity-80 cursor-pointer"
+                              >
+                                Reenviar solicitud con nueva justificación
+                              </button>
+                            )}
+                          </div>
+                        ) : attemptsExhausted ? (
+                          <div className="space-y-2">
+                            <div className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold text-center flex items-center justify-center gap-1.5">
+                              <Lock className="w-3.5 h-3.5 text-slate-400" />
+                              <span>
+                                {asg.status === 'approved' ? 'Evaluación Aprobada ✓' : 'Intentos Agotados'}{' '}
+                                ({attemptsCount}/{maxAttempts})
+                              </span>
+                            </div>
+                            {asg.target_exam_config?.allowRetakeRequest !== false ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRetakeModalAssignment(asg);
+                                  setRetakeReason('');
+                                }}
+                                className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span>Solicitar Permiso para Repetir Examen</span>
+                              </button>
+                            ) : (
+                              <p className="text-[10px] text-center text-slate-400">
+                                Esta evaluación oficial no admite solicitudes de reintento.
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {retakeStatus === 'approved' && (
+                              <div className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300 font-semibold flex items-center gap-1.5 justify-center">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Reintento concedido por el profesor ({attemptsCount}/{maxAttempts})</span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedExamForModal(asg);
+                                setAcceptedExamRules(false);
+                              }}
+                              className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                            >
+                              <Play className="w-3.5 h-3.5" />
+                              <span>
+                                {attemptsCount > 0
+                                  ? `Realizar Reintento (${attemptsCount + 1}/${maxAttempts > 0 ? maxAttempts : '∞'})`
+                                  : 'Realizar Examen Asignado'}
+                              </span>
+                            </button>
+                          </div>
+                        )
+                      ) : asg.type === 'clinical_case' ? (
+                        asg.status === 'approved' ? (
+                          <div className="space-y-2">
+                            <div className="w-full py-2.5 rounded-xl bg-emerald-100/70 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-1.5 border border-emerald-300 dark:border-emerald-800">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Caso Clínico Aprobado ({asg.grade ?? 100}/100)</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigate('/ejercicios', {
+                                  state: {
+                                    assignmentId: asg.id,
+                                    patternId: (asg.target_exam_config as any)?.patternId,
+                                    title: asg.title,
+                                    studentId: user?.id,
+                                  },
+                                });
+                              }}
+                              className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition cursor-pointer"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Volver a practicar caso</span>
+                            </button>
+                          </div>
+                        ) : asg.status === 'submitted' ? (
+                          <div className="space-y-2">
+                            <div className="w-full py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold text-center border border-indigo-200 dark:border-indigo-800">
+                              Caso Entregado · En revisión docente
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigate('/ejercicios', {
+                                  state: {
+                                    assignmentId: asg.id,
+                                    patternId: (asg.target_exam_config as any)?.patternId,
+                                    title: asg.title,
+                                    studentId: user?.id,
+                                  },
+                                });
+                              }}
+                              className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                            >
+                              <Activity className="w-3.5 h-3.5" />
+                              <span>Repetir / Revisar Caso en Simulador</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigate('/ejercicios', {
+                                state: {
+                                  assignmentId: asg.id,
+                                  patternId: (asg.target_exam_config as any)?.patternId,
+                                  title: asg.title,
+                                  studentId: user?.id,
+                                },
+                              });
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                          >
+                            <Activity className="w-3.5 h-3.5" />
+                            <span>Resolver Caso Clínico Asignado</span>
+                          </button>
+                        )
+                      ) : asg.status === 'approved' ? (
                         <div className="w-full py-2 rounded-xl bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center">
                           Actividad Aprobada
                         </div>
-                      ) : asg.type === 'exam' ? (
-                        <Link
-                          to="/simulador"
-                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
-                        >
-                          <Play className="w-3.5 h-3.5" />
-                          <span>Realizar Examen Asignado</span>
-                        </Link>
                       ) : asg.status === 'submitted' ? (
                         <button
                           type="button"
@@ -1377,6 +1784,254 @@ export default function StudentDashboard() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal para que el Alumno solicite permiso de repetición de examen */}
+          {retakeModalAssignment && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                      <RotateCcw className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                        Solicitar Permiso para Repetir Examen
+                      </h3>
+                      <p className="text-xs text-slate-500 truncate max-w-xs">
+                        {retakeModalAssignment.title}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!sendingRetake) {
+                        setRetakeModalAssignment(null);
+                        setRetakeReason('');
+                      }
+                    }}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 text-base font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Información del examen e intentos */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Intentos realizados:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {retakeModalAssignment.target_exam_config?.attemptsCount ?? (retakeModalAssignment.status === 'submitted' || retakeModalAssignment.status === 'approved' ? 1 : 0)} de {retakeModalAssignment.target_exam_config?.maxAttempts ?? 1} reglamentarios
+                    </span>
+                  </div>
+                  {retakeModalAssignment.grade != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Última calificación:</span>
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {retakeModalAssignment.grade} / 100 pts
+                      </span>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-700">
+                    Para mantener la integridad académica del curso COMEFYR, debes enviar una justificación a tu profesor explicando por qué requieres una oportunidad adicional (ej. falla técnica comprobable, profundización de estudio, etc.).
+                  </p>
+                </div>
+
+                <form onSubmit={handleSendRetakeRequest} className="space-y-4 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Justificación Académica para el Profesor <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      required
+                      minLength={15}
+                      value={retakeReason}
+                      onChange={(e) => setRetakeReason(e.target.value)}
+                      placeholder="Estimado profesor: Solicito la oportunidad de repetir esta evaluación debido a que..."
+                      className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-amber-500/40 focus:outline-none"
+                    />
+                    <span className="text-[10px] text-slate-400">Mínimo 15 caracteres. Sé claro y conciso.</span>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      disabled={sendingRetake}
+                      onClick={() => {
+                        setRetakeModalAssignment(null);
+                        setRetakeReason('');
+                      }}
+                      className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={sendingRetake || retakeReason.trim().length < 15}
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      {sendingRetake ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Enviando solicitud...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Enviar Solicitud al Profesor</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal de Advertencia y Confirmación de Examen Asignado (Candado Estricto) */}
+          {selectedExamForModal && (
+            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl border-2 border-indigo-500/40 dark:border-indigo-500/30 p-6 sm:p-7 space-y-5 shadow-2xl">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30">
+                      <AlertTriangle className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                        Protocolo de Evaluación Oficial
+                      </span>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
+                        {selectedExamForModal.title}
+                      </h3>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!startingExam) {
+                        setSelectedExamForModal(null);
+                        setAcceptedExamRules(false);
+                      }
+                    }}
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 text-lg font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Scope & parameters */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 text-center">
+                  <div className="p-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Tema Evaluado</p>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate mt-0.5" title={selectedExamForModal.target_topic_title || 'General'}>
+                      {selectedExamForModal.target_topic_title || 'General'}
+                    </p>
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Preguntas</p>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                      {selectedExamForModal.target_exam_config?.selectedQuestionIds?.length ||
+                       selectedExamForModal.target_exam_config?.numberOfQuestions ||
+                       10} reactivos
+                    </p>
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Tiempo Límite</p>
+                    <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                      {selectedExamForModal.target_exam_config?.timeLimitMinutes || 20} min
+                    </p>
+                  </div>
+                  <div className="p-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Aprobatoria</p>
+                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      {selectedExamForModal.min_score || 80}%
+                    </p>
+                  </div>
+                </div>
+
+                {selectedExamForModal.target_subtopic_title && (
+                  <div className="px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 flex items-center gap-2 text-xs text-blue-800 dark:text-blue-300">
+                    <Layers className="w-4 h-4 shrink-0 text-blue-500" />
+                    <span>
+                      <strong>Subtema enfocado:</strong> {selectedExamForModal.target_subtopic_title}
+                    </span>
+                  </div>
+                )}
+
+                {/* Important Strict Timing Warning Box */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-red-500/10 via-amber-500/10 to-red-500/5 border-2 border-red-500/40 dark:border-red-500/30 space-y-2">
+                  <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-wide">
+                    <ShieldAlert className="w-4 h-4 shrink-0" />
+                    <span>Advertencia de Candado Estricto de Tiempo</span>
+                  </div>
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                    Al hacer clic en <strong className="text-slate-900 dark:text-white">"Comenzar Evaluación Oficial"</strong>, el temporizador iniciará de forma <strong>ininterrumpida e irreversible</strong>.
+                  </p>
+                  <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-disc pl-4">
+                    <li>
+                      <strong>El tiempo no se detiene:</strong> Incluso si cierras la plataforma, apagas la computadora o se desconecta la red, el reloj continuará corriendo en tiempo real.
+                    </li>
+                    <li>
+                      <strong>Cierre automático forzado:</strong> Al expirar los {selectedExamForModal.target_exam_config?.timeLimitMinutes || 20} minutos reglamentarios, el examen se enviará y calificará con tus respuestas registradas.
+                    </li>
+                    <li>
+                      <strong>Registro académico:</strong> Tu puntaje quedará asentado en el Kardex y será visible para el cuerpo docente y COMEFYR.
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Checkbox of rule acceptance */}
+                <label className="flex items-start gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800 cursor-pointer transition select-none">
+                  <input
+                    type="checkbox"
+                    checked={acceptedExamRules}
+                    onChange={(e) => setAcceptedExamRules(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 leading-snug">
+                    He leído y acepto las condiciones. Entiendo que debo responder en una sola sesión continua y que el tiempo continuará corriendo si salgo de la plataforma.
+                  </span>
+                </label>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    disabled={startingExam}
+                    onClick={() => {
+                      setSelectedExamForModal(null);
+                      setAcceptedExamRules(false);
+                    }}
+                    className="px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold transition disabled:opacity-50"
+                  >
+                    Cancelar / Volver Luego
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!acceptedExamRules || startingExam}
+                    onClick={handleStartStrictExam}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-indigo-600 hover:from-red-700 hover:to-indigo-700 text-white text-xs font-black shadow-lg shadow-indigo-600/30 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {startingExam ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Iniciando examen...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>Comenzar Evaluación Oficial</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -1627,6 +2282,15 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {user?.id && (
+        <StudentKardexModal
+          isOpen={showKardexModal}
+          onClose={() => setShowKardexModal(false)}
+          studentId={user.id}
+          profile={profile}
+        />
       )}
     </div>
   );

@@ -39,8 +39,12 @@ import {
   Linkedin,
   FileCheck,
   RefreshCw,
+  RotateCcw,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
+import AssignExamModal from './AssignExamModal';
+import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
+import { useAuth } from '../../contexts/AuthProvider';
 import {
   getStudentFullDossier,
   getDetailedExamBreakdown,
@@ -51,6 +55,8 @@ import {
   gradeAssignment,
   deleteAssignment,
   saveAdminStudentNotes,
+  approveExamRetake,
+  rejectExamRetake,
 } from '../../services/studentPlanService';
 import { allModules } from '../../content/modules';
 import { getAllTopicIds } from '../../services/studentService';
@@ -63,6 +69,7 @@ import type {
   AssignmentPriority,
   StudentAssignment,
 } from '../../types/studentPlan';
+import StudentKardexModal from './StudentKardexModal';
 
 type Tab = 'summary' | 'exams' | 'domains' | 'activity' | 'dossier' | 'plans';
 
@@ -376,11 +383,13 @@ function ModuleTopicsBreakdown({
 
 export default function AdminStudentProgressPage() {
   const { studentId } = useParams<{ studentId: string }>();
+  const { user } = useAuth();
 
   const [dossier, setDossier] = useState<StudentFullDossier | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('summary');
+  const [showKardexModal, setShowKardexModal] = useState(false);
 
   // Exam Detail state (Question by question breakdown)
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
@@ -403,6 +412,7 @@ export default function AdminStudentProgressPage() {
 
   // New Assignment Modal state
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [showAssignCaseModal, setShowAssignCaseModal] = useState(false);
   const [asgTitle, setAsgTitle] = useState('');
   const [asgType, setAsgType] = useState<AssignmentType>('exam');
   const [asgDesc, setAsgDesc] = useState('');
@@ -804,6 +814,15 @@ export default function AdminStudentProgressPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowKardexModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-xs font-bold transition shadow-2xs cursor-pointer"
+              >
+                <FileCheck className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Kardex Oficial</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1770,6 +1789,15 @@ export default function AdminStudentProgressPage() {
 
                 <button
                   type="button"
+                  onClick={() => setShowAssignCaseModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition cursor-pointer shadow-xs"
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  <span>+ Asignar Caso EMG</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setShowPlanModal(true)}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
                 >
@@ -1899,6 +1927,19 @@ export default function AdminStudentProgressPage() {
                                 : 'Pendiente'}
                             </span>
 
+                            {asg.type === 'exam' && asg.target_exam_config?.maxAttempts !== undefined && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                                <RotateCcw className="w-3 h-3 text-indigo-500" />
+                                Intentos: {asg.target_exam_config.attemptsCount || 0} / {asg.target_exam_config.maxAttempts === 0 ? '∞' : asg.target_exam_config.maxAttempts}
+                              </span>
+                            )}
+
+                            {asg.target_exam_config?.retakeStatus === 'requested' && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white animate-pulse">
+                                Reintento Solicitado
+                              </span>
+                            )}
+
                             {asg.priority === 'urgent' && (
                               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-500 text-white">
                                 Urgente
@@ -1945,6 +1986,77 @@ export default function AdminStudentProgressPage() {
                               )}
                             </div>
                           )}
+
+                          {/* Tarjeta de Solicitud de Reintento por el Alumno */}
+                          {asg.target_exam_config?.retakeStatus === 'requested' && (
+                            <div className="mt-3 p-3 rounded-2xl bg-amber-500/10 border-2 border-amber-500/40 text-xs space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-bold text-amber-800 dark:text-amber-200 flex items-center gap-1.5 uppercase text-[11px] tracking-wide">
+                                  <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                                  Solicitud de Permiso para Reintentar Examen
+                                </span>
+                                <span className="text-[10px] text-amber-700 dark:text-amber-300">
+                                  {asg.target_exam_config.retakeRequestedAt
+                                    ? new Date(asg.target_exam_config.retakeRequestedAt).toLocaleString('es-MX', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })
+                                    : 'Pendiente'}
+                                </span>
+                              </div>
+
+                              {asg.target_exam_config.retakeReason && (
+                                <p className="text-slate-700 dark:text-slate-200 italic pl-3 border-l-2 border-amber-500 text-xs">
+                                  "{asg.target_exam_config.retakeReason}"
+                                </p>
+                              )}
+
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (confirm(`¿Aprobar 1 reintento adicional para "${asg.title}"?`)) {
+                                      await approveExamRetake(asg.id, studentId!, user?.id, 1);
+                                      loadData();
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  Aprobar Reintento
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    const reason = prompt('Motivo del rechazo (opcional):', 'Intentos reglamentarios agotados.');
+                                    if (reason !== null) {
+                                      await rejectExamRetake(asg.id, studentId!, user?.id, reason);
+                                      loadData();
+                                    }
+                                  }}
+                                  className="px-3 py-1.5 rounded-xl border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer"
+                                >
+                                  Rechazar
+                                </button>
+                              </div>
+                            </div>
+                          )}
+
+                          {asg.target_exam_config?.retakeStatus === 'approved' && (
+                            <div className="mt-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Reintento autorizado por el profesor ({asg.target_exam_config.retakeReviewedBy || 'Docente'}).
+                            </div>
+                          )}
+
+                          {asg.target_exam_config?.retakeStatus === 'rejected' && (
+                            <div className="mt-2 text-[11px] text-red-500 font-semibold flex items-center gap-1">
+                              <XCircle className="w-3.5 h-3.5" />
+                              Reintento denegado ({asg.target_exam_config.retakeReviewNotes || 'No autorizado'}).
+                            </div>
+                          )}
                         </div>
 
                         {/* Actions */}
@@ -1985,154 +2097,22 @@ export default function AdminStudentProgressPage() {
         )}
       </div>
 
-      {/* ─── MODAL: NUEVA ASIGNACIÓN / EXAMEN ─── */}
-      {showAssignmentModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-600" />
-                <span>Asignar Tarea o Examen al Alumno</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setShowAssignmentModal(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                ✕
-              </button>
-            </div>
+      {/* ─── MODAL: NUEVA ASIGNACIÓN / EXAMEN AVANZADO ─── */}
+      <AssignExamModal
+        isOpen={showAssignmentModal}
+        onClose={() => setShowAssignmentModal(false)}
+        initialStudentId={studentId}
+        initialStudentName={dossier?.profile.display_name}
+        onAssigned={loadData}
+      />
 
-            <form onSubmit={handleCreateAssignment} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Tipo de Asignación
-                </label>
-                <select
-                  value={asgType}
-                  onChange={(e) => setAsgType(e.target.value as AssignmentType)}
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                >
-                  <option value="exam">Examen Personalizado de Refuerzo</option>
-                  <option value="clinical_case">Caso Clínico EMG</option>
-                  <option value="reading">Lectura Dirigida de Consenso</option>
-                  <option value="emg_report">Reporte de Conducción / Trazo</option>
-                  <option value="practical_task">Tarea Práctica</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Título de la Asignación
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={asgTitle}
-                  onChange={(e) => setAsgTitle(e.target.value)}
-                  placeholder="Ej. Evaluación de Refuerzo: Plexopatía Braquial"
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Instrucciones Clínicas para el Alumno
-                </label>
-                <textarea
-                  rows={3}
-                  required
-                  value={asgDesc}
-                  onChange={(e) => setAsgDesc(e.target.value)}
-                  placeholder="Describe los objetivos, lecturas obligatorias o parámetros esperados..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Módulo de Referencia
-                  </label>
-                  <select
-                    value={asgModuleId}
-                    onChange={(e) => setAsgModuleId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs"
-                  >
-                    <option value="">Seleccionar Módulo...</option>
-                    {allModules.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        Módulo {m.number}: {m.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Prioridad
-                  </label>
-                  <select
-                    value={asgPriority}
-                    onChange={(e) => setAsgPriority(e.target.value as AssignmentPriority)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="high">Alta</option>
-                    <option value="urgent">Urgente</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Fecha y Hora Límite de Entrega
-                  </label>
-                  <input
-                    type="datetime-local"
-                    required
-                    value={asgDueDate}
-                    onChange={(e) => setAsgDueDate(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Calificación Mínima Aprobatoria
-                  </label>
-                  <input
-                    type="number"
-                    min={50}
-                    max={100}
-                    value={asgMinScore}
-                    onChange={(e) => setAsgMinScore(Number(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setShowAssignmentModal(false)}
-                  className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-semibold"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingAsg}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition disabled:opacity-50"
-                >
-                  {savingAsg ? 'Guardando...' : 'Asignar a la Cuenta del Alumno'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* ─── MODAL: ASIGNAR CASO CLÍNICO EMG ─── */}
+      <AssignClinicalCaseModal
+        isOpen={showAssignCaseModal}
+        onClose={() => setShowAssignCaseModal(false)}
+        initialStudentId={studentId}
+        onAssigned={loadData}
+      />
 
       {/* ─── MODAL: NUEVO PLAN DE ESTUDIO ─── */}
       {showPlanModal && (
@@ -2279,6 +2259,15 @@ export default function AdminStudentProgressPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {studentId && (
+        <StudentKardexModal
+          isOpen={showKardexModal}
+          onClose={() => setShowKardexModal(false)}
+          studentId={studentId}
+          profile={profile}
+        />
       )}
     </AdminLayout>
   );

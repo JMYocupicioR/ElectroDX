@@ -1,13 +1,19 @@
 // ExerciseMode.tsx — Componente principal del modo ejercicio interactivo
-// v2: Timer visible, navegación libre, pistas, modo estudio, filtro categoría
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+// v3: Trazados interactivos, Auscultador EMG, Mapeo de Miotomas, Asignación Docente
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Brain, Activity, Zap, CheckCircle, XCircle, ChevronRight, ChevronLeft,
   Trophy, Target, Clock, Lightbulb, BookOpen, User, Stethoscope,
-  Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle, ChevronDown } from 'lucide-react';
+  Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle, ChevronDown,
+  Volume2, VolumeX, CheckCircle2, Layers } from 'lucide-react';
 import { ClinicalCaseEngine } from '../services/ClinicalCaseEngine';
 import { useExerciseStore } from '../store/exerciseStore';
 import type { ClinicalCase, Difficulty, DiagnosisOption, EvaluationResult, ExerciseAttempt } from '../types/ClinicalCase';
-import { ALL_CASE_TEMPLATES } from '../data/CaseTemplates';
+import { ALL_CASE_TEMPLATES, type CaseTemplate } from '../data/CaseTemplates';
+import { NcsTraceOscilloscope } from './tools/NcsTraceOscilloscope';
+import { emgAudio } from './tools/EmgAudioSimulator';
+import { MyotomeBodyMap } from './tools/MyotomeBodyMap';
+import { loadAllCaseTemplates, submitClinicalCaseAssignment } from '../../../src/services/emgExerciseService';
 
 type ExerciseStep = 'config' | 'case' | 'ncs' | 'emg' | 'diagnosis' | 'feedback';
 
@@ -215,6 +221,40 @@ const ExerciseMode: React.FC = () => {
   const [difficulty, setDifficulty] = useState<Difficulty>(store.preferredDifficulty);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // ───── Router & Assignment Params ─────
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const assignmentId = searchParams.get('assignmentId') || (location.state as any)?.assignmentId;
+  const assignedPatternId = searchParams.get('patternId') || (location.state as any)?.patternId;
+  const assignmentTitle = (location.state as any)?.assignmentTitle || searchParams.get('title');
+  const [assignmentSubmitted, setAssignmentSubmitted] = useState(false);
+
+  // ───── Dynamic Templates Catalog (33 base + Supabase custom) ─────
+  const [allTemplates, setAllTemplates] = useState<CaseTemplate[]>(ALL_CASE_TEMPLATES);
+
+  // ───── Didactic Tools State ─────
+  const [ncsViewMode, setNcsViewMode] = useState<'table' | 'oscilloscope'>('table');
+  const [selectedOscNerveIndex, setSelectedOscNerveIndex] = useState(0);
+  const [emgViewMode, setEmgViewMode] = useState<'table' | 'myotome'>('table');
+  const [playingAudioMuscle, setPlayingAudioMuscle] = useState<string | null>(null);
+
+  // Cargar catálogo dinámico de plantillas al montar
+  useEffect(() => {
+    loadAllCaseTemplates().then((res: { templates: CaseTemplate[] }) => {
+      if (res.templates && res.templates.length > 0) {
+        setAllTemplates(res.templates);
+      }
+    }).catch((e: unknown) => console.error(e));
+  }, []);
+
+  // Detener audio al cambiar de paso o desmontar
+  useEffect(() => {
+    return () => {
+      emgAudio.stop();
+      setPlayingAudioMuscle(null);
+    };
+  }, [currentStep]);
+
   // ───── New UI/UX state ──────
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -270,23 +310,35 @@ const ExerciseMode: React.FC = () => {
     }
   }, [currentStep]);
 
+  // Active pool of templates: in free practice mode, exclude 'exam_only' cases so students cannot spoil exam questions!
+  // Only include them if explicitly assigned by teacher via assignmentId / assignedPatternId
+  const activePool = useMemo(() => {
+    if (assignedPatternId || assignmentId) {
+      return allTemplates;
+    }
+    return allTemplates.filter(t => t.usageMode !== 'exam_only');
+  }, [allTemplates, assignedPatternId, assignmentId]);
+
   // Available categories for filter
-  const availableCategories = ['all', ...Array.from(new Set(ALL_CASE_TEMPLATES.map(t => t.category)))];
+  const availableCategories = ['all', ...Array.from(new Set(activePool.map(t => t.category)))];
 
   const generateNewCase = useCallback(() => {
+    const pool = categoryFilter !== 'all'
+      ? activePool.filter(t => t.category === categoryFilter)
+      : activePool;
+
     const filteredPatternId = categoryFilter !== 'all'
-      ? ALL_CASE_TEMPLATES.filter(t => t.category === categoryFilter)
-          .map(t => t.patternId)[Math.floor(Math.random() * ALL_CASE_TEMPLATES.filter(t => t.category === categoryFilter).length)]
+      ? pool.map(t => t.patternId)[Math.floor(Math.random() * pool.length)]
       : undefined;
 
     const newCase = filteredPatternId
       ? ClinicalCaseEngine.generateCaseFromTemplate(
-          ALL_CASE_TEMPLATES.find(t => t.patternId === filteredPatternId)!,
+          activePool.find(t => t.patternId === filteredPatternId) || activePool[0],
           difficulty
         )
-      : ClinicalCaseEngine.generateRandomCase(difficulty);
+      : ClinicalCaseEngine.generateRandomCase(difficulty, undefined, activePool);
 
-    const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, difficulty);
+    const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, difficulty, activePool);
     setClinicalCase(newCase);
     setOptions(opts);
     setSelectedAnswer(null);
@@ -298,7 +350,25 @@ const ExerciseMode: React.FC = () => {
     setCurrentStep('case');
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 500);
-  }, [difficulty, categoryFilter]);
+  }, [difficulty, categoryFilter, activePool]);
+
+  // Cargar caso automáticamente si viene asignado por el docente
+  useEffect(() => {
+    if (assignedPatternId && allTemplates.length > 0 && currentStep === 'config') {
+      const template = allTemplates.find(t => t.patternId === assignedPatternId) || allTemplates[0];
+      const newCase = ClinicalCaseEngine.generateCaseFromTemplate(template, difficulty);
+      const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, difficulty, allTemplates);
+      setClinicalCase(newCase);
+      setOptions(opts);
+      setSelectedAnswer(null);
+      setEvaluation(null);
+      setStartTime(Date.now());
+      setElapsedSeconds(0);
+      setHintsUsed(0);
+      setShowHint(false);
+      setCurrentStep('case');
+    }
+  }, [assignedPatternId, allTemplates, currentStep, difficulty]);
 
   const handleSubmitDiagnosis = () => {
     if (!selectedAnswer || !clinicalCase) return;
@@ -325,6 +395,23 @@ const ExerciseMode: React.FC = () => {
       timestamp: new Date().toISOString(),
     };
     store.recordAttempt(attempt);
+
+    // Sincronizar con el expediente si es una asignación docente
+    if (assignmentId) {
+      const studentId = (location.state as any)?.studentId || '';
+      submitClinicalCaseAssignment(assignmentId, studentId, {
+        score: result.score,
+        isCorrect: result.isCorrect,
+        selectedAnswer,
+        correctPatternId: clinicalCase.correctDiagnosis.patternId,
+        patternName: clinicalCase.correctDiagnosis.patternName,
+        timeSpentSeconds: timeSpent,
+        hintsUsed,
+      }).then((ok: boolean) => {
+        if (ok) setAssignmentSubmitted(true);
+      });
+    }
+
     setCurrentStep('feedback');
   };
 
@@ -461,7 +548,7 @@ const ExerciseMode: React.FC = () => {
           </h3>
           <div className="flex flex-wrap gap-1.5">
             {availableCategories.map(cat => {
-              const count = cat === 'all' ? ALL_CASE_TEMPLATES.length : ALL_CASE_TEMPLATES.filter(t => t.category === cat).length;
+              const count = cat === 'all' ? activePool.length : activePool.filter(t => t.category === cat).length;
               return (
                 <button key={cat} onClick={() => setCategoryFilter(cat)}
                   className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap border ${
@@ -571,70 +658,123 @@ const ExerciseMode: React.FC = () => {
     if (!clinicalCase) return null;
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="bg-purple-600/20 p-3 rounded-xl"><Activity className="w-6 h-6 text-purple-400" /></div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Neuroconducción (NCS)</h2>
-            <p className="text-sm text-gray-400">Analiza los valores — ¿cuáles son anormales?</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-purple-600/20 p-3 rounded-xl"><Activity className="w-6 h-6 text-purple-400" /></div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Neuroconducción (NCS)</h2>
+              <p className="text-sm text-gray-400">Analiza los valores — ¿cuáles son anormales?</p>
+            </div>
+          </div>
+
+          {/* Selector de Herramientas de Neuroconducción */}
+          <div className="flex items-center gap-1 bg-gray-800/80 p-1.5 rounded-xl border border-gray-700/60">
+            <button
+              type="button"
+              onClick={() => setNcsViewMode('table')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                ncsViewMode === 'table' ? 'bg-purple-600 text-white shadow-xs' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Tabla Numérica
+            </button>
+            <button
+              type="button"
+              onClick={() => setNcsViewMode('oscilloscope')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                ncsViewMode === 'oscilloscope' ? 'bg-emerald-600 text-white shadow-xs' : 'text-gray-400 hover:text-emerald-400'
+              }`}
+            >
+              <span>⚡ Osciloscopio con Trazados</span>
+              <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-400/20 text-emerald-300 font-extrabold uppercase">Pro</span>
+            </button>
           </div>
         </div>
-        {/* Mobile: Cards */}
-        <div className="md:hidden space-y-3">
-          {clinicalCase.ncsResults.map((r, i) => (
-            <div key={i} className={`rounded-xl p-4 border ${r.status === 'abnormal' ? 'bg-red-950/20 border-red-800/40' : r.status === 'borderline' ? 'bg-yellow-950/20 border-yellow-800/40' : 'bg-gray-800/50 border-gray-700/50'}`}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold">{r.nerve}</span>
-                  <span className={`px-2 py-0.5 rounded text-xs ${r.type === 'motor' ? 'bg-blue-900/50 text-blue-300' : 'bg-pink-900/50 text-pink-300'}`}>
-                    {r.type === 'motor' ? 'M' : 'S'}
-                  </span>
-                </div>
-                <span className={`px-2 py-1 rounded-lg text-xs font-medium ${cellColor(r.status)}`}>
-                  {r.status === 'normal' ? '✓ Normal' : r.status === 'borderline' ? '⚠ Border' : '✗ Anormal'}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-gray-900/40 rounded-lg p-2">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Latencia</div>
-                  <div className={`text-sm font-mono font-bold ${valColor(r.latency, r.normalRanges.latency.min, r.normalRanges.latency.max, false)}`}>{r.latency} ms</div>
-                  <div className="text-[10px] text-gray-600">{r.normalRanges.latency.min}-{r.normalRanges.latency.max}</div>
-                </div>
-                <div className="bg-gray-900/40 rounded-lg p-2">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Amplitud</div>
-                  <div className={`text-sm font-mono font-bold ${valColor(r.amplitude, r.normalRanges.amplitude.min, r.normalRanges.amplitude.max)}`}>{r.amplitude} {r.type === 'motor' ? 'mV' : 'μV'}</div>
-                  <div className="text-[10px] text-gray-600">{r.normalRanges.amplitude.min}-{r.normalRanges.amplitude.max}</div>
-                </div>
-                <div className="bg-gray-900/40 rounded-lg p-2">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">Velocidad</div>
-                  <div className={`text-sm font-mono font-bold ${valColor(r.velocity, r.normalRanges.velocity.min, r.normalRanges.velocity.max)}`}>{r.velocity} m/s</div>
-                  <div className="text-[10px] text-gray-600">{r.normalRanges.velocity.min}-{r.normalRanges.velocity.max}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        {/* Desktop: Table */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-gray-700">
-              <th className="text-left p-3 text-gray-400">Nervio</th><th className="text-center p-3 text-gray-400">Tipo</th><th className="text-center p-3 text-gray-400">Lado</th>
-              <th className="text-center p-3 text-gray-400">Lat (ms)</th><th className="text-center p-3 text-gray-400">Amplitud</th><th className="text-center p-3 text-gray-400">Vel (m/s)</th><th className="text-center p-3 text-gray-400">Estado</th>
-            </tr></thead>
-            <tbody>
+
+        {ncsViewMode === 'oscilloscope' ? (
+          <NcsTraceOscilloscope
+            ncsResult={clinicalCase.ncsResults[selectedOscNerveIndex] || clinicalCase.ncsResults[0]}
+            allResults={clinicalCase.ncsResults}
+            onSelectNerve={(nerveName) => {
+              const idx = clinicalCase.ncsResults.findIndex(r => r.nerve === nerveName);
+              if (idx !== -1) setSelectedOscNerveIndex(idx);
+            }}
+          />
+        ) : (
+          <>
+            {/* Mobile: Cards */}
+            <div className="md:hidden space-y-3">
               {clinicalCase.ncsResults.map((r, i) => (
-                <tr key={i} className="border-b border-gray-800 hover:bg-gray-800/40">
-                  <td className="p-3 text-white font-medium">{r.nerve}</td>
-                  <td className="p-3 text-center"><span className={`px-2 py-1 rounded text-xs ${r.type === 'motor' ? 'bg-blue-900/40 text-blue-300' : 'bg-pink-900/40 text-pink-300'}`}>{r.type === 'motor' ? 'Motor' : 'Sensitivo'}</span></td>
-                  <td className="p-3 text-center text-gray-300">{r.side === 'left' ? 'Izq' : r.side === 'bilateral' ? 'Bil' : 'Der'}</td>
-                  <td className={`p-3 text-center ${valColor(r.latency, r.normalRanges.latency.min, r.normalRanges.latency.max, false)}`}>{r.latency}<div className="text-xs text-gray-500">({r.normalRanges.latency.min}-{r.normalRanges.latency.max})</div></td>
-                  <td className={`p-3 text-center ${valColor(r.amplitude, r.normalRanges.amplitude.min, r.normalRanges.amplitude.max)}`}>{r.amplitude} {r.type === 'motor' ? 'mV' : 'μV'}<div className="text-xs text-gray-500">({r.normalRanges.amplitude.min}-{r.normalRanges.amplitude.max})</div></td>
-                  <td className={`p-3 text-center ${valColor(r.velocity, r.normalRanges.velocity.min, r.normalRanges.velocity.max)}`}>{r.velocity}<div className="text-xs text-gray-500">({r.normalRanges.velocity.min}-{r.normalRanges.velocity.max})</div></td>
-                  <td className="p-3 text-center"><span className={`px-2 py-1 rounded text-xs ${cellColor(r.status)}`}>{r.status === 'normal' ? '✓ Normal' : r.status === 'borderline' ? '⚠ Borderline' : '✗ Anormal'}</span></td>
-                </tr>
+                <div key={i} className={`rounded-xl p-4 border ${r.status === 'abnormal' ? 'bg-red-950/20 border-red-800/40' : r.status === 'borderline' ? 'bg-yellow-950/20 border-yellow-800/40' : 'bg-gray-800/50 border-gray-700/50'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-semibold">{r.nerve}</span>
+                      <span className={`px-2 py-0.5 rounded text-xs ${r.type === 'motor' ? 'bg-blue-900/50 text-blue-300' : 'bg-pink-900/50 text-pink-300'}`}>
+                        {r.type === 'motor' ? 'M' : 'S'}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-1 rounded-lg text-xs font-medium ${cellColor(r.status)}`}>
+                      {r.status === 'normal' ? '✓ Normal' : r.status === 'borderline' ? '⚠ Border' : '✗ Anormal'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-gray-900/40 rounded-lg p-2">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Latencia</div>
+                      <div className={`text-sm font-mono font-bold ${valColor(r.latency, r.normalRanges.latency.min, r.normalRanges.latency.max, false)}`}>{r.latency} ms</div>
+                      <div className="text-[10px] text-gray-600">{r.normalRanges.latency.min}-{r.normalRanges.latency.max}</div>
+                    </div>
+                    <div className="bg-gray-900/40 rounded-lg p-2">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Amplitud</div>
+                      <div className={`text-sm font-mono font-bold ${valColor(r.amplitude, r.normalRanges.amplitude.min, r.normalRanges.amplitude.max)}`}>{r.amplitude} {r.type === 'motor' ? 'mV' : 'μV'}</div>
+                      <div className="text-[10px] text-gray-600">{r.normalRanges.amplitude.min}-{r.normalRanges.amplitude.max}</div>
+                    </div>
+                    <div className="bg-gray-900/40 rounded-lg p-2">
+                      <div className="text-[10px] text-gray-500 uppercase tracking-wider">Velocidad</div>
+                      <div className={`text-sm font-mono font-bold ${valColor(r.velocity, r.normalRanges.velocity.min, r.normalRanges.velocity.max)}`}>{r.velocity} m/s</div>
+                      <div className="text-[10px] text-gray-600">{r.normalRanges.velocity.min}-{r.normalRanges.velocity.max}</div>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+            {/* Desktop: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-gray-700">
+                  <th className="text-left p-3 text-gray-400">Nervio</th><th className="text-center p-3 text-gray-400">Tipo</th><th className="text-center p-3 text-gray-400">Lado</th>
+                  <th className="text-center p-3 text-gray-400">Lat (ms)</th><th className="text-center p-3 text-gray-400">Amplitud</th><th className="text-center p-3 text-gray-400">Vel (m/s)</th><th className="text-center p-3 text-gray-400">Estado</th>
+                  <th className="text-center p-3 text-gray-400">Trazado</th>
+                </tr></thead>
+                <tbody>
+                  {clinicalCase.ncsResults.map((r, i) => (
+                    <tr key={i} className="border-b border-gray-800 hover:bg-gray-800/40">
+                      <td className="p-3 text-white font-medium">{r.nerve}</td>
+                      <td className="p-3 text-center"><span className={`px-2 py-1 rounded text-xs ${r.type === 'motor' ? 'bg-blue-900/40 text-blue-300' : 'bg-pink-900/40 text-pink-300'}`}>{r.type === 'motor' ? 'Motor' : 'Sensitivo'}</span></td>
+                      <td className="p-3 text-center text-gray-300">{r.side === 'left' ? 'Izq' : r.side === 'bilateral' ? 'Bil' : 'Der'}</td>
+                      <td className={`p-3 text-center ${valColor(r.latency, r.normalRanges.latency.min, r.normalRanges.latency.max, false)}`}>{r.latency}<div className="text-xs text-gray-500">({r.normalRanges.latency.min}-{r.normalRanges.latency.max})</div></td>
+                      <td className={`p-3 text-center ${valColor(r.amplitude, r.normalRanges.amplitude.min, r.normalRanges.amplitude.max)}`}>{r.amplitude} {r.type === 'motor' ? 'mV' : 'μV'}<div className="text-xs text-gray-500">({r.normalRanges.amplitude.min}-{r.normalRanges.amplitude.max})</div></td>
+                      <td className={`p-3 text-center ${valColor(r.velocity, r.normalRanges.velocity.min, r.normalRanges.velocity.max)}`}>{r.velocity}<div className="text-xs text-gray-500">({r.normalRanges.velocity.min}-{r.normalRanges.velocity.max})</div></td>
+                      <td className="p-3 text-center"><span className={`px-2 py-1 rounded text-xs ${cellColor(r.status)}`}>{r.status === 'normal' ? '✓ Normal' : r.status === 'borderline' ? '⚠ Borderline' : '✗ Anormal'}</span></td>
+                      <td className="p-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedOscNerveIndex(i);
+                            setNcsViewMode('oscilloscope');
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition cursor-pointer flex items-center gap-1 mx-auto"
+                        >
+                          <Activity className="w-3 h-3" />
+                          <span>Ver Trazo</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
 
         {/* Conduction Block indicators */}
         {clinicalCase.ncsResults.some((r: any) => r.conductionBlock) && (
@@ -766,71 +906,69 @@ const ExerciseMode: React.FC = () => {
   // ─── RENDER: EMG ──────
   const renderEMG = () => {
     if (!clinicalCase) return null;
+
+    const handleToggleAudio = (muscleName: string, e: any) => {
+      if (playingAudioMuscle === muscleName) {
+        emgAudio.stop();
+        setPlayingAudioMuscle(null);
+      } else {
+        let pattern: 'fibrillations' | 'positive_waves' | 'myotonia' | 'fasciculations' | 'normal_mup' = 'normal_mup';
+        if (e.myotonicDischarges && e.myotonicDischarges[0] !== 'absent') {
+          pattern = 'myotonia';
+        } else if (e.spontaneousActivity.fibrillations !== 'absent') {
+          pattern = 'fibrillations';
+        } else if (e.spontaneousActivity.positiveWaves !== 'absent') {
+          pattern = 'positive_waves';
+        } else if (e.spontaneousActivity.fasciculations !== 'absent') {
+          pattern = 'fasciculations';
+        }
+        emgAudio.playPattern(pattern);
+        setPlayingAudioMuscle(muscleName);
+      }
+    };
+
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="bg-green-600/20 p-3 rounded-xl"><Zap className="w-6 h-6 text-green-400" /></div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Electromiografía (EMG)</h2>
-            <p className="text-sm text-gray-400">Interpreta los hallazgos de cada músculo</p>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-3">
+            <div className="bg-green-600/20 p-3 rounded-xl"><Zap className="w-6 h-6 text-green-400" /></div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Electromiografía (EMG)</h2>
+              <p className="text-sm text-gray-400">Interpreta los hallazgos y ausculta cada músculo</p>
+            </div>
+          </div>
+
+          {/* Selector de Herramientas EMG */}
+          <div className="flex items-center gap-1 bg-gray-800/80 p-1.5 rounded-xl border border-gray-700/60">
+            <button
+              type="button"
+              onClick={() => setEmgViewMode('table')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                emgViewMode === 'table' ? 'bg-green-600 text-white shadow-xs' : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              Tabla EMG
+            </button>
+            <button
+              type="button"
+              onClick={() => setEmgViewMode('myotome')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+                emgViewMode === 'myotome' ? 'bg-indigo-600 text-white shadow-xs' : 'text-gray-400 hover:text-indigo-400'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>🗺️ Mapeo Anatómico</span>
+              <span className="px-1.5 py-0.2 rounded text-[9px] bg-indigo-400/20 text-indigo-300 font-extrabold uppercase">Pro</span>
+            </button>
           </div>
         </div>
-        {/* Mobile: Cards */}
-        <div className="md:hidden space-y-3">
-          {clinicalCase.emgResults.map((e, i) => {
-            const fibAbn = e.spontaneousActivity.fibrillations !== 'absent';
-            const pwAbn = e.spontaneousActivity.positiveWaves !== 'absent';
-            const fascAbn = e.spontaneousActivity.fasciculations !== 'absent';
-            const durAbn = e.motorUnitPotentials.duration > 15 || e.motorUnitPotentials.duration < 6;
-            const ampAbn = e.motorUnitPotentials.amplitude > 5000 || e.motorUnitPotentials.amplitude < 200;
-            const recAbn = e.recruitmentPattern !== 'normal';
-            const hasAbnormal = fibAbn || pwAbn || fascAbn || durAbn || ampAbn || recAbn;
-            return (
-              <div key={i} className={`rounded-xl p-4 border ${hasAbnormal ? 'bg-red-950/15 border-red-800/40' : 'bg-gray-800/50 border-gray-700/50'}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="text-white font-semibold text-sm">{e.muscle}</span>
-                    <span className="text-gray-500 text-xs ml-2">{e.nerve} · {e.root}</span>
-                  </div>
-                  <span className={`px-2 py-1 rounded-lg text-xs font-medium ${recAbn ? 'bg-red-900/40 text-red-300' : 'bg-green-900/40 text-green-300'}`}>
-                    {e.recruitmentPattern === 'normal' ? 'Nl' : e.recruitmentPattern === 'reduced' ? '↓Reduc' : '↑Precoz'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {/* Spontaneous */}
-                  <div className="bg-gray-900/40 rounded-lg p-2">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Espontánea</div>
-                    <div className="space-y-0.5">
-                      <div className={fibAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Fibs: {e.spontaneousActivity.fibrillations === 'absent' ? '−' : e.spontaneousActivity.fibrillations}</div>
-                      <div className={pwAbn ? 'text-red-400 font-bold' : 'text-green-400'}>OAP: {e.spontaneousActivity.positiveWaves === 'absent' ? '−' : e.spontaneousActivity.positiveWaves}</div>
-                      <div className={fascAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Fasc: {e.spontaneousActivity.fasciculations === 'absent' ? '−' : e.spontaneousActivity.fasciculations}</div>
-                    </div>
-                  </div>
-                  {/* MUPs */}
-                  <div className="bg-gray-900/40 rounded-lg p-2">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">PUM</div>
-                    <div className="space-y-0.5">
-                      <div className={durAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Dur: {e.motorUnitPotentials.duration} ms</div>
-                      <div className={ampAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Amp: {e.motorUnitPotentials.amplitude} μV</div>
-                      <div className={e.motorUnitPotentials.polyphasia > 25 ? 'text-yellow-400' : 'text-gray-300'}>Polif: {e.motorUnitPotentials.polyphasia}%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        {/* Desktop: Table */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead><tr className="border-b border-gray-700">
-              <th className="text-left p-2 text-gray-400">Músculo</th><th className="text-center p-2 text-gray-400">Raíz</th>
-              <th className="text-center p-2 text-gray-400">Ins</th><th className="text-center p-2 text-gray-400">Fibs</th>
-              <th className="text-center p-2 text-gray-400">OAP</th><th className="text-center p-2 text-gray-400">Fasc</th>
-              <th className="text-center p-2 text-gray-400">Dur</th><th className="text-center p-2 text-gray-400">Amp</th>
-              <th className="text-center p-2 text-gray-400">Polif</th><th className="text-center p-2 text-gray-400">Reclut</th>
-            </tr></thead>
-            <tbody>
+
+        {emgViewMode === 'myotome' ? (
+          <MyotomeBodyMap emgResults={clinicalCase.emgResults} />
+        ) : (
+          <>
+            {/* Mobile: Cards */}
+            <div className="md:hidden space-y-3">
               {clinicalCase.emgResults.map((e, i) => {
                 const fibAbn = e.spontaneousActivity.fibrillations !== 'absent';
                 const pwAbn = e.spontaneousActivity.positiveWaves !== 'absent';
@@ -838,24 +976,112 @@ const ExerciseMode: React.FC = () => {
                 const durAbn = e.motorUnitPotentials.duration > 15 || e.motorUnitPotentials.duration < 6;
                 const ampAbn = e.motorUnitPotentials.amplitude > 5000 || e.motorUnitPotentials.amplitude < 200;
                 const recAbn = e.recruitmentPattern !== 'normal';
+                const hasAbnormal = fibAbn || pwAbn || fascAbn || durAbn || ampAbn || recAbn;
+                const isAudioPlaying = playingAudioMuscle === e.muscle;
                 return (
-                  <tr key={i} className="border-b border-gray-800 hover:bg-gray-800/40">
-                    <td className="p-2"><div className="text-white font-medium text-xs">{e.muscle}</div><div className="text-gray-500 text-xs">{e.nerve}</div></td>
-                    <td className="p-2 text-center text-gray-300 text-xs">{e.root}</td>
-                    <td className={`p-2 text-center text-xs ${e.insertionalActivity !== 'normal' ? 'text-yellow-400' : 'text-gray-300'}`}>{e.insertionalActivity === 'normal' ? 'Nl' : e.insertionalActivity === 'increased' ? '↑' : '↓'}</td>
-                    <td className={`p-2 text-center text-xs ${fibAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.fibrillations === 'absent' ? '-' : e.spontaneousActivity.fibrillations}</td>
-                    <td className={`p-2 text-center text-xs ${pwAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.positiveWaves === 'absent' ? '-' : e.spontaneousActivity.positiveWaves}</td>
-                    <td className={`p-2 text-center text-xs ${fascAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.fasciculations === 'absent' ? '-' : e.spontaneousActivity.fasciculations}</td>
-                    <td className={`p-2 text-center text-xs ${durAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.motorUnitPotentials.duration}</td>
-                    <td className={`p-2 text-center text-xs ${ampAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.motorUnitPotentials.amplitude}</td>
-                    <td className={`p-2 text-center text-xs ${e.motorUnitPotentials.polyphasia > 25 ? 'text-yellow-400' : 'text-gray-300'}`}>{e.motorUnitPotentials.polyphasia}%</td>
-                    <td className={`p-2 text-center text-xs ${recAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.recruitmentPattern === 'normal' ? 'Nl' : e.recruitmentPattern === 'reduced' ? '↓' : e.recruitmentPattern === 'early' ? '↑Precoz' : e.recruitmentPattern}</td>
-                  </tr>
+                  <div key={i} className={`rounded-xl p-4 border ${hasAbnormal ? 'bg-red-950/15 border-red-800/40' : 'bg-gray-800/50 border-gray-700/50'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <span className="text-white font-semibold text-sm">{e.muscle}</span>
+                        <span className="text-gray-500 text-xs ml-2">{e.nerve} · {e.root}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleAudio(e.muscle, e)}
+                          className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition cursor-pointer ${
+                            isAudioPlaying
+                              ? 'bg-red-500/20 text-red-300 border border-red-500 animate-pulse'
+                              : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30'
+                          }`}
+                          title="Auscultar audio EMG"
+                        >
+                          {isAudioPlaying ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
+                        </button>
+                        <span className={`px-2 py-1 rounded-lg text-xs font-medium ${recAbn ? 'bg-red-900/40 text-red-300' : 'bg-green-900/40 text-green-300'}`}>
+                          {e.recruitmentPattern === 'normal' ? 'Nl' : e.recruitmentPattern === 'reduced' ? '↓Reduc' : '↑Precoz'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {/* Spontaneous */}
+                      <div className="bg-gray-900/40 rounded-lg p-2">
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Espontánea</div>
+                        <div className="space-y-0.5">
+                          <div className={fibAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Fibs: {e.spontaneousActivity.fibrillations === 'absent' ? '−' : e.spontaneousActivity.fibrillations}</div>
+                          <div className={pwAbn ? 'text-red-400 font-bold' : 'text-green-400'}>OAP: {e.spontaneousActivity.positiveWaves === 'absent' ? '−' : e.spontaneousActivity.positiveWaves}</div>
+                          <div className={fascAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Fasc: {e.spontaneousActivity.fasciculations === 'absent' ? '−' : e.spontaneousActivity.fasciculations}</div>
+                        </div>
+                      </div>
+                      {/* MUPs */}
+                      <div className="bg-gray-900/40 rounded-lg p-2">
+                        <div className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">PUM</div>
+                        <div className="space-y-0.5">
+                          <div className={durAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Dur: {e.motorUnitPotentials.duration} ms</div>
+                          <div className={ampAbn ? 'text-red-400 font-bold' : 'text-green-400'}>Amp: {e.motorUnitPotentials.amplitude} μV</div>
+                          <div className={e.motorUnitPotentials.polyphasia > 25 ? 'text-yellow-400' : 'text-gray-300'}>Polif: {e.motorUnitPotentials.polyphasia}%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </div>
+            {/* Desktop: Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-gray-700">
+                  <th className="text-left p-2 text-gray-400">Músculo</th><th className="text-center p-2 text-gray-400">Raíz</th>
+                  <th className="text-center p-2 text-gray-400">Audio</th>
+                  <th className="text-center p-2 text-gray-400">Ins</th><th className="text-center p-2 text-gray-400">Fibs</th>
+                  <th className="text-center p-2 text-gray-400">OAP</th><th className="text-center p-2 text-gray-400">Fasc</th>
+                  <th className="text-center p-2 text-gray-400">Dur</th><th className="text-center p-2 text-gray-400">Amp</th>
+                  <th className="text-center p-2 text-gray-400">Polif</th><th className="text-center p-2 text-gray-400">Reclut</th>
+                </tr></thead>
+                <tbody>
+                  {clinicalCase.emgResults.map((e, i) => {
+                    const fibAbn = e.spontaneousActivity.fibrillations !== 'absent';
+                    const pwAbn = e.spontaneousActivity.positiveWaves !== 'absent';
+                    const fascAbn = e.spontaneousActivity.fasciculations !== 'absent';
+                    const durAbn = e.motorUnitPotentials.duration > 15 || e.motorUnitPotentials.duration < 6;
+                    const ampAbn = e.motorUnitPotentials.amplitude > 5000 || e.motorUnitPotentials.amplitude < 200;
+                    const recAbn = e.recruitmentPattern !== 'normal';
+                    const isAudioPlaying = playingAudioMuscle === e.muscle;
+                    return (
+                      <tr key={i} className="border-b border-gray-800 hover:bg-gray-800/40">
+                        <td className="p-2"><div className="text-white font-medium text-xs">{e.muscle}</div><div className="text-gray-500 text-xs">{e.nerve}</div></td>
+                        <td className="p-2 text-center text-gray-300 text-xs">{e.root}</td>
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAudio(e.muscle, e)}
+                            className={`px-2 py-1 rounded-lg text-xs font-semibold inline-flex items-center gap-1 transition cursor-pointer ${
+                              isAudioPlaying
+                                ? 'bg-red-500/20 text-red-300 border border-red-500 animate-pulse'
+                                : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/30'
+                            }`}
+                            title="Auscultar sonido EMG"
+                          >
+                            {isAudioPlaying ? <VolumeX className="w-3.5 h-3.5 text-red-400" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            <span className="hidden lg:inline">{isAudioPlaying ? 'Parar' : 'Oír'}</span>
+                          </button>
+                        </td>
+                        <td className={`p-2 text-center text-xs ${e.insertionalActivity !== 'normal' ? 'text-yellow-400' : 'text-gray-300'}`}>{e.insertionalActivity === 'normal' ? 'Nl' : e.insertionalActivity === 'increased' ? '↑' : '↓'}</td>
+                        <td className={`p-2 text-center text-xs ${fibAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.fibrillations === 'absent' ? '-' : e.spontaneousActivity.fibrillations}</td>
+                        <td className={`p-2 text-center text-xs ${pwAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.positiveWaves === 'absent' ? '-' : e.spontaneousActivity.positiveWaves}</td>
+                        <td className={`p-2 text-center text-xs ${fascAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.spontaneousActivity.fasciculations === 'absent' ? '-' : e.spontaneousActivity.fasciculations}</td>
+                        <td className={`p-2 text-center text-xs ${durAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.motorUnitPotentials.duration}</td>
+                        <td className={`p-2 text-center text-xs ${ampAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.motorUnitPotentials.amplitude}</td>
+                        <td className={`p-2 text-center text-xs ${e.motorUnitPotentials.polyphasia > 25 ? 'text-yellow-400' : 'text-gray-300'}`}>{e.motorUnitPotentials.polyphasia}%</td>
+                        <td className={`p-2 text-center text-xs ${recAbn ? 'text-red-400 font-bold' : 'text-green-400'}`}>{e.recruitmentPattern === 'normal' ? 'Nl' : e.recruitmentPattern === 'reduced' ? '↓' : e.recruitmentPattern === 'early' ? '↑Precoz' : e.recruitmentPattern}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
     );
   };
@@ -994,6 +1220,19 @@ const ExerciseMode: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Banner de Sincronización Docente */}
+        {assignmentSubmitted && (
+          <div className="bg-emerald-950/40 border border-emerald-500/50 rounded-xl p-4 flex items-center gap-3 text-emerald-300">
+            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <div className="text-xs">
+              <span className="font-bold block text-emerald-200 text-sm">
+                ¡Resolución Asentada en tu Expediente!
+              </span>
+              Tu calificación ({evaluation.score}/100) y tiempo empleado han sido enviados automáticamente a tu profesor.
+            </div>
+          </div>
+        )}
 
         {/* Severity Badge */}
         {clinicalCase.correctDiagnosis.severityGrade && (
@@ -1150,9 +1389,16 @@ const ExerciseMode: React.FC = () => {
             {/* Top row: back + tabs + timer */}
             <div className="flex items-center gap-1 sm:gap-3 py-2 sm:py-2.5">
               <button onClick={() => setCurrentStep('config')}
-                className="text-gray-400 hover:text-white transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-gray-700/50">
+                className="text-gray-400 hover:text-white transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-gray-700/50"
+                title="Volver a configuración">
                 <ArrowLeft className="w-5 h-5" />
               </button>
+
+              {assignmentId && (
+                <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-[11px] font-bold shrink-0">
+                  <span>📝 {assignmentTitle || 'Caso Asignado'}</span>
+                </div>
+              )}
 
               {/* Step tabs */}
               <div className="flex-1 flex gap-0.5 items-center justify-center">

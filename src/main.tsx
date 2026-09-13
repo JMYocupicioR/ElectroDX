@@ -21,6 +21,18 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
   });
 }
 
+// ── Auto-recuperación de módulos diferidos ante nuevos despliegues de Vite ──
+window.addEventListener('vite:preloadError', (event) => {
+  console.warn('[Vite] Error de precarga de módulo diferido. Recargando para obtener la versión más reciente...', event);
+  const reloadKey = 'neurosafe_chunk_reloaded';
+  const lastReload = sessionStorage.getItem(reloadKey);
+  const now = Date.now();
+  if (!lastReload || now - parseInt(lastReload, 10) > 15000) {
+    sessionStorage.setItem(reloadKey, now.toString());
+    window.location.reload();
+  }
+});
+
 // ── PWA iOS Hardening (production / installed app only) ──
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   requestPersistentStorage();

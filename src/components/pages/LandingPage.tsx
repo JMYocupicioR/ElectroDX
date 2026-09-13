@@ -77,7 +77,7 @@ const FREE_VS_PREMIUM = [
   { feature: 'Temario oficial y resumen analítico del programa', visitor: true, student: true },
   { feature: 'Directorio de especialistas y marco institucional COMEFYR', visitor: true, student: true },
   { feature: 'Contenido formativo completo (13 módulos · 200+ temas)', visitor: false, student: true },
-  { feature: 'Calculadora diagnóstica de Plexo Braquial y Modo Ejercicio EMG', visitor: false, student: true },
+  { feature: 'Calculadora diagnóstica de Plexo Braquial y Modo Ejercicio EMG', visitor: false, student: 'premium' },
   { feature: 'Banco de evaluaciones clínicas con retroalimentación paso a paso', visitor: false, student: true },
   { feature: 'Panel personalizado de progreso y seguimiento curricular', visitor: false, student: true },
   { feature: 'Modo offline PWA para consulta en quirófanos sin cobertura', visitor: false, student: true },
@@ -516,7 +516,15 @@ export default function LandingPage() {
                   {row.visitor ? <Check className="w-4 h-4 text-emerald-500" /> : <span className="text-slate-300 dark:text-slate-600">—</span>}
                 </div>
                 <div className="p-3 sm:p-3.5 flex justify-center items-center bg-blue-50/30 dark:bg-blue-950/20">
-                  {row.student ? <Check className="w-4 h-4 text-blue-600 dark:text-cyan-400 font-bold" /> : <span className="text-slate-300">—</span>}
+                  {row.student === 'premium' ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                      👑 Premium
+                    </span>
+                  ) : row.student ? (
+                    <Check className="w-4 h-4 text-blue-600 dark:text-cyan-400 font-bold" />
+                  ) : (
+                    <span className="text-slate-300">—</span>
+                  )}
                 </div>
               </div>
             ))}

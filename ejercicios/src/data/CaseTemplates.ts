@@ -72,7 +72,11 @@ export interface CaseTemplate {
   /** Severity calculation rule */
   severityGrade?: SeverityGrade;
   severityExplanation?: string;
+  /** Ámbito de uso: práctica formativa, examen oficial exclusivo, o ambos */
+  usageMode?: CaseUsageMode;
 }
+
+export type CaseUsageMode = 'practice' | 'exam_only' | 'both';
 
 // Helper: normal NCS ranges
 const NR = {
