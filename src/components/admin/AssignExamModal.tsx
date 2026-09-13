@@ -306,7 +306,7 @@ export default function AssignExamModal({
         type: 'exam',
         description:
           description.trim() ||
-          `Evaluación asignada de NeuroSAFE. ${
+          `Evaluación asignada de ElectoDX Diplomado. ${
             currentTopic ? `Tema: ${currentTopic.title}.` : ''
           } ${currentSubtopic ? `Subtema: ${currentSubtopic.title}.` : ''} Límite: ${effectiveTimeLimit} min.`,
         target_module_id: selectedModuleId || null,

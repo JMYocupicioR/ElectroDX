@@ -28,6 +28,8 @@ import {
 import { useAuth } from '../../contexts/AuthProvider';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { verifyCedula, type CedulaVerificationResult } from '../../services/cedulaService';
+import { BrandLogo } from '../brand/BrandLogo';
+import { BRAND } from '../../config/brand';
 
 // Sedes hospitalarias de referencia comunes en México (con programas de Rehabilitación y Neurofisiología)
 const POPULAR_HOSPITALS = [
@@ -267,18 +269,10 @@ export default function RegisterPage() {
 
           <div>
             {/* Header de la Tarjeta */}
-            <div className="flex items-center gap-2.5 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-white tracking-tight text-lg">NeuroSAFE</span>
-                  <span className="text-cyan-400 font-bold text-sm">MX</span>
-                </div>
-                <p className="text-[11px] text-slate-400 tracking-wide uppercase font-semibold">
-                  Registro Exclusivo Estudiantes
-                </p>
+            <div className="flex items-center justify-between mb-6">
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <div className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-semibold uppercase tracking-wider">
+                Registro Alumnos
               </div>
             </div>
 
@@ -1022,7 +1016,7 @@ export default function RegisterPage() {
                       className="mt-1 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
                     />
                     <span className="text-xs text-slate-400 leading-relaxed">
-                      Confirmo que soy personal médico o residente en formación y acepto que el contenido de NeuroSAFEMX es exclusivo para fines de educación y consulta profesional médica.
+                      Confirmo que soy personal médico o residente en formación y acepto que el contenido de {BRAND.name} es exclusivo para fines de educación y consulta profesional médica.
                     </span>
                   </label>
                 </motion.div>
@@ -1041,7 +1035,7 @@ export default function RegisterPage() {
                   </div>
 
                   <h3 className="text-2xl font-bold text-white">
-                    ¡Bienvenido(a) a NeuroSAFEMX!
+                    ¡Bienvenido(a) a {BRAND.name}!
                   </h3>
 
                   <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
@@ -1083,7 +1077,7 @@ export default function RegisterPage() {
                   <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
                     <button
                       type="button"
-                      onClick={() => navigate('/modulo/1')}
+                      onClick={() => navigate('/modulo/fundamentals')}
                       className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-blue-500/25 transition"
                     >
                       Explorar Módulos de EMG

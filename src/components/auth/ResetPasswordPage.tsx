@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../../contexts/AuthProvider';
 import { supabase } from '../../lib/supabase';
 import { LoadingSpinner } from '../LoadingSpinner';
+import { BrandLogo } from '../brand/BrandLogo';
 
 export default function ResetPasswordPage() {
   const { updatePassword, user } = useAuth();
@@ -120,15 +121,9 @@ export default function ResetPasswordPage() {
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/85 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center text-white shadow-md">
-                <KeyRound className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="font-bold text-white tracking-tight text-lg">NeuroSAFE</span>
-                <span className="text-cyan-400 font-bold text-sm ml-0.5">MX</span>
-                <p className="text-[11px] text-slate-400">Seguridad de la Cuenta</p>
-              </div>
+            <div>
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <p className="text-[11px] text-slate-400 mt-1">Seguridad de la Cuenta</p>
             </div>
             <div className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] font-medium flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />

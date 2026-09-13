@@ -33,6 +33,34 @@ window.addEventListener('vite:preloadError', (event) => {
   }
 });
 
+// ── Auto-recuperación ante hojas de estilo obsoletas tras nuevo despliegue (CSS 404) ──
+window.addEventListener(
+  'error',
+  (event) => {
+    const target = event.target as HTMLElement | null;
+    if (
+      target &&
+      target.tagName === 'LINK' &&
+      (target as HTMLLinkElement).rel === 'stylesheet' &&
+      ((target as HTMLLinkElement).href?.includes('/assets/') ||
+        (target as HTMLLinkElement).href?.includes('index-'))
+    ) {
+      console.warn(
+        '[Vite] Error al cargar hoja de estilos obsoleta (404 tras nuevo despliegue). Recargando...',
+        (target as HTMLLinkElement).href
+      );
+      const reloadKey = 'neurosafe_css_reloaded';
+      const lastReload = sessionStorage.getItem(reloadKey);
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 15000) {
+        sessionStorage.setItem(reloadKey, now.toString());
+        window.location.reload();
+      }
+    }
+  },
+  true
+);
+
 // ── PWA iOS Hardening (production / installed app only) ──
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   requestPersistentStorage();

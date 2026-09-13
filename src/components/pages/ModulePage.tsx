@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, Home, ClipboardList, CheckCircle2, Sparkles, Filter, RotateCcw, Clock } from 'lucide-react';
 import { OfflineButton } from '../OfflineButton';
@@ -14,12 +14,19 @@ import { useTopicProgress } from '../../hooks/useTopicProgress';
 
 export default function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
+  const navigate = useNavigate();
   const { module: mod, loading } = useMergedModule(moduleId);
   const { canProposeContent } = useAuth();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const lang = useSettingsStore((s) => s.language);
   const [filter, setFilter] = useState<TopicFilterType>('all');
   const { getModuleStats, markSection } = useTopicProgress();
+
+  useEffect(() => {
+    if (mod && moduleId && moduleId !== mod.id) {
+      navigate(`/modulo/${mod.id}`, { replace: true });
+    }
+  }, [mod, moduleId, navigate]);
 
   const stats = useMemo(() => {
     return mod

@@ -134,10 +134,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     supabase.auth
       .getSession()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!mounted) return;
-        setSession(data.session);
-        if (data.session?.user) {
+        if (error) {
+          console.warn('[Auth] getSession error, limpiando sesión local inválida:', error.message);
+          void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          setSession(null);
+          setIsLoading(false);
+          return;
+        }
+        setSession(data?.session ?? null);
+        if (data?.session?.user) {
           recordUserActivity(data.session.user.id, 'user_session_active', { source: 'app_launch' });
           loadUserData(data.session.user.id).finally(() => {
             if (mounted) setIsLoading(false);
@@ -148,12 +155,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       })
       .catch((error) => {
         console.error('[Auth] getSession failed:', error);
-        if (mounted) setIsLoading(false);
+        void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        if (mounted) {
+          setSession(null);
+          setIsLoading(false);
+        }
       });
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       if (event === 'INITIAL_SESSION') return;
+      if (event === 'TOKEN_REFRESH_FAILED') {
+        console.warn('[Auth] Token refresh falló (400 / invalid_grant). Limpiando tokens locales.');
+        void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        setSession(null);
+        setProfile(null);
+        setRoles([]);
+        setBootstrapAvailable(false);
+        return;
+      }
       if (nextSession?.user) {
         if (event === 'SIGNED_IN') {
           recordUserActivity(nextSession.user.id, 'user_login', { source: 'auth_event' });

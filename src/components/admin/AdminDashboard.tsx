@@ -94,7 +94,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout
       title="Panel de Control Directivo"
-      subtitle="Supervisión académica, acreditación médica COMEFYR y control operativo de NeuroSAFE MX."
+      subtitle="Supervisión académica, acreditación médica COMEFYR y control operativo de ElectoDX Diplomado."
     >
       {/* Executive Welcome Hero Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-slate-900 to-blue-950 p-6 sm:p-8 text-white shadow-xl shadow-indigo-950/20 mb-8 border border-indigo-500/20">

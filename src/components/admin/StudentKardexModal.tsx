@@ -22,6 +22,8 @@ import { calculateStudentKardex } from '../../services/gradebookService';
 import type { StudentKardexData } from '../../types/academicGradebook';
 import type { AdminProfileRow } from '../../types/admin';
 import type { Profile } from '../../types/database';
+import { BioelectricLightningIcon } from '../brand/BrandLogo';
+import { BRAND } from '../../config/brand';
 
 interface StudentKardexModalProps {
   isOpen: boolean;
@@ -110,18 +112,18 @@ export default function StudentKardexModal({
               {/* ─── Institutional Header ─── */}
               <div className="border-b-2 border-indigo-900/20 pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-900 text-white flex items-center justify-center font-black text-xl shadow-md border-2 border-indigo-700">
-                    NS
+                  <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-md border-2 border-indigo-700/60 p-1">
+                    <BioelectricLightningIcon size={46} />
                   </div>
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-700 dark:text-indigo-400 block">
-                      NeuroSAFE MX · Educación Médica Continua
+                      {BRAND.name} · Educación Médica Continua
                     </span>
                     <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white tracking-tight">
                       KARDEX ACADÉMICO OFICIAL
                     </h1>
                     <p className="text-xs text-slate-500 font-medium">
-                      Diplomado en Electromiografía, Neuroconducción y Neurofisiología Clínica
+                      {BRAND.academicTitle}
                     </p>
                   </div>
                 </div>
@@ -482,7 +484,7 @@ export default function StudentKardexModal({
                   <p className="font-black text-slate-900 dark:text-white text-[11px]">
                     Dr. Titular del Curso
                   </p>
-                  <p className="text-[10px] text-slate-500">Dirección Médica NeuroSAFE MX</p>
+                  <p className="text-[10px] text-slate-500">Dirección Médica {BRAND.name}</p>
                 </div>
 
                 {/* Signature 2 */}

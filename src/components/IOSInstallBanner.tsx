@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Share, X, Plus } from 'lucide-react';
 import { shouldShowInstallPrompt, dismissInstallPrompt } from '../utils/pwaUtils';
+import { BioelectricLightningIcon } from './brand/BrandLogo';
+import { BRAND } from '../config/brand';
 
 /**
  * iOS Install Banner
@@ -41,12 +43,10 @@ export default function IOSInstallBanner() {
           <div className="mx-3 mb-3 rounded-2xl bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 shadow-2xl p-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                  <Plus className="w-4 h-4 text-blue-400" />
-                </div>
+              <div className="flex items-center gap-2.5">
+                <BioelectricLightningIcon size={26} />
                 <span className="text-white font-semibold text-sm">
-                  Instalar NeuroSAFEMX
+                  Instalar {BRAND.shortName}
                 </span>
               </div>
               <button

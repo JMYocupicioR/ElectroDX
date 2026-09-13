@@ -1,6 +1,8 @@
-import { allModules } from '../content/modules';
+import { allModules, resolveModuleId } from '../content/modules';
 import type { Module } from '../types/content';
 import type { PublishedModule } from '../types/database';
+
+export { resolveModuleId };
 
 export function publishedModuleToModule(pm: PublishedModule): Module {
   return {
@@ -30,10 +32,30 @@ export function mergeModuleLists(published: PublishedModule[]): Module[] {
 
 export function getMergedModuleById(
   moduleId: string,
-  publishedModules: PublishedModule[]
+  publishedModules: PublishedModule[] = []
 ): Module | undefined {
-  const staticMod = allModules.find((m) => m.id === moduleId);
+  if (!moduleId) return undefined;
+
+  // 1. Resolve canonical ID from static modules
+  const canonicalId = resolveModuleId(moduleId);
+  if (canonicalId) {
+    const staticMod = allModules.find((m) => m.id === canonicalId);
+    if (staticMod) return staticMod;
+  }
+
+  // 2. Direct static match fallback
+  const staticMod = allModules.find((m) => m.id.toLowerCase() === moduleId.trim().toLowerCase());
   if (staticMod) return staticMod;
-  const published = publishedModules.find((m) => m.id === moduleId);
+
+  // 3. Published modules match (by id, number, canonicalId, or slug)
+  const clean = moduleId.trim().toLowerCase();
+  const published = publishedModules.find(
+    (m) =>
+      m.id.toLowerCase() === clean ||
+      (canonicalId && m.id.toLowerCase() === canonicalId.toLowerCase()) ||
+      String(m.number) === clean ||
+      (m.slug && m.slug.toLowerCase() === clean)
+  );
   return published ? publishedModuleToModule(published) : undefined;
 }
+

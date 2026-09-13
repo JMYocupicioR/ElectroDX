@@ -1,4 +1,5 @@
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { findTopicByPath, getAllFlatTopics, findTopicInTree } from '../../services/contentMerge';
 import { useMergedModule } from '../../hooks/useMergedModule';
@@ -426,6 +427,7 @@ function ReferencesSection({ references }: { references: Reference[] }) {
 export default function TopicPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const lang = useSettingsStore((s) => s.language);
   const { canProposeContent, user, roles, profile } = useAuth();
   const { module: mod, staticModule, loading: moduleLoading } = useMergedModule(moduleId);
@@ -550,6 +552,16 @@ export default function TopicPage() {
   const basePath = `/modulo/${moduleId}/`;
   const topicPathStr = location.pathname.replace(basePath, '');
   const pathParts = topicPathStr.split('/').filter(Boolean);
+
+  useEffect(() => {
+    if (mod && moduleId && moduleId !== mod.id) {
+      const canonicalPath = pathParts.length > 0
+        ? `/modulo/${mod.id}/${pathParts.join('/')}`
+        : `/modulo/${mod.id}`;
+      navigate(canonicalPath, { replace: true });
+    }
+  }, [mod, moduleId, navigate, pathParts]);
+
   const { topic, breadcrumbs } = findTopicByPath(mod.topics, pathParts);
   const allFlat = getAllFlatTopics(mod.topics);
   const currentIndex = allFlat.findIndex(f => f.path.join('/') === pathParts.join('/'));

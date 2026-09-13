@@ -27,7 +27,7 @@ export default function EditorialCommitteePage() {
             Comité Editorial y Dirección Académica
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            NeuroSAFE MX · Aval COMEFYR
+            ElectoDX Diplomado · Aval COMEFYR
           </p>
         </div>
       </div>

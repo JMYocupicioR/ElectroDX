@@ -29,6 +29,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
+import { BRAND } from '../../config/brand';
 
 /* ── Flatten topics for search ── */
 function flattenTopics(
@@ -307,7 +308,7 @@ export default function SyllabusPage() {
           >
             {isEnrolledPhysician ? (
               <Link
-                to="/modulo/01-fundamentos"
+                to="/modulo/fundamentals"
                 className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02]"
               >
                 <Check className="w-5 h-5" />
@@ -750,7 +751,7 @@ export default function SyllabusPage() {
               Acreditación Médica y Modelo de Suscripción
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-              NeuroSAFEMX está respaldado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR) para garantizar estándares de excelencia académica en electrofisiología.
+              {BRAND.name} está respaldado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR) para garantizar estándares de excelencia académica en electrofisiología.
             </p>
           </div>
 

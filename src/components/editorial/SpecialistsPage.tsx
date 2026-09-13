@@ -64,7 +64,7 @@ export default function SpecialistsPage() {
             Directorio de Especialistas Colaboradores
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-            NeuroSAFE MX · Aval COMEFYR · Red Nacional de Electrodiagnóstico
+            ElectoDX Diplomado · Aval COMEFYR · Red Nacional de Electrodiagnóstico
           </p>
         </div>
       </div>

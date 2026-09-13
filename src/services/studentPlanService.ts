@@ -555,7 +555,7 @@ export async function completeAssignedExam(
           status: passed ? 'approved' : 'submitted',
           submitted_at: completedAt,
           reviewed_at: completedAt,
-          reviewed_by: 'Sistema Evaluador NeuroSAFE',
+          reviewed_by: 'Sistema Evaluador ElectoDX',
           feedback: feedback || `Evaluación completada. Calificación obtenida: ${score}/100 pts. Tiempo: ${Math.round(durationSeconds / 60)} min.`,
           updated_at: completedAt,
         };
@@ -571,7 +571,7 @@ export async function completeAssignedExam(
       status: score >= 70 ? 'approved' : 'submitted',
       submitted_at: completedAt,
       reviewed_at: completedAt,
-      reviewed_by: 'Sistema Evaluador NeuroSAFE',
+      reviewed_by: 'Sistema Evaluador ElectoDX',
       feedback: feedback || `Evaluación completada. Calificación: ${score}/100 pts.`,
       updated_at: completedAt,
     };
@@ -1098,7 +1098,7 @@ export async function getStudentFullDossier(studentId: string): Promise<StudentF
     });
     opportunityTopics.push({
       topicName: 'Plexo Braquial: Criterios Topográficos',
-      moduleId: 'modulo-07-brachial-plexus',
+      moduleId: 'topographic-anatomy',
       accuracyPct: 60,
       totalAttempts: 1,
       criticalFailures: 1,

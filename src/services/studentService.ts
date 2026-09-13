@@ -570,7 +570,7 @@ export function getStudentNotifications(
     type: 'academic',
     severity: 'info',
     createdAt: '2026-09-08T09:00:00Z',
-    linkUrl: '/modulo/modulo-10-diagnostic-criteria',
+    linkUrl: '/modulo/diagnostic-criteria',
     isRead: !!readMap['notif_academic_consensus'],
   });
 

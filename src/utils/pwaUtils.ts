@@ -74,23 +74,13 @@ export async function reCacheAppShell(): Promise<void> {
   if (!('caches' in window)) return;
 
   try {
-    const shellUrls = ['/', '/index.html'];
-    const cache = await caches.open('app-shell-v1');
-
-    for (const url of shellUrls) {
-      try {
-        const response = await fetch(url, { cache: 'reload' });
-        if (response.ok) {
-          await cache.put(url, response);
-        }
-      } catch {
-        // Silently fail – we're offline or the URL isn't available
-      }
+    // Delete legacy unversioned shell cache if it exists to prevent stale HTML referencing obsolete CSS/JS bundles
+    if (await caches.has('app-shell-v1')) {
+      await caches.delete('app-shell-v1');
+      console.log('[PWA] Purged legacy app-shell-v1 cache ✓');
     }
-
-    console.log('[PWA] App Shell re-cached ✓');
   } catch (error) {
-    console.warn('[PWA] App Shell re-cache failed:', error);
+    console.warn('[PWA] Cache cleanup failed:', error);
   }
 }
 

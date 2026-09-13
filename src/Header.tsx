@@ -20,6 +20,7 @@ import {
   Wrench,
   Lock,
 } from 'lucide-react';
+import { BrandLogo } from './components/brand/BrandLogo';
 import { CourseSidebar } from './components/CourseSidebar';
 import { OfflineIndicator } from './components/OfflineButton';
 import { UserMenu } from './components/user/UserMenu';
@@ -34,7 +35,6 @@ export function Header() {
   const { totalPending } = useAdminPendingCounts();
   const location = useLocation();
 
-  const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -52,19 +52,8 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between">
           {/* Brand Logo (Desktop & Mobile: Clean, NO hamburger icon on Desktop) */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
-              <div className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 text-white shadow-md shadow-blue-500/20 group-hover:shadow-lg group-hover:scale-105 transition-all">
-                <BrainCircuit className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-baseline">
-                  <span className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">NeuroSAFE</span>
-                  <span className="text-blue-600 dark:text-cyan-400 text-sm font-bold ml-0.5">MX</span>
-                </div>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/70 dark:text-blue-300 dark:border-blue-800/60">
-                  Aval COMEFYR
-                </span>
-              </div>
+            <Link to="/" className="flex items-center group transition-transform hover:scale-[1.02]">
+              <BrandLogo variant="full" size="md" />
             </Link>
           </div>
 

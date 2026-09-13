@@ -37,6 +37,8 @@ import { WorkshopCard } from '../course/WorkshopCard';
 import { ComefyrBadge } from '../landing/ComefyrBadge';
 import { ClinicalTraceSimulator } from '../landing/ClinicalTraceSimulator';
 import { MedicalBentoGrid } from '../landing/MedicalBentoGrid';
+import { BrandLogo } from '../brand/BrandLogo';
+import { BRAND } from '../../config/brand';
 
 const iconMap: Record<string, any> = {
   BookOpen,
@@ -557,12 +559,14 @@ export default function LandingPage() {
       {/* ── 7. INSTITUTIONAL FOOTER ── */}
       <footer className="px-4 py-10 border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/50">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div>
-            <span className="font-bold text-slate-800 dark:text-slate-200">NeuroSAFE MX</span> · Plataforma Integral de Formación en Electrodiagnóstico y Neurofisiología Clínica
+          <div className="flex items-center gap-2">
+            <BrandLogo variant="compact" size="xs" showAccreditation={false} />
+            <span className="hidden sm:inline">·</span>
+            <span>{BRAND.tagline}</span>
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-            <span>Aval Oficial: Colegio Mexicano de Medicina de Rehabilitación A.C. (COMEFYR)</span>
+            <span>Aval Oficial: {BRAND.accreditationFull}</span>
           </div>
         </div>
       </footer>

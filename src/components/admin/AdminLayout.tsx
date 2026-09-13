@@ -114,7 +114,7 @@ export function AdminLayout({
       {/* Top Breadcrumb & Status Bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
-          <Link to="/" className="hover:text-blue-600 transition">NeuroSAFE</Link>
+          <Link to="/" className="hover:text-blue-600 transition">ElectoDX</Link>
           <span>/</span>
           <Link to="/admin" className="hover:text-indigo-600 font-medium">Administración</Link>
           {location.pathname !== '/admin' && (
@@ -150,7 +150,7 @@ export function AdminLayout({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-slate-900 dark:text-white text-sm truncate">Panel de Control</p>
-                <p className="text-[11px] text-slate-400 truncate">Dirección NeuroSAFE</p>
+                <p className="text-[11px] text-slate-400 truncate">Dirección ElectoDX</p>
               </div>
             </div>
 

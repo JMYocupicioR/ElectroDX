@@ -1,13 +1,13 @@
 {
-  "name": "NeuroSAFEMX — Recursos de Neurorehabilitación y Electrodiagnóstico (COMEFYR)",
-  "short_name": "NeuroSAFEMX",
-  "description": "Plataforma interactiva de recursos de neurorehabilitación y cursos de electrodiagnóstico avalada por la COMEFYR",
+  "name": "ElectoDX Diplomado — Formación en Electrodiagnóstico y Neurofisiología Clínica",
+  "short_name": "ElectoDX",
+  "description": "Plataforma de posgrado y recursos de electrodiagnóstico clínico y electromiografía avalada por COMEFYR",
   "start_url": "/",
   "scope": "/",
   "id": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#3b82f6",
+  "background_color": "#0b1329",
+  "theme_color": "#2563eb",
   "orientation": "any",
   "icons": [
     {

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { BrandLogo } from '../brand/BrandLogo';
 
 interface LoginPageProps {
   initialMode?: 'password' | 'otp' | 'recovery';
@@ -153,11 +154,8 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-bold text-white tracking-tight text-xl">NeuroSAFE</span>
-                <span className="text-cyan-400 font-bold text-base">MX</span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <p className="text-xs text-slate-400 mt-1">
                 {mode === 'recovery' ? 'Recuperación de Acceso' : 'Acceso a la Plataforma Médica'}
               </p>
             </div>

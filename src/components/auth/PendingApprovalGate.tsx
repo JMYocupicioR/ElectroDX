@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { BRAND } from '../../config/brand';
 
 export function PendingApprovalGate() {
   const { user, profile, refreshProfile, signOut, enrollmentStatus, isRejected } = useAuth();
@@ -77,7 +78,7 @@ export function PendingApprovalGate() {
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mt-2 max-w-lg mx-auto leading-relaxed">
               {isRejected
                 ? 'Tu solicitud de ingreso al programa formativo no ha sido aprobada por la Dirección Académica. Para mayor información, puedes contactar al comité.'
-                : 'NeuroSAFE EMG es un curso de alta especialidad con cupo selecto y coordinación académica. Tu registro ha sido recibido y está pendiente de ser aprobado desde el panel de administración.'}
+                : `${BRAND.name} es un programa de posgrado de alta especialidad con cupo selecto y coordinación académica. Tu registro ha sido recibido y está pendiente de ser aprobado desde el panel de administración.`}
             </p>
           </div>
 
