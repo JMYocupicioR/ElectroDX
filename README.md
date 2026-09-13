@@ -1,6 +1,6 @@
-# NeuroSAFEMX
+# ElectroDX Diplomado
 
-Plataforma integral de recursos de neurorehabilitación y cursos de electrodiagnóstico (electromiografía, neuroconducción y potenciales evocados) avalada por la **COMEFYR** (Colegio Mexicano de Medicina de Rehabilitación). Cuenta con temario interactivo, casos clínicos con retroalimentación, simuladores y sistema de roles para estudiantes, colaboradores y administradores.
+Plataforma integral de posgrado y formación médica continua en electrodiagnóstico (electromiografía, neuroconducción y potenciales evocados) avalada por la **COMEFYR** (Colegio Mexicano de Medicina de Rehabilitación A.C.). Cuenta con temario interactivo de 13 módulos, casos clínicos con retroalimentación analítica, simulador de trazos bioeléctricos, calculadora de plexo braquial y sistema de gestión académica (Kardex, asistencias y evaluaciones).
 
 ## Environment Setup
 
