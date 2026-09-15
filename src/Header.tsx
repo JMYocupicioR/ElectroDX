@@ -35,15 +35,23 @@ export function Header() {
   const { totalPending } = useAdminPendingCounts();
   const location = useLocation();
 
+  const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenSidebar = () => setCourseSidebarOpen(true);
+    window.addEventListener('open-course-sidebar', handleOpenSidebar);
+    return () => window.removeEventListener('open-course-sidebar', handleOpenSidebar);
+  }, []);
 
   useEffect(() => {
     initializeOffline();
   }, [initializeOffline]);
 
-  // Close mobile menu on route change
+  // Close mobile menu and sidebar on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setCourseSidebarOpen(false);
   }, [location.pathname]);
 
   return (
