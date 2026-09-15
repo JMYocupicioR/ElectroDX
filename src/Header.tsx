@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { BrandLogo } from './components/brand/BrandLogo';
 import { CourseSidebar } from './components/CourseSidebar';
+import { BRAND } from './config/brand';
 import { OfflineIndicator } from './components/OfflineButton';
 import { UserMenu } from './components/user/UserMenu';
 import { useAuth } from './contexts/AuthProvider';
@@ -379,7 +380,7 @@ export function Header() {
                       >
                         <div className="flex items-center gap-3">
                           <Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                          <span>Comité Editorial y Aval</span>
+                          <span>{BRAND.enableAccreditation ? 'Comité Editorial y Aval' : 'Comité Editorial y Acreditación'}</span>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-400" />
                       </Link>
@@ -424,7 +425,9 @@ export function Header() {
 
               <div className="text-center pt-2">
                 <span className="text-[10px] text-slate-400">
-                  Avalado por el Colegio Mexicano de Medicina de Rehabilitación A.C.
+                  {BRAND.enableAccreditation
+                    ? 'Avalado por el Colegio Mexicano de Medicina de Rehabilitación A.C.'
+                    : BRAND.tagline}
                 </span>
               </div>
             </div>

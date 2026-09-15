@@ -26,6 +26,7 @@ import {
 import { useAuth } from '../../contexts/AuthProvider';
 import { isEnrollmentProfileComplete } from '../../utils/adminUtils';
 import { verifyCedula, type CedulaVerificationResult } from '../../services/cedulaService';
+import { BRAND } from '../../config/brand';
 import {
   POPULAR_HOSPITALS,
   POPULAR_UNIVERSITIES,
@@ -341,7 +342,9 @@ export default function ProfileSetupPage() {
             </p>
             <p className="text-xs text-emerald-800/80 dark:text-emerald-200/80 mt-0.5">
               {isVerifiedContributor
-                ? 'Tienes acceso a evaluaciones clínicas, emisión de constancias y propuesta de contenidos avalados por COMEFYR.'
+                ? (BRAND.enableAccreditation
+                    ? 'Tienes acceso a evaluaciones clínicas, emisión de constancias y propuesta de contenidos avalados por COMEFYR.'
+                    : 'Tienes acceso a evaluaciones clínicas, emisión de constancias y propuesta de contenidos del posgrado.')
                 : 'Tu perfil está activo en el posgrado. Tienes acceso completo a módulos y evaluaciones de casos clínicos.'}
             </p>
           </div>
@@ -926,9 +929,13 @@ export default function ProfileSetupPage() {
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5 text-cyan-500" />
-                Número de socio COMEFYR (opcional para constancias avaladas)
+                {BRAND.enableAccreditation
+                  ? 'Número de socio COMEFYR (opcional para constancias avaladas)'
+                  : 'Número de Colegiado o Registro Profesional (opcional)'}
               </label>
-              <span className="text-[11px] text-slate-400">Colegio Mexicano de Medicina de Rehabilitación</span>
+              <span className="text-[11px] text-slate-400">
+                {BRAND.enableAccreditation ? 'Colegio Mexicano de Medicina de Rehabilitación' : 'Registro Oficial'}
+              </span>
             </div>
             <input
               type="text"

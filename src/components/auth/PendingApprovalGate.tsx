@@ -64,10 +64,12 @@ export function PendingApprovalGate() {
                 <Clock className="w-3.5 h-3.5" />
                 {isRejected ? 'Solicitud Rechazada' : 'Expediente en Espera de Aprobación'}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                Aval COMEFYR
-              </span>
+              {BRAND.enableAccreditation && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Aval COMEFYR
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">

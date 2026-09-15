@@ -277,10 +277,12 @@ export default function RegisterPage() {
             </div>
 
             {/* Aval Oficial COMEFYR */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium mb-6">
-              <Award className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Avalado por COMEFYR</span>
-            </div>
+            {BRAND.enableAccreditation && (
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-medium mb-6">
+                <Award className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Avalado por COMEFYR</span>
+              </div>
+            )}
 
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">
               Formación Médica de Posgrado en Electrodiagnóstico
@@ -320,9 +322,9 @@ export default function RegisterPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">Aval Académico</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-semibold">{BRAND.enableAccreditation ? 'Aval Académico' : 'Programa'}</p>
                     <p className="text-cyan-400 font-medium truncate">
-                      {comefyrId ? `COMEFYR: ${comefyrId}` : 'COMEFYR México'}
+                      {BRAND.enableAccreditation ? (comefyrId ? `COMEFYR: ${comefyrId}` : 'COMEFYR México') : 'Posgrado EDX'}
                     </p>
                   </div>
                 </div>
@@ -956,9 +958,13 @@ export default function RegisterPage() {
                   className="space-y-5"
                 >
                   <div>
-                    <h3 className="text-xl font-bold text-white">Acreditación Académica COMEFYR</h3>
+                    <h3 className="text-xl font-bold text-white">
+                      {BRAND.enableAccreditation ? 'Acreditación Académica COMEFYR' : 'Acreditación y Datos de Posgrado'}
+                    </h3>
                     <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                      El Colegio Mexicano de Medicina de Rehabilitación avala tu formación en esta plataforma.
+                      {BRAND.enableAccreditation
+                        ? 'El Colegio Mexicano de Medicina de Rehabilitación avala tu formación en esta plataforma.'
+                        : 'Registro formal para emisión de constancias académicas y seguimiento curricular.'}
                     </p>
                   </div>
 
@@ -967,11 +973,15 @@ export default function RegisterPage() {
                     <div className="flex items-center gap-2 mb-2">
                       <Award className="w-5 h-5 text-cyan-400" />
                       <span className="font-bold text-white text-sm">
-                        Número de Colegiado o Folio COMEFYR (Opcional)
+                        {BRAND.enableAccreditation
+                          ? 'Número de Colegiado o Folio COMEFYR (Opcional)'
+                          : 'Número de Colegiado o Registro Profesional (Opcional)'}
                       </span>
                     </div>
                     <p className="text-xs text-slate-300 mb-3">
-                      Si cuentas con membresía o afiliación a COMEFYR, ingrésalo aquí para vincular tu certificación automáticamente.
+                      {BRAND.enableAccreditation
+                        ? 'Si cuentas con membresía o afiliación a COMEFYR, ingrésalo aquí para vincular tu certificación automáticamente.'
+                        : 'Si cuentas con membresía o registro colegiado, ingrésalo aquí para vincular tu expediente.'}
                     </p>
                     <input
                       type="text"

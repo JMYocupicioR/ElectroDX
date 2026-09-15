@@ -25,6 +25,8 @@ import {
 import { AdminLayout } from './AdminLayout';
 import { getAdminProfiles } from '../../services/editorialService';
 import { getCohortAcademicSummaries } from '../../services/gradebookService';
+import { filterGradeableStudents } from '../../utils/adminUtils';
+import { useAuth } from '../../contexts/AuthProvider';
 import GradebookConfigModal from './GradebookConfigModal';
 import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
 import AttendanceTrackerModal from './AttendanceTrackerModal';
@@ -33,8 +35,10 @@ import AssignExamModal from './AssignExamModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
 import type { AdminProfileRow } from '../../types/admin';
 import type { StudentCohortSummary } from '../../types/academicGradebook';
+import { BRAND } from '../../config/brand';
 
 export default function AdminStudentsListPage() {
+  const { user } = useAuth();
   const [profiles, setProfiles] = useState<AdminProfileRow[]>([]);
   const [summaries, setSummaries] = useState<Map<string, StudentCohortSummary>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -54,8 +58,9 @@ export default function AdminStudentsListPage() {
     setLoading(true);
     try {
       const data = await getAdminProfiles(false, 'all');
-      setProfiles(data);
-      const summMap = await getCohortAcademicSummaries(data);
+      const studentsOnly = filterGradeableStudents(data, user?.id);
+      setProfiles(studentsOnly);
+      const summMap = await getCohortAcademicSummaries(studentsOnly);
       setSummaries(summMap);
     } catch (e) {
       console.error(e);
@@ -190,7 +195,11 @@ export default function AdminStudentsListPage() {
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400">
-              Evaluación avalada por <strong>COMEFYR</strong>
+              {BRAND.enableAccreditation ? (
+                <>Evaluación avalada por <strong>COMEFYR</strong></>
+              ) : (
+                <>Evaluación Oficial del <strong>Diplomado</strong></>
+              )}
             </span>
           </div>
         </div>

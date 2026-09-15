@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { getPublicProfiles } from '../../services/editorialService';
 import type { Profile } from '../../types/database';
+import { BRAND } from '../../config/brand';
 
 export default function SpecialistsPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -64,14 +65,17 @@ export default function SpecialistsPage() {
             Directorio de Especialistas Colaboradores
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
-            ElectoDX Diplomado · Aval COMEFYR · Red Nacional de Electrodiagnóstico
+            {BRAND.enableAccreditation
+              ? 'ElectoDX Diplomado · Aval COMEFYR · Red Nacional de Electrodiagnóstico'
+              : 'ElectoDX Diplomado · Red Nacional de Médicos en Electrodiagnóstico'}
           </p>
         </div>
       </div>
 
       <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-8">
-        Médicos especialistas y residentes en formación en Medicina de Rehabilitación y Neurofisiología Clínica,
-        acreditados institucionalmente por el COMEFYR y activos en la validación diagnóstica y docencia de electromiografía.
+        {BRAND.enableAccreditation
+          ? 'Médicos especialistas y residentes en formación en Medicina de Rehabilitación y Neurofisiología Clínica, acreditados institucionalmente por el COMEFYR y activos en la validación diagnóstica y docencia de electromiografía.'
+          : 'Médicos especialistas y residentes en formación en Medicina de Rehabilitación y Neurofisiología Clínica, cursistas y colaboradores activos en la validación diagnóstica y docencia de electromiografía.'}
       </p>
 
       {/* ─── Search and Quick Filters ─── */}
@@ -232,7 +236,7 @@ export default function SpecialistsPage() {
           </p>
           <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Registro y Aval COMEFYR Oficial</span>
+            <span>{BRAND.enableAccreditation ? 'Registro y Aval COMEFYR Oficial' : 'Registro de Posgrado y Validación Médica Oficial'}</span>
           </div>
         </section>
       </div>

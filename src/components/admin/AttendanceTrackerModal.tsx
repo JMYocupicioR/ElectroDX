@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Calendar,
   CheckCircle2,
@@ -15,6 +15,7 @@ import {
   saveCohortAttendanceBatch,
   getStudentAttendance,
 } from '../../services/attendanceService';
+import { filterGradeableStudents } from '../../utils/adminUtils';
 import type { AdminProfileRow } from '../../types/admin';
 import type { AttendanceStatus, ClassAttendanceRecord } from '../../types/academicGradebook';
 
@@ -39,18 +40,21 @@ export default function AttendanceTrackerModal({
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Filtrar para que solo aparezcan alumnos reales, nunca el profesor/administrador
+  const studentProfiles = useMemo(() => filterGradeableStudents(profiles), [profiles]);
+
   useEffect(() => {
     if (isOpen) {
       setSuccess(false);
       // Cargar asistencias existentes o inicializar en 'present'
       const initial: Record<string, { status: AttendanceStatus; notes: string }> = {};
-      profiles.forEach((p) => {
+      studentProfiles.forEach((p) => {
         initial[p.id] = { status: 'present', notes: '' };
       });
 
       // Intentar pre-cargar si ya se guardó para esta sesión
       Promise.all(
-        profiles.map(async (p) => {
+        studentProfiles.map(async (p) => {
           const list = await getStudentAttendance(p.id);
           const found = list.find((r) => r.session_title === sessionTitle && r.session_date === sessionDate);
           if (found) {
@@ -61,7 +65,7 @@ export default function AttendanceTrackerModal({
         setAttendances({ ...initial });
       });
     }
-  }, [isOpen, sessionTitle, sessionDate, profiles]);
+  }, [isOpen, sessionTitle, sessionDate, studentProfiles]);
 
   if (!isOpen) return null;
 
@@ -176,11 +180,11 @@ export default function AttendanceTrackerModal({
         {/* Students Roll Call Table */}
         <div className="p-6 overflow-y-auto flex-1 space-y-3">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
-            Lista de Médicos Cursistas ({profiles.length})
+            Lista de Médicos Cursistas ({studentProfiles.length})
           </label>
 
           <div className="divide-y divide-slate-100 dark:divide-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden">
-            {profiles.map((student) => {
+            {studentProfiles.map((student) => {
               const currentStatus = attendances[student.id]?.status || 'present';
               const currentNotes = attendances[student.id]?.notes || '';
 

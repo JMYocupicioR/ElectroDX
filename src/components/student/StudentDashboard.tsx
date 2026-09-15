@@ -63,6 +63,7 @@ import {
 } from '../../services/studentPlanService';
 import type { StudentAssignment, StudentStreakInfo, ActiveExamLock } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
+import { BRAND } from '../../config/brand';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { LiveWorkshop } from '../../types/database';
@@ -343,10 +344,12 @@ export default function StudentDashboard() {
                 <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
                 Portal Académico del Alumno
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Aval COMEFYR
-              </span>
+              {BRAND.enableAccreditation && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Aval COMEFYR
+                </span>
+              )}
               {profile?.cedula_verified && (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                   <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
@@ -990,7 +993,9 @@ export default function StudentDashboard() {
                 Plan de Estudios: Currículo ElectoDX Diplomado
               </h2>
               <p className="text-sm text-slate-500">
-                13 módulos formativos avalados por el Colegio Mexicano de Medicina de Rehabilitación
+                {BRAND.enableAccreditation
+                  ? '13 módulos formativos avalados por el Colegio Mexicano de Medicina de Rehabilitación'
+                  : '13 módulos formativos de posgrado en neurofisiología clínica y electrodiagnóstico'}
               </p>
             </div>
             <div className="relative w-full sm:w-72">

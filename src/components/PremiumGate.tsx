@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Lock, ShieldAlert, Sparkles, Check } from 'lucide-react';
 import { useAuth } from '../contexts/AuthProvider';
 import { Link } from 'react-router-dom';
+import { BRAND } from '../config/brand';
 
 interface PremiumGateProps {
   moduleId?: string;
@@ -50,7 +51,9 @@ export function PremiumGate({
     'Simulador interactivo de aguja y neuroconducción (Modo Ejercicio EMG)',
     'Acceso ilimitado a los 13 módulos clínicos y más de 200 temas formativos',
     'Evaluaciones diagnósticas al final de cada tema con retroalimentación argumentada',
-    'Acreditación oficial con horas curriculares y aval COMEFYR',
+    BRAND.enableAccreditation
+      ? 'Acreditación oficial con horas curriculares y aval COMEFYR'
+      : 'Acreditación académica de posgrado con constancia y horas curriculares',
   ];
 
   const benefitsToDisplay = requiresStrictPremium ? premiumBenefits : regularBenefits;

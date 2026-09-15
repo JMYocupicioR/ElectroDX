@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import { allModules } from '../content/modules';
 import { getAllTopicIds } from './studentService';
+import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
 import type { AcademicMilestone, StudentMilestoneAudit, MilestoneTopicCheckItem } from '../types/academicGradebook';
 import type { Topic } from '../types/content';
 
@@ -136,16 +137,22 @@ function findTopicMetadata(topicId: string): { topicTitle: string; moduleId: str
 }
 
 export async function getAcademicMilestones(): Promise<AcademicMilestone[]> {
-  // 1. Supabase
-  try {
-    const { data, error } = await (supabase.from as any)('academic_milestones')
-      .select('*')
-      .order('order_index', { ascending: true });
+  // 1. Supabase (solo si la tabla no está marcada como ausente)
+  if (!isTableMissingInSupabase('academic_milestones')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('academic_milestones')
+        .select('*')
+        .order('order_index', { ascending: true });
 
-    if (!error && data && data.length > 0) {
-      return data as AcademicMilestone[];
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('academic_milestones');
+      } else if (data && data.length > 0) {
+        return data as AcademicMilestone[];
+      }
+    } catch {
+      markTableAsMissingInSupabase('academic_milestones');
     }
-  } catch {}
+  }
 
   // 2. LocalStorage Fallback
   try {
@@ -186,13 +193,21 @@ export async function saveMilestone(milestone: AcademicMilestone): Promise<Acade
   }
 
   // 2. Supabase
-  try {
-    const { data } = await (supabase.from as any)('academic_milestones')
-      .upsert(updatedItem)
-      .select()
-      .single();
-    if (data) return data as AcademicMilestone;
-  } catch {}
+  if (!isTableMissingInSupabase('academic_milestones')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('academic_milestones')
+        .upsert(updatedItem)
+        .select()
+        .single();
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('academic_milestones');
+      } else if (data) {
+        return data as AcademicMilestone;
+      }
+    } catch {
+      markTableAsMissingInSupabase('academic_milestones');
+    }
+  }
 
   return updatedItem;
 }
@@ -209,16 +224,24 @@ export async function deleteMilestone(milestoneId: string): Promise<void> {
   } catch {}
 
   // 2. Supabase
-  try {
-    await (supabase.from as any)('academic_milestones').delete().eq('id', milestoneId);
-  } catch {}
+  if (!isTableMissingInSupabase('academic_milestones')) {
+    try {
+      const { error, status } = await (supabase.from as any)('academic_milestones').delete().eq('id', milestoneId);
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('academic_milestones');
+      }
+    } catch {
+      markTableAsMissingInSupabase('academic_milestones');
+    }
+  }
 }
 
 export async function getStudentMilestoneAudits(
   studentId: string,
-  completedTopicSet: Set<string>
+  completedTopicSet: Set<string>,
+  providedMilestones?: AcademicMilestone[]
 ): Promise<StudentMilestoneAudit[]> {
-  const milestones = await getAcademicMilestones();
+  const milestones = providedMilestones || (await getAcademicMilestones());
   const now = new Date();
 
   return milestones.map((milestone) => {

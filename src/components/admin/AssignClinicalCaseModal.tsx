@@ -9,6 +9,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { getAdminProfiles } from '../../services/editorialService';
+import { filterGradeableStudents } from '../../utils/adminUtils';
 import type { AdminProfileRow } from '../../types/admin';
 import type { AssignmentPriority } from '../../types/studentPlan';
 import type { DiagnosticCategory } from '../../../ejercicios/src/types/ClinicalCase';
@@ -84,11 +85,11 @@ export const AssignClinicalCaseModal: React.FC<AssignClinicalCaseModalProps> = (
     if (!isOpen) return;
 
     if (initialProfiles && initialProfiles.length > 0) {
-      setProfiles(initialProfiles.filter(p => !p.roles || p.roles.includes('student') || p.roles.includes('verified') || p.roles.length === 0));
+      setProfiles(filterGradeableStudents(initialProfiles, user?.id));
     } else {
       setLoadingProfiles(true);
       getAdminProfiles(false, 'all')
-        .then(res => setProfiles(res.filter(p => !p.roles || p.roles.includes('student') || p.roles.includes('verified') || p.roles.length === 0)))
+        .then(res => setProfiles(filterGradeableStudents(res, user?.id)))
         .catch(e => console.error(e))
         .finally(() => setLoadingProfiles(false));
     }

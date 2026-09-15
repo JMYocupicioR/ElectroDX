@@ -251,7 +251,11 @@ export default function SyllabusPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6 border border-blue-500/20"
           >
             <Sparkles className="w-4 h-4 text-blue-500" />
-            <span>Programa Académico Oficial · Avalado por COMEFYR</span>
+            <span>
+              {BRAND.enableAccreditation
+                ? 'Programa Académico Oficial · Avalado por COMEFYR'
+                : 'Programa Académico Oficial · Posgrado en Neurofisiología Clínica'}
+            </span>
           </motion.div>
 
           <motion.h1
@@ -283,7 +287,12 @@ export default function SyllabusPage() {
             {[
               { label: 'Módulos Clínicos', value: `${totalModulesCount}`, icon: BookOpen, color: 'text-blue-500' },
               { label: 'Temas Detallados', value: `${totalTopicsCount}+`, icon: Layers, color: 'text-indigo-500' },
-              { label: 'Aval Académico', value: 'COMEFYR', icon: Award, color: 'text-emerald-500' },
+              {
+                label: BRAND.enableAccreditation ? 'Aval Académico' : 'Acreditación',
+                value: BRAND.enableAccreditation ? 'COMEFYR' : 'Posgrado',
+                icon: Award,
+                color: 'text-emerald-500',
+              },
               { label: 'Acceso Exclusivo', value: 'Suscripción', icon: Lock, color: 'text-amber-500' },
             ].map((stat, i) => (
               <div
@@ -329,7 +338,9 @@ export default function SyllabusPage() {
                 className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02]"
               >
                 <GraduationCap className="w-5 h-5" />
-                Inscribirme como Alumno (Aval COMEFYR)
+                {BRAND.enableAccreditation
+                  ? 'Inscribirme como Alumno (Aval COMEFYR)'
+                  : 'Inscribirme como Alumno del Diplomado'}
                 <ArrowRight className="w-4 h-4" />
               </Link>
             )}
@@ -352,7 +363,7 @@ export default function SyllabusPage() {
           {[
             { id: 'temario', label: 'Temario Completo (13 Módulos)' },
             { id: 'resumen', label: 'Resumen Rápido y Simplificado' },
-            { id: 'inscripcion', label: 'Beneficios y Aval' },
+            { id: 'inscripcion', label: BRAND.enableAccreditation ? 'Beneficios y Aval' : 'Beneficios y Acreditación' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -751,7 +762,9 @@ export default function SyllabusPage() {
               Acreditación Médica y Modelo de Suscripción
             </h2>
             <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-              {BRAND.name} está respaldado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR) para garantizar estándares de excelencia académica en electrofisiología.
+              {BRAND.enableAccreditation
+                ? `${BRAND.name} está respaldado por el Colegio Mexicano de Medicina de Rehabilitación (COMEFYR) para garantizar estándares de excelencia académica en electrofisiología.`
+                : `${BRAND.name} está estructurado bajo estándares de alta exigencia académica en neurofisiología clínica y electrodiagnóstico.`}
             </p>
           </div>
 
@@ -759,8 +772,10 @@ export default function SyllabusPage() {
             {[
               {
                 icon: ShieldCheck,
-                title: 'Aval Oficial COMEFYR',
-                desc: 'Programa alineado a las directrices de enseñanza del Colegio Mexicano de Medicina de Rehabilitación.',
+                title: BRAND.enableAccreditation ? 'Aval Oficial COMEFYR' : 'Acreditación Oficial',
+                desc: BRAND.enableAccreditation
+                  ? 'Programa alineado a las directrices de enseñanza del Colegio Mexicano de Medicina de Rehabilitación.'
+                  : 'Programa de posgrado con seguimiento curricular y evaluación formativa continua.',
               },
               {
                 icon: FileCheck,

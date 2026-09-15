@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getProfileById } from '../../services/editorialService';
 import type { Profile } from '../../types/database';
+import { BRAND } from '../../config/brand';
 
 export default function PublicProfilePage() {
   const { userId } = useParams();
@@ -74,10 +75,12 @@ export default function PublicProfilePage() {
       <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden mb-6">
         {/* Banner Cover Accent */}
         <div className="h-28 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-800 relative">
-          <div className="absolute right-4 top-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 text-white text-[11px] font-medium backdrop-blur-md border border-white/10">
-            <Award className="w-3.5 h-3.5 text-amber-300" />
-            <span>Aval COMEFYR</span>
-          </div>
+          {BRAND.enableAccreditation && (
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/20 text-white text-[11px] font-medium backdrop-blur-md border border-white/10">
+              <Award className="w-3.5 h-3.5 text-amber-300" />
+              <span>Aval COMEFYR</span>
+            </div>
+          )}
         </div>
 
         <div className="px-6 sm:px-8 pb-8 pt-0 relative">

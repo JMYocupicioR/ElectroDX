@@ -70,20 +70,38 @@ const SUBSCRIPTION_BENEFITS = [
   { icon: BookOpen, title: '13 módulos · 200+ temas', desc: 'ENMG, neuroconducción, electromiografía de aguja, potenciales evocados y ultrasonido neuromuscular.' },
   { icon: ClipboardCheck, title: 'Evaluaciones por tema', desc: 'Cuestionarios clínicos al final de cada lección con retroalimentación argumentada.' },
   { icon: BarChart3, title: 'Seguimiento de progreso', desc: 'Panel personal con avance curricular, intentos y áreas específicas por reforzar.' },
-  { icon: Award, title: 'Aval COMEFYR', desc: 'Reconocimiento oficial con valor curricular y créditos de educación médica continua.' },
+  {
+    icon: Award,
+    title: BRAND.enableAccreditation ? 'Aval COMEFYR' : 'Valor Curricular',
+    desc: BRAND.enableAccreditation
+      ? 'Reconocimiento oficial con valor curricular y créditos de educación médica continua.'
+      : 'Programa formativo de posgrado con seguimiento curricular y emisión de constancias.',
+  },
   { icon: Wrench, title: 'Herramientas interactivas', desc: 'Calculadora topográfica de plexo braquial y simuladores de trazos EMG incluidos.' },
   { icon: Zap, title: 'Modo hospitalario offline', desc: 'Descarga módulos completos para estudiar en quirófanos o áreas sin conexión.' },
 ];
 
 const FREE_VS_PREMIUM = [
   { feature: 'Temario oficial y resumen analítico del programa', visitor: true, student: true },
-  { feature: 'Directorio de especialistas y marco institucional COMEFYR', visitor: true, student: true },
+  {
+    feature: BRAND.enableAccreditation
+      ? 'Directorio de especialistas y marco institucional COMEFYR'
+      : 'Directorio de especialistas y red académica de electrodiagnóstico',
+    visitor: true,
+    student: true,
+  },
   { feature: 'Contenido formativo completo (13 módulos · 200+ temas)', visitor: false, student: true },
   { feature: 'Calculadora diagnóstica de Plexo Braquial y Modo Ejercicio EMG', visitor: false, student: 'premium' },
   { feature: 'Banco de evaluaciones clínicas con retroalimentación paso a paso', visitor: false, student: true },
   { feature: 'Panel personalizado de progreso y seguimiento curricular', visitor: false, student: true },
   { feature: 'Modo offline PWA para consulta en quirófanos sin cobertura', visitor: false, student: true },
-  { feature: 'Constancia oficial con valor curricular avalada por COMEFYR', visitor: false, student: true },
+  {
+    feature: BRAND.enableAccreditation
+      ? 'Constancia oficial con valor curricular avalada por COMEFYR'
+      : 'Constancia académica oficial de posgrado con valor curricular',
+    visitor: false,
+    student: true,
+  },
 ];
 
 function countTopics(topics: any[]): number {
@@ -162,7 +180,9 @@ export default function LandingPage() {
             transition={{ duration: 0.6, delay: 0.15 }}
             className="text-base sm:text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto mb-8 leading-relaxed font-normal"
           >
-            El programa interactivo avalado por la COMEFYR para médicos especialistas en rehabilitación y residentes en formación neurofisiológica.
+            {BRAND.enableAccreditation
+              ? 'El programa interactivo avalado por la COMEFYR para médicos especialistas en rehabilitación y residentes en formación neurofisiológica.'
+              : 'El programa interactivo de posgrado para médicos especialistas en rehabilitación y residentes en formación neurofisiológica.'}
           </motion.p>
 
           {/* Primary & Secondary Call to Actions */}
@@ -186,7 +206,11 @@ export default function LandingPage() {
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white font-semibold shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01] transition-all"
               >
                 <GraduationCap className="w-5 h-5" />
-                <span>Registro de Estudiante (Créditos COMEFYR)</span>
+                <span>
+                  {BRAND.enableAccreditation
+                    ? 'Registro de Estudiante (Créditos COMEFYR)'
+                    : 'Registro de Estudiante de Posgrado'}
+                </span>
               </Link>
             ) : null}
 
@@ -219,8 +243,8 @@ export default function LandingPage() {
               },
               {
                 value: 'Valor Curricular',
-                label: 'Aval Oficial COMEFYR',
-                sub: 'Créditos recertificación',
+                label: BRAND.enableAccreditation ? 'Aval Oficial COMEFYR' : 'Acreditación Oficial',
+                sub: BRAND.enableAccreditation ? 'Créditos recertificación' : 'Horas de posgrado',
               },
               {
                 value: 'Paso a Paso',
@@ -369,7 +393,7 @@ export default function LandingPage() {
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                           <Lock className="w-3 h-3 text-slate-400" />
-                          <span>Aval COMEFYR</span>
+                          <span>{BRAND.enableAccreditation ? 'Aval COMEFYR' : 'Posgrado'}</span>
                         </span>
                       )}
                     </div>
@@ -394,7 +418,9 @@ export default function LandingPage() {
                 Discusión de Casos en Tiempo Real
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Sesiones interactivas con profesores invitados y electrofisiólogos miembros de COMEFYR
+                {BRAND.enableAccreditation
+                  ? 'Sesiones interactivas con profesores invitados y electrofisiólogos miembros de COMEFYR'
+                  : 'Sesiones interactivas con profesores invitados y electrofisiólogos especialistas'}
               </p>
             </div>
 
@@ -447,7 +473,7 @@ export default function LandingPage() {
                   Suscripción Académica
                 </span>
                 <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                  Aval COMEFYR
+                  {BRAND.enableAccreditation ? 'Aval COMEFYR' : 'Acreditación Posgrado'}
                 </span>
               </div>
 
@@ -462,7 +488,9 @@ export default function LandingPage() {
                   'Simulador de casos de aguja y neuroconducción en vivo',
                   'Exámenes por tema con retroalimentación paso a paso',
                   'Descarga de material y funcionamiento offline en quirófano',
-                  'Créditos académicos oficiales avalados por COMEFYR',
+                  BRAND.enableAccreditation
+                    ? 'Créditos académicos oficiales avalados por COMEFYR'
+                    : 'Créditos y horas curriculares oficiales de posgrado',
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
@@ -503,7 +531,7 @@ export default function LandingPage() {
               <div className="p-3.5 sm:p-4 text-slate-700 dark:text-slate-300">Funcionalidad</div>
               <div className="p-3.5 sm:p-4 text-center text-slate-600 dark:text-slate-400">Visitante</div>
               <div className="p-3.5 sm:p-4 text-center text-blue-600 dark:text-cyan-400 bg-blue-50/50 dark:bg-blue-950/30 font-bold">
-                Alumno Certificado (COMEFYR)
+                {BRAND.enableAccreditation ? 'Alumno Certificado (COMEFYR)' : 'Alumno del Diplomado'}
               </div>
             </div>
             {FREE_VS_PREMIUM.map((row, i) => (
@@ -549,7 +577,11 @@ export default function LandingPage() {
               to={enrollUrl}
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-white text-slate-900 font-bold hover:bg-blue-50 transition-all shadow-lg text-sm"
             >
-              <span>Registrarme como alumno (Aval COMEFYR)</span>
+              <span>
+                {BRAND.enableAccreditation
+                  ? 'Registrarme como alumno (Aval COMEFYR)'
+                  : 'Registrarme como alumno del Diplomado'}
+              </span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -566,7 +598,11 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-            <span>Aval Oficial: {BRAND.accreditationFull}</span>
+            <span>
+              {BRAND.enableAccreditation
+                ? `Aval Oficial: ${BRAND.accreditationFull}`
+                : BRAND.academicTitle}
+            </span>
           </div>
         </div>
       </footer>

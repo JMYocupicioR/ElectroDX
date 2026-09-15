@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shield, BookOpen, CheckCircle, Users, CheckCircle2, Building2, Stethoscope, Scale } from 'lucide-react';
 import { getCommitteeMembers } from '../../services/editorialService';
 import type { Profile } from '../../types/database';
+import { BRAND } from '../../config/brand';
 
 export default function EditorialCommitteePage() {
   const [members, setMembers] = useState<Profile[]>([]);
@@ -27,7 +28,9 @@ export default function EditorialCommitteePage() {
             Comité Editorial y Dirección Académica
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            ElectoDX Diplomado · Aval COMEFYR
+            {BRAND.enableAccreditation
+              ? 'ElectoDX Diplomado · Aval COMEFYR'
+              : 'ElectoDX Diplomado · Dirección Académica de Posgrado'}
           </p>
         </div>
       </div>

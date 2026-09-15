@@ -180,3 +180,16 @@ export interface StudentFullDossier {
   learningPlans: StudentLearningPlan[];
   assignments: StudentAssignment[];
 }
+
+export interface TeacherPendingReviewItem {
+  assignment: StudentAssignment;
+  studentProfile?: {
+    id: string;
+    display_name: string;
+    email: string;
+    institution?: string | null;
+    specialty?: string | null;
+    residency_year?: string | null;
+    avatar_url?: string | null;
+  };
+}

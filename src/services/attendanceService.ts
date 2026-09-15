@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
 import type { ClassAttendanceRecord, AttendanceStatus } from '../types/academicGradebook';
 
 const KEY_LOCAL_ATTENDANCE = 'neurosafe_class_attendances_';
@@ -30,17 +31,23 @@ export const DEFAULT_COURSE_SESSIONS = [
 export async function getStudentAttendance(studentId: string): Promise<ClassAttendanceRecord[]> {
   if (!studentId) return [];
 
-  // 1. Supabase
-  try {
-    const { data, error } = await (supabase.from as any)('class_attendances')
-      .select('*')
-      .eq('student_id', studentId)
-      .order('session_date', { ascending: false });
+  // 1. Supabase (solo si la tabla no está marcada como ausente)
+  if (!isTableMissingInSupabase('class_attendances')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('class_attendances')
+        .select('*')
+        .eq('student_id', studentId)
+        .order('session_date', { ascending: false });
 
-    if (!error && data && data.length > 0) {
-      return data as ClassAttendanceRecord[];
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('class_attendances');
+      } else if (data && data.length > 0) {
+        return data as ClassAttendanceRecord[];
+      }
+    } catch {
+      markTableAsMissingInSupabase('class_attendances');
     }
-  } catch {}
+  }
 
   // 2. LocalStorage Fallback
   try {
@@ -90,21 +97,28 @@ export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord)
   }
 
   // 2. Supabase
-  try {
-    await (supabase.from as any)('class_attendances').upsert(
-      {
-        session_title: record.session_title,
-        session_date: record.session_date,
-        workshop_id: record.workshop_id ?? null,
-        student_id: record.student_id,
-        status: record.status,
-        minutes_attended: record.minutes_attended ?? null,
-        notes: record.notes ?? null,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'student_id,session_title,session_date' }
-    );
-  } catch {}
+  if (!isTableMissingInSupabase('class_attendances')) {
+    try {
+      const { error, status } = await (supabase.from as any)('class_attendances').upsert(
+        {
+          session_title: record.session_title,
+          session_date: record.session_date,
+          workshop_id: record.workshop_id ?? null,
+          student_id: record.student_id,
+          status: record.status,
+          minutes_attended: record.minutes_attended ?? null,
+          notes: record.notes ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'student_id,session_title,session_date' }
+      );
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('class_attendances');
+      }
+    } catch {
+      markTableAsMissingInSupabase('class_attendances');
+    }
+  }
 }
 
 export async function saveCohortAttendanceBatch(records: ClassAttendanceRecord[]): Promise<void> {

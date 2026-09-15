@@ -50,3 +50,29 @@ export const REVISION_STATUS_LABELS: Record<string, string> = {
   rejected: 'Rechazada',
   changes_requested: 'Cambios solicitados',
 };
+
+/**
+ * Determina si un perfil corresponde a personal directivo, docente o administrativo
+ * (SuperAdmin, Admin, Editor, etc.) y no a un alumno médico a ser calificado.
+ */
+export function isStaffOrAdminProfile(profile: { roles?: string[] | null } | null | undefined): boolean {
+  if (!profile || !profile.roles || !Array.isArray(profile.roles)) return false;
+  return profile.roles.some((r) =>
+    ['admin', 'superadmin', 'editor', 'committee_chair'].includes(r.toLowerCase())
+  );
+}
+
+/**
+ * Filtra únicamente a los médicos cursistas/alumnos que deben ser evaluados y calificados,
+ * excluyendo a profesores, administradores y comités directivos.
+ */
+export function filterGradeableStudents<T extends { roles?: string[] | null; id?: string }>(
+  profiles: T[],
+  currentUserId?: string | null
+): T[] {
+  return profiles.filter((p) => {
+    if (currentUserId && p.id === currentUserId) return false;
+    return !isStaffOrAdminProfile(p);
+  });
+}
+

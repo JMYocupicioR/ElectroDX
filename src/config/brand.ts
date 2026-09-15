@@ -19,9 +19,21 @@ export const BRAND = {
   /** Título extendido para acreditaciones y kardex oficial */
   academicTitle: 'Diplomado de Posgrado en Electrodiagnóstico y Electromiografía Clínica',
 
+  /**
+   * Switch maestro de acreditación oficial (COMEFYR / COMFEFYR).
+   * En `false` mientras el trámite formal de aval se encuentre en proceso.
+   * Cambiar a `true` para reactivar instantáneamente todas las insignias,
+   * menciones y constancias oficiales en toda la aplicación.
+   */
+  enableAccreditation: false,
+
   /** Institución que otorga el aval */
   accreditation: 'Aval Oficial COMEFYR',
   accreditationFull: 'Colegio Mexicano de Medicina de Rehabilitación A.C. (COMEFYR)',
+
+  /** Textos institucionales neutros utilizados mientras el aval está en trámite */
+  accreditationPending: 'Programa Académico de Posgrado',
+  accreditationPendingFull: 'Programa de Posgrado y Formación Médica Continua en Electrodiagnóstico',
 
   /** Subtítulo institucional y propuesta de valor */
   tagline: 'Plataforma Integral de Formación en Electrodiagnóstico y Neurofisiología Clínica',

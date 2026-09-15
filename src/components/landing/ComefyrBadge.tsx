@@ -1,5 +1,6 @@
 import React from 'react';
 import { Award, ShieldCheck } from 'lucide-react';
+import { BRAND } from '../../config/brand';
 
 interface ComefyrBadgeProps {
   variant?: 'compact' | 'full' | 'banner';
@@ -7,6 +8,10 @@ interface ComefyrBadgeProps {
 }
 
 export function ComefyrBadge({ variant = 'full', className = '' }: ComefyrBadgeProps) {
+  if (!BRAND.enableAccreditation) {
+    return null;
+  }
+
   if (variant === 'compact') {
     return (
       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200/80 dark:bg-blue-950/70 dark:text-blue-200 dark:border-blue-800/70 ${className}`}>

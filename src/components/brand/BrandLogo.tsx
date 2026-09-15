@@ -192,7 +192,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         </div>
 
         {/* Subtítulo o Aval Opcional */}
-        {showAccreditation && variant === 'full' && (
+        {BRAND.enableAccreditation && showAccreditation && variant === 'full' && (
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-[9px] font-semibold tracking-wider text-blue-600 dark:text-cyan-400 uppercase">
               {BRAND.accreditation}

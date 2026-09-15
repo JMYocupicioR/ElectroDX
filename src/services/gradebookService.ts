@@ -4,12 +4,14 @@ import { calculateStudentMetrics, fetchStudentCompletedTopics, getAllTopicIds } 
 import { getMyAttempts, getMyProgressByModule } from './quizService';
 import { getStudentAssignments } from './studentPlanService';
 import { calculateStudentAttendanceMetrics } from './attendanceService';
-import { getStudentMilestoneAudits } from './academicScheduleService';
+import { getStudentMilestoneAudits, getAcademicMilestones } from './academicScheduleService';
+import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
 import type {
   GradebookRubricConfig,
   StudentKardexData,
   StudentCohortSummary,
   RubricScoreDetail,
+  AcademicMilestone,
 } from '../types/academicGradebook';
 import type { AdminProfileRow } from '../types/admin';
 import type { Profile } from '../types/database';
@@ -56,17 +58,23 @@ export const DEFAULT_RUBRIC_CONFIG: GradebookRubricConfig = {
 // ─── Configuración de Rúbricas (Personalizable por Maestro/Admin) ─────────────
 
 export async function getGradebookRubrics(): Promise<GradebookRubricConfig> {
-  // 1. Supabase
-  try {
-    const { data, error } = await (supabase.from as any)('academic_rubric_configs')
-      .select('*')
-      .eq('id', 'default_rubric_2026')
-      .maybeSingle();
+  // 1. Supabase (solo si la tabla no está marcada como ausente)
+  if (!isTableMissingInSupabase('academic_rubric_configs')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('academic_rubric_configs')
+        .select('*')
+        .eq('id', 'default_rubric_2026')
+        .maybeSingle();
 
-    if (!error && data && data.rubrics) {
-      return data as GradebookRubricConfig;
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('academic_rubric_configs');
+      } else if (data && data.rubrics) {
+        return data as GradebookRubricConfig;
+      }
+    } catch {
+      markTableAsMissingInSupabase('academic_rubric_configs');
     }
-  } catch {}
+  }
 
   // 2. LocalStorage
   try {
@@ -94,15 +102,22 @@ export async function saveGradebookRubrics(config: GradebookRubricConfig): Promi
   }
 
   // 2. Supabase
-  try {
-    await (supabase.from as any)('academic_rubric_configs').upsert({
-      id: updated.id,
-      title: updated.title,
-      min_passing_grade: updated.minPassingGrade,
-      rubrics: updated.rubrics,
-      updated_at: updated.updated_at,
-    });
-  } catch {}
+  if (!isTableMissingInSupabase('academic_rubric_configs')) {
+    try {
+      const { error, status } = await (supabase.from as any)('academic_rubric_configs').upsert({
+        id: updated.id,
+        title: updated.title,
+        min_passing_grade: updated.minPassingGrade,
+        rubrics: updated.rubrics,
+        updated_at: updated.updated_at,
+      });
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('academic_rubric_configs');
+      }
+    } catch {
+      markTableAsMissingInSupabase('academic_rubric_configs');
+    }
+  }
 }
 
 // ─── Motor de Cálculo de Kardex Académico Oficial por Alumno ──────────────────
@@ -110,7 +125,8 @@ export async function saveGradebookRubrics(config: GradebookRubricConfig): Promi
 export async function calculateStudentKardex(
   studentId: string,
   providedProfile?: Profile | AdminProfileRow | null,
-  providedRubrics?: GradebookRubricConfig
+  providedRubrics?: GradebookRubricConfig,
+  providedMilestones?: AcademicMilestone[]
 ): Promise<StudentKardexData> {
   const rubricConfig = providedRubrics || (await getGradebookRubrics());
 
@@ -193,7 +209,7 @@ export async function calculateStudentKardex(
   const attendanceMetrics = await calculateStudentAttendanceMetrics(studentId);
 
   // 6. Auditoría de Hitos de Calendarización
-  const milestoneAudits = await getStudentMilestoneAudits(studentId, completedTopicsSet);
+  const milestoneAudits = await getStudentMilestoneAudits(studentId, completedTopicsSet, providedMilestones);
 
   // 7. Cálculo Ponderado de Rubros según Configuración
   const rubricsMap = new Map(rubricConfig.rubrics.map((r) => [r.id, r]));
@@ -334,12 +350,15 @@ export async function getCohortAcademicSummaries(
   profiles: AdminProfileRow[]
 ): Promise<Map<string, StudentCohortSummary>> {
   const map = new Map<string, StudentCohortSummary>();
-  const rubrics = await getGradebookRubrics();
+  const [rubrics, milestones] = await Promise.all([
+    getGradebookRubrics(),
+    getAcademicMilestones(),
+  ]);
 
   await Promise.all(
     profiles.map(async (p) => {
       try {
-        const kardex = await calculateStudentKardex(p.id, p, rubrics);
+        const kardex = await calculateStudentKardex(p.id, p, rubrics, milestones);
 
         // Evaluar estado de cumplimiento con el calendario
         const now = new Date();

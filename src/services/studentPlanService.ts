@@ -10,7 +10,9 @@ import type {
   StudentDomainAssessment,
   AssignmentStatus,
   ActiveExamLock,
+  TeacherPendingReviewItem,
 } from '../types/studentPlan';
+import type { AdminProfileRow } from '../types/admin';
 import type { QuizAttempt } from '../types/quiz';
 import type { ExamSession } from '../types/exam';
 import type { Profile } from '../types/database';
@@ -1139,5 +1141,95 @@ export async function getStudentFullDossier(studentId: string): Promise<StudentF
     activityLogs,
     learningPlans,
     assignments,
+  };
+}
+
+/**
+ * Recupera todas las entregas de tareas/casos pendientes de calificación ('submitted')
+ * y las solicitudes de reintento de examen activas ('requested') para el panel docente.
+ */
+export async function getTeacherPendingReviewItems(
+  knownProfiles?: AdminProfileRow[]
+): Promise<{
+  pendingSubmissions: TeacherPendingReviewItem[];
+  pendingRetakes: TeacherPendingReviewItem[];
+}> {
+  const profileMap = new Map<string, AdminProfileRow>();
+  if (knownProfiles) {
+    knownProfiles.forEach((p) => profileMap.set(p.id, p));
+  }
+
+  const allAssignmentsMap = new Map<string, StudentAssignment>();
+
+  // 1. Supabase: Traer asignaciones enviadas o con solicitud de reintento
+  try {
+    const { data } = await supabase
+      .from('student_assignments')
+      .select('*')
+      .order('submitted_at', { ascending: false });
+
+    if (data && Array.isArray(data)) {
+      data.forEach((item) => allAssignmentsMap.set(item.id, item as StudentAssignment));
+    }
+  } catch (e) {
+    console.warn('[studentPlanService] Supabase error fetching teacher inbox:', e);
+  }
+
+  // 2. LocalStorage: Buscar en perfiles conocidos para fallback local resiliente
+  if (knownProfiles) {
+    for (const prof of knownProfiles) {
+      try {
+        const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${prof.id}`);
+        if (raw) {
+          const list: StudentAssignment[] = JSON.parse(raw);
+          list.forEach((item) => {
+            if (!allAssignmentsMap.has(item.id)) {
+              allAssignmentsMap.set(item.id, item);
+            }
+          });
+        }
+      } catch {}
+    }
+  }
+
+  const pendingSubmissions: TeacherPendingReviewItem[] = [];
+  const pendingRetakes: TeacherPendingReviewItem[] = [];
+
+  for (const asg of allAssignmentsMap.values()) {
+    const studentProfile = profileMap.get(asg.student_id);
+
+    // Entregas enviadas esperando calificación docente
+    if (asg.status === 'submitted') {
+      pendingSubmissions.push({
+        assignment: asg,
+        studentProfile,
+      });
+    }
+
+    // Solicitudes de reintento de examen
+    if (asg.target_exam_config?.retakeStatus === 'requested') {
+      pendingRetakes.push({
+        assignment: asg,
+        studentProfile,
+      });
+    }
+  }
+
+  // Ordenar por fecha más reciente
+  pendingSubmissions.sort((a, b) => {
+    const da = a.assignment.submitted_at || a.assignment.updated_at;
+    const db = b.assignment.submitted_at || b.assignment.updated_at;
+    return new Date(db).getTime() - new Date(da).getTime();
+  });
+
+  pendingRetakes.sort((a, b) => {
+    const da = a.assignment.target_exam_config?.retakeRequestedAt || a.assignment.updated_at;
+    const db = b.assignment.target_exam_config?.retakeRequestedAt || b.assignment.updated_at;
+    return new Date(db).getTime() - new Date(da).getTime();
+  });
+
+  return {
+    pendingSubmissions,
+    pendingRetakes,
   };
 }

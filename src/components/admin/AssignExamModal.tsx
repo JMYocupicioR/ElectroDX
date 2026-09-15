@@ -20,6 +20,7 @@ import { allModules } from '../../content/modules';
 import { loadExamQuestions } from '../../services/examService';
 import { createBatchAssignments } from '../../services/studentPlanService';
 import { getAdminProfiles } from '../../services/editorialService';
+import { filterGradeableStudents } from '../../utils/adminUtils';
 import type { AdminProfileRow } from '../../types/admin';
 import type { ExamQuestion } from '../../types/exam';
 import type { AssignmentPriority } from '../../types/studentPlan';
@@ -91,11 +92,11 @@ export default function AssignExamModal({
       if (!initialProfiles || initialProfiles.length === 0) {
         setLoadingProfiles(true);
         getAdminProfiles(false, 'all')
-          .then((data) => setProfiles(data))
+          .then((data) => setProfiles(filterGradeableStudents(data)))
           .catch((e) => console.error(e))
           .finally(() => setLoadingProfiles(false));
       } else {
-        setProfiles(initialProfiles);
+        setProfiles(filterGradeableStudents(initialProfiles));
       }
 
       if (initialStudentId) {
@@ -716,7 +717,7 @@ export default function AssignExamModal({
                   <label htmlFor="autoCriticalOnly" className="text-slate-700 dark:text-slate-300 cursor-pointer">
                     <strong className="block">Solo preguntas de alta rentabilidad</strong>
                     <span className="text-[11px] text-slate-500">
-                      Filtrar únicamente preguntas críticas avaladas por el Consejo
+                      Filtrar únicamente preguntas de alta prioridad clínica y examen de certificación
                     </span>
                   </label>
                 </div>
