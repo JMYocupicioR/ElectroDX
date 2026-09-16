@@ -33,14 +33,14 @@ export function QuizGate({
 
   if (isLoading) {
     return (
-      <section className="mt-10 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40">
+      <section id="evaluacion" className="mt-10 scroll-mt-24 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40">
         <p className="text-sm text-slate-500">Cargando evaluación…</p>
       </section>
     );
   }
 
   return (
-    <div className="mt-10">
+    <div id="evaluacion" className="mt-10 scroll-mt-24">
       {!user && (
         <div className="mb-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
           <span><strong>Modo Formativo:</strong> Estás realizando esta evaluación en modo práctica. Inicia sesión para guardar tu historial oficial y créditos CME.</span>

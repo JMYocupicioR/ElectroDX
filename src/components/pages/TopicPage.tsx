@@ -11,15 +11,23 @@ import { getQuizFlagForTopic } from '../../services/quizService';
 import { PremiumGate } from '../PremiumGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList } from 'lucide-react';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import {
-  isTopicCompleted,
   toggleTopicCompleted,
+  markMultipleTopics,
   setLastVisitedTopic,
+  getCompletedTopics,
   TOPIC_PROGRESS_EVENT,
   getAllTopicIds,
 } from '../../services/studentService';
+import { getPassedQuizTopicIdsSync } from '../../services/quizCompletionGate';
+import {
+  buildLessonResumeUrl,
+  findNextIncompleteFlatTopic,
+  getNextPendingCurriculumLesson,
+  isCurriculumNodeCompleted,
+} from '../../services/studentResume';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
@@ -465,9 +473,11 @@ export default function TopicPage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Scroll to top on route change
+  // Scroll to top on route change, unless we are jumping to a pending section
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setShowTOC(false);
   }, [location.pathname]);
 
@@ -478,6 +488,46 @@ export default function TopicPage() {
       setShowTOC(false);
     }
   }, []);
+
+  useEffect(() => {
+    const sectionId = location.hash.startsWith('#section-')
+      ? location.hash.slice('#section-'.length)
+      : '';
+    if (location.hash === '#evaluacion') {
+      let attempts = 0;
+      let timer = 0;
+      const tryScroll = () => {
+        const el = document.getElementById('evaluacion');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+        if (attempts < 16) {
+          attempts += 1;
+          timer = window.setTimeout(tryScroll, 80);
+        }
+      };
+      timer = window.setTimeout(tryScroll, 50);
+      return () => window.clearTimeout(timer);
+    }
+    if (!sectionId) return;
+
+    let attempts = 0;
+    let timer = 0;
+    const tryScroll = () => {
+      const el = sectionRefs.current.get(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (attempts < 12) {
+        attempts += 1;
+        timer = window.setTimeout(tryScroll, 80);
+      }
+    };
+    timer = window.setTimeout(tryScroll, 50);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, location.pathname]);
 
   const registerRef = useCallback((id: string, el: HTMLElement | null) => {
     if (el) sectionRefs.current.set(id, el);
@@ -588,11 +638,41 @@ export default function TopicPage() {
   const lt = localizedTopic(topic, lang);
   const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
 
-  const { isCompleted: isTopicDoneHook, getModuleStats } = useTopicProgress();
+  const { isCompleted: isTopicDoneHook, getModuleStats, completedTopicIds, quizGate } = useTopicProgress();
   const modStats = useMemo(() => {
     return mod ? getModuleStats(mod.topics) : null;
   }, [mod, getModuleStats]);
   const isModuleCompleted = modStats?.isFullyCompleted ?? false;
+
+  const nextPendingTarget = useMemo(() => {
+    const nextInModule = findNextIncompleteFlatTopic(allFlat, currentIndex, completedTopicIds, quizGate);
+    if (nextInModule) {
+      return {
+        title: localizedTopic(nextInModule.topic, lang).title,
+        url: buildLessonResumeUrl(mod.id, nextInModule.path, nextInModule.topic, completedTopicIds, quizGate),
+      };
+    }
+    const nextAcross = getNextPendingCurriculumLesson(
+      completedTopicIds,
+      {
+        moduleId: mod.id,
+        topicId: pathParts[0] || topic.id,
+      },
+      undefined,
+      quizGate
+    );
+    if (!nextAcross) return null;
+    return { title: nextAcross.topicTitle, url: nextAcross.url };
+  }, [allFlat, currentIndex, completedTopicIds, lang, mod.id, pathParts, quizGate, topic.id]);
+
+  const hasEvaluation = Boolean(quizFlag && quizFlag.question_count > 0);
+  const evaluationPassed = Boolean(
+    quizFlag && quizGate.passedQuizTopicIds.has(quizFlag.topic_id)
+  );
+
+  const scrollToEvaluation = useCallback(() => {
+    document.getElementById('evaluacion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   useEffect(() => {
     if (user && mod && topic) {
@@ -604,19 +684,26 @@ export default function TopicPage() {
         url: location.pathname,
         updatedAt: new Date().toISOString(),
       });
-      setIsCompleted(isTopicCompleted(user.id, topic.id));
+      if (hasEvaluation) {
+        setIsCompleted(evaluationPassed);
+      } else {
+        setIsCompleted(isCurriculumNodeCompleted(topic, getCompletedTopics(user.id), quizGate));
+      }
     }
-  }, [user, mod, topic, location.pathname, lang]);
+  }, [user, mod, topic, location.pathname, lang, quizGate, hasEvaluation, evaluationPassed]);
 
   useEffect(() => {
     const handleProgress = () => {
-      if (user && topic) {
-        setIsCompleted(isTopicCompleted(user.id, topic.id));
+      if (!user || !topic) return;
+      if (hasEvaluation) {
+        setIsCompleted(Boolean(quizFlag && getPassedQuizTopicIdsSync(user.id).has(quizFlag.topic_id)));
+      } else {
+        setIsCompleted(isCurriculumNodeCompleted(topic, getCompletedTopics(user.id), quizGate));
       }
     };
     window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
     return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
-  }, [user, topic]);
+  }, [user, topic, quizGate, hasEvaluation, quizFlag]);
 
   return (
     <PremiumGate moduleId={moduleId!} topicId={topic.id}>
@@ -697,29 +784,46 @@ export default function TopicPage() {
                 <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:inline">
                   {isCompleted
                     ? (lang === 'en' ? 'Registered in your study curriculum' : 'Registrada en tu progreso curricular y créditos CME')
+                    : hasEvaluation
+                    ? (lang === 'en' ? 'Pass the assessment at the end of this lesson to complete it' : 'Aprueba la evaluación al final de esta lección para marcarla como completada')
                     : (lang === 'en' ? 'Mark as completed when you finish studying' : 'Márcala como completada al concluir tu lectura')}
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (!user || !topic) return;
-                  const childIds = topic.children ? getAllTopicIds(topic.children) : [];
-                  const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
-                  setIsCompleted(nextState);
-                }}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 ${
-                  isCompleted
-                    ? 'bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                }`}
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                {isCompleted
-                  ? (lang === 'en' ? 'Mark as pending' : 'Marcar como pendiente')
-                  : (lang === 'en' ? 'Mark as completed' : 'Marcar como completada')}
-              </button>
+              {hasEvaluation && !isCompleted ? (
+                <button
+                  type="button"
+                  onClick={scrollToEvaluation}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-xs shadow-cyan-600/20 flex items-center gap-1.5"
+                >
+                  <ClipboardList className="w-3.5 h-3.5" />
+                  {lang === 'en' ? 'Go to assessment' : 'Ir a la evaluación'}
+                </button>
+              ) : hasEvaluation && isCompleted ? (
+                <span className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                  {lang === 'en' ? 'Assessment passed' : 'Evaluación aprobada'}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!user || !topic) return;
+                    const childIds = topic.children ? getAllTopicIds(topic.children) : [];
+                    const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
+                    setIsCompleted(nextState);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 ${
+                    isCompleted
+                      ? 'bg-slate-100 dark:bg-slate-700/70 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {isCompleted
+                    ? (lang === 'en' ? 'Mark as pending' : 'Marcar como pendiente')
+                    : (lang === 'en' ? 'Mark as completed' : 'Marcar como completada')}
+                </button>
+              )}
             </div>
           )}
 
@@ -894,8 +998,14 @@ export default function TopicPage() {
               topicId={quizFlag.topic_id}
               moduleId={mod.id}
               quizFlag={quizFlag}
-              onPass={() => setIsCompleted(true)}
-              nextTopicUrl={nextTopic ? `/modulo/${mod.id}/${nextTopic.path.join('/')}` : `/modulo/${mod.id}`}
+              onPass={() => {
+                if (user && topic) {
+                  const ids = [topic.id, ...(topic.children ? getAllTopicIds(topic.children) : [])];
+                  markMultipleTopics(user.id, ids, true);
+                }
+                setIsCompleted(true);
+              }}
+              nextTopicUrl={nextPendingTarget?.url || (nextTopic ? `/modulo/${mod.id}/${nextTopic.path.join('/')}` : `/modulo/${mod.id}`)}
             />
           )}
 
@@ -909,28 +1019,59 @@ export default function TopicPage() {
                 </p>
                 <p className="text-xs text-slate-500">
                   {isCompleted
-                    ? 'Esta lección ya suma a tu porcentaje de avance y créditos CME en tu portal de alumno.'
+                    ? nextPendingTarget
+                      ? `Siguiente tema pendiente: ${nextPendingTarget.title}`
+                      : 'Esta lección ya suma a tu porcentaje de avance y créditos CME en tu portal de alumno.'
+                    : hasEvaluation
+                    ? 'Debes aprobar la evaluación de este tema para registrarlo como completado.'
                     : 'Márcala como completada para registrar tu progreso en tu portal de estudiante.'}
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (!user || !topic) return;
-                  const childIds = topic.children ? getAllTopicIds(topic.children) : [];
-                  const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
-                  setIsCompleted(nextState);
-                }}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 ${
-                  isCompleted
-                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 hover:bg-emerald-200'
-                    : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25'
-                }`}
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {isCompleted ? 'Completada (desmarcar)' : 'Marcar como completada'}
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {isCompleted && nextPendingTarget && (
+                  <Link
+                    to={nextPendingTarget.url}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/25 flex items-center gap-2"
+                  >
+                    Continuar siguiente
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+                {hasEvaluation && !isCompleted ? (
+                  <button
+                    type="button"
+                    onClick={scrollToEvaluation}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-sm flex items-center gap-2"
+                  >
+                    <ClipboardList className="w-4 h-4" />
+                    Ir a la evaluación
+                  </button>
+                ) : hasEvaluation && isCompleted ? (
+                  <span className="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Evaluación aprobada
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!user || !topic) return;
+                      const childIds = topic.children ? getAllTopicIds(topic.children) : [];
+                      const nextState = toggleTopicCompleted(user.id, topic.id, childIds);
+                      setIsCompleted(nextState);
+                    }}
+                    className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-2 ${
+                      isCompleted
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 hover:bg-emerald-200'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/25'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isCompleted ? 'Completada (desmarcar)' : 'Marcar como completada'}
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -951,7 +1092,22 @@ export default function TopicPage() {
               </Link>
             ) : <div className="hidden sm:block flex-1" />}
 
-            {nextTopic ? (
+            {isCompleted && nextPendingTarget ? (
+              <Link
+                to={nextPendingTarget.url}
+                className="flex items-center justify-end gap-3 px-4 py-3.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-800/50 hover:border-blue-400 dark:hover:border-blue-500 transition-all text-sm group flex-1 min-w-0 text-right"
+              >
+                <div className="min-w-0">
+                  <span className="block text-[0.65rem] uppercase tracking-wider text-blue-500 dark:text-blue-400 mb-0.5">
+                    {lang === 'en' ? 'Next pending' : 'Siguiente pendiente'}
+                  </span>
+                  <span className="block truncate text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors font-medium">
+                    {nextPendingTarget.title}
+                  </span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-blue-500 group-hover:text-blue-600 transition-colors flex-shrink-0" />
+              </Link>
+            ) : nextTopic ? (
               <Link
                 to={`/modulo/${mod.id}/${nextTopic.path.join('/')}`}
                 className="flex items-center justify-end gap-3 px-4 py-3.5 rounded-xl bg-white/70 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/30 hover:border-blue-300 dark:hover:border-blue-600 transition-all text-sm group flex-1 min-w-0 text-right"
@@ -1056,7 +1212,18 @@ export default function TopicPage() {
                   );
                 })()}
                 {/* Back to module link */}
-                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/40">
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/40 space-y-2">
+                  {isCompleted && nextPendingTarget && (
+                    <Link
+                      to={nextPendingTarget.url}
+                      className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:text-blue-700 dark:hover:text-cyan-300 transition-colors"
+                    >
+                      <ArrowRight className="w-3 h-3" />
+                      <span className="line-clamp-2">
+                        {lang === 'en' ? 'Continue to' : 'Continuar a'} {nextPendingTarget.title}
+                      </span>
+                    </Link>
+                  )}
                   <Link
                     to={`/modulo/${mod.id}`}
                     className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"

@@ -7,6 +7,7 @@ import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { ProposeSubtopicLink, ProposeQuizLink } from '../editorial/TopicContribution';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
+import { areRequiredQuizzesPassed, topicHasEvaluation } from '../../services/quizCompletionGate';
 
 function getPreview(topic: Topic): string {
   const src = topic.content || (topic.children?.[0]?.content) || '';
@@ -69,6 +70,7 @@ function ModuleTopicRow({
     isVisited,
     getParentTopicStats,
     toggleTopic,
+    quizGate,
   } = useTopicProgress();
 
   const isLeaf = !topic.children?.length;
@@ -102,8 +104,15 @@ function ModuleTopicRow({
     navigate(topicUrl);
   };
 
+  const requiresEvaluation = topicHasEvaluation(topic, quizGate);
+  const evaluationPassed = areRequiredQuizzesPassed(topic, quizGate);
+
   const handleToggleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (requiresEvaluation && !evaluationPassed) {
+      navigate(`${topicUrl}#evaluacion`);
+      return;
+    }
     toggleTopic(topic);
   };
 
@@ -138,7 +147,11 @@ function ModuleTopicRow({
                   : 'bg-slate-100 dark:bg-slate-700/70 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
               }`}
               title={
-                isSectionDone
+                requiresEvaluation && !evaluationPassed
+                  ? (lang === 'en'
+                    ? 'Pass the lesson assessment to mark this complete'
+                    : 'Aprueba la evaluación del tema para marcarlo como completado')
+                  : isSectionDone
                   ? (lang === 'en' ? 'Completed · Click to mark pending' : 'Completado · Clic para marcar como pendiente')
                   : (lang === 'en' ? 'Mark as completed' : 'Marcar como completado')
               }

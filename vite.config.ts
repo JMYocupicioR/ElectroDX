@@ -130,6 +130,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
+        importScripts: ['/custom-sw.js'],
         // SPA offline fallback — serves index.html for any navigation request
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/, /^\/icons\/splash\//],

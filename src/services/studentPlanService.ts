@@ -369,6 +369,29 @@ export async function getStudentAssignments(studentId: string): Promise<StudentA
   }
 }
 
+export async function getStudentAssignmentById(
+  assignmentId: string,
+  studentId?: string
+): Promise<StudentAssignment | null> {
+  try {
+    let query = supabase.from('student_assignments').select('*').eq('id', assignmentId);
+    if (studentId) query = query.eq('student_id', studentId);
+    const { data, error } = await query.maybeSingle();
+    if (!error && data) return data as StudentAssignment;
+  } catch {}
+
+  if (!studentId) return null;
+
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (!raw) return null;
+    const list: StudentAssignment[] = JSON.parse(raw);
+    return list.find((a) => a.id === assignmentId) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function createAssignment(
   assignment: Omit<StudentAssignment, 'id' | 'created_at' | 'updated_at'>
 ): Promise<StudentAssignment> {

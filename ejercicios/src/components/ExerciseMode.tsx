@@ -1,7 +1,7 @@
 // ExerciseMode.tsx — Componente principal del modo ejercicio interactivo
 // v3: Trazados interactivos, Auscultador EMG, Mapeo de Miotomas, Asignación Docente
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useSearchParams, useLocation } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Brain, Activity, Zap, CheckCircle, XCircle, ChevronRight, ChevronLeft,
   Trophy, Target, Clock, Lightbulb, BookOpen, User, Stethoscope,
   Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle, ChevronDown,
@@ -13,7 +13,16 @@ import { ALL_CASE_TEMPLATES, type CaseTemplate } from '../data/CaseTemplates';
 import { NcsTraceOscilloscope } from './tools/NcsTraceOscilloscope';
 import { emgAudio } from './tools/EmgAudioSimulator';
 import { MyotomeBodyMap } from './tools/MyotomeBodyMap';
-import { loadAllCaseTemplates, submitClinicalCaseAssignment } from '../../../src/services/emgExerciseService';
+import { useAuth } from '../../../src/contexts/AuthProvider';
+import {
+  loadAllCaseTemplates,
+  submitClinicalCaseAssignment,
+  loadClinicalAssignmentLaunch,
+  loadClinicalCaseLock,
+  saveClinicalCaseLock,
+  type ClinicalAssignmentLaunchState,
+  type ClinicalCaseSessionLock,
+} from '../../../src/services/emgExerciseService';
 
 type ExerciseStep = 'config' | 'case' | 'ncs' | 'emg' | 'diagnosis' | 'feedback';
 
@@ -212,6 +221,8 @@ const formatTime = (seconds: number): string => {
 
 const ExerciseMode: React.FC = () => {
   const store = useExerciseStore();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<ExerciseStep>('config');
   const [clinicalCase, setClinicalCase] = useState<ClinicalCase | null>(null);
   const [options, setOptions] = useState<DiagnosisOption[]>([]);
@@ -224,10 +235,26 @@ const ExerciseMode: React.FC = () => {
   // ───── Router & Assignment Params ─────
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const assignmentId = searchParams.get('assignmentId') || (location.state as any)?.assignmentId;
-  const assignedPatternId = searchParams.get('patternId') || (location.state as any)?.patternId;
-  const assignmentTitle = (location.state as any)?.assignmentTitle || searchParams.get('title');
+  const navState = (location.state || {}) as Partial<ClinicalAssignmentLaunchState> & {
+    assignmentId?: string;
+    title?: string;
+    studentId?: string;
+  };
+  const assignmentId = searchParams.get('assignmentId') || navState.assignmentId;
+  const previewPatternId = searchParams.get('patternId') || (!assignmentId ? navState.patternId : undefined);
+  const [assignmentLaunch, setAssignmentLaunch] = useState<ClinicalAssignmentLaunchState | null>(null);
+  const [assignmentLoading, setAssignmentLoading] = useState(Boolean(assignmentId));
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
   const [assignmentSubmitted, setAssignmentSubmitted] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+  const [timedOut, setTimedOut] = useState(false);
+  const assignedStartRef = useRef(false);
+  const submitLockRef = useRef(false);
+  const selectedAnswerRef = useRef<string | null>(null);
+  const clinicalCaseRef = useRef<ClinicalCase | null>(null);
+  const startTimeRef = useRef(0);
+  const hintsUsedRef = useRef(0);
 
   // ───── Dynamic Templates Catalog (33 base + Supabase custom) ─────
   const [allTemplates, setAllTemplates] = useState<CaseTemplate[]>(ALL_CASE_TEMPLATES);
@@ -266,6 +293,58 @@ const ExerciseMode: React.FC = () => {
   const [expandedFeedback, setExpandedFeedback] = useState<Record<string, boolean>>({ explanation: true, findings: false, differential: false });
   const [animatedScore, setAnimatedScore] = useState(0);
 
+  const isAssignedPending = Boolean(assignmentId && assignmentLaunch?.status === 'pending');
+  const isAssignedExam = isAssignedPending && assignmentLaunch?.clinicalMode === 'exam';
+  const assignmentTitle = assignmentLaunch?.assignmentTitle || 'Caso Clínico Asignado';
+  const hintsAllowed = !isStudyMode && !isAssignedExam;
+
+  useEffect(() => { selectedAnswerRef.current = selectedAnswer; }, [selectedAnswer]);
+  useEffect(() => { clinicalCaseRef.current = clinicalCase; }, [clinicalCase]);
+  useEffect(() => { startTimeRef.current = startTime; }, [startTime]);
+  useEffect(() => { hintsUsedRef.current = hintsUsed; }, [hintsUsed]);
+
+  // Cargar la asignación (sin exponer patternId en la URL)
+  useEffect(() => {
+    if (!assignmentId) {
+      setAssignmentLaunch(null);
+      setAssignmentLoading(false);
+      setAssignmentError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setAssignmentLoading(true);
+    setAssignmentError(null);
+
+    loadClinicalAssignmentLaunch(assignmentId, user?.id || navState.studentId, {
+      assignmentId,
+      patternId: navState.patternId,
+      category: navState.category,
+      clinicalMode: navState.clinicalMode,
+      timeLimitMinutes: navState.timeLimitMinutes,
+      difficulty: navState.difficulty,
+      assignmentTitle: navState.assignmentTitle || navState.title,
+      studentId: navState.studentId,
+      status: navState.status,
+    }).then((launch) => {
+      if (cancelled) return;
+      if (!launch) {
+        setAssignmentError('No se encontró la asignación de caso clínico.');
+        setAssignmentLoading(false);
+        return;
+      }
+      setAssignmentLaunch(launch);
+      if (launch.difficulty) setDifficulty(launch.difficulty);
+      setAssignmentLoading(false);
+    }).catch(() => {
+      if (cancelled) return;
+      setAssignmentError('No se pudo cargar la asignación de caso clínico.');
+      setAssignmentLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [assignmentId, user?.id]);
+
   // Animate score counter on evaluation change
   useEffect(() => {
     if (!evaluation) return;
@@ -297,10 +376,14 @@ const ExerciseMode: React.FC = () => {
     if (currentStep !== 'config' && currentStep !== 'feedback' && startTime > 0) {
       timerRef.current = setInterval(() => {
         setElapsedSeconds(Math.floor((Date.now() - startTime) / 1000));
+        if (expiresAt) {
+          const rem = Math.max(0, Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000));
+          setRemainingSeconds(rem);
+        }
       }, 1000);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [currentStep, startTime]);
+  }, [currentStep, startTime, expiresAt]);
 
   // Stop timer on feedback
   useEffect(() => {
@@ -311,18 +394,45 @@ const ExerciseMode: React.FC = () => {
   }, [currentStep]);
 
   // Active pool of templates: in free practice mode, exclude 'exam_only' cases so students cannot spoil exam questions!
-  // Only include them if explicitly assigned by teacher via assignmentId / assignedPatternId
+  // Only include them if explicitly assigned by teacher via assignmentId / previewPatternId
   const activePool = useMemo(() => {
-    if (assignedPatternId || assignmentId) {
+    if (previewPatternId || assignmentId) {
       return allTemplates;
     }
     return allTemplates.filter(t => t.usageMode !== 'exam_only');
-  }, [allTemplates, assignedPatternId, assignmentId]);
+  }, [allTemplates, previewPatternId, assignmentId]);
 
   // Available categories for filter
   const availableCategories = ['all', ...Array.from(new Set(activePool.map(t => t.category)))];
 
+  const persistAssignedLock = useCallback((
+    patch: Partial<ClinicalCaseSessionLock> & { clinicalCase: ClinicalCase; options: DiagnosisOption[] }
+  ) => {
+    if (!assignmentId || !assignmentLaunch || assignmentLaunch.status !== 'pending') return;
+    const existing = loadClinicalCaseLock(assignmentId);
+    const next: ClinicalCaseSessionLock = {
+      assignmentId,
+      patternId: patch.patternId || existing?.patternId || assignmentLaunch.patternId || patch.clinicalCase.correctDiagnosis.patternId,
+      startedAt: patch.startedAt || existing?.startedAt || new Date().toISOString(),
+      expiresAt: patch.expiresAt !== undefined ? patch.expiresAt : (existing?.expiresAt ?? expiresAt),
+      clinicalMode: assignmentLaunch.clinicalMode,
+      timeLimitMinutes: assignmentLaunch.timeLimitMinutes,
+      difficulty: patch.difficulty || existing?.difficulty || difficulty,
+      clinicalCase: patch.clinicalCase,
+      options: patch.options,
+      currentStep: patch.currentStep || existing?.currentStep || 'case',
+      selectedAnswer: patch.selectedAnswer !== undefined ? patch.selectedAnswer : (existing?.selectedAnswer ?? null),
+      hintsUsed: patch.hintsUsed ?? existing?.hintsUsed ?? 0,
+      submitted: patch.submitted ?? existing?.submitted ?? false,
+      timedOut: patch.timedOut ?? existing?.timedOut,
+      evaluation: patch.evaluation !== undefined ? patch.evaluation : existing?.evaluation,
+    };
+    saveClinicalCaseLock(next);
+  }, [assignmentId, assignmentLaunch, difficulty, expiresAt]);
+
   const generateNewCase = useCallback(() => {
+    if (isAssignedPending) return;
+
     const pool = categoryFilter !== 'all'
       ? activePool.filter(t => t.category === categoryFilter)
       : activePool;
@@ -350,45 +460,165 @@ const ExerciseMode: React.FC = () => {
     setCurrentStep('case');
     setIsAnimating(true);
     setTimeout(() => setIsAnimating(false), 500);
-  }, [difficulty, categoryFilter, activePool]);
+  }, [difficulty, categoryFilter, activePool, isAssignedPending]);
 
-  // Cargar caso automáticamente si viene asignado por el docente
+  const startFromTemplate = useCallback((
+    template: CaseTemplate,
+    launch: ClinicalAssignmentLaunchState | null,
+    lockExpiresAt: string | null,
+    startedAtMs: number
+  ) => {
+    const caseDifficulty = launch?.difficulty || difficulty;
+    const newCase = ClinicalCaseEngine.generateCaseFromTemplate(template, caseDifficulty);
+    const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, caseDifficulty, allTemplates);
+    setClinicalCase(newCase);
+    setOptions(opts);
+    setSelectedAnswer(null);
+    setEvaluation(null);
+    setStartTime(startedAtMs);
+    setElapsedSeconds(Math.floor((Date.now() - startedAtMs) / 1000));
+    setHintsUsed(0);
+    setShowHint(false);
+    setCurrentStep('case');
+    setExpiresAt(lockExpiresAt);
+    if (lockExpiresAt) {
+      setRemainingSeconds(Math.max(0, Math.floor((new Date(lockExpiresAt).getTime() - Date.now()) / 1000)));
+    }
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 500);
+
+    if (launch?.status === 'pending' && assignmentId) {
+      persistAssignedLock({
+        patternId: template.patternId,
+        startedAt: new Date(startedAtMs).toISOString(),
+        expiresAt: lockExpiresAt,
+        difficulty: caseDifficulty,
+        clinicalCase: newCase,
+        options: opts,
+        currentStep: 'case',
+        selectedAnswer: null,
+        hintsUsed: 0,
+        submitted: false,
+      });
+    }
+  }, [allTemplates, assignmentId, difficulty, persistAssignedLock]);
+
+  const restoreFromLock = useCallback((lock: ClinicalCaseSessionLock) => {
+    setClinicalCase(lock.clinicalCase);
+    setOptions(lock.options);
+    setSelectedAnswer(lock.selectedAnswer);
+    setDifficulty(lock.difficulty);
+    setStartTime(new Date(lock.startedAt).getTime());
+    setElapsedSeconds(Math.floor((Date.now() - new Date(lock.startedAt).getTime()) / 1000));
+    setHintsUsed(lock.hintsUsed);
+    setShowHint(lock.hintsUsed > 0);
+    setExpiresAt(lock.expiresAt);
+    if (lock.expiresAt) {
+      setRemainingSeconds(Math.max(0, Math.floor((new Date(lock.expiresAt).getTime() - Date.now()) / 1000)));
+    }
+    if (lock.evaluation) {
+      setEvaluation(lock.evaluation);
+      setCurrentStep('feedback');
+      setAssignmentSubmitted(lock.submitted);
+      setTimedOut(!!lock.timedOut);
+    } else {
+      setCurrentStep((lock.currentStep as ExerciseStep) || 'case');
+    }
+  }, []);
+
+  // Cargar caso automáticamente si viene asignado por el docente (o vista previa admin)
   useEffect(() => {
-    if (assignedPatternId && allTemplates.length > 0 && currentStep === 'config') {
-      const template = allTemplates.find(t => t.patternId === assignedPatternId) || allTemplates[0];
-      const newCase = ClinicalCaseEngine.generateCaseFromTemplate(template, difficulty);
-      const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, difficulty, allTemplates);
-      setClinicalCase(newCase);
-      setOptions(opts);
-      setSelectedAnswer(null);
-      setEvaluation(null);
-      setStartTime(Date.now());
-      setElapsedSeconds(0);
-      setHintsUsed(0);
-      setShowHint(false);
-      setCurrentStep('case');
+    if (allTemplates.length === 0) return;
+
+    if (assignmentId) {
+      if (assignmentLoading || !assignmentLaunch || assignedStartRef.current) return;
+
+      const lock = loadClinicalCaseLock(assignmentId);
+      assignedStartRef.current = true;
+
+      if (assignmentLaunch.status === 'pending' && lock?.clinicalCase) {
+        restoreFromLock(lock);
+        return;
+      }
+
+      const patternId = assignmentLaunch.patternId;
+      const category = assignmentLaunch.category;
+      let template = patternId ? allTemplates.find(t => t.patternId === patternId) : undefined;
+      if (!template && category && category !== 'all') {
+        const pool = allTemplates.filter(t => t.category === category);
+        template = pool[Math.floor(Math.random() * Math.max(pool.length, 1))] || allTemplates[0];
+      }
+      if (!template) template = allTemplates[0];
+
+      const now = Date.now();
+      const shouldTime =
+        assignmentLaunch.status === 'pending' &&
+        assignmentLaunch.clinicalMode === 'exam' &&
+        !!assignmentLaunch.timeLimitMinutes;
+      const lockExpires = shouldTime
+        ? new Date(now + (assignmentLaunch.timeLimitMinutes as number) * 60 * 1000).toISOString()
+        : null;
+
+      startFromTemplate(template, assignmentLaunch, lockExpires, now);
+      return;
     }
-  }, [assignedPatternId, allTemplates, currentStep, difficulty]);
 
-  const handleSubmitDiagnosis = () => {
-    if (!selectedAnswer || !clinicalCase) return;
-    const timeSpent = Math.round((Date.now() - startTime) / 1000);
-    const result = ClinicalCaseEngine.evaluateAnswer(selectedAnswer, clinicalCase, timeSpent);
+    if (previewPatternId && currentStep === 'config') {
+      const template = allTemplates.find(t => t.patternId === previewPatternId) || allTemplates[0];
+      startFromTemplate(template, null, null, Date.now());
+    }
+  }, [
+    assignmentId,
+    assignmentLoading,
+    assignmentLaunch,
+    allTemplates,
+    currentStep,
+    previewPatternId,
+    restoreFromLock,
+    startFromTemplate,
+  ]);
 
-    // Penalize hints in score
-    if (hintsUsed > 0) {
-      result.score = Math.max(0, result.score - hintsUsed * 5);
+  const handleSubmitDiagnosis = (opts?: { timedOut?: boolean }) => {
+    const caseData = clinicalCaseRef.current || clinicalCase;
+    if (submitLockRef.current || !caseData) return;
+    const answer = selectedAnswerRef.current || selectedAnswer;
+    if (!opts?.timedOut && !answer) return;
+
+    submitLockRef.current = true;
+    const usedHints = hintsUsedRef.current;
+    const timeSpent = Math.round((Date.now() - (startTimeRef.current || startTime || Date.now())) / 1000);
+    let result = ClinicalCaseEngine.evaluateAnswer(answer || '__sin_respuesta__', caseData, timeSpent);
+
+    if (usedHints > 0) {
+      result.score = Math.max(0, result.score - usedHints * 5);
     }
 
+    if (opts?.timedOut && !answer) {
+      result = {
+        ...result,
+        isCorrect: false,
+        score: 0,
+        selectedAnswer: 'Sin respuesta',
+        differentialExplanations: [
+          {
+            patternName: 'Sin respuesta',
+            whyNot: 'El tiempo límite se agotó antes de emitir un diagnóstico.',
+          },
+          ...result.differentialExplanations.filter((d) => d.patternName !== '__sin_respuesta__'),
+        ],
+      };
+    }
+
+    setTimedOut(!!opts?.timedOut);
     setEvaluation(result);
 
     const attempt: ExerciseAttempt = {
       id: `att_${Date.now()}`,
-      caseId: clinicalCase.id,
-      patternId: clinicalCase.correctDiagnosis.patternId,
-      patternName: clinicalCase.correctDiagnosis.patternName,
+      caseId: caseData.id,
+      patternId: caseData.correctDiagnosis.patternId,
+      patternName: caseData.correctDiagnosis.patternName,
       difficulty,
-      selectedAnswer,
+      selectedAnswer: answer || 'Sin respuesta',
       isCorrect: result.isCorrect,
       score: result.score,
       timeSpent,
@@ -396,24 +626,70 @@ const ExerciseMode: React.FC = () => {
     };
     store.recordAttempt(attempt);
 
-    // Sincronizar con el expediente si es una asignación docente
-    if (assignmentId) {
-      const studentId = (location.state as any)?.studentId || '';
+    const canGrade = Boolean(assignmentId && assignmentLaunch?.status === 'pending');
+    if (canGrade && assignmentId) {
+      const studentId = assignmentLaunch?.studentId || user?.id || '';
       submitClinicalCaseAssignment(assignmentId, studentId, {
         score: result.score,
         isCorrect: result.isCorrect,
-        selectedAnswer,
-        correctPatternId: clinicalCase.correctDiagnosis.patternId,
-        patternName: clinicalCase.correctDiagnosis.patternName,
+        selectedAnswer: answer || 'Sin respuesta (tiempo agotado)',
+        correctPatternId: caseData.correctDiagnosis.patternId,
+        patternName: caseData.correctDiagnosis.patternName,
         timeSpentSeconds: timeSpent,
-        hintsUsed,
+        hintsUsed: usedHints,
       }).then((ok: boolean) => {
         if (ok) setAssignmentSubmitted(true);
       });
     }
 
+    persistAssignedLock({
+      clinicalCase: caseData,
+      options,
+      currentStep: 'feedback',
+      selectedAnswer: answer,
+      hintsUsed: usedHints,
+      submitted: canGrade,
+      timedOut: opts?.timedOut,
+      evaluation: result,
+    });
+
     setCurrentStep('feedback');
   };
+
+  // Auto-enviar al agotar el tiempo del examen asignado
+  useEffect(() => {
+    if (!isAssignedExam || remainingSeconds === null || remainingSeconds > 0) return;
+    if (currentStep === 'config' || currentStep === 'feedback' || evaluation) return;
+    handleSubmitDiagnosis({ timedOut: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [remainingSeconds, isAssignedExam, currentStep, evaluation]);
+
+  // Persistir progreso de la sesión asignada (caso, paso y respuesta)
+  useEffect(() => {
+    if (!assignmentId || !isAssignedPending || !clinicalCase || currentStep === 'config') return;
+    persistAssignedLock({
+      clinicalCase,
+      options,
+      currentStep,
+      selectedAnswer,
+      hintsUsed,
+      submitted: assignmentSubmitted || currentStep === 'feedback',
+      timedOut,
+      evaluation,
+    });
+  }, [
+    assignmentId,
+    isAssignedPending,
+    clinicalCase,
+    options,
+    currentStep,
+    selectedAnswer,
+    hintsUsed,
+    assignmentSubmitted,
+    timedOut,
+    evaluation,
+    persistAssignedLock,
+  ]);
 
   const stepIndex = STEPS.indexOf(currentStep);
 
@@ -455,10 +731,21 @@ const ExerciseMode: React.FC = () => {
   const maxHints = currentHints.length;
 
   const requestHint = () => {
+    if (!hintsAllowed) return;
     if (hintsUsed < maxHints) {
       setHintsUsed(prev => prev + 1);
       setShowHint(true);
     }
+  };
+
+  const leaveAssignedSession = () => {
+    if (isAssignedExam && currentStep !== 'feedback' && !evaluation) {
+      const confirmed = window.confirm(
+        'El cronómetro del caso asignado sigue corriendo. ¿Salir al dashboard?'
+      );
+      if (!confirmed) return;
+    }
+    navigate('/dashboard?tab=assignments');
   };
 
   // ─── Status Cell Color ──────
@@ -480,7 +767,34 @@ const ExerciseMode: React.FC = () => {
   };
 
   // ─── RENDER: Config ─────────
-  const renderConfig = () => (
+  const renderConfig = () => {
+    if (assignmentId && !assignmentError && (assignmentLoading || !assignmentLaunch || currentStep === 'config')) {
+      return (
+        <div className="max-w-xl mx-auto py-20 text-center space-y-3">
+          <div className="w-10 h-10 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-gray-400">Cargando el caso clínico asignado por tu profesor...</p>
+        </div>
+      );
+    }
+
+    if (assignmentId && assignmentError) {
+      return (
+        <div className="max-w-xl mx-auto py-16 text-center space-y-4">
+          <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
+          <h2 className="text-lg font-bold text-white">No se pudo abrir el caso asignado</h2>
+          <p className="text-sm text-gray-400">{assignmentError}</p>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard?tab=assignments')}
+            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold"
+          >
+            Volver a Tareas
+          </button>
+        </div>
+      );
+    }
+
+    return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600/30 via-orange-600/20 to-red-600/10 border border-amber-500/20 p-6 sm:p-8 text-center">
@@ -597,7 +911,8 @@ const ExerciseMode: React.FC = () => {
         <Zap className="w-5 h-5" /> Generar Caso Clínico
       </button>
     </div>
-  );
+    );
+  };
 
   // ─── RENDER: Case Presentation ──
   const renderCase = () => {
@@ -640,7 +955,27 @@ const ExerciseMode: React.FC = () => {
           <div className="text-gray-200 leading-relaxed text-sm sm:text-base">{p.physicalExam}</div>
         </div>
 
-        {isStudyMode && (
+        {isAssignedPending && (
+          <div className={`rounded-xl p-4 border flex items-start gap-3 ${
+            isAssignedExam
+              ? 'bg-purple-950/30 border-purple-700/40'
+              : 'bg-emerald-950/30 border-emerald-700/40'
+          }`}>
+            <Award className={`w-5 h-5 flex-shrink-0 ${isAssignedExam ? 'text-purple-300' : 'text-emerald-300'}`} />
+            <div className="text-sm">
+              <div className={`font-semibold ${isAssignedExam ? 'text-purple-200' : 'text-emerald-200'}`}>
+                {isAssignedExam ? 'Caso de examen asignado' : 'Caso formativo asignado'}
+              </div>
+              <p className="text-gray-400 text-xs mt-0.5">
+                {isAssignedExam
+                  ? 'Sin pistas. El tiempo restante aparece arriba; al agotarse se envía automáticamente.'
+                  : 'Puedes usar pistas progresivas. El diagnóstico no se revela hasta que confirmes tu respuesta.'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isStudyMode && !assignmentId && (
           <div className="bg-purple-900/20 rounded-xl p-4 border border-purple-700/40 flex items-center gap-3">
             <Eye className="w-5 h-5 text-purple-400 flex-shrink-0" />
             <div>
@@ -1093,10 +1428,10 @@ const ExerciseMode: React.FC = () => {
         <div className="bg-amber-600/20 p-3 rounded-xl"><Brain className="w-6 h-6 text-amber-400" /></div>
         <div>
           <h2 className="text-xl font-bold text-white">
-            {isStudyMode ? '📖 Modo Estudio — Diagnóstico' : '¿Cuál es tu diagnóstico?'}
+            {isStudyMode && !assignmentId ? '📖 Modo Estudio — Diagnóstico' : '¿Cuál es tu diagnóstico?'}
           </h2>
           <p className="text-sm text-gray-400">
-            {isStudyMode
+            {isStudyMode && !assignmentId
               ? 'Revisa la respuesta correcta y la explicación'
               : 'Selecciona el patrón que mejor explica los hallazgos'}
           </p>
@@ -1104,7 +1439,7 @@ const ExerciseMode: React.FC = () => {
       </div>
 
       {/* Study mode: reveal answer directly */}
-      {isStudyMode && clinicalCase && (
+      {isStudyMode && !assignmentId && clinicalCase && (
         <div className="bg-purple-900/30 rounded-xl p-5 border border-purple-700/50 space-y-3">
           <div className="flex items-center gap-2">
             <Eye className="w-5 h-5 text-purple-400" />
@@ -1131,7 +1466,7 @@ const ExerciseMode: React.FC = () => {
       )}
 
       {/* Normal exam mode — Premium selection cards */}
-      {!isStudyMode && (
+      {(!isStudyMode || !!assignmentId) && (
         <>
           <div className="grid gap-3">
             {options.map((opt, idx) => (
@@ -1158,7 +1493,7 @@ const ExerciseMode: React.FC = () => {
             ))}
           </div>
 
-          <button onClick={handleSubmitDiagnosis} disabled={!selectedAnswer}
+          <button onClick={() => handleSubmitDiagnosis()} disabled={!selectedAnswer}
             className="w-full py-4 rounded-2xl font-bold text-base sm:text-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-xl shadow-amber-600/20 active:scale-[0.98]">
             Confirmar Diagnóstico
           </button>
@@ -1222,6 +1557,15 @@ const ExerciseMode: React.FC = () => {
         </div>
 
         {/* Banner de Sincronización Docente */}
+        {timedOut && (
+          <div className="bg-amber-950/40 border border-amber-500/50 rounded-xl p-4 flex items-center gap-3 text-amber-200">
+            <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+            <div className="text-xs">
+              <span className="font-bold block text-amber-100 text-sm">Tiempo agotado</span>
+              El caso se envió automáticamente con {evaluation.selectedAnswer === 'Sin respuesta' ? 'sin diagnóstico seleccionado' : 'la opción que tenías marcada'}.
+            </div>
+          </div>
+        )}
         {assignmentSubmitted && (
           <div className="bg-emerald-950/40 border border-emerald-500/50 rounded-xl p-4 flex items-center gap-3 text-emerald-300">
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
@@ -1346,10 +1690,17 @@ const ExerciseMode: React.FC = () => {
             className="py-3 sm:py-4 rounded-xl bg-gray-700/60 hover:bg-gray-600/60 text-white font-medium transition-colors text-sm sm:text-base">
             <Eye className="w-4 h-4 inline mr-1.5" />Revisar Caso
           </button>
-          <button onClick={generateNewCase}
-            className="py-3 sm:py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold transition-all text-sm sm:text-base">
-            Siguiente <ChevronRight className="w-4 h-4 inline ml-1" />
-          </button>
+          {assignmentId ? (
+            <button onClick={() => navigate('/dashboard?tab=assignments')}
+              className="py-3 sm:py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold transition-all text-sm sm:text-base">
+              Volver a Tareas <ChevronRight className="w-4 h-4 inline ml-1" />
+            </button>
+          ) : (
+            <button onClick={generateNewCase}
+              className="py-3 sm:py-4 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold transition-all text-sm sm:text-base">
+              Siguiente <ChevronRight className="w-4 h-4 inline ml-1" />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -1388,15 +1739,20 @@ const ExerciseMode: React.FC = () => {
           <div className="max-w-5xl mx-auto px-3 sm:px-4">
             {/* Top row: back + tabs + timer */}
             <div className="flex items-center gap-1 sm:gap-3 py-2 sm:py-2.5">
-              <button onClick={() => setCurrentStep('config')}
+              <button onClick={() => assignmentId ? leaveAssignedSession() : setCurrentStep('config')}
                 className="text-gray-400 hover:text-white transition-colors p-1.5 -ml-1.5 rounded-lg hover:bg-gray-700/50"
-                title="Volver a configuración">
+                title={assignmentId ? 'Volver a tareas' : 'Volver a configuración'}>
                 <ArrowLeft className="w-5 h-5" />
               </button>
 
               {assignmentId && (
                 <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-[11px] font-bold shrink-0">
-                  <span>📝 {assignmentTitle || 'Caso Asignado'}</span>
+                  <span>📝 {assignmentTitle}</span>
+                  {isAssignedPending && (
+                    <span className={`px-1.5 py-0.5 rounded ${isAssignedExam ? 'bg-purple-600/40 text-purple-200' : 'bg-emerald-600/40 text-emerald-200'}`}>
+                      {isAssignedExam ? 'Examen' : 'Formativo'}
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -1434,12 +1790,18 @@ const ExerciseMode: React.FC = () => {
               {/* Timer */}
               {currentStep !== 'feedback' && (
                 <div className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-mono whitespace-nowrap border ${
-                  elapsedSeconds > 300 ? 'bg-red-900/30 text-red-300 border-red-700/40'
-                  : elapsedSeconds > 180 ? 'bg-amber-900/30 text-amber-300 border-amber-700/40'
-                  : 'bg-gray-700/30 text-gray-400 border-gray-700/40'
+                  remainingSeconds !== null
+                    ? remainingSeconds <= 60
+                      ? 'bg-red-900/40 text-red-300 border-red-600/50 animate-pulse'
+                      : remainingSeconds <= 180
+                      ? 'bg-amber-900/30 text-amber-300 border-amber-700/40'
+                      : 'bg-indigo-900/30 text-indigo-200 border-indigo-700/40'
+                    : elapsedSeconds > 300 ? 'bg-red-900/30 text-red-300 border-red-700/40'
+                    : elapsedSeconds > 180 ? 'bg-amber-900/30 text-amber-300 border-amber-700/40'
+                    : 'bg-gray-700/30 text-gray-400 border-gray-700/40'
                 }`}>
                   <Clock className="w-3.5 h-3.5" />
-                  {formatTime(elapsedSeconds)}
+                  {remainingSeconds !== null ? formatTime(remainingSeconds) : formatTime(elapsedSeconds)}
                 </div>
               )}
             </div>
@@ -1500,7 +1862,7 @@ const ExerciseMode: React.FC = () => {
         {renderStep()}
 
         {/* Hints — rendered INLINE in the content flow, never overlaps */}
-        {showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
+        {hintsAllowed && showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
           <div className="mt-4" style={{ marginBottom: '5rem' }}>
             <div className="bg-purple-950 rounded-xl p-4 border border-purple-700/50 shadow-lg space-y-3">
               <div className="flex items-center gap-2 mb-1">
@@ -1531,8 +1893,8 @@ const ExerciseMode: React.FC = () => {
               <ChevronLeft className="w-4 h-4 inline mr-0.5 sm:mr-1" /><span className="hidden sm:inline">Anterior</span>
             </button>
 
-            {/* Hint button — only on case/ncs/emg/diagnosis steps, not in study mode */}
-            {!isStudyMode && maxHints > 0 && (
+            {/* Hint button — only on case/ncs/emg/diagnosis steps, not in study mode or assigned exams */}
+            {hintsAllowed && maxHints > 0 && (
               <div className="flex items-center gap-2">
                 <button onClick={requestHint} disabled={hintsUsed >= maxHints}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-900/40 border border-purple-700/50 text-purple-300 hover:bg-purple-900/60 disabled:opacity-30 transition-colors text-sm">
@@ -1555,8 +1917,8 @@ const ExerciseMode: React.FC = () => {
                 className="px-3 sm:px-5 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium transition-colors text-sm min-h-[44px]">
                 <span className="hidden sm:inline">Siguiente</span><ChevronRight className="w-4 h-4 inline ml-0.5" />
               </button>
-            ) : currentStep === 'diagnosis' && !isStudyMode ? (
-              <button onClick={handleSubmitDiagnosis} disabled={!selectedAnswer}
+            ) : currentStep === 'diagnosis' && (!isStudyMode || !!assignmentId) ? (
+              <button onClick={() => handleSubmitDiagnosis()} disabled={!selectedAnswer}
                 className="px-4 sm:px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold disabled:opacity-30 transition-all text-sm min-h-[44px]">
                 Confirmar
               </button>

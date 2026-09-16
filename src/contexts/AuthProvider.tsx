@@ -83,21 +83,34 @@ async function fetchUserData(userId: string) {
 
   if (ctxError) console.error('[Auth] get_my_auth_context:', ctxError.message);
 
-  const [profileRes, rolesRes, bootstrapRes] = await Promise.all([
+  const [profileRes, rolesRes, bootstrapRes, subRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
     supabase.from('user_roles').select('role').eq('user_id', userId),
     supabase.rpc('bootstrap_admin_available'),
+    supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('tier', 'premium')
+      .eq('is_active', true)
+      .maybeSingle(),
   ]);
 
   if (profileRes.error) console.error('[Auth] profiles:', profileRes.error.message);
   if (rolesRes.error) console.error('[Auth] user_roles:', rolesRes.error.message);
 
+  const roles = ((rolesRes.data as any[])?.map((r) => r.role as AppRole) ?? []) as AppRole[];
+  const sub = subRes.data as Subscription | null;
+  const subExpired = sub?.expires_at ? new Date(sub.expires_at) < new Date() : false;
+  const hasPremiumFromSub = !!sub && sub.is_active && !subExpired;
+  const hasPremiumFromRole = roles.includes('admin') || roles.includes('editor');
+
   return {
     profile: (profileRes.data as Profile | null) ?? null,
-    roles: ((rolesRes.data as any[])?.map((r) => r.role as AppRole) ?? []) as AppRole[],
+    roles,
     bootstrapAvailable: bootstrapRes.data === true,
-    hasPremiumAccess: false,
-    subscription: null,
+    hasPremiumAccess: hasPremiumFromSub || hasPremiumFromRole,
+    subscription: sub ?? null,
   };
 }
 
@@ -164,7 +177,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
-      if (event === 'INITIAL_SESSION') return;
+      if (event === 'INITIAL_SESSION') {
+        // getSession().then() above ya maneja la carga inicial.
+        // Solo necesitamos actuar aquí si getSession no lo hizo (poco probable pero defensivo).
+        return;
+      }
       if (event === 'TOKEN_REFRESH_FAILED') {
         console.warn('[Auth] Token refresh falló (400 / invalid_grant). Limpiando tokens locales.');
         void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
@@ -172,17 +189,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         setRoles([]);
         setBootstrapAvailable(false);
+        setHasPremiumAccess(false);
+        setSubscription(null);
         return;
       }
       if (nextSession?.user) {
         if (event === 'SIGNED_IN') {
           recordUserActivity(nextSession.user.id, 'user_login', { source: 'auth_event' });
         }
+        // TOKEN_REFRESHED: recargar datos para reflejar cambios de suscripción/rol
         loadUserData(nextSession.user.id);
       } else {
         setProfile(null);
         setRoles([]);
         setBootstrapAvailable(false);
+        setHasPremiumAccess(false);
+        setSubscription(null);
       }
     });
 

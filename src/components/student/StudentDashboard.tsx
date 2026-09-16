@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   GraduationCap,
   BookOpen,
@@ -10,6 +10,7 @@ import {
   Play,
   Calendar,
   Bell,
+  BellRing,
   FileCheck,
   ChevronRight,
   Sparkles,
@@ -34,10 +35,23 @@ import {
   AlertTriangle,
   Edit3,
   RotateCcw,
+  Eye,
+  X,
+  Smartphone,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
 import { getUpcomingWorkshops } from '../../services/courseService';
+import PendingTasksAlertModal from './PendingTasksAlertModal';
+import {
+  isNotificationSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendTestNotification,
+  checkAndNotifyPendingAssignments,
+  subscribeToRealtimeAssignments,
+  type NotificationPermissionStatus,
+} from '../../services/deviceNotificationService';
 import {
   calculateStudentMetrics,
   checkCertificationEligibility,
@@ -54,6 +68,14 @@ import {
   type StudentNotification,
 } from '../../services/studentService';
 import {
+  listPendingCurriculumLessons,
+  resolveResumeLesson,
+  isCurriculumNodeCompleted,
+} from '../../services/studentResume';
+import { areRequiredQuizzesPassed, topicHasEvaluation } from '../../services/quizCompletionGate';
+import { findTopicInTree } from '../../services/contentMerge';
+import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
+import {
   getStudentAssignments,
   submitAssignment,
   getStudentActivityAndStreak,
@@ -61,6 +83,11 @@ import {
   startAssignedExam,
   requestExamRetake,
 } from '../../services/studentPlanService';
+import {
+  getClinicalCaseExerciseLocation,
+  getClinicalCaseLaunchState,
+  resolveClinicalAssignmentMode,
+} from '../../services/emgExerciseService';
 import type { StudentAssignment, StudentStreakInfo, ActiveExamLock } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
 import { BRAND } from '../../config/brand';
@@ -77,11 +104,23 @@ function formatRemainingExamTime(seconds: number) {
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, hasPremiumAccess, isAdmin, isEditor } = useAuth();
   const isPremiumUser = hasPremiumAccess || isAdmin || isEditor;
+  const { quizGate } = useQuizTopicFlags();
+
+  const openAssignedCase = (asg: StudentAssignment) => {
+    navigate(getClinicalCaseExerciseLocation(asg.id), {
+      state: getClinicalCaseLaunchState(asg, user?.id),
+    });
+  };
 
   const [activeTab, setActiveTab] = useState<'summary' | 'modules' | 'quizzes' | 'assignments' | 'notifications' | 'certificate'>('summary');
   const [showKardexModal, setShowKardexModal] = useState(false);
+  const [showPendingTasksModal, setShowPendingTasksModal] = useState(false);
+  const [dismissedTopBanner, setDismissedTopBanner] = useState(false);
+  const [deviceNotifStatus, setDeviceNotifStatus] = useState<NotificationPermissionStatus>('default');
+  const [testingDeviceNotif, setTestingDeviceNotif] = useState(false);
   const [loading, setLoading] = useState(true);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [moduleProgress, setModuleProgress] = useState<ModuleQuizProgress[]>([]);
@@ -93,6 +132,41 @@ export default function StudentDashboard() {
   const [submitNotes, setSubmitNotes] = useState('');
   const [savingSubmission, setSavingSubmission] = useState(false);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
+
+  // Sync tab with URL search param ?tab=...
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['summary', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
+
+  // Realtime updates for teacher assignments & device notification permission status
+  useEffect(() => {
+    if (!user?.id) return;
+    setDeviceNotifStatus(getNotificationPermission());
+
+    try {
+      const unsubscribe = subscribeToRealtimeAssignments(user.id, (updatedAsg, eventType) => {
+        setAssignments((prev) => {
+          const idx = prev.findIndex((a) => a.id === updatedAsg.id);
+          if (idx >= 0) {
+            const clone = [...prev];
+            clone[idx] = updatedAsg;
+            return clone;
+          }
+          return [updatedAsg, ...prev];
+        });
+        setRefreshTrigger((prev) => prev + 1);
+      });
+
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
+    } catch (err) {
+      console.warn('[StudentDashboard] Error setting up realtime assignment listener:', err);
+    }
+  }, [user?.id]);
 
   // Estados para examen asignado y candado estricto
   const [activeExamLock, setActiveExamLock] = useState<ActiveExamLock | null>(null);
@@ -136,9 +210,21 @@ export default function StudentDashboard() {
           setCompletedTopicsSet(syncedTopics);
         }
 
-        // Notifications
-        const notifs = getStudentNotifications(user.id, profile, ws);
+        // Notifications - pass assignments to include teacher tasks
+        const notifs = getStudentNotifications(user.id, profile, ws, asgs);
         setNotifications(notifs);
+
+        // Check for pending tasks and trigger modal & device notification
+        const pendingList = asgs.filter((a) => a.status === 'pending');
+        if (pendingList.length > 0) {
+          const today = new Date().toISOString().slice(0, 10);
+          const dismissedDate = localStorage.getItem(`neurosafe_dismiss_pending_modal_${user.id}`);
+          if (dismissedDate !== today) {
+            setShowPendingTasksModal(true);
+          }
+          // Notify device in background if permission is active
+          void checkAndNotifyPendingAssignments(user.id, asgs);
+        }
 
         // Last visited
         const last = getLastVisitedTopic(user.id);
@@ -149,10 +235,41 @@ export default function StudentDashboard() {
   }, [user, profile, refreshTrigger]);
 
   // Derived metrics
+  const resumeLesson = useMemo(() => {
+    return resolveResumeLesson(completedTopicsSet, lastVisited, undefined, quizGate);
+  }, [completedTopicsSet, lastVisited, quizGate]);
+
+  const upcomingPendingLessons = useMemo(() => {
+    return listPendingCurriculumLessons(completedTopicsSet, { lastVisited, limit: 4, quizGate });
+  }, [completedTopicsSet, lastVisited, quizGate]);
+
+  const pendingLessonByModule = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const mod of allModules) {
+      const pending = listPendingCurriculumLessons(completedTopicsSet, {
+        moduleId: mod.id,
+        limit: 1,
+        quizGate,
+      });
+      if (pending[0]) map[mod.id] = pending[0].url;
+    }
+    return map;
+  }, [completedTopicsSet, quizGate]);
+
   const metrics = useMemo(() => {
     if (!user) return null;
     return calculateStudentMetrics(user.id, moduleProgress, completedTopicsSet);
   }, [user, moduleProgress, completedTopicsSet, refreshTrigger]);
+
+  const hasStartedCurriculum = (metrics?.totalCompletedCurriculumTopics || 0) > 0 || Boolean(lastVisited);
+
+  const highlightedModules = useMemo(() => {
+    if (!metrics) return [];
+    const inProgress = metrics.moduleStats.filter((m) => m.progressPct > 0 && m.progressPct < 100);
+    const notStarted = metrics.moduleStats.filter((m) => m.progressPct === 0);
+    const done = metrics.moduleStats.filter((m) => m.progressPct === 100);
+    return [...inProgress, ...notStarted, ...done].slice(0, 4);
+  }, [metrics]);
 
   const certRequirements = useMemo(() => {
     if (!metrics) return null;
@@ -260,11 +377,15 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     const handleProgress = () => {
+      if (user?.id) {
+        setCompletedTopicsSet(getCompletedTopics(user.id));
+        setLastVisited(getLastVisitedTopic(user.id));
+      }
       setRefreshTrigger((prev) => prev + 1);
     };
     window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
     return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
-  }, []);
+  }, [user?.id]);
 
   // Monitoreo de examen asignado en curso (tiempo continuo)
   useEffect(() => {
@@ -294,7 +415,29 @@ export default function StudentDashboard() {
   const handleToggleTopic = (topicId: string, e: React.MouseEvent, childIds?: string[]) => {
     e.stopPropagation();
     if (!user) return;
+
+    let found: ReturnType<typeof findTopicInTree> = null;
+    let moduleId: string | null = null;
+    for (const mod of allModules) {
+      found = findTopicInTree(mod.topics, topicId);
+      if (found) {
+        moduleId = mod.id;
+        break;
+      }
+    }
+
+    const currentlyDone = found
+      ? isCurriculumNodeCompleted(found, completedTopicsSet, quizGate)
+      : isTopicCompleted(user.id, topicId);
+
+    if (found && !currentlyDone && topicHasEvaluation(found, quizGate) && !areRequiredQuizzesPassed(found, quizGate)) {
+      const url = getTopicPublicUrl(moduleId || '', topicId) || `/modulo/${moduleId}/${topicId}`;
+      navigate(`${url}#evaluacion`);
+      return;
+    }
+
     toggleTopicCompleted(user.id, topicId, childIds);
+    setCompletedTopicsSet(getCompletedTopics(user.id));
     setRefreshTrigger((prev) => prev + 1);
   };
 
@@ -400,31 +543,47 @@ export default function StudentDashboard() {
           <div className="shrink-0 bg-white/10 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/15 max-w-sm w-full">
             <p className="text-xs font-semibold uppercase tracking-wider text-blue-300 mb-1 flex items-center gap-1.5">
               <Play className="w-3 h-3 text-blue-400 fill-blue-400" />
-              Continuar donde te quedaste
+              {resumeLesson
+                ? hasStartedCurriculum
+                  ? 'Continuar donde te quedaste'
+                  : 'Empieza tu formación'
+                : 'Temario al día'}
             </p>
-            {lastVisited ? (
+            {resumeLesson ? (
               <div>
-                <p className="text-sm font-bold text-white line-clamp-1">{lastVisited.topicTitle}</p>
-                <p className="text-xs text-slate-300 line-clamp-1 mb-3">{lastVisited.moduleTitle}</p>
+                <p className="text-sm font-bold text-white line-clamp-2">{resumeLesson.topicTitle}</p>
+                <p className="text-xs text-slate-300 line-clamp-1">
+                  Módulo {resumeLesson.moduleNumber}: {resumeLesson.moduleTitle}
+                </p>
+                {resumeLesson.firstIncompleteChildTitle && (
+                  <p className="text-xs text-blue-200/90 line-clamp-1 mt-1">
+                    Siguiente: {resumeLesson.firstIncompleteChildTitle}
+                  </p>
+                )}
+                <p className="text-[11px] text-slate-400 mt-2 mb-3">
+                  {resumeLesson.pendingLessonCount}{' '}
+                  {resumeLesson.pendingLessonCount === 1 ? 'tema pendiente' : 'temas pendientes'} en el temario
+                </p>
                 <Link
-                  to={lastVisited.url}
+                  to={resumeLesson.url}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 transition-all"
                 >
-                  Continuar lección
+                  {hasStartedCurriculum ? 'Continuar lección' : 'Empezar curso'}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ) : (
               <div>
-                <p className="text-sm font-bold text-white">Módulo 1: Fundamentos Biofísicos</p>
-                <p className="text-xs text-slate-300 mb-3">Inicia tu formación en electromiografía</p>
-                <Link
-                  to="/modulo/fundamentals"
+                <p className="text-sm font-bold text-white">Has completado todas las lecciones</p>
+                <p className="text-xs text-slate-300 mb-3">Puedes repasar cualquier módulo cuando lo desees</p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('modules')}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 transition-all"
                 >
-                  Empezar curso
+                  Repasar módulos
                   <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -606,6 +765,76 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+      {/* ─── Top Urgent Alert Banner (Teacher Assigned Activities) ─── */}
+      {pendingAssignmentsCount > 0 && !dismissedTopBanner && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-blue-500/10 dark:from-amber-950/40 dark:via-indigo-950/40 dark:to-blue-950/30 border border-amber-300/80 dark:border-amber-700/60 shadow-md backdrop-blur-md animate-fade-in mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md shadow-amber-500/30 shrink-0">
+                <BellRing className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500 text-white">
+                    Actividades Pendientes de tu Profesor
+                  </span>
+                  <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                    {pendingAssignmentsCount} {pendingAssignmentsCount === 1 ? 'actividad requiere tu entrega' : 'actividades requieren tu entrega'}
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 mt-1 font-medium">
+                  {assignments.find((a) => a.status === 'pending') ? (
+                    <>
+                      Próxima:{' '}
+                      <strong className="text-slate-900 dark:text-white">
+                        {assignments.find((a) => a.status === 'pending')?.title}
+                      </strong>{' '}
+                      (Fecha límite:{' '}
+                      {new Date(assignments.find((a) => a.status === 'pending')!.due_date).toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                      )
+                    </>
+                  ) : (
+                    'Tienes tareas y evaluaciones asignadas por tus profesores.'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowPendingTasksModal(true)}
+                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 hover:bg-slate-50 dark:hover:bg-slate-750 border border-indigo-200 dark:border-indigo-800 transition shadow-xs cursor-pointer flex items-center gap-1.5"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Ver Resumen</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('assignments')}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white transition shadow-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <span>Ir a Tareas Asignadas</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setDismissedTopBanner(true)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                title="Minimizar aviso"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─── Tabs Navigation ─── */}
       <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-2 mb-8">
         <button
@@ -706,68 +935,274 @@ export default function StudentDashboard() {
                       <Clock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                        Tareas y Evaluaciones Pendientes
-                      </h2>
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                          Tareas y Evaluaciones Pendientes
+                        </h2>
+                        {pendingAssignmentsCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-600 text-white animate-pulse">
+                            {pendingAssignmentsCount} del Profesor
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500">
-                        Cuestionarios requeridos para acreditar los módulos curriculares
+                        Actividades asignadas por tus profesores y cuestionarios curriculares
                       </p>
                     </div>
                   </div>
-                  <button
-                    onClick={() => setActiveTab('quizzes')}
-                    className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
-                  >
-                    Ver todas
-                  </button>
+                  <div className="flex items-center gap-2.5">
+                    {pendingAssignmentsCount > 0 && (
+                      <button
+                        onClick={() => setShowPendingTasksModal(true)}
+                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" /> Resumen rápido
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setActiveTab(pendingAssignmentsCount > 0 ? 'assignments' : 'quizzes')}
+                      className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                    >
+                      Ver todas
+                    </button>
+                  </div>
                 </div>
 
-                {quizzesList.filter((q) => !q.passed).length === 0 ? (
+                {/* Si no hay ni tareas del profesor pendientes ni quizzes del temario pendientes */}
+                {pendingAssignmentsCount === 0 && quizzesList.filter((q) => !q.passed).length === 0 ? (
                   <div className="py-8 text-center bg-slate-50 dark:bg-slate-800/40 rounded-xl">
                     <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      ¡Excelente! No tienes evaluaciones pendientes en este momento
+                      ¡Excelente! No tienes evaluaciones ni tareas pendientes en este momento
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      Has aprobado todas las evaluaciones de los módulos cursados hasta ahora.
+                      Has completado todas las actividades asignadas por tus profesores y los módulos cursados hasta ahora.
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    {quizzesList
-                      .filter((q) => !q.passed)
-                      .slice(0, 4)
-                      .map((quiz) => (
-                        <div
-                          key={quiz.topicId}
-                          className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:border-blue-300 dark:hover:border-blue-700 transition"
-                        >
-                          <div className="space-y-1 pr-3">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                              {quiz.moduleTitle}
-                            </span>
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">
-                              {quiz.topicTitle}
-                            </p>
-                            {quiz.score != null ? (
-                              <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-                                Último intento: {quiz.score}% (Mínimo aprobatorio: 70%)
-                              </p>
-                            ) : (
-                              <p className="text-xs text-slate-400">Sin intentos realizados aún</p>
-                            )}
-                          </div>
-                          <Link
-                            to={quiz.topicUrl || `/modulo/${quiz.moduleId}`}
-                            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition"
+                  <div className="space-y-4">
+                    {/* 1. SECCIÓN: TAREAS ASIGNADAS POR EL PROFESOR (Prioridad Máxima) */}
+                    {pendingAssignmentsCount > 0 && (
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                            <Calendar className="w-3.5 h-3.5" /> Asignadas por tus Profesores ({pendingAssignmentsCount})
+                          </span>
+                          <button
+                            onClick={() => setActiveTab('assignments')}
+                            className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                           >
-                            Presentar <ArrowRight className="w-3 h-3" />
-                          </Link>
+                            Ir a Tareas Asignadas &rarr;
+                          </button>
                         </div>
-                      ))}
+
+                        <div className="space-y-2.5">
+                          {assignments
+                            .filter((a) => a.status === 'pending')
+                            .slice(0, 3)
+                            .map((asg) => {
+                              const dueTime = new Date(asg.due_date).getTime();
+                              const now = Date.now();
+                              const isOverdue = dueTime < now;
+                              const daysRemaining = Math.ceil((dueTime - now) / 86400000);
+                              const isExam = asg.type === 'exam';
+                              const isCase = asg.type === 'clinical_case';
+
+                              return (
+                                <div
+                                  key={asg.id}
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-700 transition gap-3"
+                                >
+                                  <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                      <span
+                                        className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                                          isExam
+                                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+                                            : isCase
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                        }`}
+                                      >
+                                        {isExam ? 'Examen Asignado' : isCase ? 'Caso Clínico' : 'Tarea Práctica'}
+                                      </span>
+                                      <span
+                                        className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                                          isOverdue
+                                            ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                            : daysRemaining <= 1
+                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
+                                            : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                        }`}
+                                      >
+                                        {isOverdue
+                                          ? 'Vencida'
+                                          : daysRemaining <= 1
+                                          ? '¡Vence hoy!'
+                                          : `Quedan ${daysRemaining} días`}
+                                      </span>
+                                    </div>
+
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">
+                                      {isCase ? 'Caso Clínico' : asg.title}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                      Entrega:{' '}
+                                      <strong>
+                                        {new Date(asg.due_date).toLocaleDateString('es-MX', {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })}
+                                      </strong>
+                                    </p>
+                                  </div>
+
+                                  <div className="shrink-0 flex items-center gap-2">
+                                    {isExam ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setSelectedExamForModal(asg);
+                                          setAcceptedExamRules(false);
+                                        }}
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-xs transition cursor-pointer"
+                                      >
+                                        <Play className="w-3 h-3 fill-white" />
+                                        <span>Realizar Examen</span>
+                                      </button>
+                                    ) : isCase ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          openAssignedCase(asg);
+                                        }}
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-xs transition cursor-pointer"
+                                      >
+                                        <Sparkles className="w-3 h-3" />
+                                        <span>Resolver Caso</span>
+                                      </button>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActiveTab('assignments');
+                                          setSubmittingAsg(asg);
+                                        }}
+                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition cursor-pointer"
+                                      >
+                                        <span>Entregar</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. SECCIÓN: QUIZZES DEL TEMARIO */}
+                    {quizzesList.filter((q) => !q.passed).length > 0 && (
+                      <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                          Quizzes del Temario ({quizzesList.filter((q) => !q.passed).length})
+                        </span>
+                        <div className="space-y-2">
+                          {quizzesList
+                            .filter((q) => !q.passed)
+                            .slice(0, 3)
+                            .map((quiz) => (
+                              <div
+                                key={quiz.topicId}
+                                className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:border-blue-300 dark:hover:border-blue-700 transition"
+                              >
+                                <div className="space-y-1 pr-3">
+                                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                                    {quiz.moduleTitle}
+                                  </span>
+                                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">
+                                    {quiz.topicTitle}
+                                  </p>
+                                  {quiz.score != null ? (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                                      Último intento: {quiz.score}% (Mínimo aprobatorio: 70%)
+                                    </p>
+                                  ) : (
+                                    <p className="text-xs text-slate-400">Sin intentos realizados aún</p>
+                                  )}
+                                </div>
+                                <Link
+                                  to={quiz.topicUrl || `/modulo/${quiz.moduleId}`}
+                                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition"
+                                >
+                                  Presentar <ArrowRight className="w-3 h-3" />
+                                </Link>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* Temas pendientes del temario */}
+              {upcomingPendingLessons.length > 0 && (
+                <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                        <BookOpen className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                          Temas pendientes
+                        </h2>
+                        <p className="text-xs text-slate-500">
+                          Retoma el temario desde el siguiente contenido que aún no completas
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('modules')}
+                      className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
+                    >
+                      Ver módulos
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {upcomingPendingLessons.map((lesson, index) => (
+                      <Link
+                        key={`${lesson.moduleId}-${lesson.topicId}`}
+                        to={lesson.url}
+                        className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:border-blue-300 dark:hover:border-blue-700 transition"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                            Módulo {lesson.moduleNumber}: {lesson.moduleTitle}
+                          </p>
+                          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 line-clamp-1">
+                            {lesson.topicTitle}
+                          </p>
+                          {lesson.firstIncompleteChildTitle && (
+                            <p className="text-xs text-slate-500 line-clamp-1">
+                              {lesson.firstIncompleteChildTitle}
+                            </p>
+                          )}
+                        </div>
+                        <span className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                          {index === 0 ? 'Continuar' : 'Abrir'}
+                          <ArrowRight className="w-3 h-3" />
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Módulos en Curso (Vista rápida) */}
               <div className="p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm">
@@ -794,7 +1229,7 @@ export default function StudentDashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {metrics?.moduleStats.slice(0, 4).map((mod) => (
+                  {highlightedModules.map((mod) => (
                     <div
                       key={mod.moduleId}
                       className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:shadow-sm transition flex flex-col justify-between"
@@ -821,10 +1256,15 @@ export default function StudentDashboard() {
                           />
                         </div>
                         <Link
-                          to={`/modulo/${mod.moduleId}`}
+                          to={pendingLessonByModule[mod.moduleId] || `/modulo/${mod.moduleId}`}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
                         >
-                          Abrir módulo <ChevronRight className="w-3 h-3" />
+                          {mod.progressPct === 100
+                            ? 'Repasar módulo'
+                            : mod.progressPct > 0
+                            ? 'Continuar'
+                            : 'Empezar'}{' '}
+                          <ChevronRight className="w-3 h-3" />
                         </Link>
                       </div>
                     </div>
@@ -1076,7 +1516,7 @@ export default function StudentDashboard() {
                           <ul className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                             {fullModule.topics.map((t) => {
                               const childIds = t.children?.map((c) => c.id) || [];
-                              const done = user ? isTopicCompleted(user.id, t.id) || (childIds.length > 0 && childIds.every((cid) => isTopicCompleted(user.id, cid))) : false;
+                              const done = isCurriculumNodeCompleted(t, completedTopicsSet, quizGate);
                               return (
                                 <React.Fragment key={t.id}>
                                   <li
@@ -1105,7 +1545,7 @@ export default function StudentDashboard() {
                                   {t.children && t.children.length > 0 && (
                                     <ul className="pl-4 space-y-1 border-l border-slate-200/60 dark:border-slate-700/40 ml-2 my-1">
                                       {t.children.map((sub) => {
-                                        const subDone = user ? isTopicCompleted(user.id, sub.id) : false;
+                                        const subDone = isCurriculumNodeCompleted(sub, completedTopicsSet, quizGate);
                                         return (
                                           <li
                                             key={sub.id}
@@ -1145,10 +1585,18 @@ export default function StudentDashboard() {
 
                     <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                       <Link
-                        to={`/modulo/${mod.moduleId}`}
+                        to={
+                          pendingLessonByModule[mod.moduleId] ||
+                          `/modulo/${mod.moduleId}`
+                        }
                         className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition"
                       >
-                        Ir al módulo <ArrowRight className="w-3.5 h-3.5" />
+                        {mod.progressPct === 100
+                          ? 'Repasar módulo'
+                          : mod.progressPct > 0
+                          ? 'Continuar'
+                          : 'Empezar'}{' '}
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                       <button
                         onClick={() => setExpandedModuleId(isExpanded ? null : mod.moduleId)}
@@ -1349,6 +1797,7 @@ export default function StudentDashboard() {
                 const daysRemaining = Math.ceil((dueTime - now) / 86400000);
 
                 const isExam = asg.type === 'exam';
+                const isCase = asg.type === 'clinical_case';
                 const maxAttempts = asg.target_exam_config?.maxAttempts ?? 1;
                 const attemptsCount = asg.target_exam_config?.attemptsCount ?? (asg.submitted_at || asg.status === 'submitted' || asg.status === 'approved' ? 1 : 0);
                 const isAttemptsLimited = maxAttempts > 0;
@@ -1424,11 +1873,13 @@ export default function StudentDashboard() {
                       </div>
 
                       <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                        {asg.title}
+                        {isCase && asg.status !== 'approved' ? 'Caso Clínico' : asg.title}
                       </h3>
 
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                        {asg.description}
+                        {isCase && asg.status !== 'approved'
+                          ? 'Caso clínico sin detalles asignado por tu profesor. Abre la actividad en el simulador para analizar la historia clínica, estudios neurofisiológicos y emitir tu diagnóstico.'
+                          : asg.description}
                       </p>
 
                       {/* Tags de configuración del examen */}
@@ -1460,6 +1911,28 @@ export default function StudentDashboard() {
                             }`}
                           >
                             Intentos: {attemptsCount} / {maxAttempts > 0 ? maxAttempts : 'Ilimitados'}
+                          </span>
+                        </div>
+                      )}
+
+                      {asg.type === 'clinical_case' && asg.status === 'pending' && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border ${
+                            resolveClinicalAssignmentMode(asg.target_exam_config) === 'study'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                              : 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800'
+                          }`}>
+                            {resolveClinicalAssignmentMode(asg.target_exam_config) === 'study'
+                              ? 'Modo formativo (con pistas)'
+                              : 'Modo examen (sin pistas)'}
+                          </span>
+                          {asg.target_exam_config?.timeLimitMinutes && resolveClinicalAssignmentMode(asg.target_exam_config) === 'exam' && (
+                            <span className="px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-bold border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" /> {asg.target_exam_config.timeLimitMinutes} min
+                            </span>
+                          )}
+                          <span className="px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold border border-slate-200 dark:border-slate-700">
+                            Diagnóstico oculto hasta resolver
                           </span>
                         </div>
                       )}
@@ -1642,14 +2115,7 @@ export default function StudentDashboard() {
                             <button
                               type="button"
                               onClick={() => {
-                                navigate('/ejercicios', {
-                                  state: {
-                                    assignmentId: asg.id,
-                                    patternId: (asg.target_exam_config as any)?.patternId,
-                                    title: asg.title,
-                                    studentId: user?.id,
-                                  },
-                                });
+                                openAssignedCase(asg);
                               }}
                               className="w-full inline-flex items-center justify-center gap-1.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition cursor-pointer"
                             >
@@ -1665,14 +2131,7 @@ export default function StudentDashboard() {
                             <button
                               type="button"
                               onClick={() => {
-                                navigate('/ejercicios', {
-                                  state: {
-                                    assignmentId: asg.id,
-                                    patternId: (asg.target_exam_config as any)?.patternId,
-                                    title: asg.title,
-                                    studentId: user?.id,
-                                  },
-                                });
+                                openAssignedCase(asg);
                               }}
                               className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
                             >
@@ -1684,14 +2143,7 @@ export default function StudentDashboard() {
                           <button
                             type="button"
                             onClick={() => {
-                              navigate('/ejercicios', {
-                                state: {
-                                  assignmentId: asg.id,
-                                  patternId: (asg.target_exam_config as any)?.patternId,
-                                  title: asg.title,
-                                  studentId: user?.id,
-                                },
-                              });
+                              openAssignedCase(asg);
                             }}
                             className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
                           >
@@ -1742,7 +2194,7 @@ export default function StudentDashboard() {
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Send className="w-4 h-4 text-blue-600" />
-                    <span>Entregar Tarea: {submittingAsg.title}</span>
+                    <span>Entregar Tarea: {submittingAsg.type === 'clinical_case' ? 'Caso Clínico' : submittingAsg.title}</span>
                   </h3>
                   <button
                     type="button"
@@ -1754,7 +2206,9 @@ export default function StudentDashboard() {
                 </div>
 
                 <p className="text-xs text-slate-500">
-                  {submittingAsg.description}
+                  {submittingAsg.type === 'clinical_case'
+                    ? 'Caso clínico sin detalles asignado por tu profesor.'
+                    : submittingAsg.description}
                 </p>
 
                 <form onSubmit={handleSubmitAssignment} className="space-y-4 text-xs">
@@ -2065,6 +2519,64 @@ export default function StudentDashboard() {
             )}
           </div>
 
+          {/* PWA Device Notification Settings Card */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50/80 via-indigo-50/60 to-purple-50/40 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/20 border border-blue-200/80 dark:border-blue-900/60 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="p-2.5 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-500/20 shrink-0">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Alertas en tu Dispositivo y Teléfono (PWA)
+                    </h3>
+                    {deviceNotifStatus === 'granted' && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                        <ShieldCheck className="w-3 h-3" /> Activadas
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
+                    {deviceNotifStatus === 'granted'
+                      ? 'Recibirás avisos directos en tu barra de notificaciones y pantalla de bloqueo cuando tus profesores asignen exámenes, casos clínicos o registren calificaciones.'
+                      : 'Activa las notificaciones del navegador o PWA para recibir avisos instantáneos de tus tareas y exámenes sin tener que entrar a revisar manualmente.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-2">
+                {deviceNotifStatus === 'granted' ? (
+                  <button
+                    type="button"
+                    disabled={testingDeviceNotif}
+                    onClick={async () => {
+                      setTestingDeviceNotif(true);
+                      await sendTestNotification();
+                      setTimeout(() => setTestingDeviceNotif(false), 4000);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-300 text-xs font-bold hover:bg-blue-50 dark:hover:bg-slate-750 border border-blue-200 dark:border-blue-800 transition shadow-xs cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
+                  >
+                    <BellRing className="w-3.5 h-3.5" />
+                    <span>{testingDeviceNotif ? '¡Alerta enviada!' : 'Probar Notificación'}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const res = await requestNotificationPermission(user?.id);
+                      setDeviceNotifStatus(res);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
+                  >
+                    <BellRing className="w-3.5 h-3.5" />
+                    <span>Activar Alertas de Dispositivo</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-3">
             {notifications.map((notif) => (
               <div
@@ -2116,7 +2628,7 @@ export default function StudentDashboard() {
                       to={notif.linkUrl}
                       className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline"
                     >
-                      Ir a la sección <ChevronRight className="w-3 h-3" />
+                      Ir a la sección <ChevronRight className="w-3.5 h-3.5" />
                     </Link>
                   </div>
                 )}
@@ -2191,12 +2703,21 @@ export default function StudentDashboard() {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setActiveTab('modules')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  Continuar temario
-                </button>
+                {resumeLesson ? (
+                  <Link
+                    to={resumeLesson.url}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    Continuar temario
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => setActiveTab('modules')}
+                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  >
+                    Continuar temario
+                  </button>
+                )}
               </div>
 
               {/* Req 3: Calificación Aprobatoria */}
@@ -2287,6 +2808,30 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {user?.id && (
+        <PendingTasksAlertModal
+          isOpen={showPendingTasksModal}
+          onClose={() => setShowPendingTasksModal(false)}
+          studentName={displayName}
+          studentId={user.id}
+          pendingAssignments={assignments.filter((a) => a.status === 'pending')}
+          onSelectExam={(asg) => {
+            setSelectedExamForModal(asg);
+            setAcceptedExamRules(false);
+          }}
+          onSelectCase={(asg) => {
+            openAssignedCase(asg);
+          }}
+          onSelectOther={(asg) => {
+            setActiveTab('assignments');
+            setSubmittingAsg(asg);
+          }}
+          onGoToAllAssignments={() => {
+            setActiveTab('assignments');
+          }}
+        />
       )}
 
       {user?.id && (

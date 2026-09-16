@@ -1,19 +1,23 @@
 import { useEffect, useMemo, useState } from 'react';
-import { isSupabaseConfigured } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthProvider';
 import { getAllQuizFlags } from '../services/quizService';
+import {
+  fetchPassedQuizTopicIds,
+  getPassedQuizTopicIdsSync,
+  type QuizCompletionGate,
+} from '../services/quizCompletionGate';
+import { TOPIC_PROGRESS_EVENT } from '../services/studentService';
 import type { QuizTopicFlag } from '../types/quiz';
 
 export function useQuizTopicFlags() {
+  const { user } = useAuth();
   const [flags, setFlags] = useState<QuizTopicFlag[]>([]);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+  const [passedTopicIds, setPassedTopicIds] = useState<Set<string>>(
+    () => (user?.id ? getPassedQuizTopicIdsSync(user.id) : new Set())
+  );
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setFlags([]);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
     getAllQuizFlags()
       .then((data) => {
@@ -30,6 +34,31 @@ export function useQuizTopicFlags() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setPassedTopicIds(new Set());
+      return;
+    }
+
+    let cancelled = false;
+    fetchPassedQuizTopicIds(user.id)
+      .then((ids) => {
+        if (!cancelled) setPassedTopicIds(ids);
+      })
+      .catch(() => {
+        if (!cancelled) setPassedTopicIds(getPassedQuizTopicIdsSync(user.id));
+      });
+
+    const reloadPassed = () => {
+      setPassedTopicIds(getPassedQuizTopicIdsSync(user.id));
+    };
+    window.addEventListener(TOPIC_PROGRESS_EVENT, reloadPassed);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(TOPIC_PROGRESS_EVENT, reloadPassed);
+    };
+  }, [user?.id]);
 
   const byTopicId = useMemo(() => {
     const map = new Map<string, QuizTopicFlag>();
@@ -50,9 +79,27 @@ export function useQuizTopicFlags() {
     return map;
   }, [flags]);
 
-  const hasQuiz = (topicId: string) => byTopicId.has(topicId);
+  const quizGate: QuizCompletionGate = useMemo(
+    () => ({
+      quizTopicIds: new Set(byTopicId.keys()),
+      passedQuizTopicIds: passedTopicIds,
+    }),
+    [byTopicId, passedTopicIds]
+  );
 
+  const hasQuiz = (topicId: string) => byTopicId.has(topicId);
+  const hasPassedQuiz = (topicId: string) => passedTopicIds.has(topicId);
   const moduleQuizCount = (moduleId: string) => byModuleId.get(moduleId)?.length ?? 0;
 
-  return { flags, byTopicId, byModuleId, hasQuiz, moduleQuizCount, loading };
+  return {
+    flags,
+    byTopicId,
+    byModuleId,
+    hasQuiz,
+    hasPassedQuiz,
+    passedTopicIds,
+    quizGate,
+    moduleQuizCount,
+    loading,
+  };
 }

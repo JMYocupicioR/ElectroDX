@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import type { Topic } from '../types/content';
 import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
+import type { StudentAssignment } from '../types/studentPlan';
 
 export interface LastVisitedTopic {
   moduleId: string;
@@ -486,7 +487,8 @@ export function calculateStudentMetrics(
 export function getStudentNotifications(
   userId: string,
   profile: Profile | null,
-  workshops: LiveWorkshop[] = []
+  workshops: LiveWorkshop[] = [],
+  assignments: StudentAssignment[] = []
 ): StudentNotification[] {
   const readMap: Record<string, boolean> = (() => {
     try {
@@ -498,6 +500,57 @@ export function getStudentNotifications(
   })();
 
   const notifs: StudentNotification[] = [];
+
+  // 0. Teacher Assigned Tasks & Exams
+  assignments.forEach((asg) => {
+    const isExam = asg.type === 'exam';
+    const typeLabel = isExam
+      ? 'Examen Asignado'
+      : asg.type === 'clinical_case'
+      ? 'Caso Clínico'
+      : asg.type === 'emg_report'
+      ? 'Reporte de Trazo EMG'
+      : 'Tarea Asignada';
+
+    // Pending assignment
+    if (asg.status === 'pending') {
+      const dueTime = new Date(asg.due_date).getTime();
+      const now = Date.now();
+      const isUrgent = dueTime - now < 24 * 60 * 60 * 1000;
+      const daysRemaining = Math.ceil((dueTime - now) / 86400000);
+      const dueStr = new Date(asg.due_date).toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      notifs.push({
+        id: `notif_asg_${asg.id}`,
+        title: `${isUrgent ? '⏰ ¡Urgente! ' : '📋 '}${typeLabel}: ${asg.title}`,
+        message: `${asg.description || 'Actividad requerida por tu profesor.'} Fecha límite: ${dueStr} (${daysRemaining <= 1 ? '¡vence pronto!' : `quedan ${daysRemaining} días`}).`,
+        type: 'quiz',
+        severity: isUrgent ? 'warning' : 'info',
+        createdAt: asg.created_at,
+        linkUrl: `/dashboard?tab=assignments`,
+        isRead: !!readMap[`notif_asg_${asg.id}`],
+      });
+    }
+
+    // Evaluated / Graded by Teacher
+    if (asg.grade != null && asg.reviewed_at) {
+      notifs.push({
+        id: `notif_asg_reviewed_${asg.id}`,
+        title: `⭐ Calificación: ${asg.title}`,
+        message: `Tu profesor ha evaluado tu entrega con ${asg.grade}/100 pts.${asg.feedback ? ` Comentario: "${asg.feedback}"` : ''}`,
+        type: 'academic',
+        severity: (asg.grade ?? 0) >= (asg.min_score ?? 70) ? 'success' : 'warning',
+        createdAt: asg.reviewed_at || asg.updated_at,
+        linkUrl: `/dashboard?tab=assignments`,
+        isRead: !!readMap[`notif_asg_reviewed_${asg.id}`],
+      });
+    }
+  });
 
   // 1. Cédula Profesional status
   if (profile?.cedula_verified) {

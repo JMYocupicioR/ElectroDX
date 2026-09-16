@@ -16,6 +16,7 @@ import {
   submitQuizAttempt,
 } from '../../services/quizService';
 import { markTopicCompleted } from '../../services/studentService';
+import { recordQuizPassed } from '../../services/quizCompletionGate';
 import { shuffleOptions, shuffleQuestions } from '../../utils/quizScoring';
 import { localizeQuizQuestion } from '../../utils/quizLocalization';
 import type { QuizAnswerRecord, QuizTopicFlag, QuizWithQuestions } from '../../types/quiz';
@@ -170,6 +171,7 @@ export function QuizPlayer({
       // Si aprobó, acreditar inmediatamente el tema y disparar callback
       if (attempt.passed) {
         if (user) {
+          recordQuizPassed(user.id, topicId);
           markTopicCompleted(user.id, topicId);
         }
         onPass?.();

@@ -27,6 +27,7 @@ import { OfflineIndicator } from './components/OfflineButton';
 import { UserMenu } from './components/user/UserMenu';
 import { useAuth } from './contexts/AuthProvider';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
+import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
 
 export function Header() {
@@ -34,6 +35,7 @@ export function Header() {
   const initializeOffline = useOfflineStore(s => s.initialize);
   const { user, isAdmin, isPendingApproval } = useAuth();
   const { totalPending } = useAdminPendingCounts();
+  const { pendingCount } = useStudentPendingAssignments();
   const location = useLocation();
 
   const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
@@ -159,11 +161,16 @@ export function Header() {
             {isSupabaseConfigured && user && !isAdmin && !isPendingApproval && (
               <Link
                 to="/dashboard"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-xs"
+                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-xs"
                 title="Ir a Mi Portal de Estudiante"
               >
                 <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
                 <span>Mi Portal</span>
+                {pendingCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none animate-pulse shadow-xs">
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </span>
+                )}
               </Link>
             )}
 
@@ -285,7 +292,12 @@ export function Header() {
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
                       >
                         <GraduationCap className="w-3.5 h-3.5" />
-                        Ir a Mi Portal de Estudiante
+                        <span>Ir a Mi Portal de Estudiante</span>
+                        {pendingCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none animate-pulse">
+                            {pendingCount}
+                          </span>
+                        )}
                       </Link>
                     )}
                   </div>

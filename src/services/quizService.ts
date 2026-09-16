@@ -38,15 +38,20 @@ export async function getQuizFlagForTopic(topicId: string): Promise<QuizTopicFla
 }
 
 export async function getAllQuizFlags(): Promise<QuizTopicFlag[]> {
+  const local = getAllLocalQuizFlags().filter((f) => f.question_count > 0);
   try {
     const { data, error } = await supabase.from('quiz_topic_flags').select('*');
     if (!error && data && data.length > 0) {
-      return (data as QuizTopicFlag[]).filter((f) => f.question_count > 0);
+      const merged = new Map(local.map((flag) => [flag.topic_id, flag]));
+      for (const flag of data as QuizTopicFlag[]) {
+        if (flag.question_count > 0) merged.set(flag.topic_id, flag);
+      }
+      return Array.from(merged.values());
     }
   } catch (e) {
     console.warn('[quizService] Error fetching all quiz flags from DB, using fallback:', e);
   }
-  return getAllLocalQuizFlags();
+  return local;
 }
 
 export async function getQuizWithQuestions(topicId: string): Promise<QuizWithQuestions | null> {

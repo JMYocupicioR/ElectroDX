@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, Home, ClipboardList, CheckCircle2, Sparkles, Filter, RotateCcw, Clock } from 'lucide-react';
+import { ChevronRight, Home, ClipboardList, CheckCircle2, Sparkles, Filter, RotateCcw, Clock, ArrowRight, Play } from 'lucide-react';
 import { OfflineButton } from '../OfflineButton';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useMergedModule } from '../../hooks/useMergedModule';
@@ -11,16 +11,20 @@ import { ProposeSubtopicLink } from '../editorial/TopicContribution';
 import { ModuleTopicRow, TopicFilterType } from './ModuleTopicTree';
 import { PremiumGate } from '../PremiumGate';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
+import { listPendingCurriculumLessons } from '../../services/studentResume';
 
 export default function ModulePage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { module: mod, loading } = useMergedModule(moduleId);
   const { canProposeContent } = useAuth();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const lang = useSettingsStore((s) => s.language);
-  const [filter, setFilter] = useState<TopicFilterType>('all');
-  const { getModuleStats, markSection } = useTopicProgress();
+  const [filter, setFilter] = useState<TopicFilterType>(() =>
+    searchParams.get('filtro') === 'pendientes' ? 'pending' : 'all'
+  );
+  const { getModuleStats, markSection, completedTopicIds } = useTopicProgress();
 
   useEffect(() => {
     if (mod && moduleId && moduleId !== mod.id) {
@@ -33,6 +37,14 @@ export default function ModulePage() {
       ? getModuleStats(mod.topics)
       : { total: 0, completed: 0, pending: 0, percent: 0, isFullyCompleted: false };
   }, [mod, getModuleStats]);
+
+  const moduleResume = useMemo(() => {
+    if (!mod) return null;
+    return listPendingCurriculumLessons(completedTopicIds, {
+      moduleId: mod.id,
+      limit: 1,
+    })[0] ?? null;
+  }, [mod, completedTopicIds]);
 
   if (loading && !mod) {
     return (
@@ -141,6 +153,16 @@ export default function ModulePage() {
 
             {/* Quick Batch Actions */}
             <div className="flex items-center gap-2 text-xs">
+              {moduleResume && stats.pending > 0 && (
+                <Link
+                  to={moduleResume.url}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm shadow-blue-500/20 transition-colors"
+                >
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                  {lang === 'en' ? 'Continue pending lesson' : 'Continuar pendiente'}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={() => mod && markSection(mod.topics, true)}

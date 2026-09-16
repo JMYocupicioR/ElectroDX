@@ -12,6 +12,11 @@ import {
   TOPIC_PROGRESS_EVENT,
   getAllTopicIds,
 } from '../services/studentService';
+import { getAllLeafTopicIds, getLeafTopicIds, isCurriculumNodeCompleted } from '../services/studentResume';
+import { areRequiredQuizzesPassed } from '../services/quizCompletionGate';
+import { useQuizTopicFlags } from './useQuizTopicFlags';
+
+export { getLeafTopicIds, getAllLeafTopicIds } from '../services/studentResume';
 
 export type TopicProgressStatus = 'completed' | 'in_progress' | 'pending';
 
@@ -31,26 +36,10 @@ export interface ModuleProgressStats {
   isFullyCompleted: boolean;
 }
 
-/**
- * Extract all leaf topic IDs (topics that contain actual study content and no children)
- */
-export function getLeafTopicIds(topic: Topic): string[] {
-  if (!topic.children || topic.children.length === 0) {
-    return [topic.id];
-  }
-  return topic.children.flatMap(getLeafTopicIds);
-}
-
-/**
- * Extract all leaf topic IDs across a list of topics
- */
-export function getAllLeafTopicIds(topics: Topic[]): string[] {
-  return topics.flatMap(getLeafTopicIds);
-}
-
 export function useTopicProgress(overrideUserId?: string) {
   const { user } = useAuth();
   const activeUserId = overrideUserId || user?.id || 'anonymous_student';
+  const { quizGate } = useQuizTopicFlags();
 
   const [completedTopicIds, setCompletedTopicIds] = useState<Set<string>>(() =>
     getCompletedTopics(activeUserId)
@@ -95,13 +84,19 @@ export function useTopicProgress(overrideUserId?: string) {
    */
   const isCompleted = useCallback(
     (topicId: string, childTopicIds?: string[]): boolean => {
+      if (quizGate.quizTopicIds.has(topicId) && !quizGate.passedQuizTopicIds.has(topicId)) {
+        return false;
+      }
+      if (childTopicIds?.some((cid) => quizGate.quizTopicIds.has(cid) && !quizGate.passedQuizTopicIds.has(cid))) {
+        return false;
+      }
       if (completedTopicIds.has(topicId)) return true;
       if (childTopicIds && childTopicIds.length > 0) {
         return childTopicIds.every((cid) => completedTopicIds.has(cid));
       }
       return false;
     },
-    [completedTopicIds]
+    [completedTopicIds, quizGate]
   );
 
   const isVisited = useCallback(
@@ -123,19 +118,22 @@ export function useTopicProgress(overrideUserId?: string) {
    */
   const getTopicStatus = useCallback(
     (topic: Topic): TopicProgressStatus => {
+      if (isCurriculumNodeCompleted(topic, completedTopicIds, quizGate)) return 'completed';
+
       if (topic.children && topic.children.length > 0) {
         const leafIds = getLeafTopicIds(topic);
-        const completedCount = leafIds.filter((id) => completedTopicIds.has(id)).length;
-        if (completedCount === leafIds.length) return 'completed';
+        const completedCount = leafIds.filter((id) => {
+          if (quizGate.quizTopicIds.has(id) && !quizGate.passedQuizTopicIds.has(id)) return false;
+          return completedTopicIds.has(id);
+        }).length;
         if (completedCount > 0) return 'in_progress';
         return 'pending';
       }
 
-      if (completedTopicIds.has(topic.id)) return 'completed';
       if (visitedTopicIds.has(topic.id)) return 'in_progress';
       return 'pending';
     },
-    [completedTopicIds, visitedTopicIds]
+    [completedTopicIds, visitedTopicIds, quizGate]
   );
 
   /**
@@ -145,11 +143,15 @@ export function useTopicProgress(overrideUserId?: string) {
     (topic: Topic): ParentTopicStats => {
       const leafIds = getLeafTopicIds(topic);
       const total = leafIds.length;
-      const completed = leafIds.filter((id) => completedTopicIds.has(id)).length;
+      const completed = leafIds.filter((id) => {
+        if (quizGate.quizTopicIds.has(id) && !quizGate.passedQuizTopicIds.has(id)) return false;
+        return completedTopicIds.has(id);
+      }).length;
       const pending = Math.max(0, total - completed);
       const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+      const quizzesPassed = areRequiredQuizzesPassed(topic, quizGate);
       let status: TopicProgressStatus = 'pending';
-      if (completed === total && total > 0) {
+      if (completed === total && total > 0 && quizzesPassed) {
         status = 'completed';
       } else if (completed > 0) {
         status = 'in_progress';
@@ -157,7 +159,7 @@ export function useTopicProgress(overrideUserId?: string) {
 
       return { total, completed, pending, percent, status };
     },
-    [completedTopicIds]
+    [completedTopicIds, quizGate]
   );
 
   /**
@@ -172,15 +174,22 @@ export function useTopicProgress(overrideUserId?: string) {
         const allLeavesDone = leafIds.every((id) => completedTopicIds.has(id));
         const shouldComplete = !allLeavesDone;
 
+        if (shouldComplete && !areRequiredQuizzesPassed(topic, quizGate)) {
+          return false;
+        }
+
         markMultipleTopics(activeUserId, allDescendantIds, shouldComplete);
         return shouldComplete;
       }
 
-      // Single leaf topic
+      if (!completedTopicIds.has(topic.id) && !areRequiredQuizzesPassed(topic, quizGate)) {
+        return false;
+      }
+
       const nextState = toggleTopicCompleted(activeUserId, topic.id);
       return nextState;
     },
-    [activeUserId, completedTopicIds]
+    [activeUserId, completedTopicIds, quizGate]
   );
 
   const markCompleted = useCallback(
@@ -206,10 +215,24 @@ export function useTopicProgress(overrideUserId?: string) {
 
   const markSection = useCallback(
     (topics: Topic[], completed: boolean) => {
-      const allIds = getAllTopicIds(topics);
-      markMultipleTopics(activeUserId, allIds, completed);
+      if (!completed) {
+        markMultipleTopics(activeUserId, getAllTopicIds(topics), false);
+        return;
+      }
+
+      const allowedIds: string[] = [];
+      const walk = (node: Topic) => {
+        if (areRequiredQuizzesPassed(node, quizGate)) {
+          allowedIds.push(node.id);
+        }
+        node.children?.forEach(walk);
+      };
+      topics.forEach(walk);
+      if (allowedIds.length > 0) {
+        markMultipleTopics(activeUserId, allowedIds, true);
+      }
     },
-    [activeUserId]
+    [activeUserId, quizGate]
   );
 
   /**
@@ -219,10 +242,14 @@ export function useTopicProgress(overrideUserId?: string) {
     (moduleTopics: Topic[]): ModuleProgressStats => {
       const leafIds = getAllLeafTopicIds(moduleTopics);
       const total = leafIds.length;
-      const completed = leafIds.filter((id) => completedTopicIds.has(id)).length;
+      const completed = leafIds.filter((id) => {
+        if (quizGate.quizTopicIds.has(id) && !quizGate.passedQuizTopicIds.has(id)) return false;
+        return completedTopicIds.has(id);
+      }).length;
       const pending = Math.max(0, total - completed);
       const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-      const isFullyCompleted = total > 0 && completed === total;
+      const quizzesOk = moduleTopics.every((topic) => areRequiredQuizzesPassed(topic, quizGate));
+      const isFullyCompleted = total > 0 && completed === total && quizzesOk;
 
       return {
         total,
@@ -232,7 +259,7 @@ export function useTopicProgress(overrideUserId?: string) {
         isFullyCompleted,
       };
     },
-    [completedTopicIds]
+    [completedTopicIds, quizGate]
   );
 
   return {
@@ -250,6 +277,7 @@ export function useTopicProgress(overrideUserId?: string) {
     markVisited,
     markSection,
     getModuleStats,
+    quizGate,
     reload,
   };
 }

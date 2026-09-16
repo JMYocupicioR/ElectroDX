@@ -41,6 +41,11 @@ export interface StudentAssignment {
     questionCount?: number;
     timeLimitMinutes?: number;
     mode?: 'FULL_SIMULATION' | 'TOPIC_SPECIFIC' | 'CUSTOM' | 'FAILED_REVIEW' | 'CRITICAL_ONLY';
+    /** Caso clínico EMG asignado por el profesor */
+    patternId?: string;
+    category?: string;
+    difficulty?: string;
+    clinicalMode?: 'study' | 'exam';
     minPassingScore?: number;
     strictLock?: boolean;
     startedAt?: string;

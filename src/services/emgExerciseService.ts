@@ -5,9 +5,15 @@
 
 import { supabase } from '../lib/supabase';
 import { ALL_CASE_TEMPLATES, type CaseTemplate, type CaseUsageMode } from '../../ejercicios/src/data/CaseTemplates';
-import type { DiagnosticCategory, Difficulty } from '../../ejercicios/src/types/ClinicalCase';
-import { createBatchAssignments, gradeAssignment } from './studentPlanService';
-import type { AssignmentPriority } from '../types/studentPlan';
+import type {
+  ClinicalCase,
+  DiagnosisOption,
+  DiagnosticCategory,
+  Difficulty,
+  EvaluationResult,
+} from '../../ejercicios/src/types/ClinicalCase';
+import { createAssignment, getStudentAssignmentById, gradeAssignment } from './studentPlanService';
+import type { AssignmentPriority, AssignmentStatus, StudentAssignment } from '../types/studentPlan';
 
 const KEY_LOCAL_CUSTOM_TEMPLATES = 'neurosafe_custom_emg_templates_v1';
 
@@ -55,9 +61,10 @@ export async function loadAllCaseTemplates(
 
     if (error) throw error;
 
+    source = 'supabase';
+
     if (data && data.length > 0) {
       customTemplates = data.map(rowToTemplate);
-      source = 'supabase';
       // Cachear en localStorage
       try {
         localStorage.setItem(KEY_LOCAL_CUSTOM_TEMPLATES, JSON.stringify(customTemplates));
@@ -216,6 +223,8 @@ export async function deleteCaseTemplate(patternId: string): Promise<{ success: 
 
 // ─── Asignación de Casos Clínicos a Alumnos ────────────────────────────────────
 
+export type ClinicalAssignmentMode = 'study' | 'exam';
+
 export interface ClinicalCaseAssignmentConfig {
   studentIds: string[];
   title: string;
@@ -223,7 +232,7 @@ export interface ClinicalCaseAssignmentConfig {
   patternId?: string; // Caso específico
   category?: DiagnosticCategory | 'all';
   difficulty?: Difficulty;
-  mode?: 'study' | 'exam'; // 'study' = con pistas; 'exam' = estricto sin pistas
+  mode?: ClinicalAssignmentMode; // 'study' = con pistas; 'exam' = estricto sin pistas
   timeLimitMinutes?: number;
   dueDate: string; // ISO
   priority?: AssignmentPriority;
@@ -231,42 +240,181 @@ export interface ClinicalCaseAssignmentConfig {
   assignedBy?: string;
 }
 
+export interface ClinicalAssignmentLaunchState {
+  assignmentId: string;
+  patternId?: string;
+  category?: string;
+  clinicalMode: ClinicalAssignmentMode;
+  timeLimitMinutes?: number;
+  difficulty?: Difficulty;
+  assignmentTitle: string;
+  studentId?: string;
+  status?: AssignmentStatus;
+}
+
+const KEY_CLINICAL_CASE_LOCK = 'neurosafe_clinical_case_lock_';
+
+export interface ClinicalCaseSessionLock {
+  assignmentId: string;
+  patternId: string;
+  startedAt: string;
+  expiresAt: string | null;
+  clinicalMode: ClinicalAssignmentMode;
+  timeLimitMinutes?: number;
+  difficulty: Difficulty;
+  clinicalCase: ClinicalCase;
+  options: DiagnosisOption[];
+  currentStep: string;
+  selectedAnswer: string | null;
+  hintsUsed: number;
+  submitted: boolean;
+  timedOut?: boolean;
+  evaluation?: EvaluationResult | null;
+}
+
+export function resolveClinicalAssignmentMode(
+  cfg?: StudentAssignment['target_exam_config'] | Record<string, unknown> | null
+): ClinicalAssignmentMode {
+  const raw = (cfg || {}) as Record<string, unknown>;
+  if (raw.clinicalMode === 'study' || raw.mode === 'study') return 'study';
+  return 'exam';
+}
+
+export function getClinicalCaseLaunchState(
+  assignment: StudentAssignment,
+  studentId?: string
+): ClinicalAssignmentLaunchState {
+  const cfg = (assignment.target_exam_config || {}) as Record<string, unknown>;
+  const isReplay = assignment.status !== 'pending';
+  return {
+    assignmentId: assignment.id,
+    patternId: typeof cfg.patternId === 'string' ? cfg.patternId : undefined,
+    category: typeof cfg.category === 'string' ? cfg.category : undefined,
+    clinicalMode: resolveClinicalAssignmentMode(assignment.target_exam_config),
+    timeLimitMinutes: typeof cfg.timeLimitMinutes === 'number' ? cfg.timeLimitMinutes : undefined,
+    difficulty: (cfg.difficulty as Difficulty) || 'medium',
+    assignmentTitle: isReplay ? assignment.title : 'Caso Clínico Asignado',
+    studentId: studentId || assignment.student_id,
+    status: assignment.status,
+  };
+}
+
+export function getClinicalCaseExerciseLocation(assignmentId: string) {
+  return {
+    pathname: '/ejercicios',
+    search: `?assignmentId=${encodeURIComponent(assignmentId)}`,
+  };
+}
+
+export function loadClinicalCaseLock(assignmentId: string): ClinicalCaseSessionLock | null {
+  try {
+    const raw = sessionStorage.getItem(`${KEY_CLINICAL_CASE_LOCK}${assignmentId}`);
+    if (!raw) return null;
+    return JSON.parse(raw) as ClinicalCaseSessionLock;
+  } catch {
+    return null;
+  }
+}
+
+export function saveClinicalCaseLock(lock: ClinicalCaseSessionLock): void {
+  try {
+    sessionStorage.setItem(`${KEY_CLINICAL_CASE_LOCK}${lock.assignmentId}`, JSON.stringify(lock));
+  } catch {}
+}
+
+export function clearClinicalCaseLock(assignmentId: string): void {
+  try {
+    sessionStorage.removeItem(`${KEY_CLINICAL_CASE_LOCK}${assignmentId}`);
+  } catch {}
+}
+
+function pickPatternIdForAssignment(
+  templates: CustomCaseTemplateRecord[],
+  config: ClinicalCaseAssignmentConfig
+): string | undefined {
+  if (config.patternId) return config.patternId;
+
+  const pool =
+    config.category && config.category !== 'all'
+      ? templates.filter((t) => t.category === config.category)
+      : templates;
+  const source = pool.length > 0 ? pool : templates;
+  if (source.length === 0) return undefined;
+  return source[Math.floor(Math.random() * source.length)].patternId;
+}
+
 /**
  * Asigna un caso clínico de EMG a uno o más alumnos seleccionados.
+ * Si el profesor eligió categoría aleatoria, se fija un patternId por alumno
+ * para que el caso no cambie al recargar.
  */
 export async function assignCaseToStudents(
   config: ClinicalCaseAssignmentConfig
 ): Promise<{ success: boolean; assignedCount: number; error?: string }> {
   try {
-    const assignmentData = {
-      title: config.title,
-      type: 'clinical_case' as const,
-      description: config.description || `Resolución interactiva del caso clínico EMG: ${config.title}`,
-      target_module_id: null,
-      target_topic_id: null,
-      target_exam_config: {
-        patternId: config.patternId,
-        category: config.category,
-        difficulty: config.difficulty,
-        mode: config.mode || 'exam',
-        timeLimitMinutes: config.timeLimitMinutes || 30,
-        minPassingScore: config.minScore ?? 70,
-        maxAttempts: 1,
-        allowRetakeRequest: true,
-      },
-      due_date: config.dueDate,
-      priority: config.priority || 'normal',
-      min_score: config.minScore ?? 70,
-      assigned_by: config.assignedBy || null,
-      status: 'pending' as const,
-    };
+    const { templates } = await loadAllCaseTemplates();
+    const clinicalMode: ClinicalAssignmentMode = config.mode || 'exam';
+    const timeLimitMinutes =
+      clinicalMode === 'exam' ? config.timeLimitMinutes || 30 : undefined;
 
-    const res = await createBatchAssignments(config.studentIds, assignmentData as any);
-    return { success: res.length > 0, assignedCount: res.length };
+    const created = [];
+    for (const studentId of config.studentIds) {
+      const patternId = pickPatternIdForAssignment(templates, config);
+      const assignment = await createAssignment({
+        student_id: studentId,
+        title: config.title,
+        type: 'clinical_case',
+        description:
+          config.description || `Resolución interactiva del caso clínico EMG: ${config.title}`,
+        target_module_id: null,
+        target_topic_id: null,
+        target_exam_config: {
+          patternId,
+          category: config.category,
+          difficulty: config.difficulty || 'medium',
+          clinicalMode,
+          timeLimitMinutes,
+          minPassingScore: config.minScore ?? 70,
+          maxAttempts: 1,
+          allowRetakeRequest: true,
+        },
+        due_date: config.dueDate,
+        priority: config.priority || 'normal',
+        min_score: config.minScore ?? 70,
+        assigned_by: config.assignedBy || null,
+        status: 'pending',
+      });
+      created.push(assignment);
+    }
+
+    return { success: created.length > 0, assignedCount: created.length };
   } catch (e: any) {
     console.error('[emgExerciseService] Error asignando caso:', e);
     return { success: false, assignedCount: 0, error: e.message };
   }
+}
+
+export async function loadClinicalAssignmentLaunch(
+  assignmentId: string,
+  studentId?: string,
+  fallback?: Partial<ClinicalAssignmentLaunchState>
+): Promise<ClinicalAssignmentLaunchState | null> {
+  const assignment = await getStudentAssignmentById(assignmentId, studentId);
+  if (assignment) return getClinicalCaseLaunchState(assignment, studentId);
+
+  if (!fallback?.patternId && !fallback?.category) return null;
+
+  return {
+    assignmentId,
+    patternId: fallback.patternId,
+    category: fallback.category,
+    clinicalMode: fallback.clinicalMode || 'exam',
+    timeLimitMinutes: fallback.timeLimitMinutes,
+    difficulty: fallback.difficulty || 'medium',
+    assignmentTitle: fallback.assignmentTitle || 'Caso Clínico Asignado',
+    studentId: studentId || fallback.studentId,
+    status: fallback.status || 'pending',
+  };
 }
 
 /**
