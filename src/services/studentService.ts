@@ -4,6 +4,9 @@ import type { Topic } from '../types/content';
 import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
 import type { StudentAssignment } from '../types/studentPlan';
+import { TOPIC_PROGRESS_EVENT } from './quizCompletionGate';
+
+export { TOPIC_PROGRESS_EVENT };
 
 export interface LastVisitedTopic {
   moduleId: string;
@@ -54,8 +57,6 @@ const KEY_COMPLETED_TOPICS = 'neurosafe_student_completed_topics_';
 const KEY_VISITED_TOPICS = 'neurosafe_student_visited_topics_';
 const KEY_LAST_TOPIC = 'neurosafe_student_last_topic_';
 const KEY_NOTIFICATIONS_READ = 'neurosafe_student_notif_read_';
-
-export const TOPIC_PROGRESS_EVENT = 'neurosafe:topic-progress-updated';
 
 function notifyProgressUpdated(userId: string) {
   if (typeof window === 'undefined') return;

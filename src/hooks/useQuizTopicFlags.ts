@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthProvider';
 import { getAllQuizFlags } from '../services/quizService';
-import {
-  fetchPassedQuizTopicIds,
-  getPassedQuizTopicIdsSync,
-  type QuizCompletionGate,
-} from '../services/quizCompletionGate';
+import { getPassedQuizTopicIdsSync, type QuizCompletionGate } from '../services/quizCompletionGate';
+import { fetchPassedQuizTopicIds } from '../services/quizPassedAttempts';
 import { TOPIC_PROGRESS_EVENT } from '../services/studentService';
 import type { QuizTopicFlag } from '../types/quiz';
 

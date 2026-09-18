@@ -1,6 +1,6 @@
 import type { Topic } from '../types/content';
-import { getMyAttempts } from './quizService';
-import { TOPIC_PROGRESS_EVENT } from './studentService';
+
+export const TOPIC_PROGRESS_EVENT = 'neurosafe:topic-progress-updated';
 
 const KEY_PASSED_QUIZZES = 'neurosafe_student_passed_quizzes_';
 
@@ -42,7 +42,7 @@ export function isQuizTopicPassed(topicId: string, quizGate?: QuizCompletionGate
   return quizGate.passedQuizTopicIds.has(topicId);
 }
 
-function persistPassedQuizTopicIds(userId: string, ids: Set<string>) {
+export function persistPassedQuizTopicIds(userId: string, ids: Set<string>) {
   if (!userId) return;
   try {
     localStorage.setItem(`${KEY_PASSED_QUIZZES}${userId}`, JSON.stringify(Array.from(ids)));
@@ -79,23 +79,6 @@ export function recordQuizPassed(userId: string, topicId: string): void {
   } catch {
     // ignore
   }
-}
-
-export async function fetchPassedQuizTopicIds(userId: string): Promise<Set<string>> {
-  const merged = getPassedQuizTopicIdsSync(userId);
-  if (!userId || userId === 'anonymous_student') return merged;
-
-  try {
-    const attempts = await getMyAttempts(userId);
-    for (const attempt of attempts) {
-      if (attempt.passed && attempt.topic_id) merged.add(attempt.topic_id);
-    }
-  } catch {
-    // keep local cache if cloud attempts are unavailable
-  }
-
-  persistPassedQuizTopicIds(userId, merged);
-  return merged;
 }
 
 export function buildQuizCompletionGate(
