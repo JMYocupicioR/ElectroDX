@@ -1,5 +1,5 @@
 import type { ExamQuestion } from '../../types/exam';
-import { CheckCircle, XCircle, Flag, Circle } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 interface ExamPaletteNavProps {
   questions: ExamQuestion[];

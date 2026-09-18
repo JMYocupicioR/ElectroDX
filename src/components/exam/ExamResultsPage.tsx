@@ -7,7 +7,6 @@ import {
 import type { ExamConfig, ExamQuestion } from '../../types/exam';
 import { loadExamResults } from '../../services/examService';
 import { useAuth } from '../../contexts/AuthProvider';
-import { completeAssignedExam } from '../../services/studentPlanService';
 
 type LocationState = {
   sessionId: string | null;
@@ -84,13 +83,9 @@ export default function ExamResultsPage() {
 
       const scorePercentage = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
 
-      if (assignmentId && user?.id) {
-        try {
-          await completeAssignedExam(assignmentId, user.id, scorePercentage, duration, sessionId);
-        } catch (err) {
-          console.error('[ExamResultsPage] No se pudo asentar el examen asignado:', err);
-        }
-      }
+      // La calificación de la evaluación asignada se asienta al enviar el examen
+      // (ExamSessionPage). Repetirla aquí duplicaba la nota y las notas del
+      // profesor, y con StrictMode se escribía hasta tres veces.
 
       // Breakdown por tema
       const topicMap = new Map<string, { correct: number; total: number; criticalFailures: number }>();
@@ -274,8 +269,8 @@ export default function ExamResultsPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-white/5 max-h-[650px] overflow-y-auto custom-scrollbar">
-            {filteredAnswers.map(({ question: q, selectedIndex, isCorrect }, i) => {
+          <div className="divide-y divide-white/5 max-h-[650px] overflow-y-auto scrollbar-thin">
+            {filteredAnswers.map(({ question: q, selectedIndex, isCorrect }) => {
               const isExpanded = expandedQuestion === q.id;
               const correct = correctIndex(q);
 

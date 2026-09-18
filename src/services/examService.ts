@@ -3,7 +3,7 @@
  * Híbrido: prioriza Supabase; si falla, usa datos locales (emgQuestionsFallback).
  */
 
-import { supabase } from '../lib/supabase';
+import { sb, supabase, supabaseAnonKey, supabaseUrl } from '../lib/supabase';
 import type {
   ExamQuestion,
   ExamConfig,
@@ -17,6 +17,19 @@ import {
   EMG_QUESTIONS_FALLBACK,
   QUESTIONS_BY_TOPIC,
 } from '../data/emgQuestionsFallback';
+import type { ExamOptionOrder } from '../utils/examQuestionOrder';
+
+export {
+  applyOptionOrder,
+  prepareExamQuestions,
+  restoreExamQuestions,
+  shuffleArray,
+  withRandomOptionOrder,
+} from '../utils/examQuestionOrder';
+export type { ExamOptionOrder } from '../utils/examQuestionOrder';
+
+/** Antigüedad máxima de un intento para ofrecerlo como reanudable */
+export const PENDING_ATTEMPT_MAX_AGE_HOURS = 24;
 
 // ─── Carga de Preguntas ───────────────────────────────────────────────────────
 
@@ -61,7 +74,7 @@ export async function loadExamQuestions(
 export async function loadFailedQuestions(userId: string): Promise<{ questions: ExamQuestion[]; source: 'supabase' | 'fallback' }> {
   try {
     // Obtener IDs de preguntas con más fallos que aciertos
-    const { data: progress, error } = await supabase
+    const { data: progress, error } = await sb
       .from('user_question_progress')
       .select('question_id, attempts, successes')
       .eq('user_id', userId)
@@ -69,13 +82,13 @@ export async function loadFailedQuestions(userId: string): Promise<{ questions: 
 
     if (error) throw error;
 
-    const failedIds = (progress || [])
+    const failedIds = ((progress || []) as Array<{ question_id: string; attempts: number; successes: number }>)
       .filter(p => p.successes < p.attempts)
       .map(p => p.question_id);
 
     if (failedIds.length === 0) {
       // Sin historial: devolver preguntas críticas
-      const { data, error: qErr } = await supabase
+      const { data, error: qErr } = await sb
         .from('exam_questions')
         .select('*')
         .eq('is_critical', true)
@@ -84,7 +97,7 @@ export async function loadFailedQuestions(userId: string): Promise<{ questions: 
       return { questions: (data as ExamQuestion[]) || [], source: 'supabase' };
     }
 
-    const { data: failedQs, error: fErr } = await supabase
+    const { data: failedQs, error: fErr } = await sb
       .from('exam_questions')
       .select('*')
       .in('id', failedIds)
@@ -99,61 +112,52 @@ export async function loadFailedQuestions(userId: string): Promise<{ questions: 
   }
 }
 
-/** Mezcla aleatoria de elementos de un arreglo usando Fisher-Yates */
-export function shuffleArray<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-/** Mezcla el orden de las opciones de una pregunta sin alterar su consistencia */
-export function shuffleQuestionOptions(question: ExamQuestion): ExamQuestion {
-  return {
-    ...question,
-    options: shuffleArray(question.options),
-  };
-}
-
-/** Construye la lista de preguntas según configuración (filtra, mezcla preguntas y mezcla opciones) */
-export function buildExamQuestions(
-  allQuestions: ExamQuestion[],
-  config: ExamConfig
-): ExamQuestion[] {
-  let pool = [...allQuestions];
-
-  // Filtro por modo
-  if (config.criticalOnly) {
-    pool = pool.filter(q => q.is_critical);
-  }
-  if (config.topicNames && config.topicNames.length > 0) {
-    pool = pool.filter(q => config.topicNames!.includes(q.topic_name));
-  }
-
-  // Mezcla aleatoria de preguntas (Fisher-Yates)
-  pool = shuffleArray(pool);
-
-  // Limitar cantidad
-  if (config.questionCount && config.questionCount > 0) {
-    pool = pool.slice(0, config.questionCount);
-  }
-
-  // Mezclar obligatoriamente el orden de las opciones para cada reactivo
-  return pool.map(shuffleQuestionOptions);
-}
-
 // ─── Gestión de Intentos en Curso ─────────────────────────────────────────────
 
-/** Crea un nuevo intento de examen en Supabase */
+export interface CreateExamAttemptOptions {
+  optionOrder?: ExamOptionOrder;
+  expiresAt?: string | null;
+  assignmentId?: string | null;
+}
+
+/** Marca ABANDONED los intentos en curso del usuario. Retorna cuántos cerró. */
+export async function abandonInProgressAttempts(
+  userId: string,
+  exceptAttemptId?: string | null
+): Promise<number> {
+  try {
+    let query = sb
+      .from('exam_attempts')
+      .update({ status: 'ABANDONED' })
+      .eq('user_id', userId)
+      .eq('status', 'IN_PROGRESS');
+
+    if (exceptAttemptId) query = query.neq('id', exceptAttemptId);
+
+    const { data, error } = await query.select('id');
+    if (error) throw error;
+    return (data ?? []).length;
+  } catch (err) {
+    console.warn('[examService] abandonInProgressAttempts failed:', err);
+    return 0;
+  }
+}
+
+/**
+ * Crea un nuevo intento de examen en Supabase.
+ * Cierra primero cualquier intento en curso del usuario: solo puede haber uno
+ * vivo a la vez (índice único parcial `uq_exam_attempts_one_in_progress`).
+ */
 export async function createExamAttempt(
   userId: string,
   config: ExamConfig,
-  questionIds: string[]
+  questionIds: string[],
+  options: CreateExamAttemptOptions = {}
 ): Promise<ExamAttemptRecord | null> {
   try {
-    const { data, error } = await supabase
+    await abandonInProgressAttempts(userId);
+
+    const { data, error } = await sb
       .from('exam_attempts')
       .insert({
         user_id: userId,
@@ -163,6 +167,9 @@ export async function createExamAttempt(
         current_question_index: 0,
         answers: {},
         flagged: {},
+        option_order: options.optionOrder ?? {},
+        expires_at: options.expiresAt ?? null,
+        assignment_id: options.assignmentId ?? null,
         time_remaining_seconds: config.timeLimitSeconds ?? null,
         status: 'IN_PROGRESS',
       })
@@ -177,21 +184,24 @@ export async function createExamAttempt(
   }
 }
 
+function toAttemptUpdate(state: Partial<ExamAttemptState>): Record<string, unknown> {
+  const updateData: Record<string, unknown> = {};
+  if (state.currentQuestionIndex !== undefined) updateData.current_question_index = state.currentQuestionIndex;
+  if (state.answers !== undefined) updateData.answers = state.answers;
+  if (state.flagged !== undefined) updateData.flagged = state.flagged;
+  if (state.timeRemainingSeconds !== undefined) updateData.time_remaining_seconds = state.timeRemainingSeconds;
+  return updateData;
+}
+
 /** Guarda el estado actual del examen (auto-guardado) */
 export async function saveExamProgress(
   attemptId: string,
   state: Partial<ExamAttemptState>
 ): Promise<boolean> {
   try {
-    const updateData: Record<string, unknown> = {};
-    if (state.currentQuestionIndex !== undefined) updateData.current_question_index = state.currentQuestionIndex;
-    if (state.answers !== undefined) updateData.answers = state.answers;
-    if (state.flagged !== undefined) updateData.flagged = state.flagged;
-    if (state.timeRemainingSeconds !== undefined) updateData.time_remaining_seconds = state.timeRemainingSeconds;
-
-    const { error } = await supabase
+    const { error } = await sb
       .from('exam_attempts')
-      .update(updateData)
+      .update(toAttemptUpdate(state))
       .eq('id', attemptId);
 
     return !error;
@@ -200,15 +210,58 @@ export async function saveExamProgress(
   }
 }
 
-/** Obtiene el intento en curso del usuario (si existe) */
-export async function getPendingExamAttempt(userId: string): Promise<ExamAttemptRecord | null> {
+/**
+ * Guardado de último instante al cerrar/ocultar la pestaña.
+ * Usa `fetch` con `keepalive` porque una petición normal se cancela cuando el
+ * documento se descarga; `sendBeacon` no sirve aquí (solo hace POST y no acepta
+ * las cabeceras de autorización que exige PostgREST).
+ */
+export function flushExamProgress(
+  attemptId: string,
+  state: Partial<ExamAttemptState>,
+  accessToken: string | null
+): void {
+  if (!supabaseUrl || !supabaseAnonKey || !accessToken) return;
+
+  const payload = toAttemptUpdate(state);
+  if (Object.keys(payload).length === 0) return;
+
   try {
-    const { data, error } = await supabase
+    void fetch(`${supabaseUrl}/rest/v1/exam_attempts?id=eq.${encodeURIComponent(attemptId)}`, {
+      method: 'PATCH',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    // Último recurso: si el navegador ya bloqueó la petición no hay nada que hacer.
+  }
+}
+
+/**
+ * Obtiene el intento en curso del usuario, si existe y sigue siendo reciente.
+ * Los intentos sin actividad en las últimas horas se consideran abandonados y
+ * no se ofrecen para reanudar (además `abandon_stale_exam_attempts` los cierra).
+ */
+export async function getPendingExamAttempt(
+  userId: string,
+  maxAgeHours: number = PENDING_ATTEMPT_MAX_AGE_HOURS
+): Promise<ExamAttemptRecord | null> {
+  try {
+    const cutoff = new Date(Date.now() - maxAgeHours * 3_600_000).toISOString();
+
+    const { data, error } = await sb
       .from('exam_attempts')
       .select('*')
       .eq('user_id', userId)
       .eq('status', 'IN_PROGRESS')
-      .order('created_at', { ascending: false })
+      .gte('updated_at', cutoff)
+      .order('updated_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -222,7 +275,7 @@ export async function getPendingExamAttempt(userId: string): Promise<ExamAttempt
 /** Carga un intento específico por ID */
 export async function loadExamAttempt(attemptId: string): Promise<ExamAttemptRecord | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('exam_attempts')
       .select('*')
       .eq('id', attemptId)
@@ -239,13 +292,29 @@ export async function loadExamAttempt(attemptId: string): Promise<ExamAttemptRec
 export async function finalizeExamAttempt(
   attemptId: string,
   status: 'COMPLETED' | 'ABANDONED'
-): Promise<void> {
-  await supabase.from('exam_attempts').update({ status }).eq('id', attemptId);
+): Promise<boolean> {
+  const { error } = await sb.from('exam_attempts').update({ status }).eq('id', attemptId);
+  if (error) console.warn('[examService] finalizeExamAttempt failed:', error);
+  return !error;
 }
 
-/** Elimina un intento (para empezar uno nuevo) */
-export async function deleteExamAttempt(attemptId: string): Promise<void> {
-  await supabase.from('exam_attempts').delete().eq('id', attemptId);
+/**
+ * Borra la caché local asociada a un intento.
+ * Sin esto quedaban llaves `neurosafe_exam_qs_*` huérfanas que podían devolver
+ * un examen viejo al alumno.
+ */
+export function clearExamAttemptCaches(attemptId?: string | null, assignmentId?: string | null): void {
+  const keys = [
+    attemptId ? `neurosafe_exam_qs_att_${attemptId}` : null,
+    assignmentId ? `neurosafe_exam_qs_asg_${assignmentId}` : null,
+    assignmentId ? `neurosafe_asg_answers_${assignmentId}` : null,
+  ].filter((k): k is string => Boolean(k));
+
+  keys.forEach(key => {
+    try {
+      localStorage.removeItem(key);
+    } catch {}
+  });
 }
 
 // ─── Guardar Resultados del Examen ────────────────────────────────────────────
@@ -296,7 +365,7 @@ export async function submitExam(payload: SubmitExamPayload): Promise<string | n
 
   try {
     // 1. Crear sesión
-    const { data: sessionData, error: sessionError } = await supabase
+    const { data: sessionData, error: sessionError } = await sb
       .from('exam_sessions')
       .insert({
         user_id: userId,
@@ -322,7 +391,7 @@ export async function submitExam(payload: SubmitExamPayload): Promise<string | n
     // 2. Guardar respuestas
     if (answerRecords.length > 0) {
       const withSession = answerRecords.map(a => ({ ...a, session_id: sessionId }));
-      await supabase.from('exam_answers').insert(withSession);
+      await sb.from('exam_answers').insert(withSession);
     }
 
     // 3. Marcar intento como completado
@@ -350,8 +419,8 @@ export async function loadExamResults(
 ): Promise<ExamResultsData | null> {
   try {
     const [sessionRes, answersRes] = await Promise.all([
-      supabase.from('exam_sessions').select('*').eq('id', sessionId).single(),
-      supabase.from('exam_answers').select('*').eq('session_id', sessionId),
+      sb.from('exam_sessions').select('*').eq('id', sessionId).single(),
+      sb.from('exam_answers').select('*').eq('session_id', sessionId),
     ]);
 
     if (sessionRes.error) throw sessionRes.error;
@@ -388,7 +457,7 @@ export async function loadExamResults(
 
 export async function loadGapAnalysis(userId: string): Promise<ExamGapAnalysis[]> {
   try {
-    const { data, error } = await supabase.rpc('get_exam_gap_analysis', { p_user_id: userId });
+    const { data, error } = await sb.rpc('get_exam_gap_analysis', { p_user_id: userId });
     if (error) throw error;
     return (data ?? []) as ExamGapAnalysis[];
   } catch {

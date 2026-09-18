@@ -14,7 +14,6 @@ import {
   Layers,
   FileQuestion,
   ShieldCheck,
-  RotateCcw,
 } from 'lucide-react';
 import { allModules } from '../../content/modules';
 import { loadExamQuestions } from '../../services/examService';

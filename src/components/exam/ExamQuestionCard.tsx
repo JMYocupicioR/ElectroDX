@@ -18,13 +18,6 @@ interface ExamQuestionCardProps {
 }
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
-const OPTION_COLORS = [
-  'border-violet-500/40 bg-violet-500/5 text-violet-300',
-  'border-blue-500/40 bg-blue-500/5 text-blue-300',
-  'border-cyan-500/40 bg-cyan-500/5 text-cyan-300',
-  'border-indigo-500/40 bg-indigo-500/5 text-indigo-300',
-  'border-purple-500/40 bg-purple-500/5 text-purple-300',
-];
 
 export function ExamQuestionCard({
   question,

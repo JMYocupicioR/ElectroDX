@@ -2,15 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
 import { Loader2, Clock, Send, LayoutGrid, X, Brain, ChevronLeft, ShieldAlert } from 'lucide-react';
-import type { ExamConfig, ExamAttemptRecord } from '../../types/exam';
+import type { ExamConfig, ExamAttemptRecord, ExamQuestion } from '../../types/exam';
 import {
+  clearExamAttemptCaches,
+  finalizeExamAttempt,
   loadExamQuestions,
-  buildExamQuestions,
+  prepareExamQuestions,
+  restoreExamQuestions,
   submitExam,
   loadExamAttempt,
+  withRandomOptionOrder,
   shuffleArray,
-  shuffleQuestionOptions,
 } from '../../services/examService';
+import type { ExamOptionOrder } from '../../utils/examQuestionOrder';
 import {
   getActiveExamLock,
   completeAssignedExam,
@@ -39,13 +43,43 @@ function formatTime(seconds: number) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+type PreparedExam = { questions: ExamQuestion[]; optionOrder: ExamOptionOrder };
+
+/** Caché local del examen preparado: conserva orden de preguntas y de opciones tras una recarga */
+function readQuestionCache(key: string): PreparedExam | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+
+    // Formato v2: { questions, optionOrder }
+    if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+      return { questions: parsed.questions, optionOrder: parsed.optionOrder ?? {} };
+    }
+    // Formato legado: arreglo de preguntas sin permutación registrada
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return { questions: parsed, optionOrder: {} };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeQuestionCache(key: string, prepared: PreparedExam): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(prepared));
+  } catch {}
+}
+
 export default function ExamSessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const state = location.state as LocationState | null;
 
-  const [questions, setQuestions] = useState<ReturnType<typeof buildExamQuestions>>([]);
+  const [questions, setQuestions] = useState<ExamQuestion[]>([]);
+  const [optionOrder, setOptionOrder] = useState<ExamOptionOrder>({});
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<ExamConfig | null>(null);
   const [resumeAttempt, setResumeAttempt] = useState<ExamAttemptRecord | null>(null);
@@ -88,11 +122,22 @@ export default function ExamSessionPage() {
         if (attempt && attempt.status === 'IN_PROGRESS') {
           setResumeAttempt(attempt);
           const { questions: allQs } = await loadExamQuestions(attempt.config);
-          const idsOrder = attempt.question_ids;
-          const qMap = new Map(allQs.map(q => [q.id, q]));
-          const ordered = idsOrder.map(id => qMap.get(id)).filter(Boolean) as typeof allQs;
-          setQuestions(ordered);
+
+          // Reconstruye el orden exacto de preguntas Y de opciones con el que se
+          // respondió: `answers` guarda índices de opción, así que sin la
+          // permutación original la reanudación calificaría otra opción.
+          setQuestions(restoreExamQuestions(attempt.question_ids, allQs, attempt.option_order));
+          setOptionOrder(attempt.option_order ?? {});
           setConfig(attempt.config);
+
+          // El cronómetro de una evaluación asignada vive en el intento, no solo
+          // en localStorage: sobrevive a un cambio de dispositivo.
+          if (attempt.expires_at) setExpiresAt(attempt.expires_at);
+          if (attempt.assignment_id) {
+            setActiveAssignmentId(attempt.assignment_id);
+            setIsStrictLock(true);
+          }
+
           setLoading(false);
           return;
         }
@@ -126,17 +171,13 @@ export default function ExamSessionPage() {
         : null;
 
       if (sessionCacheKey) {
-        try {
-          const cached = localStorage.getItem(sessionCacheKey);
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setQuestions(parsed);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch {}
+        const cached = readQuestionCache(sessionCacheKey);
+        if (cached) {
+          setQuestions(cached.questions);
+          setOptionOrder(cached.optionOrder);
+          setLoading(false);
+          return;
+        }
       }
 
       const { questions: allQs } = await loadExamQuestions({
@@ -144,25 +185,24 @@ export default function ExamSessionPage() {
         moduleId: cfg.moduleId,
       });
 
-      let finalQuestions: ReturnType<typeof buildExamQuestions> = [];
+      let prepared: { questions: ExamQuestion[]; optionOrder: ExamOptionOrder };
 
       // Si el profesor seleccionó preguntas específicas, mezclar preguntas y mezclar opciones
       if (targetQuestionIds && targetQuestionIds.length > 0) {
         const qMap = new Map(allQs.map(q => [q.id, q]));
-        const exact = targetQuestionIds.map(id => qMap.get(id)).filter(Boolean) as typeof allQs;
+        const exact = targetQuestionIds.map(id => qMap.get(id)).filter(Boolean) as ExamQuestion[];
         const base = exact.length > 0 ? exact : allQs;
-        finalQuestions = shuffleArray(base).map(shuffleQuestionOptions);
+        prepared = withRandomOptionOrder(shuffleArray(base));
       } else {
-        finalQuestions = buildExamQuestions(allQs, cfg);
+        prepared = prepareExamQuestions(allQs, cfg);
       }
 
-      if (sessionCacheKey && finalQuestions.length > 0) {
-        try {
-          localStorage.setItem(sessionCacheKey, JSON.stringify(finalQuestions));
-        } catch {}
+      if (sessionCacheKey && prepared.questions.length > 0) {
+        writeQuestionCache(sessionCacheKey, prepared);
       }
 
-      setQuestions(finalQuestions);
+      setQuestions(prepared.questions);
+      setOptionOrder(prepared.optionOrder);
       setLoading(false);
     }
     init();
@@ -207,7 +247,9 @@ export default function ExamSessionPage() {
       attemptId,
     });
 
-    // Si es un examen asignado al alumno, calificar y asentar estado
+    // Único punto donde se asienta la calificación de una evaluación asignada:
+    // aquí y no en la pantalla de resultados, porque el alumno puede cerrar la
+    // pestaña sin llegar a verla (antes se escribía en ambos sitios).
     if (activeAssignmentId) {
       let correct = 0;
       questions.forEach(q => {
@@ -222,12 +264,16 @@ export default function ExamSessionPage() {
       } catch (err) {
         console.error('[ExamSessionPage] No se pudo asentar el examen asignado:', err);
       }
-
-      try {
-        localStorage.removeItem(`neurosafe_exam_qs_asg_${activeAssignmentId}`);
-        localStorage.removeItem(`neurosafe_asg_answers_${activeAssignmentId}`);
-      } catch {}
     }
+
+    // `submitExam` cierra el intento cuando logra guardar la sesión. Si falló, se
+    // cierra igualmente: el alumno ya vio sus resultados y no debe reaparecer
+    // como examen pendiente en /examenes.
+    if (!sessionId && attemptId) {
+      await finalizeExamAttempt(attemptId, 'COMPLETED');
+    }
+
+    clearExamAttemptCaches(attemptId, activeAssignmentId);
 
     setSubmitting(false);
     // Siempre pasar answers y durationSeconds para garantizar feedback visual completo e inmediato
@@ -251,8 +297,19 @@ export default function ExamSessionPage() {
     initialState,
     expiresAt,
     assignmentId: activeAssignmentId,
+    optionOrder,
     onSubmit: handleSubmit,
   });
+
+  // Deja el intento en la URL: si el alumno recarga, la sesión se reanuda con las
+  // respuestas y el orden originales en lugar de empezar un examen nuevo.
+  useEffect(() => {
+    if (!runner.attemptId || state?.resumeAttemptId === runner.attemptId) return;
+    navigate(location.pathname, {
+      replace: true,
+      state: { ...(state ?? {}), resumeAttemptId: runner.attemptId },
+    });
+  }, [runner.attemptId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { currentIndex, currentQuestion, answers, flagged, timeLeft, isSubmitting } = runner;
 
@@ -314,12 +371,18 @@ export default function ExamSessionPage() {
       {/* Barra superior */}
       <div className="fixed top-0 left-0 right-0 z-30 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 h-14 flex items-center px-4 gap-3">
         <button
-          onClick={() => {
+          onClick={async () => {
             if (isStrictLock) {
               setShowExitWarning(true);
-            } else {
-              navigate('/examenes');
+              return;
             }
+            // Si no contestó nada, se cierra el intento para no dejar un examen
+            // fantasma que dispare el modal de recuperación en cada visita.
+            // Con respuestas ya dadas se conserva IN_PROGRESS para poder reanudar.
+            if (Object.keys(runner.answers).length === 0) {
+              await runner.abandonExam();
+            }
+            navigate('/examenes');
           }}
           className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all"
           title={isStrictLock ? 'Salir de la evaluación' : 'Volver a exámenes'}
@@ -329,9 +392,12 @@ export default function ExamSessionPage() {
 
         <div className="flex-1 flex items-center gap-2 min-w-0">
           {isStrictLock ? (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0">
-              <ShieldAlert className="w-3 h-3" /> Cronometrado
-            </span>
+            <>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0">
+                <ShieldAlert className="w-3 h-3" /> Cronometrado
+              </span>
+              <span className="text-xs text-slate-400 truncate hidden sm:block">{assignmentTitle}</span>
+            </>
           ) : (
             <span className="text-xs text-slate-500 hidden sm:block">
               {config?.feedbackMode === 'immediate' ? '🎓 Modo Tutor' : '📋 Modo Examen'} ·

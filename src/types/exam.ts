@@ -82,6 +82,12 @@ export interface ExamAttemptRecord {
   answers: Record<string, number>;
   flagged: Record<string, boolean>;
   time_remaining_seconds: number | null;
+  /** Permutación de opciones mostrada: questionId → índices originales */
+  option_order?: Record<string, number[]> | null;
+  /** Marca absoluta de fin para exámenes cronometrados */
+  expires_at?: string | null;
+  /** Presente si el intento corresponde a una evaluación asignada */
+  assignment_id?: string | null;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
   created_at: string;
   updated_at: string;

@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
   Brain, Clock, BookOpen, Zap, CheckSquare, Square, ChevronRight,
-  AlertTriangle, Loader2, Sparkles, Target, FlaskConical, RotateCcw
+  Loader2, Sparkles, Target, FlaskConical
 } from 'lucide-react';
-import type { ExamConfig, ExamMode, FeedbackMode } from '../../types/exam';
-import { loadAvailableTopics, getPendingExamAttempt } from '../../services/examService';
+import type { ExamAttemptRecord, ExamConfig, ExamMode, FeedbackMode } from '../../types/exam';
+import {
+  finalizeExamAttempt,
+  getPendingExamAttempt,
+  loadAvailableTopics,
+} from '../../services/examService';
 import { ExamRecoveryModal } from './ExamRecoveryModal';
-import type { ExamAttemptRecord } from '../../types/exam';
 
 interface TopicInfo {
   topic_name: string;
@@ -42,10 +45,19 @@ export default function ExamConfigPage() {
       ]);
       setTopics(topicsData);
       setSelectedTopics(new Set(topicsData.map(t => t.topic_name)));
+
       if (pending) {
-        setPendingAttempt(pending);
-        setShowRecovery(true);
+        // Un intento sin ninguna respuesta no vale la pena recuperar: se cierra
+        // en silencio para no interrumpir con un modal en cada visita.
+        const hasProgress = Object.keys(pending.answers ?? {}).length > 0;
+        if (hasProgress) {
+          setPendingAttempt(pending);
+          setShowRecovery(true);
+        } else {
+          void finalizeExamAttempt(pending.id, 'ABANDONED');
+        }
       }
+
       setLoadingTopics(false);
     }
     init();
@@ -59,7 +71,11 @@ export default function ExamConfigPage() {
 
   const toggleTopic = (name: string) => {
     const next = new Set(selectedTopics);
-    next.has(name) ? next.delete(name) : next.add(name);
+    if (next.has(name)) {
+      next.delete(name);
+    } else {
+      next.add(name);
+    }
     setSelectedTopics(next);
   };
 
@@ -115,7 +131,8 @@ export default function ExamConfigPage() {
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-20">
+      {/* pb-28 en móvil: la barra de inicio fija tapaba la última tarjeta */}
+      <div className="max-w-4xl mx-auto px-4 pt-20 pb-28 sm:pb-8">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-medium mb-4">
@@ -123,7 +140,7 @@ export default function ExamConfigPage() {
             Simulador de Examen COMEFYR
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Configura tu Examen</h1>
-          <p className="text-slate-400 max-w-lg mx-auto">
+          <p className="text-slate-400 max-w-lg mx-auto" aria-live="polite">
             {totalSelected} pregunta{totalSelected !== 1 ? 's' : ''} disponible{totalSelected !== 1 ? 's' : ''} · Selecciona los temas que quieres evaluar
           </p>
         </div>
@@ -144,13 +161,16 @@ export default function ExamConfigPage() {
                   {selectedTopics.size === topics.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
                 </button>
               </div>
-              <div className="p-3 space-y-1 max-h-80 overflow-y-auto custom-scrollbar">
+              <div className="p-3 space-y-1 max-h-80 overflow-y-auto scrollbar-thin">
                 {topics.map(topic => {
                   const isSelected = selectedTopics.has(topic.topic_name);
                   const count = criticalOnly ? topic.critical_count : topic.count;
                   return (
                     <button
                       key={topic.topic_name}
+                      type="button"
+                      role="checkbox"
+                      aria-checked={isSelected}
                       onClick={() => toggleTopic(topic.topic_name)}
                       className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-left transition-all group ${
                         isSelected
@@ -265,8 +285,9 @@ export default function ExamConfigPage() {
                   type="button"
                   role="switch"
                   aria-checked={timeLimitEnabled}
+                  aria-label="Activar límite de tiempo"
                   onClick={() => setTimeLimitEnabled(!timeLimitEnabled)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                     timeLimitEnabled ? 'bg-amber-500' : 'bg-slate-700'
                   }`}
                 >
@@ -299,9 +320,14 @@ export default function ExamConfigPage() {
             </div>
 
             {/* Solo preguntas críticas */}
-            <div
+            {/* Un único control: antes era un div clickable con un button anidado
+                (HTML inválido y no operable con teclado). */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={criticalOnly}
               onClick={() => setCriticalOnly(!criticalOnly)}
-              className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all cursor-pointer ${
+              className={`w-full flex items-center justify-between p-5 rounded-2xl border transition-all cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${
                 criticalOnly
                   ? 'bg-amber-500/10 border-amber-500/40 shadow-sm shadow-amber-500/10'
                   : 'bg-white/5 border-white/10 hover:border-white/20'
@@ -319,33 +345,26 @@ export default function ExamConfigPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                role="switch"
-                aria-checked={criticalOnly}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCriticalOnly(!criticalOnly);
-                }}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              <span
+                aria-hidden="true"
+                className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
                   criticalOnly ? 'bg-amber-500' : 'bg-slate-700'
                 }`}
               >
                 <span
-                  aria-hidden="true"
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
                     criticalOnly ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
-              </button>
-            </div>
+              </span>
+            </button>
 
             {/* Botón de inicio (Desktop) */}
             <button
               type="button"
               onClick={handleStart}
               disabled={selectedTopics.size === 0 || actualCount === 0}
-              className="w-full hidden sm:flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 via-indigo-600 to-cyan-500 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/25 transition-all active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full hidden sm:flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 via-indigo-600 to-cyan-500 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-lg shadow-cyan-500/25 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Brain className="w-4 h-4" />
               <span>Iniciar examen · {actualCount} preguntas</span>
