@@ -987,8 +987,16 @@ export async function deleteAssignment(assignmentId: string, studentId: string):
   } catch {}
 
   try {
-    await supabase.from('student_assignments').delete().eq('id', assignmentId);
-  } catch {}
+    const { error } = await supabase.from('student_assignments').delete().eq('id', assignmentId);
+    if (error) {
+      console.warn('[studentPlanService] deleteAssignment direct delete failed, trying RPC fallback:', error.message);
+      await (supabase.rpc as any)('admin_delete_student_assignment', {
+        p_assignment_id: assignmentId,
+      });
+    }
+  } catch (e) {
+    console.error('[studentPlanService] deleteAssignment error:', e);
+  }
 }
 
 // ─── Desglose Pregunta por Pregunta (Aciertos y Errores) ────────────────────

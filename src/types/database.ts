@@ -10,7 +10,7 @@ export type EnrollmentStatus = 'none' | 'pending' | 'approved' | 'rejected';
 export type AccessTier = 'free' | 'premium';
 export type WorkshopStatus = 'draft' | 'scheduled' | 'live' | 'completed' | 'cancelled';
 export type CourseId = 'principiante' | 'intermedio' | 'avanzado' | 'referencia';
-export type CourseEnrollmentStatus = 'active' | 'revoked';
+export type CourseEnrollmentStatus = 'active' | 'pending' | 'rejected' | 'revoked';
 
 export interface Course {
   id: CourseId;
@@ -39,13 +39,45 @@ export interface CourseEnrollment {
   course_id: CourseId;
   status: CourseEnrollmentStatus;
   granted_by: string | null;
-  granted_at: string;
+  granted_at: string | null;
   expires_at: string | null;
   payment_method: string | null;
   payment_reference: string | null;
   notes: string | null;
+  requested_at?: string;
+  request_notes?: string | null;
+  reviewed_by?: string | null;
+  reviewed_at?: string | null;
+  review_notes?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CourseWaitlistRow {
+  enrollment_id: string;
+  user_id: string;
+  course_id: CourseId;
+  course_title: string;
+  status: CourseEnrollmentStatus;
+  requested_at: string;
+  request_notes: string | null;
+  payment_reference: string | null;
+  payment_method: string | null;
+  granted_at: string | null;
+  granted_by: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  review_notes: string | null;
+  display_name: string;
+  email: string;
+  phone: string | null;
+  specialty: string | null;
+  residency_year: string | null;
+  institution: string | null;
+  cedula_profesional: string | null;
+  cedula_verified: boolean;
+  avatar_url: string | null;
+  waitlist_position: number;
 }
 
 export interface SyllabusTopicOverride {
@@ -249,6 +281,10 @@ export interface LiveWorkshop {
   clinical_case_revision_id: string | null;
   clinical_case_json: Record<string, unknown> | null;
   status: WorkshopStatus;
+  session_type?: 'workshop_online' | 'hands_on_presencial' | 'masterclass' | 'clinical_round' | string;
+  session_modality?: 'online' | 'in_person';
+  counts_for_kardex?: boolean;
+  attendance_closed?: boolean;
   created_by: string;
   updated_at: string;
   created_at: string;
@@ -550,6 +586,51 @@ export interface Database {
         Returns: void;
       };
       revoke_course_access: { Args: { target_user_id: string; p_course_id: string }; Returns: void };
+      request_course_enrollment: {
+        Args: {
+          p_course_id: string;
+          p_notes?: string | null;
+          p_payment_reference?: string | null;
+        };
+        Returns: CourseEnrollment;
+      };
+      cancel_course_enrollment_request: {
+        Args: { p_course_id: string };
+        Returns: boolean;
+      };
+      admin_admit_student_to_course: {
+        Args: {
+          p_user_id: string;
+          p_course_id: string;
+          p_notes?: string | null;
+          p_payment_method?: string;
+          p_payment_reference?: string | null;
+          p_expires_at?: string | null;
+        };
+        Returns: CourseEnrollment;
+      };
+      admin_reject_course_request: {
+        Args: {
+          p_user_id: string;
+          p_course_id: string;
+          p_reason?: string | null;
+        };
+        Returns: boolean;
+      };
+      admin_get_course_waitlist: {
+        Args: {
+          p_course_id?: string | null;
+          p_status?: string | null;
+        };
+        Returns: CourseWaitlistRow[];
+      };
+      admin_update_course_price: {
+        Args: {
+          p_course_id: string;
+          p_price_display: string;
+        };
+        Returns: boolean;
+      };
       grant_premium_access: {
         Args: {
           target_user_id: string;

@@ -16,6 +16,10 @@ export function useMergedModule(moduleId: string | undefined) {
   const [topicOverrides, setTopicOverrides] = useState<SyllabusTopicOverride[]>([]);
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refresh = () => setRefreshKey((k) => k + 1);
+
   useEffect(() => {
     if (!canonicalId || !isSupabaseConfigured) {
       setPublishedModules([]);
@@ -53,7 +57,7 @@ export function useMergedModule(moduleId: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [canonicalId]);
+  }, [canonicalId, refreshKey]);
 
   const staticModule = useMemo(
     () => getMergedModuleById(canonicalId ?? moduleId ?? '', publishedModules),
@@ -73,5 +77,6 @@ export function useMergedModule(moduleId: string | undefined) {
     staticModule,
     published: publishedTopics,
     loading,
+    refresh,
   };
 }

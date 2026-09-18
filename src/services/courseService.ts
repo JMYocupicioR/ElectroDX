@@ -9,6 +9,8 @@ import type {
   CourseId,
   CourseModuleRow,
   CourseEnrollment,
+  CourseEnrollmentStatus,
+  CourseWaitlistRow,
   SyllabusTopicOverride,
 } from '../types/database';
 
@@ -119,6 +121,14 @@ export async function updateWorkshop(
   return data as LiveWorkshop;
 }
 
+export async function setWorkshopAttendanceClosed(
+  id: string,
+  closed: boolean
+): Promise<LiveWorkshop> {
+  return updateWorkshop(id, { attendance_closed: closed });
+}
+
+
 // ─── Workshop Registrations ─────────────────────────────────────────────────
 
 export async function registerForWorkshop(workshopId: string, userId: string) {
@@ -213,6 +223,46 @@ export async function updateCourseMetadata(
   if (error) throw error;
 }
 
+/**
+ * Elimina un curso de forma segura desvinculando constancias y
+ * liberando sus módulos a la sección 'Sin asignar'.
+ */
+export async function deleteCourse(courseId: CourseId): Promise<void> {
+  // 1. Intentar llamar a la función RPC admin_delete_course si está desplegada
+  try {
+    const { error: rpcError } = await (sb.rpc as any)('admin_delete_course', {
+      p_course_id: courseId,
+    });
+    if (!rpcError) return;
+    console.warn('[courseService] admin_delete_course RPC fallo o no existe, usando fallback directo:', rpcError.message);
+  } catch (err) {
+    console.warn('[courseService] admin_delete_course RPC error:', err);
+  }
+
+  // 2. Fallback resiliente mediante operaciones directas en Supabase
+  try {
+    await (sb.from('academic_certificates') as any).update({ course_id: null }).eq('course_id', courseId);
+  } catch {
+    // Si no existen certificados asociados o no está la columna, continuar
+  }
+
+  // Desasignar módulos del curso para que pasen a "Sin asignar"
+  const { error: modError } = await sb.from('course_modules').delete().eq('course_id', courseId);
+  if (modError) {
+    console.warn('[courseService] deleteCourse unassign modules warning:', modError.message);
+  }
+
+  // Eliminar inscripciones del curso
+  const { error: enrError } = await sb.from('course_enrollments').delete().eq('course_id', courseId);
+  if (enrError) {
+    console.warn('[courseService] deleteCourse enrollments warning:', enrError.message);
+  }
+
+  // Eliminar el registro del curso de la tabla courses
+  const { error } = await sb.from('courses').delete().eq('id', courseId);
+  if (error) throw error;
+}
+
 export async function assignModuleToCourse(
   moduleId: string,
   courseId: CourseId | null,
@@ -269,14 +319,89 @@ export async function setSyllabusTopicOverrides(
   if (error) throw error;
 }
 
-export async function getMyCourseEnrollments(): Promise<CourseEnrollment[]> {
-  const { data, error } = await supabase
+export async function getMyCourseEnrollments(status?: CourseEnrollmentStatus | 'all'): Promise<CourseEnrollment[]> {
+  let query = supabase
     .from('course_enrollments')
     .select('*')
-    .eq('status', 'active')
-    .order('granted_at', { ascending: false });
+    .order('created_at', { ascending: false });
+
+  if (status && status !== 'all') {
+    query = query.eq('status', status);
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return (data ?? []) as CourseEnrollment[];
+}
+
+export async function requestCourseEnrollment(
+  courseId: CourseId,
+  options?: { notes?: string; paymentReference?: string }
+): Promise<CourseEnrollment> {
+  const { data, error } = await (sb.rpc as any)('request_course_enrollment', {
+    p_course_id: courseId,
+    p_notes: options?.notes?.trim() || null,
+    p_payment_reference: options?.paymentReference?.trim() || null,
+  });
+  if (error) throw error;
+  return data as CourseEnrollment;
+}
+
+export async function cancelCourseEnrollmentRequest(courseId: CourseId): Promise<void> {
+  const { error } = await (sb.rpc as any)('cancel_course_enrollment_request', {
+    p_course_id: courseId,
+  });
+  if (error) throw error;
+}
+
+export async function adminAdmitStudentToCourse(
+  userId: string,
+  courseId: CourseId,
+  options?: { notes?: string; method?: string; reference?: string; expiresAt?: string | null }
+): Promise<CourseEnrollment> {
+  const { data, error } = await (sb.rpc as any)('admin_admit_student_to_course', {
+    p_user_id: userId,
+    p_course_id: courseId,
+    p_notes: options?.notes?.trim() || null,
+    p_payment_method: options?.method ?? 'manual',
+    p_payment_reference: options?.reference?.trim() || null,
+    p_expires_at: options?.expiresAt ?? null,
+  });
+  if (error) throw error;
+  return data as CourseEnrollment;
+}
+
+export async function adminRejectCourseRequest(
+  userId: string,
+  courseId: CourseId,
+  reason?: string
+): Promise<void> {
+  const { error } = await (sb.rpc as any)('admin_reject_course_request', {
+    p_user_id: userId,
+    p_course_id: courseId,
+    p_reason: reason?.trim() || null,
+  });
+  if (error) throw error;
+}
+
+export async function getAdminCourseWaitlist(
+  courseId?: CourseId | null,
+  status?: CourseEnrollmentStatus | 'all'
+): Promise<CourseWaitlistRow[]> {
+  const { data, error } = await (sb.rpc as any)('admin_get_course_waitlist', {
+    p_course_id: courseId ?? null,
+    p_status: status ?? 'pending',
+  });
+  if (error) throw error;
+  return (data ?? []) as CourseWaitlistRow[];
+}
+
+export async function adminUpdateCoursePrice(courseId: CourseId, priceDisplay: string): Promise<void> {
+  const { error } = await (sb.rpc as any)('admin_update_course_price', {
+    p_course_id: courseId,
+    p_price_display: priceDisplay.trim(),
+  });
+  if (error) throw error;
 }
 
 export async function getCourseEnrollmentsForUsers(userIds: string[]): Promise<CourseEnrollment[]> {

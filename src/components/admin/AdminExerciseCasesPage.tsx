@@ -14,7 +14,9 @@ import {
   ArrowLeft,
   RefreshCw,
   GraduationCap,
+  SearchX,
 } from 'lucide-react';
+import { Breadcrumbs } from '../common/Breadcrumbs';
 import {
   loadAllCaseTemplates,
   deleteCaseTemplate,
@@ -99,6 +101,26 @@ export default function AdminExerciseCasesPage() {
     });
   }, [cases, searchTerm, categoryFilter, originFilter, usageFilter]);
 
+  // Conteo de casos por categoría para las píldoras de filtrado
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: cases.length };
+    cases.forEach((c) => {
+      counts[c.category] = (counts[c.category] || 0) + 1;
+    });
+    return counts;
+  }, [cases]);
+
+  const hasActiveFilters = Boolean(
+    searchTerm.trim() || categoryFilter !== 'all' || originFilter !== 'all' || usageFilter !== 'all'
+  );
+
+  const resetFilters = () => {
+    setSearchTerm('');
+    setCategoryFilter('all');
+    setOriginFilter('all');
+    setUsageFilter('all');
+  };
+
   // Métricas
   const totalCount = cases.length;
   const examCount = cases.filter(c => c.usageMode === 'exam_only').length;
@@ -148,14 +170,13 @@ export default function AdminExerciseCasesPage() {
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-8 space-y-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Breadcrumb & Navigation */}
-        <div className="flex items-center justify-between">
-          <Link
-            to="/admin"
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Volver al Panel Administrativo</span>
-          </Link>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Administración', to: '/admin' },
+              { label: 'Casos y Ejercicios EMG' },
+            ]}
+          />
 
           <div className="flex items-center gap-2">
             <button
@@ -249,66 +270,146 @@ export default function AdminExerciseCasesPage() {
           </div>
         </div>
 
-        {/* Filter Bar */}
-        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="relative flex-1 min-w-[240px]">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar por nombre, hallazgo o diagnóstico..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 outline-none"
-            />
+        {/* Filter Bar & Category Chips */}
+        <div className="space-y-3">
+          {/* Barra de Filtros interactiva con chips de categoría */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-800">
+            {Object.entries(CATEGORY_NAMES).map(([catKey, catLabel]) => {
+              const isActive = categoryFilter === catKey;
+              const count = categoryCounts[catKey] || 0;
+              return (
+                <button
+                  key={catKey}
+                  type="button"
+                  onClick={() => setCategoryFilter(catKey)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                    isActive
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
+                      : 'bg-slate-900/90 text-slate-300 hover:bg-slate-800 border border-slate-800/80 hover:border-slate-700'
+                  }`}
+                >
+                  <span>{catLabel}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      isActive ? 'bg-black/25 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none"
-            >
-              {Object.entries(CATEGORY_NAMES).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
+          <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="relative flex-1 min-w-[240px]">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre, hallazgo o diagnóstico..."
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 focus:ring-1 focus:ring-amber-500 outline-none"
+              />
+            </div>
 
-            <select
-              value={usageFilter}
-              onChange={(e) => setUsageFilter(e.target.value as any)}
-              className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none font-medium"
-            >
-              <option value="all">Todos los Destinos</option>
-              <option value="practice">📖 Solo Práctica Libre</option>
-              <option value="exam_only">🎓 Solo Banco de Examen (Protegido)</option>
-              <option value="both">🔄 Casos Híbridos</option>
-            </select>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={usageFilter}
+                onChange={(e) => setUsageFilter(e.target.value as any)}
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none font-medium"
+              >
+                <option value="all">Todos los Destinos</option>
+                <option value="practice">📖 Solo Práctica Libre</option>
+                <option value="exam_only">🎓 Solo Banco de Examen (Protegido)</option>
+                <option value="both">🔄 Casos Híbridos</option>
+              </select>
 
-            <select
-              value={originFilter}
-              onChange={(e) => setOriginFilter(e.target.value as any)}
-              className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none"
-            >
-              <option value="all">Todos los Orígenes</option>
-              <option value="custom">Solo Creados por Docentes</option>
-              <option value="base">Plantillas Base del Sistema (33)</option>
-            </select>
+              <select
+                value={originFilter}
+                onChange={(e) => setOriginFilter(e.target.value as any)}
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none"
+              >
+                <option value="all">Todos los Orígenes</option>
+                <option value="custom">Solo Creados por Docentes</option>
+                <option value="base">Plantillas Base del Sistema (33)</option>
+              </select>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 hover:bg-rose-500/20 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer"
+                  title="Restablecer todos los filtros"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Limpiar</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Contador de resultados */}
+          <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+            <span>
+              Mostrando <strong className="text-white font-bold">{filteredCases.length}</strong> de{' '}
+              <strong className="text-slate-300 font-semibold">{cases.length}</strong> casos clínicos
+            </span>
+            {categoryFilter !== 'all' && (
+              <span className="text-[11px] text-amber-400 font-medium">
+                Filtrado por: {CATEGORY_NAMES[categoryFilter]}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Cases Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCases.map((c) => {
-            const isPitfall = c.isPitfall;
-            return (
-              <div
-                key={c.patternId}
-                className={`p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
-                  isPitfall
-                    ? 'bg-gradient-to-b from-amber-950/20 to-slate-900/90 border-amber-800/40 hover:border-amber-600'
-                    : 'bg-slate-900/80 border-slate-800/80 hover:border-slate-700'
-                }`}
+        {/* Cases Grid or Illustrated Empty State */}
+        {filteredCases.length === 0 ? (
+          <div className="p-12 sm:p-16 rounded-3xl bg-slate-900/60 border border-slate-800/80 text-center space-y-4 max-w-lg mx-auto my-8">
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto shadow-inner">
+              <SearchX className="w-8 h-8 opacity-80" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white">No se encontraron casos clínicos</h3>
+              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+                {hasActiveFilters
+                  ? 'Ningún caso clínico coincide con el término de búsqueda o filtros seleccionados.'
+                  : 'Aún no hay casos registrados en esta sección.'}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Restablecer Filtros</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleCreateNew}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-xs font-bold text-white transition flex items-center gap-1.5 cursor-pointer shadow-md shadow-amber-500/20"
               >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Crear Nuevo Caso</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCases.map((c) => {
+              const isPitfall = c.isPitfall;
+              return (
+                <div
+                  key={c.patternId}
+                  className={`p-5 rounded-3xl border transition-all flex flex-col justify-between space-y-4 ${
+                    isPitfall
+                      ? 'bg-gradient-to-b from-amber-950/20 to-slate-900/90 border-amber-800/40 hover:border-amber-600'
+                      : 'bg-slate-900/80 border-slate-800/80 hover:border-slate-700'
+                  }`}
+                >
                 <div className="space-y-3">
                   {/* Top Badges */}
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -447,6 +548,7 @@ export default function AdminExerciseCasesPage() {
             );
           })}
         </div>
+      )}
       </div>
 
       {/* Modal: Editor de Casos */}

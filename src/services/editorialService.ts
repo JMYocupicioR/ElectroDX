@@ -1,4 +1,5 @@
 import { supabase, sb } from '../lib/supabase';
+import { slugify } from '../utils/slugify';
 import type {
   AppRole,
   ContentRevision,
@@ -64,6 +65,7 @@ export async function getAdminStats(): Promise<import('../types/admin').AdminSta
     pending_users: 0,
     verified_users: 0,
     pending_enrollments: 0,
+    pending_course_enrollments: 0,
     enrolled_physicians: 0,
     premium_users: 0,
     pending_revisions: 0,
@@ -362,7 +364,9 @@ export async function reviewRevision(
     new_status: status,
     notes: notes ?? null,
   });
-  if (error) throw error;
+  if (error) {
+    throw new Error(error.message || error.details || 'Error al procesar la revisión');
+  }
 }
 
 export async function getPublishedModules(): Promise<PublishedModule[]> {
@@ -390,6 +394,15 @@ export async function getPublishedTopicsByModule(moduleId: string): Promise<Publ
     .select('*')
     .eq('module_id', moduleId)
     .order('sort_order');
+  if (error) throw error;
+  return (data ?? []) as PublishedTopic[];
+}
+
+export async function getAllPublishedTopics(): Promise<PublishedTopic[]> {
+  const { data, error } = await supabase
+    .from('published_topics')
+    .select('*')
+    .order('published_at', { ascending: false });
   if (error) throw error;
   return (data ?? []) as PublishedTopic[];
 }
@@ -524,5 +537,79 @@ export async function deleteAdminQuizDirectly(input: {
 
   await submitRevision(saved.id);
   await reviewRevision(saved.id, 'approved', 'Eliminación directa de evaluación en Panel Directivo');
+}
+
+/**
+ * Crea y publica un tema o subtema directamente desde el temario administrativo.
+ * Registra la propuesta editorial y la aprueba de inmediato para que quede publicada.
+ */
+export async function createTopicDirectly(input: {
+  moduleId: string;
+  parentId?: string | null;
+  topicId?: string;
+  title: string;
+  titleEn?: string;
+  description?: string;
+  descriptionEn?: string;
+  content?: string;
+  clinicalPearls?: string[];
+  keyPoints?: string[];
+  authorId: string;
+}): Promise<{ id: string; revisionId?: string }> {
+  const slug = (input.topicId || slugify(input.title)).trim();
+  const payload: RevisionPayload = {
+    id: slug,
+    slug,
+    title: input.title.trim(),
+    titleEn: input.titleEn?.trim() || undefined,
+    description: input.description?.trim() || undefined,
+    descriptionEn: input.descriptionEn?.trim() || undefined,
+    content: input.content?.trim() || undefined,
+    clinicalPearls: input.clinicalPearls?.length ? input.clinicalPearls : [],
+    keyPoints: input.keyPoints?.length ? input.keyPoints : [],
+  };
+
+  // 1. Guardar y publicar mediante el flujo de revisiones con aprobación directa
+  try {
+    const saved = await saveRevision({
+      moduleId: input.moduleId,
+      parentId: input.parentId ?? null,
+      targetTopicId: slug,
+      action: 'create',
+      payload,
+      authorId: input.authorId,
+    });
+
+    await submitRevision(saved.id);
+    await reviewRevision(saved.id, 'approved', 'Creación rápida desde temario administrativo');
+
+    return { id: slug, revisionId: saved.id };
+  } catch (revError) {
+    console.warn('[editorialService] Fallback directo a published_topics tras fallo en revisión:', revError);
+  }
+
+  // 2. Fallback: inserción directa en published_topics
+  const { error: insertError } = await supabase.from('published_topics').upsert(
+    {
+      id: slug,
+      module_id: input.moduleId,
+      parent_id: input.parentId ?? null,
+      slug,
+      title: input.title.trim(),
+      title_en: input.titleEn?.trim() || null,
+      description: input.description?.trim() || null,
+      description_en: input.descriptionEn?.trim() || null,
+      content: input.content?.trim() || null,
+      clinical_pearls: input.clinicalPearls ?? [],
+      key_points: input.keyPoints ?? [],
+      published_at: new Date().toISOString(),
+      published_by: input.authorId,
+      last_edited_by: input.authorId,
+    } as any,
+    { onConflict: 'id' }
+  );
+
+  if (insertError) throw insertError;
+  return { id: slug };
 }
 

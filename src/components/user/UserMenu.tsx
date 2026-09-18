@@ -11,9 +11,11 @@ import {
   UserCircle,
   Crown,
   GraduationCap,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
+import { SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
 import {
   ENROLLMENT_META,
   getPermissionSummary,
@@ -28,6 +30,7 @@ export function UserMenu() {
     isAdmin,
     canProposeContent,
     isEnrolledPhysician,
+    hasCourseAccess,
     enrollmentStatus,
     bootstrapAvailable,
     claimBootstrapAdmin,
@@ -65,7 +68,27 @@ export function UserMenu() {
   if (!user) return null;
 
   const displayName = profile?.display_name || user.email?.split('@')[0] || 'Usuario';
-  const initials = displayName.slice(0, 2).toUpperCase();
+  
+  // Cálculo inteligente de iniciales: primer letra del primer nombre y primer letra del último apellido
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'U';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+  const initials = getInitials(displayName);
+
+  // Rol representativo principal para el subtítulo del chip
+  const primaryRole = isAdmin
+    ? 'Administrador'
+    : roles.includes('editor')
+    ? 'Editor Académico'
+    : roles.includes('contributor')
+    ? 'Colaborador'
+    : isEnrolledPhysician
+    ? 'Médico Inscrito'
+    : 'Médico Alumno';
+
   const permissions = getPermissionSummary({
     roles,
     verifiedAt: profile?.verified_at ?? null,
@@ -89,58 +112,108 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+        className="flex items-center gap-2.5 pl-1.5 pr-2.5 py-1 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800/90 hover:border-slate-300 dark:hover:border-slate-700 shadow-xs hover:shadow-sm transition-all group cursor-pointer"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Menú de usuario"
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 overflow-hidden flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-          {profile?.avatar_url && !imgFailed ? (
-            <img
-              src={profile.avatar_url}
-              alt=""
-              className="w-full h-full object-cover"
-              onError={() => setImgFailed(true)}
-            />
-          ) : (
-            initials
-          )}
+        <div className="relative shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 overflow-hidden flex items-center justify-center text-white text-xs font-bold tracking-wider shadow-xs ring-2 ring-white/90 dark:ring-slate-900">
+            {profile?.avatar_url && !imgFailed ? (
+              <img
+                src={profile.avatar_url}
+                alt=""
+                className="w-full h-full object-cover"
+                onError={() => setImgFailed(true)}
+              />
+            ) : (
+              initials
+            )}
+          </div>
+          <span
+            className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"
+            title="Sesión activa"
+          />
         </div>
-        <span className="hidden md:inline text-sm font-medium text-slate-700 dark:text-slate-200 max-w-[8rem] truncate">
-          {displayName}
-        </span>
-        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+
+        <div className="hidden md:flex flex-col text-left justify-center min-w-0 pr-0.5">
+          <span
+            className="text-xs font-semibold text-slate-800 dark:text-slate-100 max-w-[10rem] lg:max-w-[13rem] xl:max-w-[16rem] truncate leading-tight group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors"
+            title={displayName}
+          >
+            {displayName}
+          </span>
+          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight truncate">
+            {primaryRole}
+          </span>
+        </div>
+
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-transform duration-200 ${
+            open ? 'rotate-180' : ''
+          }`}
+        />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-80 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-black/30 overflow-hidden z-[60]"
+          className="absolute right-0 mt-2 w-84 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-300/40 dark:shadow-black/60 overflow-hidden z-[60]"
         >
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-indigo-950/30">
-            <p className="font-semibold text-slate-900 dark:text-white truncate">{displayName}</p>
-            <p className="text-xs text-slate-500 truncate mt-0.5">{user.email}</p>
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 overflow-hidden flex items-center justify-center text-white text-sm font-bold shadow-sm ring-2 ring-white dark:ring-slate-800 shrink-0">
+                {profile?.avatar_url && !imgFailed ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    onError={() => setImgFailed(true)}
+                  />
+                ) : (
+                  initials
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-sm text-slate-900 dark:text-white truncate" title={displayName}>
+                  {displayName}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">{user.email}</p>
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-cyan-300">
+                    {primaryRole}
+                  </span>
+                  {enrollmentStatus === 'approved' && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+                      Inscrito
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
 
-            <div className="flex flex-wrap gap-1.5 mt-3">
+            <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-800/80">
               {roles.length ? (
                 roles.map((role) => (
                   <span
                     key={role}
-                    className={`px-2 py-0.5 rounded-md text-xs font-medium ${ROLE_META[role].badgeClass}`}
+                    className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${ROLE_META[role].badgeClass}`}
                   >
                     {ROLE_META[role].label}
                   </span>
                 ))
               ) : (
-                <span className="px-2 py-0.5 rounded-md text-xs bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                <span className="px-2 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   Sin rol asignado
                 </span>
               )}
-              <span
-                className={`px-2 py-0.5 rounded-md text-xs font-medium ${ENROLLMENT_META[enrollmentStatus].badgeClass}`}
-              >
-                {ENROLLMENT_META[enrollmentStatus].label}
-              </span>
+              {enrollmentStatus !== 'approved' && (
+                <span
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${ENROLLMENT_META[enrollmentStatus].badgeClass}`}
+                >
+                  {ENROLLMENT_META[enrollmentStatus].label}
+                </span>
+              )}
             </div>
 
             <div className="mt-3">
@@ -155,6 +228,28 @@ export function UserMenu() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            {/* Cursos activos y cursando */}
+            <div className="mt-3 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/80">
+              <p className="text-[0.65rem] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">
+                Cursos activos cursando
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {SELLABLE_COURSE_IDS.filter((cId) => hasCourseAccess(cId)).length > 0 ? (
+                  SELLABLE_COURSE_IDS.filter((cId) => hasCourseAccess(cId)).map((cId) => (
+                    <span
+                      key={cId}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50"
+                    >
+                      <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
+                      <span>{cId.charAt(0).toUpperCase() + cId.slice(1)}</span>
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[10px] text-slate-400 italic">Sin cursos activos</span>
+                )}
+              </div>
             </div>
           </div>
 

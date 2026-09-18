@@ -6,7 +6,6 @@ import {
   BookOpen,
   Sun,
   Moon,
-  Globe,
   Menu,
   X,
   Users,
@@ -19,7 +18,11 @@ import {
   Lock,
   ClipboardList,
   PanelLeft,
+  Search,
+  Video,
+  Sparkles,
 } from 'lucide-react';
+import { useCommandPaletteStore } from './stores/commandPaletteStore';
 import { BrandLogo } from './components/brand/BrandLogo';
 import { CourseSidebar } from './components/CourseSidebar';
 import { BRAND } from './config/brand';
@@ -70,7 +73,8 @@ function MobileNavRow({
 }
 
 export function Header() {
-  const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
+  const { isDarkMode, toggleDarkMode } = useSettingsStore();
+  const openCommandPalette = useCommandPaletteStore((s) => s.open);
   const initializeOffline = useOfflineStore((s) => s.initialize);
   const { user, isAdmin, isPendingApproval } = useAuth();
   const { totalPending } = useAdminPendingCounts();
@@ -176,6 +180,16 @@ export function Header() {
               </Link>
             )}
 
+            <Link to="/talleres" className={navClass(location.pathname.startsWith('/talleres') || location.pathname.startsWith('/taller'))}>
+              <Video className="w-4 h-4" />
+              <span>Clases en Vivo</span>
+            </Link>
+
+            <Link to="/biblioteca" className={navClass(location.pathname.startsWith('/biblioteca') || location.pathname.startsWith('/especialistas/contenido'))}>
+              <Sparkles className="w-4 h-4" />
+              <span>Biblioteca</span>
+            </Link>
+
             {showPublicNav && isSupabaseConfigured && (
               <>
                 <Link to="/especialistas" className={navClass(location.pathname.startsWith('/especialistas'))}>
@@ -191,6 +205,20 @@ export function Header() {
           </nav>
 
           <div className="hidden lg:flex items-center gap-2">
+            {/* Buscador Rápido Global (Cmd+K / Ctrl+K) */}
+            <button
+              type="button"
+              onClick={openCommandPalette}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs transition-all shadow-xs cursor-pointer group"
+              title="Búsqueda global (Ctrl + K)"
+            >
+              <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors" />
+              <span className="hidden xl:inline text-slate-500 dark:text-slate-400">Buscar...</span>
+              <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                ⌘K
+              </kbd>
+            </button>
+
             <OfflineIndicator />
 
             {isSupabaseConfigured && user && isAdmin && (
@@ -230,29 +258,29 @@ export function Header() {
               </div>
             ) : null}
 
-            <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
 
-            <button
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-              aria-label="Cambiar idioma"
-            >
-              <span className="flex items-center gap-1">
-                <Globe className="w-3.5 h-3.5" />
-                {language === 'es' ? 'ES' : 'EN'}
-              </span>
-            </button>
 
             <button
               onClick={toggleDarkMode}
-              className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="p-2 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-500 hover:text-blue-600 dark:hover:text-cyan-400 transition-all shadow-xs cursor-pointer"
               aria-label={isDarkMode ? 'Modo claro' : 'Modo oscuro'}
+              title={isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             >
-              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600 dark:text-slate-300" />}
             </button>
           </div>
 
           <div className="flex lg:hidden items-center gap-1.5">
+            <button
+              type="button"
+              onClick={openCommandPalette}
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              aria-label="Buscar"
+              title="Buscar (Ctrl + K)"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+
             <OfflineIndicator />
 
             {isSupabaseConfigured && user && (
@@ -404,6 +432,20 @@ export function Header() {
                     />
                   )}
 
+                  <MobileNavRow
+                    to="/talleres"
+                    onClick={() => setMobileMenuOpen(false)}
+                    icon={<Video className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
+                    label="Clases en Vivo"
+                  />
+
+                  <MobileNavRow
+                    to="/biblioteca"
+                    onClick={() => setMobileMenuOpen(false)}
+                    icon={<Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                    label="Biblioteca de Especialistas"
+                  />
+
                   {showPublicNav && isSupabaseConfigured && (
                     <>
                       <MobileNavRow
@@ -425,16 +467,7 @@ export function Header() {
             </div>
 
             <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Idioma</span>
-                <button
-                  onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span>{language === 'es' ? 'Español' : 'English'}</span>
-                </button>
-              </div>
+
 
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tema</span>

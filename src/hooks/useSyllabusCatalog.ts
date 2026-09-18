@@ -7,14 +7,17 @@ import {
   groupModulesByCourse,
 } from '../content/courseCatalog';
 import { getSyllabusCatalog } from '../services/courseService';
+import { getAllPublishedTopics } from '../services/editorialService';
+import { mergeModuleTopics } from '../services/contentMerge';
 import { isSupabaseConfigured } from '../lib/supabase';
-import type { Course, CourseModuleRow, SyllabusTopicOverride } from '../types/database';
+import type { Course, CourseModuleRow, PublishedTopic, SyllabusTopicOverride } from '../types/database';
 import type { Module } from '../types/content';
 
 export function useSyllabusCatalog() {
   const [courses, setCourses] = useState<Course[]>(DEFAULT_COURSES);
   const [assignments, setAssignments] = useState<CourseModuleRow[]>(DEFAULT_COURSE_MODULES);
   const [overrides, setOverrides] = useState<SyllabusTopicOverride[]>([]);
+  const [publishedTopics, setPublishedTopics] = useState<PublishedTopic[]>([]);
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
   const reload = useCallback(async () => {
@@ -22,20 +25,29 @@ export function useSyllabusCatalog() {
       setCourses(DEFAULT_COURSES);
       setAssignments(DEFAULT_COURSE_MODULES);
       setOverrides([]);
+      setPublishedTopics([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const catalog = await getSyllabusCatalog();
+      const [catalog, pubTopics] = await Promise.all([
+        getSyllabusCatalog(),
+        getAllPublishedTopics().catch((err) => {
+          console.warn('[useSyllabusCatalog] getAllPublishedTopics fallback:', err);
+          return [] as PublishedTopic[];
+        }),
+      ]);
       setCourses(catalog.courses.length ? catalog.courses : DEFAULT_COURSES);
       setAssignments(catalog.assignments.length ? catalog.assignments : DEFAULT_COURSE_MODULES);
       setOverrides(catalog.overrides);
+      setPublishedTopics(pubTopics ?? []);
     } catch (err) {
       console.warn('[useSyllabusCatalog]', err);
       setCourses(DEFAULT_COURSES);
       setAssignments(DEFAULT_COURSE_MODULES);
       setOverrides([]);
+      setPublishedTopics([]);
     } finally {
       setLoading(false);
     }
@@ -45,9 +57,17 @@ export function useSyllabusCatalog() {
     void reload();
   }, [reload]);
 
+  const mergedModules: Module[] = useMemo(() => {
+    if (!publishedTopics.length) return allModules;
+    return allModules.map((mod) => {
+      const topicsForModule = publishedTopics.filter((pt) => pt.module_id === mod.id);
+      return topicsForModule.length ? mergeModuleTopics(mod, topicsForModule) : mod;
+    });
+  }, [publishedTopics]);
+
   const modulesWithOverrides: Module[] = useMemo(
-    () => applyOverridesToModules(allModules, overrides),
-    [overrides]
+    () => applyOverridesToModules(mergedModules, overrides),
+    [mergedModules, overrides]
   );
 
   const { grouped, unassigned } = useMemo(

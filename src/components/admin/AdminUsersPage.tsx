@@ -49,7 +49,12 @@ import type { AdminProfileRow } from '../../types/admin';
 import type { AppRole, CourseEnrollment, CourseId } from '../../types/database';
 import { isEnrollmentProfileComplete, isProfileComplete } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
-import { getCourseEnrollmentsForUsers, grantCourseAccess, revokeCourseAccess } from '../../services/courseService';
+import {
+  getCourseEnrollmentsForUsers,
+  grantCourseAccess,
+  revokeCourseAccess,
+  adminAdmitStudentToCourse,
+} from '../../services/courseService';
 import { SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
 
 type Tab = 'enrollment_pending' | 'enrolled' | 'comite' | 'all' | 'premium';
@@ -84,6 +89,7 @@ export default function AdminUsersPage() {
   const [filterResidentsOnly, setFilterResidentsOnly] = useState(false);
   const [filterComiteVisible, setFilterComiteVisible] = useState(false);
   const [filterSpecialistVisible, setFilterSpecialistVisible] = useState(false);
+  const [filterWaitlistCourses, setFilterWaitlistCourses] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -197,8 +203,15 @@ export default function AdminUsersPage() {
       result = result.filter((u) => u.is_public === true);
     }
 
+    if (filterWaitlistCourses) {
+      const pendingUserIds = new Set(
+        courseEnrollments.filter((r) => r.status === 'pending').map((r) => r.user_id)
+      );
+      result = result.filter((u) => pendingUserIds.has(u.id));
+    }
+
     return result;
-  }, [users, searchQuery, filterSepVerified, filterResidentsOnly, filterComiteVisible, filterSpecialistVisible]);
+  }, [users, searchQuery, filterSepVerified, filterResidentsOnly, filterComiteVisible, filterSpecialistVisible, filterWaitlistCourses, courseEnrollments]);
 
   return (
     <AdminLayout title="Coordinación y Estatus de Médicos">
@@ -314,6 +327,20 @@ export default function AdminUsersPage() {
             >
               <Users className="w-3.5 h-3.5" />
               <span>En Especialistas</span>
+            </button>
+
+            <button
+              onClick={() => setFilterWaitlistCourses(!filterWaitlistCourses)}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
+                filterWaitlistCourses
+                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300'
+                  : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5 text-amber-600" />
+              <span>
+                En Lista de Espera ({courseEnrollments.filter((r) => r.status === 'pending').length})
+              </span>
             </button>
           </div>
         </div>
@@ -499,6 +526,29 @@ export default function AdminUsersPage() {
                             <Sparkles className="w-3 h-3" /> Premium
                           </span>
                         )}
+
+                        {/* Course Waitlist Badges */}
+                        {courseEnrollments
+                          .filter((r) => r.user_id === u.id && r.status === 'pending')
+                          .map((r) => {
+                            const courseLabel =
+                              r.course_id === 'principiante'
+                                ? 'Principiante'
+                                : r.course_id === 'intermedio'
+                                ? 'Intermedio'
+                                : 'Avanzado';
+                            return (
+                              <Link
+                                key={r.course_id}
+                                to={`/admin/admisiones?course=${r.course_id}`}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-bold border border-amber-300/60 hover:bg-amber-200 transition"
+                                title="Ver en lista de espera de admisiones"
+                              >
+                                <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                                <span>Espera: {courseLabel}</span>
+                              </Link>
+                            );
+                          })}
 
                         {/* Public Visibility Badges - Only applicable for approved physicians */}
                         {isApproved && (
@@ -811,8 +861,11 @@ export default function AdminUsersPage() {
                         <div className="pt-1 space-y-1.5">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cursos por nivel</p>
                           {SELLABLE_COURSE_IDS.map((courseId) => {
-                            const enrollment = courseEnrollments.find(
+                            const activeEnrollment = courseEnrollments.find(
                               (row) => row.user_id === u.id && row.course_id === courseId && row.status === 'active'
+                            );
+                            const pendingEnrollment = courseEnrollments.find(
+                              (row) => row.user_id === u.id && row.course_id === courseId && row.status === 'pending'
                             );
                             const label =
                               courseId === 'principiante'
@@ -820,21 +873,74 @@ export default function AdminUsersPage() {
                                 : courseId === 'intermedio'
                                   ? 'Intermedio'
                                   : 'Avanzado';
-                            return enrollment ? (
-                              <button
-                                key={courseId}
-                                type="button"
-                                disabled={loadingId === u.id}
-                                onClick={() => {
-                                  if (!confirm(`¿Revocar ${label} para ${u.display_name}?`)) return;
-                                  run(u.id, () => revokeCourseAccess(u.id, courseId));
-                                }}
-                                className="w-full inline-flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold"
-                              >
-                                <span>{label} activo</span>
-                                <span className="text-[10px] underline">Revocar</span>
-                              </button>
-                            ) : (
+
+                            if (activeEnrollment) {
+                              return (
+                                <button
+                                  key={courseId}
+                                  type="button"
+                                  disabled={loadingId === u.id}
+                                  onClick={() => {
+                                    if (!confirm(`¿Revocar ${label} para ${u.display_name}?`)) return;
+                                    run(u.id, () => revokeCourseAccess(u.id, courseId));
+                                  }}
+                                  className="w-full inline-flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold"
+                                >
+                                  <span>{label} activo</span>
+                                  <span className="text-[10px] underline">Revocar</span>
+                                </button>
+                              );
+                            }
+
+                            if (pendingEnrollment) {
+                              return (
+                                <div
+                                  key={courseId}
+                                  className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 space-y-1"
+                                >
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
+                                      <span>{label}: Espera</span>
+                                    </span>
+                                    <Link
+                                      to={`/admin/admisiones?course=${courseId}`}
+                                      className="text-[10px] font-semibold text-amber-900 dark:text-amber-200 underline"
+                                    >
+                                      Ver cola
+                                    </Link>
+                                  </div>
+                                  {pendingEnrollment.request_notes && (
+                                    <p className="text-[10px] text-slate-600 dark:text-slate-400 italic line-clamp-1">
+                                      "{pendingEnrollment.request_notes}"
+                                    </p>
+                                  )}
+                                  <button
+                                    type="button"
+                                    disabled={loadingId === u.id}
+                                    onClick={() => {
+                                      const ref = window.prompt(
+                                        `Referencia de pago para admitir en ${label}:`,
+                                        pendingEnrollment.payment_reference || 'Confirmado por admin'
+                                      );
+                                      if (ref === null) return;
+                                      run(u.id, () =>
+                                        adminAdmitStudentToCourse(u.id, courseId, {
+                                          notes: 'Admitido desde Gestión de Médicos',
+                                          payment_method: 'manual',
+                                          payment_reference: ref || undefined,
+                                        })
+                                      );
+                                    }}
+                                    className="w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-xs transition"
+                                  >
+                                    <Check className="w-3 h-3" /> Admitir a {label}
+                                  </button>
+                                </div>
+                              );
+                            }
+
+                            return (
                               <button
                                 key={courseId}
                                 type="button"

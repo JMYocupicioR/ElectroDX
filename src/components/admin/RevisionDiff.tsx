@@ -15,7 +15,39 @@ function formatValue(value: unknown): string {
     if (typeof value[0] === 'string') return value.join('\n');
     return JSON.stringify(value, null, 2);
   }
+  if (typeof value === 'object') {
+    return JSON.stringify(value, null, 2);
+  }
   return String(value);
+}
+
+function formatMediaSummary(media: {
+  videoUrls?: unknown[];
+  youtubeUrls?: { title?: string; videoId?: string }[];
+  vimeoUrls?: unknown[];
+  embedUrls?: unknown[];
+  imageUrls?: unknown[];
+}): string {
+  const parts: string[] = [];
+  if (media.youtubeUrls?.length) {
+    parts.push(
+      `YouTube (${media.youtubeUrls.length}):\n` +
+        media.youtubeUrls.map((y) => `  • ${y.title || 'Video'} (${y.videoId || ''})`).join('\n')
+    );
+  }
+  if (media.videoUrls?.length) {
+    parts.push(`Videos directos (${media.videoUrls.length}):\n` + media.videoUrls.map((v) => `  • ${String(v)}`).join('\n'));
+  }
+  if (media.vimeoUrls?.length) {
+    parts.push(`Vimeo (${media.vimeoUrls.length}):\n` + media.vimeoUrls.map((v) => `  • ${String(v)}`).join('\n'));
+  }
+  if (media.embedUrls?.length) {
+    parts.push(`Embeds (${media.embedUrls.length}):\n` + media.embedUrls.map((e) => `  • ${String(e)}`).join('\n'));
+  }
+  if (media.imageUrls?.length) {
+    parts.push(`Imágenes (${media.imageUrls.length}):\n` + media.imageUrls.map((i) => `  • ${String(i)}`).join('\n'));
+  }
+  return parts.length > 0 ? parts.join('\n\n') : 'Sin elementos multimedia';
 }
 
 function changed(a: unknown, b: unknown): boolean {
@@ -69,10 +101,10 @@ export function RevisionDiff({
 
       {mediaChanged && (
         <div className="grid gap-3 lg:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+          <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50/50 dark:bg-slate-900/30">
             <p className="text-xs font-semibold uppercase text-slate-400 mb-2">Media actual</p>
-            <pre className="text-xs whitespace-pre-wrap font-sans">
-              {formatValue({
+            <pre className="text-xs whitespace-pre-wrap font-sans text-slate-600 dark:text-slate-300">
+              {formatMediaSummary({
                 videoUrls: current.videoUrls,
                 youtubeUrls: current.youtubeUrls,
                 vimeoUrls: current.vimeoUrls,
@@ -81,10 +113,10 @@ export function RevisionDiff({
               })}
             </pre>
           </div>
-          <div className="rounded-xl border border-emerald-200 p-3">
+          <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 p-3 bg-emerald-50/30 dark:bg-emerald-900/10">
             <p className="text-xs font-semibold uppercase text-emerald-600 mb-2">Media propuesta</p>
-            <pre className="text-xs whitespace-pre-wrap font-sans">
-              {formatValue({
+            <pre className="text-xs whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200">
+              {formatMediaSummary({
                 videoUrls: proposed.videoUrls,
                 youtubeUrls: proposed.youtubeUrls,
                 vimeoUrls: proposed.vimeoUrls,

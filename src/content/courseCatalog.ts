@@ -1,7 +1,7 @@
 import type { Module } from '../types/content';
 import type { Course, CourseId, CourseModuleRow, SyllabusTopicOverride } from '../types/database';
 
-export const COURSE_IDS = ['principiante', 'intermedio', 'avanzado', 'referencia'] as const;
+export const COURSE_IDS = ['principiante', 'intermedio', 'avanzado'] as const;
 export const SELLABLE_COURSE_IDS: CourseId[] = ['principiante', 'intermedio', 'avanzado'];
 
 export const DEFAULT_COURSES: Course[] = [
@@ -41,17 +41,6 @@ export const DEFAULT_COURSES: Course[] = [
     updated_at: '',
     updated_by: null,
   },
-  {
-    id: 'referencia',
-    title: 'Referencia rápida y bibliografía',
-    description: 'Tablas clínicas y fuentes bibliográficas. Se desbloquea con cualquier curso activo.',
-    sort_order: 4,
-    price_display: null,
-    is_active: true,
-    is_sellable: false,
-    updated_at: '',
-    updated_by: null,
-  },
 ];
 
 /** Default module → course assignment (mirrors the SQL seed). */
@@ -71,8 +60,6 @@ export const DEFAULT_COURSE_MODULES: CourseModuleRow[] = [
   { module_id: 'special-studies', course_id: 'avanzado', sort_order: 1, is_visible: true },
   { module_id: 'complex-clinical-cases', course_id: 'avanzado', sort_order: 2, is_visible: true },
   { module_id: 'pathology-updates', course_id: 'avanzado', sort_order: 3, is_visible: true },
-  { module_id: 'quick-reference', course_id: 'referencia', sort_order: 1, is_visible: true },
-  { module_id: 'bibliography', course_id: 'referencia', sort_order: 2, is_visible: true },
 ];
 
 export const NEXT_COURSE_RECOMMENDATION: Partial<Record<CourseId, CourseId>> = {
@@ -119,7 +106,10 @@ export function groupModulesByCourse(
   assignments: CourseModuleRow[]
 ): { grouped: GroupedSyllabusCourse[]; unassigned: Module[] } {
   const byId = new Map(modules.map((m) => [m.id, m]));
-  const assignedIds = new Set(assignments.map((a) => a.module_id));
+  const validCourseIds = new Set(courses.map((c) => c.id));
+  const assignedIds = new Set(
+    assignments.filter((a) => validCourseIds.has(a.course_id)).map((a) => a.module_id)
+  );
   const sortedCourses = [...courses].sort((a, b) => a.sort_order - b.sort_order);
 
   const grouped = sortedCourses.map((course) => {

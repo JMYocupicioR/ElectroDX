@@ -39,6 +39,7 @@ export interface AdminStats {
   pending_users: number;
   verified_users: number;
   pending_enrollments: number;
+  pending_course_enrollments?: number;
   enrolled_physicians: number;
   premium_users: number;
   pending_revisions: number;

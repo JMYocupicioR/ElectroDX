@@ -12,7 +12,8 @@ import { getQuizFlagForTopic } from '../../services/quizService';
 import { CourseGate } from '../CourseGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList, Sparkles } from 'lucide-react';
+import { QuickTopicMaterialModal } from '../editorial/QuickTopicMaterialModal';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import {
   toggleTopicCompleted,
@@ -414,7 +415,8 @@ export default function TopicPage() {
   const { canProposeContent, user } = useAuth();
   const homeHref = user ? '/portal' : '/';
   const homeLabel = lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio';
-  const { module: mod, loading: moduleLoading } = useMergedModule(moduleId);
+  const { module: mod, loading: moduleLoading, refresh: refreshModule } = useMergedModule(moduleId);
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
 
   const [showTOC, setShowTOC] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -813,6 +815,17 @@ export default function TopicPage() {
 
           {canProposeContent && mod && (
             <div className="mb-4">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setIsMaterialModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  ⚡ Agregar Material al Tema (Video, PDF, Imagen, Perla)
+                </button>
+              </div>
+
               {hasChildContent && (
                 <p className="text-xs text-violet-600 dark:text-violet-400 mb-2">
                   Los cuestionarios se crean por subtema. Usa &quot;Proponer cuestionario&quot; en cada sección numerada abajo,
@@ -1250,6 +1263,17 @@ export default function TopicPage() {
           </motion.button>
         )}
       </AnimatePresence>
+
+      {/* ── Quick Topic Material Modal for Teachers ── */}
+      {mod && topic && (
+        <QuickTopicMaterialModal
+          isOpen={isMaterialModalOpen}
+          onClose={() => setIsMaterialModalOpen(false)}
+          moduleId={mod.id}
+          topic={topic}
+          onSuccess={refreshModule}
+        />
+      )}
     </CourseGate>
   );
 }

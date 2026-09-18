@@ -14,11 +14,18 @@ export const useSettingsStore = create<SettingsStore>()(
       isDarkMode: false,
       language: 'es',
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
-      setLanguage: (language) => set({ language }),
+      // Idioma temporalmente fijado a español ('es').
+      // Se reactivará la traducción instantánea más adelante.
+      setLanguage: (_lang) => set({ language: 'es' }),
     }),
     {
       name: 'settings-storage',
-      partialize: (state) => ({ isDarkMode: state.isDarkMode, language: state.language }),
+      partialize: (state) => ({ isDarkMode: state.isDarkMode, language: 'es' as const }),
+      merge: (persistedState: any, currentState) => ({
+        ...currentState,
+        ...(persistedState || {}),
+        language: 'es' as const, // Garantiza español como default absoluto aunque el navegador tuviera 'en' guardado
+      }),
     }
   )
 );

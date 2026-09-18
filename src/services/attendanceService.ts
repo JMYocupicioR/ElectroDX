@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
 import type { ClassAttendanceRecord, SessionModality } from '../types/academicGradebook';
+import type { WorkshopAttendanceSummary } from '../types/academicAnalytics';
+import type { LiveWorkshop } from '../types/database';
 
 const KEY_LOCAL_ATTENDANCE = 'neurosafe_class_attendances_';
 
@@ -8,7 +10,10 @@ export function normalizeSessionModality(value: unknown): SessionModality {
   return value === 'in_person' ? 'in_person' : 'online';
 }
 
-function attendanceKey(record: Pick<ClassAttendanceRecord, 'student_id' | 'session_title' | 'session_date'>): string {
+function attendanceKey(record: Pick<ClassAttendanceRecord, 'student_id' | 'session_title' | 'session_date' | 'workshop_id'>): string {
+  if (record.workshop_id) {
+    return `${record.student_id}|ws_${record.workshop_id}`;
+  }
   return `${record.student_id}|${record.session_title}|${record.session_date}`;
 }
 
@@ -16,10 +21,11 @@ function normalizeAttendanceRecord(row: ClassAttendanceRecord): ClassAttendanceR
   return {
     ...row,
     session_modality: normalizeSessionModality(row.session_modality),
+    excuse_reason: row.excuse_reason ?? null,
+    recorded_by: row.recorded_by ?? null,
   };
 }
 
-// Talleres y sesiones base de ejemplo para el curso si no hay registros
 export const DEFAULT_COURSE_SESSIONS: { title: string; date: string }[] = [];
 
 export async function getStudentAttendance(studentId: string): Promise<ClassAttendanceRecord[]> {
@@ -54,55 +60,111 @@ export async function getStudentAttendance(studentId: string): Promise<ClassAtte
   return [];
 }
 
-export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord): Promise<void> {
-  // 1. Local
+export async function getWorkshopAttendance(workshopId: string): Promise<ClassAttendanceRecord[]> {
+  if (!workshopId) return [];
+
+  if (!isTableMissingInSupabase('class_attendances')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('class_attendances')
+        .select('*')
+        .eq('workshop_id', workshopId);
+
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('class_attendances');
+      } else if (data) {
+        return (data as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
+      }
+    } catch {
+      markTableAsMissingInSupabase('class_attendances');
+    }
+  }
+
+  // Fallback cache
+  const results: ClassAttendanceRecord[] = [];
   try {
-    const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${record.student_id}`);
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(KEY_LOCAL_ATTENDANCE)) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          const list = JSON.parse(raw) as ClassAttendanceRecord[];
+          const matches = list.filter((r) => r.workshop_id === workshopId);
+          results.push(...matches.map(normalizeAttendanceRecord));
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return results;
+}
+
+export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord): Promise<void> {
+  const normalized = normalizeAttendanceRecord(record);
+
+  // 1. Local storage cache
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`);
     const list: ClassAttendanceRecord[] = raw ? JSON.parse(raw) : [];
-    const existingIdx = list.findIndex(
-      (r) => r.session_title === record.session_title && r.session_date === record.session_date
-    );
+    const existingIdx = list.findIndex((r) => {
+      if (normalized.workshop_id && r.workshop_id) {
+        return r.workshop_id === normalized.workshop_id;
+      }
+      return r.session_title === normalized.session_title && r.session_date === normalized.session_date;
+    });
 
     if (existingIdx !== -1) {
-      list[existingIdx] = { ...list[existingIdx], ...record, updated_at: new Date().toISOString() };
+      list[existingIdx] = { ...list[existingIdx], ...normalized, updated_at: new Date().toISOString() };
     } else {
-      list.push({ ...record, updated_at: new Date().toISOString() });
+      list.push({ ...normalized, updated_at: new Date().toISOString() });
     }
 
-    localStorage.setItem(`${KEY_LOCAL_ATTENDANCE}${record.student_id}`, JSON.stringify(list));
+    localStorage.setItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`, JSON.stringify(list));
   } catch (e) {
     console.warn('[attendanceService] Error saving local attendance:', e);
   }
 
   // 2. Supabase
   if (!isTableMissingInSupabase('class_attendances')) {
-    const payload = {
-      session_title: record.session_title,
-      session_date: record.session_date,
-      workshop_id: record.workshop_id ?? null,
-      student_id: record.student_id,
-      status: record.status,
-      session_modality: normalizeSessionModality(record.session_modality),
-      minutes_attended: record.minutes_attended ?? null,
-      notes: record.notes ?? null,
+    const payload: any = {
+      session_title: normalized.session_title,
+      session_date: normalized.session_date,
+      workshop_id: normalized.workshop_id ?? null,
+      student_id: normalized.student_id,
+      status: normalized.status,
+      session_modality: normalizeSessionModality(normalized.session_modality),
+      minutes_attended: normalized.minutes_attended ?? null,
+      notes: normalized.notes ?? null,
+      excuse_reason: normalized.excuse_reason ?? null,
+      recorded_by: normalized.recorded_by ?? null,
       updated_at: new Date().toISOString(),
     };
 
     try {
-      const { error, status } = await (supabase.from as any)('class_attendances').upsert(payload, {
-        onConflict: 'student_id,session_title,session_date',
-      });
-      if (status === 404) {
-        markTableAsMissingInSupabase('class_attendances');
-      } else if (error && /session_modality/i.test(error.message || '')) {
-        const { session_modality: _ignored, ...legacyPayload } = payload;
-        const retry = await (supabase.from as any)('class_attendances').upsert(legacyPayload, {
-          onConflict: 'student_id,session_title,session_date',
-        });
-        if (retry.status === 404 || retry.error) {
-          markTableAsMissingInSupabase('class_attendances');
-        }
-      } else if (error) {
+      // Intentar primero con conflicto en student_id,workshop_id si workshop_id existe
+      let conflictField = normalized.workshop_id ? 'student_id,workshop_id' : 'student_id,session_title,session_date';
+      let res = await (supabase.from as any)('class_attendances').upsert(payload, { onConflict: conflictField });
+
+      if (res.error && normalized.workshop_id) {
+        // Fallback a unicidad original (student_id,session_title,session_date)
+        conflictField = 'student_id,session_title,session_date';
+        res = await (supabase.from as any)('class_attendances').upsert(payload, { onConflict: conflictField });
+      }
+
+      // Si falla por columnas nuevas (excuse_reason o recorded_by no presentes aún)
+      if (res.error && /(excuse_reason|recorded_by)/i.test(res.error.message || '')) {
+        const { excuse_reason: _e, recorded_by: _r, ...compatPayload } = payload;
+        res = await (supabase.from as any)('class_attendances').upsert(compatPayload, { onConflict: conflictField });
+      }
+
+      // Si falla por session_modality
+      if (res.error && /session_modality/i.test(res.error.message || '')) {
+        const { session_modality: _m, excuse_reason: _e, recorded_by: _r, ...legacyPayload } = payload;
+        res = await (supabase.from as any)('class_attendances').upsert(legacyPayload, { onConflict: conflictField });
+      }
+
+      if (res.status === 404) {
         markTableAsMissingInSupabase('class_attendances');
       }
     } catch {
@@ -160,18 +222,38 @@ export async function saveCohortAttendanceBatch(records: ClassAttendanceRecord[]
   }
 }
 
-export async function calculateStudentAttendanceMetrics(studentId: string): Promise<{
+export interface StudentAttendanceMetricsResult {
   totalSessions: number;
   attendedSessions: number;
   lateSessions: number;
   excusedSessions: number;
   absentSessions: number;
   attendancePct: number;
+  hasAuditedSessions: boolean;
   records: ClassAttendanceRecord[];
-}> {
+}
+
+export async function calculateStudentAttendanceMetrics(
+  studentId: string,
+  options?: { eligibleSessionsCount?: number }
+): Promise<StudentAttendanceMetricsResult> {
   const records = await getStudentAttendance(studentId);
-  const total = records.length;
-  if (total === 0) {
+  const eligibleSessions = options?.eligibleSessionsCount ?? 0;
+
+  if (records.length === 0) {
+    if (eligibleSessions > 0) {
+      return {
+        totalSessions: eligibleSessions,
+        attendedSessions: 0,
+        lateSessions: 0,
+        excusedSessions: 0,
+        absentSessions: eligibleSessions,
+        attendancePct: 0,
+        hasAuditedSessions: true,
+        records: [],
+      };
+    }
+
     return {
       totalSessions: 0,
       attendedSessions: 0,
@@ -179,6 +261,7 @@ export async function calculateStudentAttendanceMetrics(studentId: string): Prom
       excusedSessions: 0,
       absentSessions: 0,
       attendancePct: 100,
+      hasAuditedSessions: false,
       records: [],
     };
   }
@@ -205,15 +288,88 @@ export async function calculateStudentAttendanceMetrics(studentId: string): Prom
     }
   }
 
-  const attendancePct = Math.min(100, Math.round((points / total) * 100));
+  // Denominador: el mayor entre las marcas registradas y las sesiones auditadas a la fecha
+  const effectiveTotal = Math.max(records.length, eligibleSessions);
+  const attendancePct = effectiveTotal === 0 ? 100 : Math.min(100, Math.round((points / effectiveTotal) * 100));
 
   return {
-    totalSessions: total,
+    totalSessions: effectiveTotal,
     attendedSessions: presentCount,
     lateSessions: lateCount,
     excusedSessions: excusedCount,
-    absentSessions: absentCount,
+    absentSessions: absentCount + Math.max(0, effectiveTotal - records.length),
     attendancePct,
+    hasAuditedSessions: true,
     records,
+  };
+}
+
+export function computeWorkshopAttendanceSummary(
+  workshop: LiveWorkshop,
+  cohortStudentIds: string[],
+  cohortRecords: ClassAttendanceRecord[]
+): WorkshopAttendanceSummary {
+  const workshopRecords = cohortRecords.filter((r) => {
+    if (r.workshop_id && workshop.id) return r.workshop_id === workshop.id;
+    const sessionDate = workshop.scheduled_at ? workshop.scheduled_at.split('T')[0] : '';
+    return r.session_title === workshop.title && r.session_date === sessionDate;
+  });
+
+  const studentRecordMap = new Map<string, ClassAttendanceRecord>();
+  for (const rec of workshopRecords) {
+    studentRecordMap.set(rec.student_id, rec);
+  }
+
+  let present = 0;
+  let late = 0;
+  let excused = 0;
+  let absent = 0;
+  let pending = 0;
+  let points = 0;
+
+  for (const sId of cohortStudentIds) {
+    const rec = studentRecordMap.get(sId);
+    if (!rec) {
+      pending++;
+    } else if (rec.status === 'present') {
+      present++;
+      points += 1.0;
+    } else if (rec.status === 'late') {
+      late++;
+      points += 0.8;
+    } else if (rec.status === 'excused') {
+      excused++;
+      points += 1.0;
+    } else {
+      absent++;
+    }
+  }
+
+  const evaluatedCount = present + late + excused + absent;
+  const attendancePct = evaluatedCount > 0 ? Math.round((points / evaluatedCount) * 100) : 0;
+
+  let rollCallStatus: 'not_started' | 'incomplete' | 'completed' = 'not_started';
+  if (evaluatedCount === cohortStudentIds.length && cohortStudentIds.length > 0) {
+    rollCallStatus = 'completed';
+  } else if (evaluatedCount > 0) {
+    rollCallStatus = 'incomplete';
+  }
+
+  return {
+    workshopId: workshop.id,
+    title: workshop.title,
+    scheduledAt: workshop.scheduled_at,
+    modality: normalizeSessionModality(workshop.session_modality),
+    status: workshop.status,
+    attendanceClosed: !!workshop.attendance_closed,
+    countsForKardex: workshop.counts_for_kardex ?? true,
+    totalExpected: cohortStudentIds.length,
+    presentCount: present,
+    lateCount: late,
+    excusedCount: excused,
+    absentCount: absent,
+    pendingCount: pending,
+    attendancePct,
+    rollCallStatus,
   };
 }

@@ -41,9 +41,41 @@ export interface AttendanceAnalyticsRow {
   studentEmail: string;
   sessionTitle: string;
   sessionDate: string;
+  workshopId?: string | null;
   status: AttendanceStatus;
   modality: SessionModality;
   notes: string | null;
+  excuseReason?: string | null;
+  recordedBy?: string | null;
+}
+
+export interface WorkshopAttendanceSummary {
+  workshopId: string;
+  title: string;
+  scheduledAt: string;
+  modality: SessionModality;
+  status: string;
+  attendanceClosed: boolean;
+  countsForKardex: boolean;
+  totalExpected: number;
+  presentCount: number;
+  lateCount: number;
+  excusedCount: number;
+  absentCount: number;
+  pendingCount: number;
+  attendancePct: number;
+  rollCallStatus: 'not_started' | 'incomplete' | 'completed';
+}
+
+export interface CohortHeatmapStudent {
+  studentId: string;
+  studentName: string;
+  studentEmail: string;
+  institution?: string | null;
+  residencyYear?: string | null;
+  attendancePct: number;
+  isAtRisk: boolean;
+  sessions: Record<string, { status: AttendanceStatus; notes?: string | null; excuseReason?: string | null } | null>;
 }
 
 export interface DateRangeFilter {

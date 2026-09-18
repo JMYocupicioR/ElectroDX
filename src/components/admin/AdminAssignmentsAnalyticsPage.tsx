@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
   AdminAnalyticsScopeBar,
@@ -14,6 +14,7 @@ import {
   loadGradeableStudents,
   getCohortAssignmentAnalytics,
 } from '../../services/academicAnalyticsService';
+import { deleteAssignment } from '../../services/studentPlanService';
 import { filterAssignments, average } from '../../utils/academicAnalytics';
 import { useAuth } from '../../contexts/AuthProvider';
 import type { AdminProfileRow } from '../../types/admin';
@@ -55,6 +56,11 @@ export default function AdminAssignmentsAnalyticsPage() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [gradingItem, setGradingItem] = useState<TeacherPendingReviewItem | null>(null);
 
+  // Estado para confirmación de eliminación
+  const [assignmentToDelete, setAssignmentToDelete] = useState<AssignmentAnalyticsRow | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const load = async () => {
     setLoading(true);
     try {
@@ -89,6 +95,22 @@ export default function AdminAssignmentsAnalyticsPage() {
     setParams(next, { replace: true });
   };
 
+  const handleConfirmDelete = async () => {
+    if (!assignmentToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteAssignment(assignmentToDelete.id, assignmentToDelete.student_id);
+      setAssignmentToDelete(null);
+      setToastMessage('Tarea asignada eliminada del historial del alumno.');
+      await load();
+      setTimeout(() => setToastMessage(null), 4000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar la tarea.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <AdminLayout
       title="Tareas enviadas"
@@ -100,6 +122,13 @@ export default function AdminAssignmentsAnalyticsPage() {
           cohortHref="/admin/alumnos/tareas"
           studentLabel="Tareas del alumno"
         />
+
+        {toastMessage && (
+          <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <AnalyticsKpi label="Asignadas" value={filtered.length} hint="En la selección actual" />
@@ -212,7 +241,7 @@ export default function AdminAssignmentsAnalyticsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filtered.map((row) => (
-                    <tr key={row.id} className="bg-white/70 dark:bg-slate-900/40">
+                    <tr key={row.id} className="bg-white/70 dark:bg-slate-900/40 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition">
                       <td className="px-4 py-3">
                         <p className="font-semibold text-slate-800 dark:text-slate-100">{row.studentName}</p>
                         <p className="text-xs text-slate-400">{row.studentEmail}</p>
@@ -259,6 +288,14 @@ export default function AdminAssignmentsAnalyticsPage() {
                           >
                             Expediente
                           </Link>
+                          <button
+                            type="button"
+                            onClick={() => setAssignmentToDelete(row)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer"
+                            title="Eliminar tarea asignada del historial"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -270,6 +307,7 @@ export default function AdminAssignmentsAnalyticsPage() {
         </section>
       </div>
 
+      {/* Modal de Calificación Rápida */}
       <TeacherQuickGradeModal
         isOpen={Boolean(gradingItem)}
         onClose={() => setGradingItem(null)}
@@ -279,6 +317,68 @@ export default function AdminAssignmentsAnalyticsPage() {
           load();
         }}
       />
+
+      {/* Modal de Confirmación para Eliminar Tarea */}
+      {assignmentToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  ¿Eliminar tarea asignada?
+                </h3>
+                <p className="text-xs text-slate-500">Confirmación docente requerida</p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs space-y-1.5">
+              <p className="font-bold text-slate-900 dark:text-white">
+                {assignmentToDelete.title}
+              </p>
+              <p className="text-slate-600 dark:text-slate-300">
+                <span className="font-semibold">Alumno:</span> {assignmentToDelete.studentName} ({assignmentToDelete.studentEmail})
+              </p>
+              <p className="text-slate-600 dark:text-slate-300">
+                <span className="font-semibold">Tipo:</span> {TYPE_LABELS[assignmentToDelete.type] || assignmentToDelete.type}
+              </p>
+              <p className="text-slate-600 dark:text-slate-300">
+                <span className="font-semibold">Estatus actual:</span> {STATUS_LABELS[assignmentToDelete.status] || assignmentToDelete.status}
+                {typeof assignmentToDelete.grade === 'number' && ` · Nota: ${assignmentToDelete.grade}/100`}
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-200 text-xs">
+              <p className="font-bold mb-1">⚠️ Efecto en el Kardex:</p>
+              <p>
+                Al eliminar esta tarea, se removerá el registro de entrega y calificación del alumno. Si se trataba de una tarea repetida o con calificación baja que el profesor desea retirar, el promedio de tareas se recalculará automáticamente.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={() => setAssignmentToDelete(null)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition cursor-pointer disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{isDeleting ? 'Eliminando...' : 'Sí, eliminar tarea'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

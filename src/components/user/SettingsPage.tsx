@@ -5,7 +5,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuth } from '../../contexts/AuthProvider';
 
 export default function SettingsPage() {
-  const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
+  const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const { updatePassword } = useAuth();
 
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -82,15 +82,11 @@ export default function SettingsPage() {
         <SettingRow
           icon={Globe}
           title="Idioma del curso"
-          description={language === 'es' ? 'Español' : 'English'}
+          description="Español (predeterminado)"
           action={
-            <button
-              type="button"
-              onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-              className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-            >
-              {language === 'es' ? 'English' : 'Español'}
-            </button>
+            <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+              Español
+            </span>
           }
         />
       </section>

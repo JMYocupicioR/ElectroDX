@@ -42,7 +42,9 @@ interface AuthContextValue {
   isEnrolledPhysician: boolean;
   hasPremiumAccess: boolean;
   courseIds: CourseId[];
+  pendingCourseIds: CourseId[];
   hasCourseAccess: (courseId: CourseId) => boolean;
+  isCoursePending: (courseId: CourseId) => boolean;
   hasAnySellableCourse: boolean;
   subscription: Subscription | null;
   enrollmentStatus: EnrollmentStatus;
@@ -66,7 +68,21 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 async function fetchUserData(userId: string) {
-  const { data: ctx, error: ctxError } = await supabase.rpc('get_my_auth_context');
+  const [ctxRes, pendingRes] = await Promise.all([
+    supabase.rpc('get_my_auth_context'),
+    supabase
+      .from('course_enrollments')
+      .select('course_id')
+      .eq('user_id', userId)
+      .eq('status', 'pending'),
+  ]);
+
+  const parsedPendingCourseIds = ((pendingRes.data as { course_id: string }[] | null) ?? [])
+    .map((row) => row.course_id)
+    .filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id));
+
+  const ctx = ctxRes.data;
+  const ctxError = ctxRes.error;
 
   if (!ctxError && ctx && typeof ctx === 'object') {
     const payload = ctx as {
@@ -87,6 +103,7 @@ async function fetchUserData(userId: string) {
       hasPremiumAccess: payload.has_premium === true,
       subscription: payload.subscription ?? null,
       courseIds: parsedCourseIds,
+      pendingCourseIds: parsedPendingCourseIds,
       courseSchemaReady: Object.prototype.hasOwnProperty.call(payload, 'course_ids'),
     };
   }
@@ -131,6 +148,7 @@ async function fetchUserData(userId: string) {
     hasPremiumAccess: hasPremiumFromSub || hasPremiumFromRole,
     subscription: sub ?? null,
     courseIds: fallbackCourseIds,
+    pendingCourseIds: parsedPendingCourseIds,
     courseSchemaReady: !coursesRes.error,
   };
 }
@@ -142,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [bootstrapAvailable, setBootstrapAvailable] = useState(false);
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
   const [courseIds, setCourseIds] = useState<CourseId[]>([]);
+  const [pendingCourseIds, setPendingCourseIds] = useState<CourseId[]>([]);
   const [courseSchemaReady, setCourseSchemaReady] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
@@ -153,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBootstrapAvailable(data.bootstrapAvailable);
     setHasPremiumAccess(data.hasPremiumAccess);
     setCourseIds(data.courseIds);
+    setPendingCourseIds(data.pendingCourseIds);
     setCourseSchemaReady(data.courseSchemaReady);
     setSubscription(data.subscription);
   }, []);
@@ -216,6 +236,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setBootstrapAvailable(false);
         setHasPremiumAccess(false);
         setCourseIds([]);
+        setPendingCourseIds([]);
         setCourseSchemaReady(false);
         setSubscription(null);
         return;
@@ -232,6 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setBootstrapAvailable(false);
         setHasPremiumAccess(false);
         setCourseIds([]);
+        setPendingCourseIds([]);
         setCourseSchemaReady(false);
         setSubscription(null);
       }
@@ -330,6 +352,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setBootstrapAvailable(false);
     setHasPremiumAccess(false);
     setCourseIds([]);
+    setPendingCourseIds([]);
     setCourseSchemaReady(false);
     setSubscription(null);
   }, []);
@@ -486,7 +509,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isEnrolledPhysician,
       hasPremiumAccess: effectivePremium,
       courseIds: ownedCourses,
+      pendingCourseIds,
       hasCourseAccess,
+      isCoursePending: (courseId: CourseId) => pendingCourseIds.includes(courseId),
       hasAnySellableCourse,
       subscription,
       enrollmentStatus,
@@ -513,6 +538,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       hasPremiumAccess,
       courseIds,
+      pendingCourseIds,
       courseSchemaReady,
       subscription,
       bootstrapAvailable,

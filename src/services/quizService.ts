@@ -216,3 +216,27 @@ export async function getMyProgressByModule(userId: string): Promise<ModuleQuizP
     };
   });
 }
+
+export async function deleteQuizAttempt(attemptId: string, userId?: string): Promise<void> {
+  if (userId) {
+    try {
+      const cacheKey = `quiz_attempts_${userId}`;
+      const raw = localStorage.getItem(cacheKey);
+      if (raw) {
+        const list = JSON.parse(raw) as QuizAttempt[];
+        localStorage.setItem(cacheKey, JSON.stringify(list.filter((a) => a.id !== attemptId)));
+      }
+    } catch {}
+  }
+
+  // 1. Intentar eliminación directa
+  const { error } = await supabase.from('quiz_attempts').delete().eq('id', attemptId);
+  if (error) {
+    console.warn('[quizService] deleteQuizAttempt direct delete failed, trying RPC fallback:', error.message);
+    const { error: rpcError } = await (supabase.rpc as any)('admin_delete_quiz_attempt', {
+      p_attempt_id: attemptId,
+    });
+    if (rpcError) throw rpcError;
+  }
+}
+

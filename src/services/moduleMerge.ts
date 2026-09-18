@@ -54,7 +54,7 @@ export function getMergedModuleById(
       m.id.toLowerCase() === clean ||
       (canonicalId && m.id.toLowerCase() === canonicalId.toLowerCase()) ||
       String(m.number) === clean ||
-      (m.slug && m.slug.toLowerCase() === clean)
+      (Boolean((m as any).slug) && (m as any).slug.toLowerCase() === clean)
   );
   return published ? publishedModuleToModule(published) : undefined;
 }

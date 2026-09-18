@@ -4,6 +4,7 @@ import { calculateStudentMetrics, fetchStudentCompletedTopics, getAllTopicIds } 
 import { getMyAttempts, getMyProgressByModule } from './quizService';
 import { getStudentAssignments } from './studentPlanService';
 import { calculateStudentAttendanceMetrics } from './attendanceService';
+import { getWorkshops } from './courseService';
 import { getStudentMilestoneAudits, getAcademicMilestones } from './academicScheduleService';
 import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
 import type {
@@ -206,7 +207,21 @@ export async function calculateStudentKardex(
   }
 
   // 5. Asistencias a Clases y Talleres
-  const attendanceMetrics = await calculateStudentAttendanceMetrics(studentId);
+  let eligibleSessionsCount = 0;
+  try {
+    const workshops = await getWorkshops();
+    const nowStr = new Date().toISOString();
+    eligibleSessionsCount = workshops.filter((w) =>
+      (w.counts_for_kardex ?? true) &&
+      (w.status === 'completed' || w.attendance_closed || (w.scheduled_at && w.scheduled_at <= nowStr))
+    ).length;
+  } catch {
+    // fallback
+  }
+
+  const attendanceMetrics = await calculateStudentAttendanceMetrics(studentId, {
+    eligibleSessionsCount,
+  });
 
   // 6. Auditoría de Hitos de Calendarización
   const milestoneAudits = await getStudentMilestoneAudits(studentId, completedTopicsSet, providedMilestones);
@@ -276,7 +291,9 @@ export async function calculateStudentKardex(
       rawScore: rawAttendanceScore,
       weightedScore: weightedAttendance,
       itemCount: attendanceMetrics.totalSessions,
-      summary: `${attendanceMetrics.attendedSessions}/${attendanceMetrics.totalSessions} asistencias (${rawAttendanceScore}%)`,
+      summary: attendanceMetrics.hasAuditedSessions
+        ? `${attendanceMetrics.attendedSessions}/${attendanceMetrics.totalSessions} asistencias (${rawAttendanceScore}%)`
+        : 'Sin sesiones auditadas a la fecha (100% neutro)',
     },
     {
       rubricId: 'curriculum',

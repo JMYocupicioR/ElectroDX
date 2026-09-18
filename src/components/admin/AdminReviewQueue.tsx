@@ -170,8 +170,8 @@ export default function AdminReviewQueue() {
       setSelectedId(null);
       setConfirmApprove(false);
       await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error');
+    } catch (e: any) {
+      setError(e?.message || (typeof e === 'string' ? e : 'Error al procesar la revisión'));
     } finally {
       setLoading(false);
     }

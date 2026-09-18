@@ -37,10 +37,18 @@ export function AdminLayout({
 }) {
   const location = useLocation();
   const { isAdmin, user } = useAuth();
-  const { pendingUsers, pendingRevisions } = useAdminPendingCounts();
+  const { pendingUsers, pendingCourseEnrollments, pendingRevisions } = useAdminPendingCounts();
 
   const tabs = [
     { to: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    {
+      to: '/admin/admisiones',
+      label: 'Admisiones / Lista de Espera',
+      icon: GraduationCap,
+      exact: false,
+      badge: pendingCourseEnrollments,
+      adminOnly: true,
+    },
     {
       to: '/admin/usuarios',
       label: 'Usuarios y Médicos',
@@ -96,7 +104,7 @@ export function AdminLayout({
     },
     {
       to: '/admin/temario',
-      label: 'Organizador del temario',
+      label: 'Cursos, Precios y Temario',
       icon: ClipboardList,
       exact: false,
       badge: 0,

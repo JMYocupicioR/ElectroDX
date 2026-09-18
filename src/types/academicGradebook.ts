@@ -67,6 +67,8 @@ export interface ClassAttendanceRecord {
   session_modality?: SessionModality | null;
   minutes_attended?: number | null;
   notes?: string | null;
+  excuse_reason?: string | null;
+  recorded_by?: string | null;
   created_at: string;
   updated_at?: string;
 }

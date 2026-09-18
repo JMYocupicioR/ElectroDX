@@ -56,19 +56,19 @@ export function WorkshopCard({ workshop }: WorkshopCardProps) {
         </div>
         
         {workshop.stream_url && !isPast && (
-          <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
+          <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
             <Video className="w-3.5 h-3.5 flex-shrink-0" />
-            <a href={workshop.stream_url} target="_blank" rel="noreferrer" className="hover:underline">
-              Enlace de transmisión
+            <a href={workshop.stream_url} target="_blank" rel="noreferrer" className="hover:underline" onClick={(e) => e.stopPropagation()}>
+              Entrar a la sesión en vivo →
             </a>
           </div>
         )}
 
-        {workshop.recording_url && isPast && (
-          <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400">
+        {workshop.recording_url && (
+          <div className="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400 font-medium">
             <Video className="w-3.5 h-3.5 flex-shrink-0" />
-            <a href={workshop.recording_url} target="_blank" rel="noreferrer" className="hover:underline">
-              Ver grabación
+            <a href={workshop.recording_url} target="_blank" rel="noreferrer" className="hover:underline" onClick={(e) => e.stopPropagation()}>
+              Ver clase grabada ↗
             </a>
           </div>
         )}

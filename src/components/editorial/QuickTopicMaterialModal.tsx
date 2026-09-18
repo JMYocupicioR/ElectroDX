@@ -1,0 +1,443 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  X,
+  Video,
+  FileText,
+  Image,
+  Lightbulb,
+  CheckCircle,
+  AlertCircle,
+  UploadCloud,
+  Sparkles,
+  ExternalLink,
+} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthProvider';
+import type { Topic } from '../../types/content';
+import { topicToRevisionPayload } from '../../services/contentMerge';
+import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
+import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
+
+interface QuickTopicMaterialModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  moduleId: string;
+  topic: Topic;
+  onSuccess?: () => void;
+}
+
+type MaterialType = 'video' | 'pdf' | 'image' | 'pearl';
+
+export function QuickTopicMaterialModal({
+  isOpen,
+  onClose,
+  moduleId,
+  topic,
+  onSuccess,
+}: QuickTopicMaterialModalProps) {
+  const { user, isAdmin, isEditor, profile } = useAuth();
+  const [activeTab, setActiveTab] = useState<MaterialType>('video');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Form states
+  // Video
+  const [videoTitle, setVideoTitle] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+
+  // PDF
+  const [pdfTitle, setPdfTitle] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfDescription, setPdfDescription] = useState('');
+
+  // Image
+  const [imageSrc, setImageSrc] = useState('');
+  const [imageCaption, setImageCaption] = useState('');
+
+  // Pearl
+  const [pearlText, setPearlText] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      setError('Debes iniciar sesión para agregar material.');
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+
+    try {
+      const payload = topicToRevisionPayload(topic);
+      const authorName = profile?.display_name || 'Especialista Docente';
+
+      if (activeTab === 'video') {
+        if (!videoTitle.trim() || !videoUrl.trim()) {
+          throw new Error('Por favor ingresa el título y la URL del video.');
+        }
+        const parsed = parseVideoUrl(videoUrl.trim());
+        if (!parsed) {
+          throw new Error(
+            'URL de video no válida. Soporta YouTube, Vimeo, Google Drive, Loom o enlaces de embed.'
+          );
+        }
+
+        switch (parsed.kind) {
+          case 'drive':
+            payload.videoUrls = [...(payload.videoUrls ?? []), { title: videoTitle.trim(), driveId: parsed.driveId }];
+            break;
+          case 'youtube':
+            payload.youtubeUrls = [
+              ...(payload.youtubeUrls ?? []),
+              { title: videoTitle.trim(), videoId: parsed.videoId, startTime: parsed.startTime },
+            ];
+            break;
+          case 'vimeo':
+            payload.vimeoUrls = [...(payload.vimeoUrls ?? []), { title: videoTitle.trim(), videoId: parsed.videoId }];
+            break;
+          case 'embed':
+            payload.embedUrls = [...(payload.embedUrls ?? []), { title: videoTitle.trim(), embedUrl: parsed.embedUrl }];
+            break;
+        }
+      } else if (activeTab === 'pdf') {
+        if (!pdfTitle.trim() || !pdfUrl.trim()) {
+          throw new Error('Por favor ingresa el título y el enlace al PDF o guía clínica.');
+        }
+        const cleanPdfUrl = pdfUrl.trim();
+        const cleanDesc = pdfDescription.trim() || 'Material docente de referencia clínica.';
+        
+        // Append an elegant downloadable card markdown block to content
+        const pdfMarkdown = `\n\n> 📄 **Recurso Clínico Docente:** [${pdfTitle.trim()}](${cleanPdfUrl})\n> *Aportado por ${authorName}*\n> ${cleanDesc}\n`;
+        payload.content = (payload.content ? payload.content + pdfMarkdown : pdfMarkdown).trim();
+      } else if (activeTab === 'image') {
+        if (!imageSrc.trim()) {
+          throw new Error('Por favor ingresa la URL de la imagen o trazado EMG.');
+        }
+        if (!isAllowedImageUrl(imageSrc.trim()) && !imageSrc.trim().startsWith('data:image')) {
+          throw new Error('URL de imagen no permitida o formato incorrecto (.png, .jpg, .webp, google drive, etc).');
+        }
+        payload.imageUrls = [
+          ...(payload.imageUrls ?? []),
+          {
+            src: imageSrc.trim(),
+            alt: imageCaption.trim() || topic.title,
+            caption: imageCaption.trim() ? `${imageCaption.trim()} — Aportado por ${authorName}` : `Aportado por ${authorName}`,
+          },
+        ];
+      } else if (activeTab === 'pearl') {
+        if (!pearlText.trim()) {
+          throw new Error('Por favor redacta la perla clínica.');
+        }
+        payload.clinicalPearls = [
+          ...(payload.clinicalPearls ?? []),
+          `${pearlText.trim()} *(Aporte: ${authorName})*`,
+        ];
+      }
+
+      // Save revision
+      const saved = await saveRevision({
+        targetTopicId: topic.id,
+        moduleId,
+        action: 'update',
+        payload,
+        authorId: user.id,
+      });
+
+      await submitRevision(saved.id);
+
+      // Instant publish if admin or editor
+      if (isAdmin || isEditor) {
+        await reviewRevision(saved.id, 'approved', `Material docente agregado directamente por ${authorName}`);
+        setSuccessMsg('¡Material publicado exitosamente en el tema!');
+      } else {
+        setSuccessMsg('¡Material enviado a revisión con éxito!');
+      }
+
+      setTimeout(() => {
+        onSuccess?.();
+        onClose();
+      }, 1200);
+    } catch (err: any) {
+      console.error('Error adding material:', err);
+      setError(err?.message || 'Error al guardar el material.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-600 text-white shadow-sm">
+                  <Sparkles className="w-4 h-4" />
+                </span>
+                <h3 className="font-bold text-lg text-slate-900 dark:text-white">
+                  Agregar Material al Tema
+                </h3>
+              </div>
+              <p className="text-xs text-slate-500 mt-1 truncate max-w-md">
+                Tema: <strong className="text-slate-700 dark:text-slate-300">{topic.title}</strong>
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Type Selector Tabs */}
+          <div className="grid grid-cols-4 gap-1 p-2 bg-slate-100 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setActiveTab('video')}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'video'
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Video className="w-4 h-4" />
+              <span className="hidden sm:inline">Clase /</span> Video
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('pdf')}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'pdf'
+                  ? 'bg-white dark:bg-slate-900 text-purple-600 dark:text-purple-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              <span className="hidden sm:inline">Guía /</span> PDF
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('image')}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'image'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Image className="w-4 h-4" />
+              <span className="hidden sm:inline">Trazado /</span> Imagen
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('pearl')}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all ${
+                activeTab === 'pearl'
+                  ? 'bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Lightbulb className="w-4 h-4" />
+              Perla <span className="hidden sm:inline">Clínica</span>
+            </button>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            {error && (
+              <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {/* Tab: Video */}
+            {activeTab === 'video' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Título de la grabación o video explicativo *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Análisis de trazado en túnel del carpo con Dr. Martínez"
+                    value={videoTitle}
+                    onChange={(e) => setVideoTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Enlace del Video (YouTube, Google Drive, Vimeo, Loom) *
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://youtu.be/... o https://drive.google.com/file/d/.../view"
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Los alumnos podrán reproducir el video directamente dentro de la lección.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Tab: PDF / Guide */}
+            {activeTab === 'pdf' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Nombre del documento / Guía clínica *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Criterios Diagnósticos EAN/PNS 2021 para CIDP (PDF)"
+                    value={pdfTitle}
+                    onChange={(e) => setPdfTitle(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Enlace de descarga o visualización (Google Drive, Cloudinary, etc.) *
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://drive.google.com/... o https://midominio.com/guia.pdf"
+                    value={pdfUrl}
+                    onChange={(e) => setPdfUrl(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Descripción o utilidad para los médicos residentes (opcional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Guía rápida con tablas de latencias de referencia y correlación anatómica..."
+                    value={pdfDescription}
+                    onChange={(e) => setPdfDescription(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Image */}
+            {activeTab === 'image' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    URL de la imagen o captura de electromiografía *
+                  </label>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://i.imgur.com/... o enlace de imagen directo"
+                    value={imageSrc}
+                    onChange={(e) => setImageSrc(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Pie de foto / Diagnóstico del trazado
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Bloqueo de conducción parcial en nervio mediano a nivel de antebrazo"
+                    value={imageCaption}
+                    onChange={(e) => setImageCaption(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Clinical Pearl */}
+            {activeTab === 'pearl' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Redacta tu Perla Clínica (💡) *
+                  </label>
+                  <textarea
+                    rows={4}
+                    required
+                    placeholder="Ej. En sospecha de neuropatía desmielinizante temprana, evaluar siempre la onda F y el reflejo H antes de descartar prolongación de latencias distales..."
+                    value={pearlText}
+                    onChange={(e) => setPearlText(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-white"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Se mostrará destacada en la caja dorada de perlas clínicas con tu crédito como especialista.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <UploadCloud className="w-4 h-4" />
+                    {isAdmin || isEditor ? 'Guardar y Publicar en el Tema' : 'Proponer Material Docente'}
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}

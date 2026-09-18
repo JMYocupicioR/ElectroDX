@@ -20,7 +20,7 @@ describe('courseCatalog', () => {
     expect(getCourseIdForModule(DEFAULT_COURSE_MODULES, 'pathologies')).toBe('principiante');
     expect(getCourseIdForModule(DEFAULT_COURSE_MODULES, 'diagnostic-criteria')).toBe('intermedio');
     expect(getCourseIdForModule(DEFAULT_COURSE_MODULES, 'special-studies')).toBe('avanzado');
-    expect(moduleIdsForCourse(DEFAULT_COURSE_MODULES, 'referencia')).toEqual(['quick-reference', 'bibliography']);
+    expect(moduleIdsForCourse(DEFAULT_COURSE_MODULES, 'referencia')).toEqual([]);
   });
 
   it('groups modules and lists unassigned', () => {
@@ -42,5 +42,24 @@ describe('courseCatalog', () => {
     expect(recommendedNextCourse([])).toBe('principiante');
     expect(recommendedNextCourse(['principiante'])).toBe('intermedio');
     expect(recommendedNextCourse(['principiante', 'intermedio', 'avanzado'])).toBeNull();
+  });
+
+  it('verifies that deleting a course gracefully leaves its modules unassigned', () => {
+    // Simulate courses list without 'referencia'
+    const activeCourses = DEFAULT_COURSES.filter((c) => c.id !== 'referencia');
+    // Module assignments where 'quick-reference' was previously mapped to 'referencia'
+    const assignmentsWithOrphans = [
+      ...DEFAULT_COURSE_MODULES,
+      { module_id: 'quick-reference', course_id: 'referencia' as any, sort_order: 1, is_visible: true },
+    ];
+    const testModules: Module[] = [
+      ...sampleModules,
+      { id: 'quick-reference', number: 11, title: 'QR', titleEn: 'QR', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+    ];
+    const { grouped, unassigned } = groupModulesByCourse(testModules, activeCourses, assignmentsWithOrphans);
+    // The module whose course does not exist in activeCourses should land in unassigned
+    expect(unassigned.map((m) => m.id)).toContain('quick-reference');
+    // And no group should exist for 'referencia'
+    expect(grouped.find((g) => (g.course.id as string) === 'referencia')).toBeUndefined();
   });
 });

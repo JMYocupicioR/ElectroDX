@@ -7,6 +7,8 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import IOSInstallBanner from './components/IOSInstallBanner';
 import { SkipLink } from './components/a11y/SkipLink';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { GlobalCommandPalette } from './components/common/GlobalCommandPalette';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const SyllabusPage = lazy(() => import('./components/pages/SyllabusPage'));
@@ -25,6 +27,7 @@ const ProfileSetupPage = lazy(() => import('./components/editorial/ProfileSetupP
 const ModuleEditorPage = lazy(() => import('./components/editorial/ModuleEditorPage'));
 const RevisionEditorPage = lazy(() => import('./components/editorial/RevisionEditorPage'));
 const SpecialistsPage = lazy(() => import('./components/editorial/SpecialistsPage'));
+const SpecialistContentHubPage = lazy(() => import('./components/pages/SpecialistContentHubPage'));
 const PublicProfilePage = lazy(() => import('./components/editorial/PublicProfilePage'));
 const QuizEditorPage = lazy(() => import('./components/quiz/QuizEditorPage'));
 const ClinicalCaseEditorPage = lazy(() => import('./components/editorial/ClinicalCaseEditorPage'));
@@ -53,6 +56,7 @@ const AdminAssignmentsAnalyticsPage = lazy(() => import('./components/admin/Admi
 const AdminAttendanceAnalyticsPage = lazy(() => import('./components/admin/AdminAttendanceAnalyticsPage'));
 const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerciseCasesPage'));
 const AdminSyllabusPage = lazy(() => import('./components/admin/AdminSyllabusPage'));
+const AdminCourseWaitlistPage = lazy(() => import('./components/admin/AdminCourseWaitlistPage'));
 const CoursesCatalogPage = lazy(() => import('./components/pages/CoursesCatalogPage'));
 
 function RedirectToPortal() {
@@ -66,10 +70,12 @@ function App() {
 
   return (
     <div className={isDarkMode ? 'dark' : ''}>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 text-slate-900 dark:text-slate-100 transition-colors duration-300 pb-16 lg:pb-0">
         <SkipLink />
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Header />
+          <GlobalCommandPalette />
+          <MobileBottomNav />
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -100,6 +106,8 @@ function App() {
 
               {/* Público */}
               <Route path="/especialistas" element={<SpecialistsPage />} />
+              <Route path="/especialistas/contenido" element={<SpecialistContentHubPage />} />
+              <Route path="/biblioteca" element={<SpecialistContentHubPage />} />
               <Route path="/especialistas/:userId" element={<PublicProfilePage />} />
               <Route path="/comite-editorial" element={<EditorialCommitteePage />} />
 
@@ -139,6 +147,7 @@ function App() {
 
               {/* Admin */}
               <Route path="/admin" element={<ProtectedRoute mode="admin"><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/admisiones" element={<ProtectedRoute mode="admin"><AdminCourseWaitlistPage /></ProtectedRoute>} />
               <Route path="/admin/revisiones" element={<ProtectedRoute mode="editor"><AdminReviewQueue /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
