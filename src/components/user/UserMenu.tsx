@@ -177,8 +177,8 @@ export function UserMenu() {
           )}
 
           <div className="py-1">
-            <MenuLink to="/dashboard" icon={GraduationCap} onClick={() => setOpen(false)}>
-              Mi Portal de Alumno
+            <MenuLink to="/portal" icon={GraduationCap} onClick={() => setOpen(false)}>
+              Mi portal
             </MenuLink>
             <MenuLink to="/cuenta" icon={UserCircle} onClick={() => setOpen(false)}>
               Mi cuenta

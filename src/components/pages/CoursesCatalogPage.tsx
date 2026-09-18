@@ -77,10 +77,10 @@ export default function CoursesCatalogPage() {
                   ))}
                 </ul>
                 <Link
-                  to={owned ? `/temario` : user ? '/portal' : '/auth/registro'}
+                  to={owned ? '/portal?tab=modules' : user ? '/portal' : '/auth/registro'}
                   className="inline-flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-blue-600 text-white font-semibold"
                 >
-                  {owned ? 'Ir al temario' : 'Solicitar este curso'}
+                  {owned ? 'Ir al curso' : 'Solicitar este curso'}
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </article>

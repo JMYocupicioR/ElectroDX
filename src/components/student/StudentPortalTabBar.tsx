@@ -24,13 +24,13 @@ interface TabSpec {
 }
 
 const TABS: TabSpec[] = [
-  { id: 'summary', label: 'Resumen General', icon: Activity },
-  { id: 'modules', label: 'Mis Clases y Módulos', icon: BookOpen },
-  { id: 'quizzes', label: 'Quizzes del Curso', icon: CheckCircle2 },
+  { id: 'summary', label: 'Resumen', icon: Activity },
+  { id: 'modules', label: 'Clases', icon: BookOpen },
+  { id: 'quizzes', label: 'Quizzes', icon: CheckCircle2 },
   { id: 'assignments', label: 'Tareas', icon: ClipboardList },
   { id: 'notifications', label: 'Avisos', icon: Bell },
   { id: 'certificate', label: 'Constancia', icon: Award },
-  { id: 'study', label: 'Estudio y reportes', icon: FileText },
+  { id: 'study', label: 'Estudio', icon: FileText },
 ];
 
 export function StudentPortalTabBar({

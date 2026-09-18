@@ -109,7 +109,7 @@ export default function AssignExamModal({
   useEffect(() => {
     if (isOpen && allBankQuestions.length === 0) {
       setLoadingQuestions(true);
-      loadExamQuestions()
+      loadExamQuestions(undefined, { revealAnswers: true })
         .then(({ questions }) => setAllBankQuestions(questions))
         .catch((e) => console.error(e))
         .finally(() => setLoadingQuestions(false));

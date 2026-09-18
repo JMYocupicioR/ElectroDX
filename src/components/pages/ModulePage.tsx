@@ -18,7 +18,8 @@ export default function ModulePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { module: mod, loading } = useMergedModule(moduleId);
-  const { canProposeContent } = useAuth();
+  const { canProposeContent, user } = useAuth();
+  const homeHref = user ? '/portal' : '/';
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const lang = useSettingsStore((s) => s.language);
   const [filter, setFilter] = useState<TopicFilterType>(() =>
@@ -58,7 +59,7 @@ export default function ModulePage() {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
         <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
-        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
+        <Link to={homeHref} className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al portal'}</Link>
       </div>
     );
   }
@@ -69,8 +70,8 @@ export default function ModulePage() {
     <CourseGate moduleId={mod.id}>
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-20">
         <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
-          <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
-            <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
+          <Link to={homeHref} className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
+            <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio'}
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <span className="text-slate-800 dark:text-white font-medium">{mod.emoji} {(lang === 'en' && mod.titleEn) || mod.title}</span>
@@ -320,8 +321,8 @@ export default function ModulePage() {
         </motion.div>
 
         <div className="mt-10 text-center">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors min-h-[44px]">
-            {lang === 'en' ? '← Back to all modules' : '← Volver a todos los módulos'}
+          <Link to="/portal?tab=modules" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-500 transition-colors min-h-[44px]">
+            {lang === 'en' ? '← Back to all modules' : '← Volver a mis clases'}
           </Link>
         </div>
       </main>

@@ -590,20 +590,28 @@ export default function LandingPage() {
 
       {/* ── 7. INSTITUTIONAL FOOTER ── */}
       <footer className="px-4 py-10 border-t border-slate-200/80 dark:border-slate-800/80 bg-white/50 dark:bg-slate-950/50">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-2">
-            <BrandLogo variant="compact" size="xs" showAccreditation={false} />
-            <span className="hidden sm:inline">·</span>
-            <span>{BRAND.tagline}</span>
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <BrandLogo variant="compact" size="xs" showAccreditation={false} />
+              <span className="hidden sm:inline">·</span>
+              <span>{BRAND.tagline}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
+              <span>
+                {BRAND.enableAccreditation
+                  ? `Aval Oficial: ${BRAND.accreditationFull}`
+                  : BRAND.academicTitle}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-            <span>
-              {BRAND.enableAccreditation
-                ? `Aval Oficial: ${BRAND.accreditationFull}`
-                : BRAND.academicTitle}
-            </span>
-          </div>
+          <nav className="flex flex-wrap items-center justify-center sm:justify-start gap-x-5 gap-y-2" aria-label="Enlaces institucionales">
+            <Link to="/temario" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Temario</Link>
+            <Link to="/cursos" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Cursos</Link>
+            <Link to="/especialistas" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Especialistas</Link>
+            <Link to="/comite-editorial" className="hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Comité editorial</Link>
+          </nav>
         </div>
       </footer>
     </main>

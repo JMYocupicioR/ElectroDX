@@ -1,12 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthProvider';
-import type { ExamQuestion, ExamConfig, ExamAttemptState } from '../types/exam';
+import type { ExamQuestion, ExamConfig, ExamAttemptState, ExamAnswerReveal } from '../types/exam';
 import type { ExamOptionOrder } from '../utils/examQuestionOrder';
 import {
   clearExamAttemptCaches,
   createExamAttempt,
   finalizeExamAttempt,
   flushExamProgress,
+  gradeExamAnswer,
+  loadExamAttemptReveals,
   saveExamProgress,
 } from '../services/examService';
 
@@ -24,7 +26,7 @@ interface UseExamRunnerOptions {
   assignmentId?: string | null;
   /** Permutación de opciones mostrada, para poder reanudar sin corromper respuestas */
   optionOrder?: ExamOptionOrder;
-  onSubmit?: (answers: Record<string, number>, durationSeconds: number, attemptId: string | null) => void;
+  onSubmit?: (answers: Record<string, number>, durationSeconds: number, attemptId: string | null) => void | boolean | Promise<void | boolean>;
 }
 
 interface UseExamRunnerReturn {
@@ -33,6 +35,7 @@ interface UseExamRunnerReturn {
   currentQuestion: ExamQuestion | null;
   answers: Record<string, number>;
   flagged: Record<string, boolean>;
+  reveals: Record<string, ExamAnswerReveal>;
   timeLeft: number | null; // segundos restantes, null si no hay límite
   isSubmitting: boolean;
   attemptId: string | null;
@@ -72,6 +75,7 @@ export function useExamRunner({
   });
 
   const [flagged, setFlagged] = useState<Record<string, boolean>>(initialState?.flagged ?? {});
+  const [reveals, setReveals] = useState<Record<string, ExamAnswerReveal>>({});
 
   const [timeLeft, setTimeLeft] = useState<number | null>(() => {
     if (expiresAt) {
@@ -107,6 +111,7 @@ export function useExamRunner({
   const submittingRef = useRef(false);
   const abandonedRef = useRef(false);
   const creatingAttemptRef = useRef(false);
+  const pendingGradeRef = useRef<Record<string, number>>({});
 
   /** Fin absoluto del examen en ms epoch. null si no hay límite de tiempo. */
   const deadlineRef = useRef<number | null>(expiresAt ? new Date(expiresAt).getTime() : null);
@@ -274,6 +279,25 @@ export function useExamRunner({
     };
   }, [attemptId, canPersist]);
 
+  // ─── Revelaciones del modo tutor (calificación en servidor) ────────────────
+  useEffect(() => {
+    if (!attemptId || config.feedbackMode !== 'immediate') return;
+
+    void loadExamAttemptReveals(attemptId).then(loaded => {
+      if (Object.keys(loaded).length > 0) {
+        setReveals(prev => ({ ...loaded, ...prev }));
+      }
+    });
+
+    const pending = pendingGradeRef.current;
+    pendingGradeRef.current = {};
+    Object.entries(pending).forEach(([questionId, optionIndex]) => {
+      void gradeExamAnswer(attemptId, questionId, optionIndex).then(reveal => {
+        if (reveal) setReveals(prev => ({ ...prev, [questionId]: reveal }));
+      });
+    });
+  }, [attemptId, config.feedbackMode]);
+
   // ─── Cleanup al desmontar ───────────────────────────────────────────────────
   useEffect(() => {
     return () => {
@@ -296,7 +320,18 @@ export function useExamRunner({
       }
       return next;
     });
-  }, [assignmentId]);
+
+    if (config.feedbackMode !== 'immediate') return;
+
+    const id = attemptIdRef.current;
+    if (!id) {
+      pendingGradeRef.current[questionId] = optionIndex;
+      return;
+    }
+    void gradeExamAnswer(id, questionId, optionIndex).then(reveal => {
+      if (reveal) setReveals(prev => ({ ...prev, [questionId]: reveal }));
+    });
+  }, [assignmentId, config.feedbackMode]);
 
   const toggleFlag = useCallback((questionId: string) => {
     setFlagged(prev => ({ ...prev, [questionId]: !prev[questionId] }));
@@ -324,7 +359,16 @@ export function useExamRunner({
     if (debouncedSaveRef.current) clearTimeout(debouncedSaveRef.current);
 
     const durationSeconds = Math.floor((Date.now() - startedAtRef.current) / 1000);
-    onSubmit?.(answersRef.current, durationSeconds, attemptIdRef.current);
+    try {
+      const ok = await onSubmit?.(answersRef.current, durationSeconds, attemptIdRef.current);
+      if (ok === false) {
+        submittingRef.current = false;
+        setIsSubmitting(false);
+      }
+    } catch {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }
   }, [onSubmit]);
 
   /** Cierra el intento como ABANDONED. Idempotente: seguro llamarlo varias veces. */
@@ -348,6 +392,7 @@ export function useExamRunner({
     currentQuestion: questions[currentIndex] ?? null,
     answers,
     flagged,
+    reveals,
     timeLeft,
     isSubmitting,
     attemptId,

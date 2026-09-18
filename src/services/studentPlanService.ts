@@ -661,7 +661,7 @@ export async function completeAssignedExam(
   const { data: rpcRow, error: rpcError } = await sb.rpc('complete_my_assigned_exam', {
     p_assignment_id: assignmentId,
     p_exam_session_id: sessionId,
-    p_score: score,
+    p_score: sessionId ? null : score,
     p_duration_seconds: durationSeconds,
   });
 

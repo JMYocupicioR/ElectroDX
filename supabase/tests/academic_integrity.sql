@@ -14,7 +14,14 @@ WITH expected_functions AS (
       ('submit_my_assignment', 'uuid, text, text'),
       ('complete_my_assigned_exam', 'uuid, uuid, numeric, integer'),
       ('issue_my_certificate', ''),
-      ('verify_certificate', 'text')
+      ('verify_certificate', 'text'),
+      ('get_exam_questions_for_attempt', 'text[], text, uuid[], boolean, boolean'),
+      ('get_exam_topic_stats', ''),
+      ('grade_exam_answer', 'uuid, uuid, integer'),
+      ('get_exam_attempt_reveals', 'uuid'),
+      ('submit_exam_session', 'uuid, jsonb, integer'),
+      ('get_exam_session_review', 'uuid'),
+      ('get_exam_gap_analysis', 'uuid')
   ) AS t(proname, args)
 ),
 actual_functions AS (
@@ -130,6 +137,35 @@ rls_checks AS (
       FROM pg_policy
       WHERE polrelid = to_regclass('public.quiz_questions')
         AND polname = 'quiz_questions_staff_read'
+    ),
+    NULL
+  UNION ALL
+  SELECT
+    'política staff-only exam_questions',
+    EXISTS (
+      SELECT 1
+      FROM pg_policy
+      WHERE polrelid = to_regclass('public.exam_questions')
+        AND polname = 'Staff can read exam questions'
+    ),
+    NULL
+  UNION ALL
+  SELECT
+    'alumnos inscritos ya no leen exam_questions directo',
+    NOT EXISTS (
+      SELECT 1
+      FROM pg_policy
+      WHERE polrelid = to_regclass('public.exam_questions')
+        AND polname = 'Enrolled users can read exam questions'
+    ),
+    NULL
+  UNION ALL
+  SELECT
+    'RPC submit_exam_session existe',
+    EXISTS (
+      SELECT 1 FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+      WHERE n.nspname = 'public' AND p.proname = 'submit_exam_session'
     ),
     NULL
 ),

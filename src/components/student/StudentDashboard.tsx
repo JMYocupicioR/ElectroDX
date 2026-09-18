@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  GraduationCap,
   BookOpen,
   Award,
   Clock,
@@ -23,7 +22,6 @@ import {
   ShieldAlert,
   Building2,
   Video,
-  FileText,
   Brain,
   Flame,
   Send,
@@ -93,7 +91,6 @@ import {
 } from '../../services/emgExerciseService';
 import type { StudentAssignment, StudentStreakInfo, ActiveExamLock, StudentLearningPlan } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
-import { BRAND } from '../../config/brand';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { LiveWorkshop } from '../../types/database';
@@ -500,33 +497,15 @@ export default function StudentDashboard() {
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                <GraduationCap className="w-3.5 h-3.5 text-blue-400" />
-                Portal Académico del Alumno
+            {streak && streak.currentStreak > 0 && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/25 text-orange-300 border border-orange-400/40 shadow-xs">
+                <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400" />
+                Racha: {streak.currentStreak} {streak.currentStreak === 1 ? 'día' : 'días'}
               </span>
-              {BRAND.enableAccreditation && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Aval COMEFYR
-                </span>
-              )}
-              {profile?.cedula_verified && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                  Cédula Verificada SEP
-                </span>
-              )}
-              {streak && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-500/25 text-orange-300 border border-orange-400/40 shadow-xs">
-                  <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 animate-pulse" />
-                  Racha: {streak.currentStreak} {streak.currentStreak === 1 ? 'día' : 'días'}
-                </span>
-              )}
-            </div>
+            )}
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Bienvenido, Dr(a). {displayName}
+              Hola, Dr(a). {displayName}
             </h1>
 
             <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs sm:text-sm text-slate-300">
@@ -542,18 +521,6 @@ export default function StudentDashboard() {
                   {profile.institution}
                 </span>
               )}
-              {profile?.residency_year && (
-                <span className="flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-cyan-400" />
-                  {profile.residency_year}
-                </span>
-              )}
-              {profile?.cedula_profesional && (
-                <span className="flex items-center gap-1.5">
-                  <FileText className="w-4 h-4 text-amber-400" />
-                  Cédula: {profile.cedula_profesional}
-                </span>
-              )}
             </div>
           </div>
 
@@ -565,7 +532,7 @@ export default function StudentDashboard() {
                 ? hasStartedCurriculum
                   ? 'Continuar donde te quedaste'
                   : 'Empieza tu formación'
-                : 'Temario al día'}
+                : 'Curso al día'}
             </p>
             {resumeLesson ? (
               <div>
@@ -580,7 +547,7 @@ export default function StudentDashboard() {
                 )}
                 <p className="text-[11px] text-slate-400 mt-2 mb-3">
                   {resumeLesson.pendingLessonCount}{' '}
-                  {resumeLesson.pendingLessonCount === 1 ? 'tema pendiente' : 'temas pendientes'} en el temario
+                  {resumeLesson.pendingLessonCount === 1 ? 'tema pendiente' : 'temas pendientes'} en el curso
                 </p>
                 <Link
                   to={resumeLesson.url}
@@ -883,11 +850,8 @@ export default function StudentDashboard() {
         activeTab={activeTab}
         onSelect={selectTab}
         counts={{
-          modules: allModules.length,
-          quizzes: quizzesList.length,
           assignments: pendingAssignmentsCount,
           notifications: unreadCount,
-          study: planCount,
         }}
       />
 
@@ -1133,7 +1097,7 @@ export default function StudentDashboard() {
                           Temas pendientes
                         </h2>
                         <p className="text-xs text-slate-500">
-                          Retoma el temario desde el siguiente contenido que aún no completas
+                          Retoma el curso desde el siguiente contenido que aún no completas
                         </p>
                       </div>
                     </div>
@@ -1185,10 +1149,10 @@ export default function StudentDashboard() {
                     </div>
                     <div>
                       <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                        Módulos Curriculares
+                        Tus módulos
                       </h2>
                       <p className="text-xs text-slate-500">
-                        Currículo oficial COMEFYR en Electrodiagnóstico y EMG
+                        Continúa el curso desde el módulo que estés trabajando
                       </p>
                     </div>
                   </div>
@@ -1402,7 +1366,7 @@ export default function StudentDashboard() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                Plan de Estudios: Currículo ElectoDX Diplomado
+                Plan de estudios
               </h2>
               <p className="text-sm text-slate-500">
                 Tres cursos independientes: Principiante, Intermedio y Avanzado. La referencia rápida se desbloquea con cualquiera.

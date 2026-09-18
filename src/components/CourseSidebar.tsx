@@ -127,7 +127,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
           <motion.aside
             role="dialog"
             aria-modal="true"
-            aria-label="Temario curricular"
+            aria-label="Contenido del curso"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -142,14 +142,14 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">Temario del Curso</h2>
-                  <p className="text-[0.65rem] text-slate-400 dark:text-slate-500">{modulesWithOverrides.length} módulos · 3 cursos</p>
+                  <h2 className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">Curso</h2>
+                  <p className="text-[0.65rem] text-slate-400 dark:text-slate-500">{modulesWithOverrides.length} módulos</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Cerrar temario"
+                aria-label="Cerrar curso"
               >
                 <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
               </button>
@@ -309,17 +309,11 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
             {/* Footer */}
             <div className="flex-shrink-0 px-4 py-3 border-t border-slate-100 dark:border-slate-800/40 space-y-2">
               <Link
-                to="/temario"
+                to="/portal?tab=modules"
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-sm text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all font-semibold min-h-[44px]"
               >
                 <BookOpen className="w-4 h-4" />
-                Ver temario y resumen del curso
-              </Link>
-              <Link
-                to="/"
-                className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors"
-              >
-                Ir al inicio
+                Ir a mis clases
               </Link>
             </div>
             </div>

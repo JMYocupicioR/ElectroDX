@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSettingsStore } from './stores/settingsStore';
 import { useOfflineStore } from './stores/offlineStore';
@@ -14,9 +14,7 @@ import {
   Scale,
   GraduationCap,
   Shield,
-  Stethoscope,
   ChevronRight,
-  BrainCircuit,
   Wrench,
   Lock,
   ClipboardList,
@@ -32,9 +30,48 @@ import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
 
+function navClass(active: boolean) {
+  return `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+    active
+      ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
+      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+  }`;
+}
+
+function MobileNavRow({
+  to,
+  icon,
+  label,
+  onClick,
+  trailing,
+}: {
+  to: string;
+  icon: ReactNode;
+  label: string;
+  onClick: () => void;
+  trailing?: ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
+    >
+      <div className="flex items-center gap-3">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        {trailing}
+        <ChevronRight className="w-4 h-4 text-slate-400" />
+      </div>
+    </Link>
+  );
+}
+
 export function Header() {
   const { isDarkMode, toggleDarkMode, language, setLanguage } = useSettingsStore();
-  const initializeOffline = useOfflineStore(s => s.initialize);
+  const initializeOffline = useOfflineStore((s) => s.initialize);
   const { user, isAdmin, isPendingApproval } = useAuth();
   const { totalPending } = useAdminPendingCounts();
   const { pendingCount } = useStudentPendingAssignments();
@@ -42,6 +79,22 @@ export function Header() {
 
   const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const isLoggedIn = Boolean(user);
+  const showPublicNav = !isLoggedIn;
+  const homeHref = isLoggedIn ? (isAdmin ? '/admin' : '/portal') : '/';
+  const portalActive = location.pathname === '/portal' || location.pathname === '/dashboard' || location.pathname === '/estudiante';
+  const courseActive = location.pathname.startsWith('/modulo');
+  const simulatorsActive =
+    location.pathname.startsWith('/herramientas') ||
+    location.pathname === '/ejercicios' ||
+    location.pathname.startsWith('/simuladores');
+  const examsActive = location.pathname.startsWith('/examenes');
+
+  const openCourseSidebar = () => {
+    setMobileMenuOpen(false);
+    setCourseSidebarOpen(true);
+  };
 
   useEffect(() => {
     const handleOpenSidebar = () => setCourseSidebarOpen(true);
@@ -53,7 +106,6 @@ export function Header() {
     initializeOffline();
   }, [initializeOffline]);
 
-  // Close mobile menu and sidebar on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setCourseSidebarOpen(false);
@@ -63,100 +115,74 @@ export function Header() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between">
-          {/* Brand Logo (Desktop & Mobile: Clean, NO hamburger icon on Desktop) */}
           <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center group transition-transform hover:scale-[1.02]">
+            <Link to={homeHref} className="flex items-center group transition-transform hover:scale-[1.02]">
               <BrandLogo variant="full" size="md" />
             </Link>
           </div>
 
-          {/* Desktop Navigation (Visible on lg: and up) */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-            <Link
-              to="/temario"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                location.pathname === '/temario'
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-              <span>Temario</span>
-            </Link>
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Principal">
+            {showPublicNav && (
+              <>
+                <Link to="/temario" className={navClass(location.pathname === '/temario' || location.pathname === '/programa')}>
+                  <BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
+                  <span>Temario</span>
+                </Link>
+                <Link to="/cursos" className={navClass(location.pathname === '/cursos')}>
+                  <GraduationCap className="w-4 h-4" />
+                  <span>Cursos</span>
+                </Link>
+              </>
+            )}
 
-            <Link
-              to="/cursos"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                location.pathname === '/cursos'
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <GraduationCap className="w-4 h-4" />
-              <span>Cursos</span>
-            </Link>
+            {isLoggedIn && !isAdmin && (
+              <Link to="/portal" className={navClass(portalActive)}>
+                <GraduationCap className="w-4 h-4" />
+                <span>Portal</span>
+                {pendingCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
-            <Link
-              to="/simuladores"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                location.pathname.startsWith('/herramientas') || location.pathname === '/ejercicios' || location.pathname === '/simuladores'
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <Wrench className="w-4 h-4" />
-              <span>Simuladores</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                PRO
-              </span>
-            </Link>
-
-            <Link
-              to="/examenes"
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                location.pathname.startsWith('/examenes')
-                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <ClipboardList className="w-4 h-4" />
-              <span>Exámenes</span>
-            </Link>
-
-            {user && (
+            {isLoggedIn && (
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('open-course-sidebar'))}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                aria-label="Abrir temario curricular"
+                onClick={openCourseSidebar}
+                className={navClass(courseActive)}
+                aria-label="Abrir contenido del curso"
               >
                 <PanelLeft className="w-4 h-4" />
-                <span>Currículo</span>
+                <span>Curso</span>
               </button>
             )}
 
-            {isSupabaseConfigured && (
+            <Link to="/simuladores" className={navClass(simulatorsActive)}>
+              <Wrench className="w-4 h-4" />
+              <span>Simuladores</span>
+              {showPublicNav && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                  PRO
+                </span>
+              )}
+            </Link>
+
+            {isLoggedIn && (
+              <Link to="/examenes" className={navClass(examsActive)}>
+                <ClipboardList className="w-4 h-4" />
+                <span>Exámenes</span>
+              </Link>
+            )}
+
+            {showPublicNav && isSupabaseConfigured && (
               <>
-                <Link
-                  to="/especialistas"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === '/especialistas'
-                      ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                  }`}
-                >
+                <Link to="/especialistas" className={navClass(location.pathname.startsWith('/especialistas'))}>
                   <Users className="w-4 h-4" />
                   <span>Especialistas</span>
                 </Link>
-
-                <Link
-                  to="/comite-editorial"
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === '/comite-editorial'
-                      ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
-                  }`}
-                >
+                <Link to="/comite-editorial" className={navClass(location.pathname === '/comite-editorial')}>
                   <Scale className="w-4 h-4" />
                   <span>Comité</span>
                 </Link>
@@ -164,11 +190,9 @@ export function Header() {
             )}
           </nav>
 
-          {/* Desktop Right Actions (Auth, Theme, Language) */}
           <div className="hidden lg:flex items-center gap-2">
             <OfflineIndicator />
 
-            {/* Role & Auth Badges / Buttons */}
             {isSupabaseConfigured && user && isAdmin && (
               <Link
                 to="/admin"
@@ -176,37 +200,10 @@ export function Header() {
                 title="Panel de Administración"
               >
                 <Shield className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                <span>Panel Admin</span>
+                <span>Admin</span>
                 {totalPending > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
                     {totalPending > 9 ? '9+' : totalPending}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            {isSupabaseConfigured && user && !isAdmin && isPendingApproval && (
-              <Link
-                to="/portal"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/80 hover:bg-amber-100/60 transition-all shadow-xs"
-                title="En espera de aprobación por el Comité"
-              >
-                <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                <span>En espera de admisión</span>
-              </Link>
-            )}
-
-            {isSupabaseConfigured && user && !isAdmin && !isPendingApproval && (
-              <Link
-                to="/portal"
-                className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-xs"
-                title="Ir a Mi Portal de Estudiante"
-              >
-                <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
-                <span>Mi Portal</span>
-                {pendingCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none animate-pulse shadow-xs">
-                    {pendingCount > 9 ? '9+' : pendingCount}
                   </span>
                 )}
               </Link>
@@ -228,14 +225,13 @@ export function Header() {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white hover:opacity-95 shadow-sm shadow-blue-500/20 transition"
                 >
                   <GraduationCap className="w-3.5 h-3.5" />
-                  <span>Registro Estudiante</span>
+                  <span>Registro</span>
                 </Link>
               </div>
             ) : null}
 
             <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
 
-            {/* Language & Dark Mode controls */}
             <button
               onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
               className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
@@ -256,7 +252,6 @@ export function Header() {
             </button>
           </div>
 
-          {/* Mobile Right Controls: Ultra Clean (Only Menu Toggle & Avatar if user) */}
           <div className="flex lg:hidden items-center gap-1.5">
             <OfflineIndicator />
 
@@ -277,19 +272,15 @@ export function Header() {
         </div>
       </header>
 
-      {/* Mobile Drawer / Slide-Over Navigation (Neatly containing all links & controls) */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          {/* Backdrop */}
           <div
             onClick={() => setMobileMenuOpen(false)}
             className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
           />
 
-          {/* Drawer Panel */}
           <div className="fixed top-15 sm:top-16 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
             <div className="space-y-6">
-              {/* User Session Banner or Guest Sign-in */}
               {isSupabaseConfigured && user ? (
                 <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60">
                   <div className="flex items-center gap-3 mb-2">
@@ -299,7 +290,7 @@ export function Header() {
                     <div className="overflow-hidden">
                       <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.email}</div>
                       <div className="text-xs text-blue-600 dark:text-cyan-400 font-medium">
-                        {isAdmin ? 'Administrador COMEFYR' : 'Médico Registrado'}
+                        {isAdmin ? 'Administrador' : 'Médico registrado'}
                       </div>
                     </div>
                   </div>
@@ -312,7 +303,7 @@ export function Header() {
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
                       >
                         <Shield className="w-3.5 h-3.5" />
-                        Ir a Panel de Administración
+                        Panel de administración
                       </Link>
                     ) : isPendingApproval ? (
                       <Link
@@ -321,7 +312,7 @@ export function Header() {
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold shadow-xs"
                       >
                         <Lock className="w-3.5 h-3.5" />
-                        Ver Estado de Admisión (Candado)
+                        Ver estado de admisión
                       </Link>
                     ) : (
                       <Link
@@ -330,9 +321,9 @@ export function Header() {
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
                       >
                         <GraduationCap className="w-3.5 h-3.5" />
-                        <span>Ir a Mi Portal de Estudiante</span>
+                        <span>Ir a mi portal</span>
                         {pendingCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none animate-pulse">
+                          <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none">
                             {pendingCount}
                           </span>
                         )}
@@ -348,7 +339,7 @@ export function Header() {
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white text-sm font-bold shadow-md shadow-blue-500/20"
                   >
                     <GraduationCap className="w-4 h-4" />
-                    <span>Registro Estudiante (COMEFYR)</span>
+                    <span>Registro estudiante</span>
                   </Link>
                   <Link
                     to="/auth/login"
@@ -361,121 +352,92 @@ export function Header() {
                 </div>
               ) : null}
 
-              {/* Navigation Links */}
               <div>
                 <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-slate-400 block mb-3">
-                  Navegación del Programa
+                  {isLoggedIn ? 'Estudiar' : 'Programa'}
                 </span>
                 <div className="space-y-1">
-                  <Link
-                    to="/temario"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-                      <span>Temario curricular</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
+                  {showPublicNav && (
+                    <>
+                      <MobileNavRow
+                        to="/temario"
+                        onClick={() => setMobileMenuOpen(false)}
+                        icon={<BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />}
+                        label="Temario"
+                      />
+                      <MobileNavRow
+                        to="/cursos"
+                        onClick={() => setMobileMenuOpen(false)}
+                        icon={<GraduationCap className="w-4 h-4" />}
+                        label="Cursos"
+                      />
+                    </>
+                  )}
 
-                  <Link
-                    to="/cursos"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <GraduationCap className="w-4 h-4" />
-                      <span>Cursos por nivel</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
+                  {isLoggedIn && (
+                    <button
+                      type="button"
+                      onClick={openCourseSidebar}
+                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <PanelLeft className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
+                        <span>Curso</span>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    </button>
+                  )}
 
-                  <Link
+                  <MobileNavRow
                     to="/simuladores"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Simuladores</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
+                    icon={<Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+                    label="Simuladores"
+                  />
 
-                  <Link
-                    to="/examenes"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ClipboardList className="w-4 h-4 text-cyan-600" />
-                      <span>Exámenes</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-400" />
-                  </Link>
+                  {isLoggedIn && (
+                    <MobileNavRow
+                      to="/examenes"
+                      onClick={() => setMobileMenuOpen(false)}
+                      icon={<ClipboardList className="w-4 h-4 text-cyan-600" />}
+                      label="Exámenes"
+                    />
+                  )}
 
-                  <Link
-                    to="/ejercicios"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Stethoscope className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      <span>Modo Ejercicio & Trazos EMG</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">Premium</span>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </div>
-                  </Link>
-
-                  {isSupabaseConfigured && (
+                  {showPublicNav && isSupabaseConfigured && (
                     <>
-                      <Link
+                      <MobileNavRow
                         to="/especialistas"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                          <span>Directorio de Especialistas</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </Link>
-
-                      <Link
+                        icon={<Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                        label="Especialistas"
+                      />
+                      <MobileNavRow
                         to="/comite-editorial"
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                          <span>{BRAND.enableAccreditation ? 'Comité Editorial y Aval' : 'Comité Editorial y Acreditación'}</span>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </Link>
+                        icon={<Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
+                        label={BRAND.enableAccreditation ? 'Comité editorial y aval' : 'Comité editorial'}
+                      />
                     </>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Mobile Footer: Theme, Language & Accreditation info */}
             <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Idioma de la plataforma</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Idioma</span>
                 <button
                   onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
                 >
                   <Globe className="w-3.5 h-3.5" />
-                  <span>{language === 'es' ? 'Español (ES)' : 'English (EN)'}</span>
+                  <span>{language === 'es' ? 'Español' : 'English'}</span>
                 </button>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tema visual</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tema</span>
                 <button
                   onClick={toggleDarkMode}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
@@ -483,12 +445,12 @@ export function Header() {
                   {isDarkMode ? (
                     <>
                       <Sun className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Modo Claro</span>
+                      <span>Claro</span>
                     </>
                   ) : (
                     <>
                       <Moon className="w-3.5 h-3.5 text-slate-700" />
-                      <span>Modo Oscuro</span>
+                      <span>Oscuro</span>
                     </>
                   )}
                 </button>
@@ -506,7 +468,6 @@ export function Header() {
         </div>
       )}
 
-      {/* Course sidebar if opened explicitly from anywhere */}
       <CourseSidebar isOpen={courseSidebarOpen} onClose={() => setCourseSidebarOpen(false)} />
     </>
   );

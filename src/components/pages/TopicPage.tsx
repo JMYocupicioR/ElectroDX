@@ -33,209 +33,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
-
-/* ─── Rich-text renderer ─── */
-function renderInline(text: string, keyPrefix: string): (string | JSX.Element)[] {
-  // Step 1: split by [link text](url) patterns
-  const parts: (string | JSX.Element)[] = [];
-  const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = linkRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    parts.push(
-      <a
-        key={`${keyPrefix}-link-${match.index}`}
-        href={match[2]}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 dark:text-blue-400 underline underline-offset-2 decoration-blue-400/40 hover:decoration-blue-500 transition-colors font-medium"
-      >
-        {match[1]} ↗
-      </a>
-    );
-    lastIndex = match.index + match[0].length;
-  }
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  // Step 2: process text segments for bold and clinical values
-  return parts.flatMap((part, i) => {
-    if (typeof part !== 'string') return [part];
-    return formatTextSegment(part, `${keyPrefix}-${i}`);
-  });
-}
-
-/* ─── Table Renderer ─── */
-function renderTable(lines: string[], keyBase: string) {
-  const rows = lines
-    .filter(l => l.trim().startsWith('|'))
-    .map(line => {
-      const parts = line.trim().split('|');
-      // Handle the | cell | cell | format
-      if (parts[0] === '') parts.shift();
-      if (parts[parts.length - 1] === '') parts.pop();
-      return parts.map(p => p.trim());
-    });
-
-  if (rows.length < 1) return null;
-
-  // Detect and filter out the separator row (e.g., |---|---|)
-  const dataRows = rows.filter(row => !row.every(cell => /^[\s-:]+$/.test(cell)));
-  if (dataRows.length === 0) return null;
-
-  const header = dataRows[0];
-  const body = dataRows.slice(1);
-
-  return (
-    <div key={keyBase} className="my-5 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900/40">
-      <table className="w-full text-left border-collapse min-w-[450px]">
-        <thead>
-          <tr className="bg-slate-50/80 dark:bg-slate-800/80">
-            {header.map((cell, i) => (
-              <th key={i} className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                {renderInline(cell, `${keyBase}-th-${i}`)}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-          {body.map((row, ri) => (
-            <tr key={ri} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors">
-              {row.map((cell, ci) => (
-                <td key={ci} className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {renderInline(cell, `${keyBase}-tr-${ri}-td-${ci}`)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function RichContent({ text, className = '' }: { text: string; className?: string }) {
-  const rendered = useMemo(() => {
-    // Split into structural blocks by double newline
-    const blocks = text.split(/\n\n+/);
-
-    return blocks.map((block, bIdx) => {
-      const trimmed = block.trim();
-      if (!trimmed) return null;
-
-      const lines = trimmed.split('\n');
-      
-      // 1. Check if the block contains a table
-      if (lines.some(l => l.trim().startsWith('|'))) {
-        const parts: JSX.Element[] = [];
-        let currentTableLines: string[] = [];
-
-        lines.forEach((line, lIdx) => {
-          if (line.trim().startsWith('|')) {
-            currentTableLines.push(line);
-          } else {
-            // Render accumulated table lines if we hit a non-table line
-            if (currentTableLines.length > 0) {
-              const table = renderTable(currentTableLines, `b-${bIdx}-t-${lIdx}`);
-              if (table) parts.push(table);
-              currentTableLines = [];
-            }
-            // Render the non-table line as a paragraph or part of one
-            if (line.trim()) {
-              parts.push(
-                <p key={`b-${bIdx}-l-${lIdx}`} className={lIdx > 0 ? 'mt-3' : ''}>
-                  {renderInline(line, `b-${bIdx}-l-${lIdx}`)}
-                </p>
-              );
-            }
-          }
-        });
-
-        // Finalize any remaining table lines
-        if (currentTableLines.length > 0) {
-          const table = renderTable(currentTableLines, `b-${bIdx}-t-end`);
-          if (table) parts.push(table);
-        }
-
-        return <div key={`b-${bIdx}`}>{parts}</div>;
-      }
-
-      // 2. Check if the block is a bullet list
-      const isBulletList = lines.every(l => /^[•\-\*]\s/.test(l.trim()));
-      if (isBulletList) {
-        return (
-          <ul key={`b-${bIdx}`} className="list-none space-y-1.5 my-3 ml-1">
-            {lines.map((line, lIdx) => (
-              <li key={`li-${bIdx}-${lIdx}`} className="flex items-start gap-2">
-                <span className="text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-                <span>{renderInline(line.replace(/^[•\-\*]\s*/, ''), `li-${bIdx}-${lIdx}`)}</span>
-              </li>
-            ))}
-          </ul>
-        );
-      }
-
-      // 3. Normal paragraph
-      return (
-        <p key={`p-${bIdx}`} className={bIdx > 0 ? 'mt-3' : ''}>
-          {renderInline(trimmed, `p-${bIdx}`)}
-        </p>
-      );
-    });
-  }, [text]);
-
-  return <div className={`text-[0.95rem] sm:text-base leading-[1.8] text-slate-700 dark:text-slate-300 ${className}`}>{rendered}</div>;
-}
-
-function formatTextSegment(text: string, keyBase: string): (string | JSX.Element)[] {
-  const result: (string | JSX.Element)[] = [];
-  // Bold: **text**
-  const boldRegex = /\*\*([^*]+)\*\*/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = boldRegex.exec(text)) !== null) {
-    if (match.index > last) {
-      result.push(...highlightClinical(text.slice(last, match.index), `${keyBase}-${last}`));
-    }
-    result.push(
-      <strong key={`b-${keyBase}-${match.index}`} className="font-semibold text-slate-900 dark:text-white">
-        {match[1]}
-      </strong>
-    );
-    last = match.index + match[0].length;
-  }
-  if (last < text.length) {
-    result.push(...highlightClinical(text.slice(last), `${keyBase}-${last}`));
-  }
-  return result;
-}
-
-function highlightClinical(text: string, key: string): (string | JSX.Element)[] {
-  // Highlight clinical values: numbers followed by units (ms, mV, µV, m/s, mm², Hz, °C, %)
-  const clinicalRegex = /([≥≤><]?\s*\d+[\.\d]*\s*(?:ms|mV|µV|m\/s|mm²|Hz|°C|%|m\/seg))/g;
-  const parts: (string | JSX.Element)[] = [];
-  let last = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = clinicalRegex.exec(text)) !== null) {
-    if (match.index > last) parts.push(text.slice(last, match.index));
-    parts.push(
-      <span key={`cv-${key}-${match.index}`} className="font-mono text-[0.85em] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 whitespace-nowrap">
-        {match[1]}
-      </span>
-    );
-    last = match.index + match[0].length;
-  }
-  if (last < text.length) parts.push(text.slice(last));
-  if (parts.length === 0) parts.push(text);
-  return parts;
-}
+import { RichContent, renderInline, type RichHeadingLevel } from '../content/RichContent';
 
 /* ─── Video Section ─── */
 function topicHasVideos(topic: Topic): boolean {
@@ -375,7 +173,15 @@ function ImageGallery({ images }: { images: { src: string; alt: string; caption?
   );
 }
 
-function TopicBody({ topic, lang }: { topic: Topic; lang: 'es' | 'en' }) {
+function TopicBody({
+  topic,
+  lang,
+  headingLevel = 3,
+}: {
+  topic: Topic;
+  lang: 'es' | 'en';
+  headingLevel?: RichHeadingLevel;
+}) {
   const lt = localizedTopic(topic, lang);
   const hasContent = Boolean(lt.content);
   const hasExtras = Boolean(
@@ -388,7 +194,7 @@ function TopicBody({ topic, lang }: { topic: Topic; lang: 'es' | 'en' }) {
 
   return (
     <div>
-      {hasContent && <RichContent text={lt.content!} />}
+      {hasContent && <RichContent text={lt.content!} headingLevel={headingLevel} />}
       {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
         <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
       )}
@@ -442,7 +248,7 @@ function NestedTopicSections({
               <p className="text-xs text-slate-400 dark:text-slate-500 italic mt-0.5 pl-8">{child.title}</p>
             )}
             <div className="mt-3">
-              <TopicBody topic={child} lang={lang} />
+              <TopicBody topic={child} lang={lang} headingLevel={headingLevel === 3 ? 4 : 5} />
             </div>
             {nested && (
               <div className="mt-4 ml-3 sm:ml-4 pl-3 sm:pl-4 border-l border-slate-200/70 dark:border-slate-700/50">
@@ -606,6 +412,8 @@ export default function TopicPage() {
   const navigate = useNavigate();
   const lang = useSettingsStore((s) => s.language);
   const { canProposeContent, user } = useAuth();
+  const homeHref = user ? '/portal' : '/';
+  const homeLabel = lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio';
   const { module: mod, loading: moduleLoading } = useMergedModule(moduleId);
 
   const [showTOC, setShowTOC] = useState(false);
@@ -855,7 +663,7 @@ export default function TopicPage() {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
         <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
-        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
+        <Link to={homeHref} className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al portal'}</Link>
       </div>
     );
   }
@@ -885,8 +693,8 @@ export default function TopicPage() {
         <div className="min-w-0">
         {/* Breadcrumbs */}
         <nav className="flex flex-wrap items-center gap-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
-          <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
-            <Home className="w-3.5 h-3.5" /> {lang === 'en' ? 'Home' : 'Inicio'}
+          <Link to={homeHref} className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
+            <Home className="w-3.5 h-3.5" /> {homeLabel}
           </Link>
           <ChevronRight className="w-3 h-3 flex-shrink-0" />
           <Link to={`/modulo/${mod.id}`} className="hover:text-blue-500 transition-colors truncate max-w-[140px] sm:max-w-none min-h-[2rem] inline-flex items-center gap-1.5">
@@ -1029,7 +837,7 @@ export default function TopicPage() {
           {/* Main content */}
           {lt.content && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
-              <RichContent text={lt.content} />
+              <RichContent text={lt.content} headingLevel={2} />
               {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
                 <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
               )}

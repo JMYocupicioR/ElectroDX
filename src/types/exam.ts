@@ -39,6 +39,17 @@ export interface ExamQuestion {
   updated_at: string;
 }
 
+/** Revelación de una respuesta calificada en servidor (modo tutor o resultados). */
+export interface ExamAnswerReveal {
+  questionId: string;
+  isCorrect: boolean;
+  selectedIndex: number;
+  correctIndex: number | null;
+  selectedFeedback: string;
+  correctFeedback: string;
+  pearl?: string | null;
+}
+
 // ─── Configuración del Examen ─────────────────────────────────────────────────
 
 export type ExamMode =
@@ -88,6 +99,8 @@ export interface ExamAttemptRecord {
   expires_at?: string | null;
   /** Presente si el intento corresponde a una evaluación asignada */
   assignment_id?: string | null;
+  /** Sesión calificada vinculada a este intento (idempotencia del envío) */
+  exam_session_id?: string | null;
   status: 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED';
   created_at: string;
   updated_at: string;
@@ -157,6 +170,25 @@ export interface ExamResultsSummary {
   answers: ExamAnswerRecord[];
   questions: ExamQuestion[];   // Las preguntas del examen (para revisión)
   topicBreakdown: ExamTopicBreakdown[];
+}
+
+export interface SubmitExamResult {
+  sessionId: string;
+  scorePercentage: number;
+  correctAnswers: number;
+  totalQuestions: number;
+  passed: boolean;
+  durationSeconds: number;
+  assignmentId?: string | null;
+  questions: ExamQuestion[];
+  answers: Array<{
+    question_id: string;
+    selected_option_index: number;
+    is_correct: boolean;
+    topic_name?: string;
+    module_id?: string;
+    is_critical?: boolean;
+  }>;
 }
 
 // ─── Analítica de Brechas ─────────────────────────────────────────────────────

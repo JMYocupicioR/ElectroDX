@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff, Users, Scale, BookOpen, GraduationCap, Home } from 'lucide-react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuth } from '../../contexts/AuthProvider';
 
@@ -182,7 +182,45 @@ export default function SettingsPage() {
           </form>
         )}
       </section>
+
+      <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 px-1">
+        Acerca del programa
+      </h2>
+      <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm">
+        <LinkRow to="/" icon={Home} title="Página de inicio" description="Sitio público de ElectoDX" />
+        <LinkRow to="/cursos" icon={GraduationCap} title="Oferta de cursos" description="Principiante, intermedio y avanzado" />
+        <LinkRow to="/temario" icon={BookOpen} title="Temario público" description="Resumen del programa para consulta" />
+        <LinkRow to="/especialistas" icon={Users} title="Directorio de especialistas" description="Colaboradores y docentes del programa" />
+        <LinkRow to="/comite-editorial" icon={Scale} title="Comité editorial" description="Dirección académica y aval del contenido" />
+      </section>
     </div>
+  );
+}
+
+function LinkRow({
+  to,
+  icon: Icon,
+  title,
+  description,
+}: {
+  to: string;
+  icon: typeof Sun;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link to={to} className="flex items-center justify-between gap-4 p-5 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+      <div className="flex items-start gap-3">
+        <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800">
+          <Icon className="w-4 h-4 text-slate-500" />
+        </div>
+        <div>
+          <p className="font-medium text-slate-900 dark:text-white">{title}</p>
+          <p className="text-sm text-slate-500">{description}</p>
+        </div>
+      </div>
+      <span className="text-xs font-semibold text-blue-600 dark:text-cyan-400">Ver</span>
+    </Link>
   );
 }
 

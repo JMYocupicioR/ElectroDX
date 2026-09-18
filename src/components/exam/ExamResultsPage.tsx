@@ -12,9 +12,15 @@ type LocationState = {
   sessionId: string | null;
   questions: ExamQuestion[];
   config: ExamConfig;
-  answers?: Record<string, number>; // Fallback si no se guardó en DB
+  answers?: Record<string, number>;
   durationSeconds?: number;
   assignmentId?: string;
+  serverScore?: {
+    scorePercentage: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    passed: boolean;
+  };
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
@@ -42,22 +48,13 @@ export default function ExamResultsPage() {
     if (!state) { navigate('/examenes', { replace: true }); return; }
 
     async function computeResults() {
-      const { sessionId, questions, answers, durationSeconds, assignmentId } = state!;
+      const { sessionId, questions, answers, durationSeconds, serverScore } = state!;
 
       let sessionAnswers: Record<string, number> = { ...(answers ?? {}) };
       let duration = durationSeconds ?? 0;
+      let scoredByServer = new Map<string, boolean>();
+      let reviewQuestions = questions;
 
-      // Fallback si answers vino vacío: buscar en caché local de la asignación
-      if (assignmentId && Object.keys(sessionAnswers).length === 0) {
-        try {
-          const cached = localStorage.getItem(`neurosafe_asg_answers_${assignmentId}`);
-          if (cached) {
-            sessionAnswers = JSON.parse(cached);
-          }
-        } catch {}
-      }
-
-      // Intentar cargar desde Supabase si hay sessionId para enriquecer
       if (sessionId) {
         const data = await loadExamResults(sessionId, questions);
         if (data && data.answers && data.answers.length > 0) {
@@ -65,23 +62,45 @@ export default function ExamResultsPage() {
             if (a.selected_option_index !== undefined) {
               sessionAnswers[a.question_id] = a.selected_option_index;
             }
+            scoredByServer.set(a.question_id, Boolean(a.is_correct));
           });
           if (data.session?.duration_seconds) {
             duration = data.session.duration_seconds;
           }
+          const revealed = data.answers
+            .map(a => a.question)
+            .filter(q => q && q.options && q.options.length > 0);
+          if (revealed.length > 0) {
+            reviewQuestions = questions.map(q => revealed.find(r => r.id === q.id) ?? q);
+          }
+          if (data.session && !serverScore) {
+            // Preferir la nota persistida en servidor
+            state!.serverScore = {
+              scorePercentage: Number(data.session.score_percentage),
+              correctAnswers: data.session.correct_answers,
+              totalQuestions: data.session.total_questions,
+              passed: Boolean(data.session.passed ?? Number(data.session.score_percentage) >= 70),
+            };
+          }
         }
       }
 
-      // Calcular estadísticas
       let correct = 0;
-      const detailedAnswers = questions.map(q => {
+      const detailedAnswers = reviewQuestions.map(q => {
         const selectedIndex = sessionAnswers[q.id] !== undefined ? sessionAnswers[q.id] : -1;
-        const isCorrect = selectedIndex >= 0 && (q.options[selectedIndex]?.is_correct ?? false);
+        const isCorrect = scoredByServer.has(q.id)
+          ? scoredByServer.get(q.id)!
+          : selectedIndex >= 0 && (q.options[selectedIndex]?.is_correct ?? false);
         if (isCorrect) correct++;
         return { question: q, selectedIndex, isCorrect };
       });
 
-      const scorePercentage = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+      const fromServer = state!.serverScore;
+      const scorePercentage = fromServer?.scorePercentage
+        ?? (reviewQuestions.length > 0 ? Math.round((correct / reviewQuestions.length) * 100) : 0);
+      const correctAnswers = fromServer?.correctAnswers ?? correct;
+      const totalQuestions = fromServer?.totalQuestions ?? reviewQuestions.length;
+      const passed = fromServer?.passed ?? scorePercentage >= 70;
 
       // La calificación de la evaluación asignada se asienta al enviar el examen
       // (ExamSessionPage). Repetirla aquí duplicaba la nota y las notas del
@@ -106,10 +125,10 @@ export default function ExamResultsPage() {
         .sort((a, b) => a.accuracy - b.accuracy); // Peores primero
 
       setResults({
-        totalQuestions: questions.length,
-        correctAnswers: correct,
+        totalQuestions,
+        correctAnswers,
         scorePercentage,
-        passed: scorePercentage >= 70,
+        passed,
         durationSeconds: duration,
         answers: detailedAnswers,
         topicBreakdown,

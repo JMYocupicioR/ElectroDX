@@ -1,4 +1,4 @@
-import type { ExamQuestion } from '../../types/exam';
+import type { ExamAnswerReveal, ExamQuestion } from '../../types/exam';
 import { Flag, CheckCircle, XCircle, Lightbulb, BookOpen, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface ExamQuestionCardProps {
@@ -15,6 +15,8 @@ interface ExamQuestionCardProps {
   onPrev?: () => void;
   isFirst: boolean;
   isLast: boolean;
+  /** Calificación del servidor (modo tutor). Sin esto no se muestran claves. */
+  reveal?: ExamAnswerReveal | null;
 }
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
@@ -33,11 +35,18 @@ export function ExamQuestionCard({
   onPrev,
   isFirst,
   isLast,
+  reveal = null,
 }: ExamQuestionCardProps) {
   const isAnswered = selectedOptionIndex !== undefined;
-  const showResult = showFeedback && isAnswered;
-  const correctIndex = question.options.findIndex(o => o.is_correct);
-  const isCorrect = isAnswered && question.options[selectedOptionIndex]?.is_correct;
+  const showResult = Boolean(showFeedback && isAnswered && (reveal || question.options.some(o => o.is_correct)));
+  const correctIndex = reveal?.correctIndex ?? question.options.findIndex(o => o.is_correct);
+  const isCorrect = reveal
+    ? reveal.isCorrect
+    : isAnswered && question.options[selectedOptionIndex]?.is_correct;
+  const selectedFeedback = reveal?.selectedFeedback || question.options[selectedOptionIndex ?? -1]?.feedback;
+  const correctFeedback = reveal?.correctFeedback
+    || (correctIndex !== null && correctIndex >= 0 ? question.options[correctIndex]?.feedback : '');
+  const pearl = reveal?.pearl || question.pearl;
 
   const getOptionStyle = (index: number) => {
     if (!showResult) {
@@ -157,23 +166,23 @@ export function ExamQuestionCard({
               {isCorrect ? '¡Correcto!' : 'Incorrecto'}
             </span>
           </div>
-          {!isCorrect && question.options[selectedOptionIndex] && (
+          {!isCorrect && selectedFeedback && (
             <p className="text-sm text-slate-400 mb-2 pb-2 border-b border-white/5">
-              {question.options[selectedOptionIndex].feedback}
+              {selectedFeedback}
             </p>
           )}
-          {question.options[correctIndex] && (
+          {correctFeedback && (
             <p className="text-sm text-slate-300">
-              <strong>Respuesta correcta:</strong> {question.options[correctIndex].feedback}
+              <strong>Respuesta correcta:</strong> {correctFeedback}
             </p>
           )}
           {/* Perla clínica */}
-          {question.pearl && (
+          {pearl && (
             <div className="mt-3 pt-3 border-t border-white/5 flex items-start gap-2">
               <Lightbulb className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div>
                 <span className="text-xs font-semibold text-amber-400 uppercase tracking-wide">Perla Clínica</span>
-                <p className="text-sm text-amber-200/80 mt-0.5">{question.pearl}</p>
+                <p className="text-sm text-amber-200/80 mt-0.5">{pearl}</p>
               </div>
             </div>
           )}

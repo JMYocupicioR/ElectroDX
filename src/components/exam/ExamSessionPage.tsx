@@ -5,7 +5,6 @@ import { Loader2, Clock, Send, LayoutGrid, X, Brain, ChevronLeft, ShieldAlert } 
 import type { ExamConfig, ExamAttemptRecord, ExamQuestion } from '../../types/exam';
 import {
   clearExamAttemptCaches,
-  finalizeExamAttempt,
   loadExamQuestions,
   prepareExamQuestions,
   restoreExamQuestions,
@@ -15,6 +14,7 @@ import {
   shuffleArray,
 } from '../../services/examService';
 import type { ExamOptionOrder } from '../../utils/examQuestionOrder';
+import { stripExamAnswerKeys } from '../../utils/examIntegrity';
 import {
   getActiveExamLock,
   completeAssignedExam,
@@ -54,11 +54,14 @@ function readQuestionCache(key: string): PreparedExam | null {
 
     // Formato v2: { questions, optionOrder }
     if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
-      return { questions: parsed.questions, optionOrder: parsed.optionOrder ?? {} };
+      return {
+        questions: parsed.questions.map(stripExamAnswerKeys),
+        optionOrder: parsed.optionOrder ?? {},
+      };
     }
     // Formato legado: arreglo de preguntas sin permutación registrada
     if (Array.isArray(parsed) && parsed.length > 0) {
-      return { questions: parsed, optionOrder: {} };
+      return { questions: parsed.map(stripExamAnswerKeys), optionOrder: {} };
     }
     return null;
   } catch {
@@ -87,6 +90,7 @@ export default function ExamSessionPage() {
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Estados de Asignación y Candado Estricto
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(state?.assignmentId || null);
@@ -126,7 +130,9 @@ export default function ExamSessionPage() {
           // Reconstruye el orden exacto de preguntas Y de opciones con el que se
           // respondió: `answers` guarda índices de opción, así que sin la
           // permutación original la reanudación calificaría otra opción.
-          setQuestions(restoreExamQuestions(attempt.question_ids, allQs, attempt.option_order));
+          setQuestions(
+            restoreExamQuestions(attempt.question_ids, allQs, attempt.option_order).map(stripExamAnswerKeys)
+          );
           setOptionOrder(attempt.option_order ?? {});
           setConfig(attempt.config);
 
@@ -235,10 +241,11 @@ export default function ExamSessionPage() {
     durationSeconds: number,
     attemptId: string | null
   ) => {
-    if (!user || !config) return;
+    if (!user || !config) return false;
     setSubmitting(true);
+    setSubmitError(null);
 
-    const sessionId = await submitExam({
+    const result = await submitExam({
       userId: user.id,
       config,
       questions,
@@ -247,47 +254,49 @@ export default function ExamSessionPage() {
       attemptId,
     });
 
-    // Único punto donde se asienta la calificación de una evaluación asignada:
-    // aquí y no en la pantalla de resultados, porque el alumno puede cerrar la
-    // pestaña sin llegar a verla (antes se escribía en ambos sitios).
-    if (activeAssignmentId) {
-      let correct = 0;
-      questions.forEach(q => {
-        const sel = answers[q.id];
-        if (sel !== undefined && q.options[sel]?.is_correct) {
-          correct++;
-        }
-      });
-      const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+    if (!result) {
+      setSubmitting(false);
+      setSubmitError('No se pudo calificar el examen en el servidor. Revisa tu conexión e inténtalo de nuevo; tu progreso sigue guardado.');
+      return false;
+    }
+
+    // El RPC ya asienta la asignación. Si vino de fallback local, reintentamos
+    // sin mandar una nota calculada en el cliente cuando hay sessionId.
+    if (activeAssignmentId && user.id) {
       try {
-        await completeAssignedExam(activeAssignmentId, user.id, score, durationSeconds, sessionId);
+        await completeAssignedExam(
+          activeAssignmentId,
+          user.id,
+          result.scorePercentage,
+          result.durationSeconds,
+          result.sessionId
+        );
       } catch (err) {
         console.error('[ExamSessionPage] No se pudo asentar el examen asignado:', err);
       }
     }
 
-    // `submitExam` cierra el intento cuando logra guardar la sesión. Si falló, se
-    // cierra igualmente: el alumno ya vio sus resultados y no debe reaparecer
-    // como examen pendiente en /examenes.
-    if (!sessionId && attemptId) {
-      await finalizeExamAttempt(attemptId, 'COMPLETED');
-    }
-
     clearExamAttemptCaches(attemptId, activeAssignmentId);
 
     setSubmitting(false);
-    // Siempre pasar answers y durationSeconds para garantizar feedback visual completo e inmediato
     navigate('/examenes/resultados', {
       state: {
-        sessionId: sessionId ?? null,
-        questions,
+        sessionId: result.sessionId,
+        questions: result.questions.length > 0 ? result.questions : questions,
         config,
         answers,
-        durationSeconds,
+        durationSeconds: result.durationSeconds,
         assignmentId: activeAssignmentId,
+        serverScore: {
+          scorePercentage: result.scorePercentage,
+          correctAnswers: result.correctAnswers,
+          totalQuestions: result.totalQuestions,
+          passed: result.passed,
+        },
       },
       replace: true,
     });
+    return true;
   }, [user, config, questions, navigate, activeAssignmentId]);
 
   const runner = useExamRunner({
@@ -311,7 +320,7 @@ export default function ExamSessionPage() {
     });
   }, [runner.attemptId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { currentIndex, currentQuestion, answers, flagged, timeLeft, isSubmitting } = runner;
+  const { currentIndex, currentQuestion, answers, flagged, reveals, timeLeft, isSubmitting } = runner;
 
   const unansweredCount = questions.length - Object.keys(answers).length;
   const isImmediateFeedback = config?.feedbackMode === 'immediate';
@@ -447,6 +456,11 @@ export default function ExamSessionPage() {
           <div className="flex gap-6">
             {/* Contenido principal */}
             <div className="flex-1 min-w-0">
+              {submitError && (
+                <p role="alert" className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                  {submitError}
+                </p>
+              )}
               {currentQuestion && (
                 <ExamQuestionCard
                   question={currentQuestion}
@@ -462,6 +476,7 @@ export default function ExamSessionPage() {
                   onPrev={runner.goPrev}
                   isFirst={currentIndex === 0}
                   isLast={currentIndex === questions.length - 1}
+                  reveal={reveals[currentQuestion.id] ?? null}
                 />
               )}
 
@@ -487,6 +502,8 @@ export default function ExamSessionPage() {
                   currentIndex={currentIndex}
                   answers={answers}
                   flagged={flagged}
+                  reveals={reveals}
+                  showResult={isImmediateFeedback}
                   onGoTo={runner.goToQuestion}
                 />
               </div>
@@ -510,6 +527,8 @@ export default function ExamSessionPage() {
               currentIndex={currentIndex}
               answers={answers}
               flagged={flagged}
+              reveals={reveals}
+              showResult={isImmediateFeedback}
               onGoTo={i => { runner.goToQuestion(i); setShowPalette(false); }}
             />
           </div>

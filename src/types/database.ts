@@ -590,6 +590,28 @@ export interface Database {
         };
         Returns: unknown;
       };
+      get_exam_questions_for_attempt: {
+        Args: {
+          p_topic_names?: string[] | null;
+          p_module_id?: string | null;
+          p_question_ids?: string[] | null;
+          p_critical_only?: boolean;
+          p_failed_only?: boolean;
+        };
+        Returns: unknown;
+      };
+      get_exam_topic_stats: { Args: Record<string, never>; Returns: unknown };
+      grade_exam_answer: {
+        Args: { p_attempt_id: string; p_question_id: string; p_selected_index: number };
+        Returns: unknown;
+      };
+      get_exam_attempt_reveals: { Args: { p_attempt_id: string }; Returns: unknown };
+      submit_exam_session: {
+        Args: { p_attempt_id: string; p_answers?: Record<string, number>; p_duration_seconds?: number | null };
+        Returns: unknown;
+      };
+      get_exam_session_review: { Args: { p_session_id: string }; Returns: unknown };
+      get_exam_gap_analysis: { Args: { p_user_id?: string | null }; Returns: unknown };
       issue_my_certificate: { Args: { p_course_id?: string | null }; Returns: unknown };
       verify_certificate: { Args: { p_folio: string }; Returns: unknown };
     };

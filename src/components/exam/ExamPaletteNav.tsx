@@ -1,4 +1,4 @@
-import type { ExamQuestion } from '../../types/exam';
+import type { ExamAnswerReveal, ExamQuestion } from '../../types/exam';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 interface ExamPaletteNavProps {
@@ -7,6 +7,7 @@ interface ExamPaletteNavProps {
   answers: Record<string, number>;
   flagged: Record<string, boolean>;
   showResult?: boolean; // true al revisar resultados
+  reveals?: Record<string, ExamAnswerReveal>;
   onGoTo: (index: number) => void;
 }
 
@@ -16,6 +17,7 @@ export function ExamPaletteNav({
   answers,
   flagged,
   showResult = false,
+  reveals = {},
   onGoTo,
 }: ExamPaletteNavProps) {
   const answered = Object.keys(answers).length;
@@ -26,8 +28,9 @@ export function ExamPaletteNav({
     const isFlagged = flagged[q.id];
     const isCurrent = index === currentIndex;
     const selectedIdx = answers[q.id];
-    const isCorrect = showResult && isAnswered && q.options[selectedIdx]?.is_correct;
-    const isWrong = showResult && isAnswered && !q.options[selectedIdx]?.is_correct;
+    const reveal = reveals[q.id];
+    const isCorrect = showResult && isAnswered && (reveal ? reveal.isCorrect : q.options[selectedIdx]?.is_correct);
+    const isWrong = showResult && isAnswered && (reveal ? !reveal.isCorrect : !q.options[selectedIdx]?.is_correct);
 
     if (isWrong) return 'bg-red-500/10 border-red-500/40 text-red-400';
     if (isCorrect) return 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400';
@@ -68,8 +71,9 @@ export function ExamPaletteNav({
           const isFlagged = flagged[q.id];
           const isAnswered = answers[q.id] !== undefined;
           const selectedIdx = answers[q.id];
-          const isCorrect = showResult && isAnswered && q.options[selectedIdx]?.is_correct;
-          const isWrong = showResult && isAnswered && !q.options[selectedIdx]?.is_correct;
+          const reveal = reveals[q.id];
+          const isCorrect = showResult && isAnswered && (reveal ? reveal.isCorrect : q.options[selectedIdx]?.is_correct);
+          const isWrong = showResult && isAnswered && (reveal ? !reveal.isCorrect : !q.options[selectedIdx]?.is_correct);
 
           return (
             <button

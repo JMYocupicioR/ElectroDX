@@ -3,7 +3,7 @@
  * Híbrido: prioriza Supabase; si falla, usa datos locales (emgQuestionsFallback).
  */
 
-import { sb, supabase, supabaseAnonKey, supabaseUrl } from '../lib/supabase';
+import { sb, supabaseAnonKey, supabaseUrl } from '../lib/supabase';
 import type {
   ExamQuestion,
   ExamConfig,
@@ -18,6 +18,14 @@ import {
   QUESTIONS_BY_TOPIC,
 } from '../data/emgQuestionsFallback';
 import type { ExamOptionOrder } from '../utils/examQuestionOrder';
+import type { ExamAnswerReveal, SubmitExamResult } from '../types/exam';
+import {
+  parseExamAnswerReveal,
+  parseExamAnswerRevealMap,
+  questionsHaveAnswerKeys,
+  rpcLooksUnavailable,
+  stripExamAnswerKeys,
+} from '../utils/examIntegrity';
 
 export {
   applyOptionOrder,
@@ -33,12 +41,48 @@ export const PENDING_ATTEMPT_MAX_AGE_HOURS = 24;
 
 // ─── Carga de Preguntas ───────────────────────────────────────────────────────
 
-/** Carga todas las preguntas publicadas. Fallback a datos locales si Supabase falla. */
+export interface LoadExamQuestionsOptions {
+  /** Staff (admin/editor): lee el banco completo con claves. El alumno nunca debe pasar true. */
+  revealAnswers?: boolean;
+  criticalOnly?: boolean;
+  failedOnly?: boolean;
+  questionIds?: string[];
+}
+
+function asExamQuestionList(raw: unknown): ExamQuestion[] {
+  if (!Array.isArray(raw)) return [];
+  return raw as ExamQuestion[];
+}
+
+/** Carga preguntas publicadas. El alumno recibe el banco sin claves. */
 export async function loadExamQuestions(
-  config?: Partial<Pick<ExamConfig, 'topicNames' | 'moduleId'>>
+  config?: Partial<Pick<ExamConfig, 'topicNames' | 'moduleId'>>,
+  options: LoadExamQuestionsOptions = {}
 ): Promise<{ questions: ExamQuestion[]; source: 'supabase' | 'fallback' }> {
+  const { revealAnswers = false, criticalOnly = false, failedOnly = false, questionIds } = options;
+
+  if (!revealAnswers) {
+    try {
+      const { data, error } = await sb.rpc('get_exam_questions_for_attempt', {
+        p_topic_names: config?.topicNames ?? null,
+        p_module_id: config?.moduleId ?? null,
+        p_question_ids: questionIds ?? null,
+        p_critical_only: criticalOnly,
+        p_failed_only: failedOnly,
+      });
+      if (error) throw error;
+      const questions = asExamQuestionList(data).map(stripExamAnswerKeys);
+      if (questions.length === 0) throw new Error('No questions found in RPC');
+      return { questions, source: 'supabase' };
+    } catch (err) {
+      if (!rpcLooksUnavailable(err as { message?: string; code?: string })) {
+        console.warn('[examService] get_exam_questions_for_attempt failed:', err);
+      }
+    }
+  }
+
   try {
-    let query = supabase
+    let query = sb
       .from('exam_questions')
       .select('*')
       .eq('status', 'PUBLISHED');
@@ -49,13 +93,23 @@ export async function loadExamQuestions(
     if (config?.topicNames && config.topicNames.length > 0) {
       query = query.in('topic_name', config.topicNames);
     }
+    if (questionIds && questionIds.length > 0) {
+      query = query.in('id', questionIds);
+    }
+    if (criticalOnly) {
+      query = query.eq('is_critical', true);
+    }
 
     const { data, error } = await query.order('topic_name').order('difficulty');
 
     if (error) throw error;
     if (!data || data.length === 0) throw new Error('No questions found in Supabase');
 
-    return { questions: data as ExamQuestion[], source: 'supabase' };
+    const questions = data as ExamQuestion[];
+    return {
+      questions: revealAnswers ? questions : questions.map(stripExamAnswerKeys),
+      source: 'supabase',
+    };
   } catch (err) {
     console.warn('[examService] Supabase failed, using fallback data:', err);
 
@@ -66,50 +120,26 @@ export async function loadExamQuestions(
     if (config?.moduleId) {
       questions = questions.filter(q => q.module_id === config.moduleId);
     }
-    return { questions, source: 'fallback' };
+    if (questionIds && questionIds.length > 0) {
+      const idSet = new Set(questionIds);
+      questions = questions.filter(q => idSet.has(q.id));
+    }
+    if (criticalOnly) {
+      questions = questions.filter(q => q.is_critical);
+    }
+    if (failedOnly) {
+      questions = questions.filter(q => q.is_critical);
+    }
+    return {
+      questions: revealAnswers ? questions : questions.map(stripExamAnswerKeys),
+      source: 'fallback',
+    };
   }
 }
 
 /** Carga preguntas solo de los temas fallados por el usuario */
-export async function loadFailedQuestions(userId: string): Promise<{ questions: ExamQuestion[]; source: 'supabase' | 'fallback' }> {
-  try {
-    // Obtener IDs de preguntas con más fallos que aciertos
-    const { data: progress, error } = await sb
-      .from('user_question_progress')
-      .select('question_id, attempts, successes')
-      .eq('user_id', userId)
-      .gt('attempts', 0);
-
-    if (error) throw error;
-
-    const failedIds = ((progress || []) as Array<{ question_id: string; attempts: number; successes: number }>)
-      .filter(p => p.successes < p.attempts)
-      .map(p => p.question_id);
-
-    if (failedIds.length === 0) {
-      // Sin historial: devolver preguntas críticas
-      const { data, error: qErr } = await sb
-        .from('exam_questions')
-        .select('*')
-        .eq('is_critical', true)
-        .eq('status', 'PUBLISHED');
-      if (qErr) throw qErr;
-      return { questions: (data as ExamQuestion[]) || [], source: 'supabase' };
-    }
-
-    const { data: failedQs, error: fErr } = await sb
-      .from('exam_questions')
-      .select('*')
-      .in('id', failedIds)
-      .eq('status', 'PUBLISHED');
-
-    if (fErr) throw fErr;
-    return { questions: (failedQs as ExamQuestion[]) || [], source: 'supabase' };
-  } catch {
-    // Fallback: preguntas críticas del banco local
-    const questions = EMG_QUESTIONS_FALLBACK.filter(q => q.is_critical);
-    return { questions, source: 'fallback' };
-  }
+export async function loadFailedQuestions(): Promise<{ questions: ExamQuestion[]; source: 'supabase' | 'fallback' }> {
+  return loadExamQuestions(undefined, { failedOnly: true });
 }
 
 // ─── Gestión de Intentos en Curso ─────────────────────────────────────────────
@@ -288,10 +318,10 @@ export async function loadExamAttempt(attemptId: string): Promise<ExamAttemptRec
   }
 }
 
-/** Marca el intento como completado o abandonado */
+/** Marca el intento como abandonado. COMPLETED solo lo escribe el RPC de envío. */
 export async function finalizeExamAttempt(
   attemptId: string,
-  status: 'COMPLETED' | 'ABANDONED'
+  status: 'COMPLETED' | 'ABANDONED' = 'ABANDONED'
 ): Promise<boolean> {
   const { error } = await sb.from('exam_attempts').update({ status }).eq('id', attemptId);
   if (error) console.warn('[examService] finalizeExamAttempt failed:', error);
@@ -317,22 +347,112 @@ export function clearExamAttemptCaches(attemptId?: string | null, assignmentId?:
   });
 }
 
-// ─── Guardar Resultados del Examen ────────────────────────────────────────────
+// ─── Calificación en servidor ─────────────────────────────────────────────────
+
+export async function gradeExamAnswer(
+  attemptId: string,
+  questionId: string,
+  selectedIndex: number
+): Promise<ExamAnswerReveal | null> {
+  const { data, error } = await sb.rpc('grade_exam_answer', {
+    p_attempt_id: attemptId,
+    p_question_id: questionId,
+    p_selected_index: selectedIndex,
+  });
+  if (error) {
+    if (!rpcLooksUnavailable(error)) {
+      console.warn('[examService] grade_exam_answer failed:', error.message);
+    }
+    return null;
+  }
+  return parseExamAnswerReveal(data);
+}
+
+export async function loadExamAttemptReveals(
+  attemptId: string
+): Promise<Record<string, ExamAnswerReveal>> {
+  const { data, error } = await sb.rpc('get_exam_attempt_reveals', {
+    p_attempt_id: attemptId,
+  });
+  if (error) return {};
+  return parseExamAnswerRevealMap(data);
+}
+
+function parseSubmitExamResult(raw: unknown): SubmitExamResult | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const rec = raw as Record<string, unknown>;
+  const nested = rec.session && typeof rec.session === 'object'
+    ? rec.session as Record<string, unknown>
+    : null;
+  const sessionId = String(rec.sessionId ?? rec.session_id ?? nested?.id ?? '');
+  if (!sessionId) return null;
+  const questions = asExamQuestionList(rec.questions);
+  const answersRaw = Array.isArray(rec.answers) ? rec.answers : [];
+  const scorePercentage = Number(
+    rec.scorePercentage ?? rec.score_percentage ?? nested?.score_percentage ?? 0
+  );
+  const correctAnswers = Number(
+    rec.correctAnswers ?? rec.correct_answers ?? nested?.correct_answers ?? 0
+  );
+  const totalQuestions = Number(
+    rec.totalQuestions ?? rec.total_questions ?? nested?.total_questions ?? questions.length
+  );
+  return {
+    sessionId,
+    scorePercentage,
+    correctAnswers,
+    totalQuestions,
+    passed: Boolean(rec.passed ?? nested?.passed ?? scorePercentage >= 70),
+    durationSeconds: Number(
+      rec.durationSeconds ?? rec.duration_seconds ?? nested?.duration_seconds ?? 0
+    ),
+    assignmentId: rec.assignmentId
+      ? String(rec.assignmentId)
+      : rec.assignment_id
+        ? String(rec.assignment_id)
+        : null,
+    questions,
+    answers: answersRaw as SubmitExamResult['answers'],
+  };
+}
 
 export interface SubmitExamPayload {
   userId: string;
   config: ExamConfig;
   questions: ExamQuestion[];
-  answers: Record<string, number>; // questionId → selectedOptionIndex
+  answers: Record<string, number>;
   durationSeconds: number;
   attemptId?: string | null;
 }
 
-/** Guarda la sesión completa y todas las respuestas en Supabase. Retorna el sessionId. */
-export async function submitExam(payload: SubmitExamPayload): Promise<string | null> {
+/**
+ * Califica el examen en el servidor. Si el RPC aún no está aplicado, no inventa
+ * una nota local: solo cae al insert cliente cuando las preguntas todavía traen
+ * claves (banco local / staff).
+ */
+export async function submitExam(payload: SubmitExamPayload): Promise<SubmitExamResult | null> {
   const { userId, config, questions, answers, durationSeconds, attemptId } = payload;
 
-  // Calcular resultados
+  if (attemptId) {
+    const { data, error } = await sb.rpc('submit_exam_session', {
+      p_attempt_id: attemptId,
+      p_answers: answers,
+      p_duration_seconds: durationSeconds,
+    });
+    if (!error) {
+      const parsed = parseSubmitExamResult(data);
+      if (parsed) return parsed;
+    } else if (!rpcLooksUnavailable(error)) {
+      console.error('[examService] submit_exam_session failed:', error.message);
+      return null;
+    }
+  }
+
+  if (!questionsHaveAnswerKeys(questions)) {
+    console.error('[examService] No se puede calificar en el cliente: el banco no trae claves');
+    return null;
+  }
+
   let correctCount = 0;
   const answerRecords: Omit<ExamAnswerRecord, 'id' | 'session_id'>[] = [];
 
@@ -364,7 +484,6 @@ export async function submitExam(payload: SubmitExamPayload): Promise<string | n
     : 0;
 
   try {
-    // 1. Crear sesión
     const { data: sessionData, error: sessionError } = await sb
       .from('exam_sessions')
       .insert({
@@ -386,22 +505,36 @@ export async function submitExam(payload: SubmitExamPayload): Promise<string | n
       .single();
 
     if (sessionError) throw sessionError;
-    const sessionId = sessionData.id;
+    const sessionId = sessionData.id as string;
 
-    // 2. Guardar respuestas
     if (answerRecords.length > 0) {
       const withSession = answerRecords.map(a => ({ ...a, session_id: sessionId }));
       await sb.from('exam_answers').insert(withSession);
     }
 
-    // 3. Marcar intento como completado
     if (attemptId) {
       await finalizeExamAttempt(attemptId, 'COMPLETED');
     }
 
-    return sessionId;
+    return {
+      sessionId,
+      scorePercentage,
+      correctAnswers: correctCount,
+      totalQuestions: questions.length,
+      passed: scorePercentage >= 70,
+      durationSeconds,
+      questions,
+      answers: answerRecords.map(a => ({
+        question_id: a.question_id,
+        selected_option_index: a.selected_option_index,
+        is_correct: a.is_correct,
+        topic_name: a.topic_name,
+        module_id: a.module_id,
+        is_critical: a.is_critical,
+      })),
+    };
   } catch (err) {
-    console.error('[examService] submitExam failed:', err);
+    console.error('[examService] submitExam fallback failed:', err);
     return null;
   }
 }
@@ -415,8 +548,40 @@ export interface ExamResultsData {
 
 export async function loadExamResults(
   sessionId: string,
-  allQuestions: ExamQuestion[]
+  allQuestions: ExamQuestion[] = []
 ): Promise<ExamResultsData | null> {
+  try {
+    const { data: review, error: reviewError } = await sb.rpc('get_exam_session_review', {
+      p_session_id: sessionId,
+    });
+    if (!reviewError && review && typeof review === 'object') {
+      const rec = review as Record<string, unknown>;
+      const session = (rec.session ?? rec) as ExamSession;
+      const revealed = asExamQuestionList(rec.questions);
+      const questionsMap = new Map(revealed.map(q => [q.id, q]));
+      allQuestions.forEach(q => {
+        if (!questionsMap.has(q.id) && questionsHaveAnswerKeys([q])) {
+          questionsMap.set(q.id, q);
+        }
+      });
+      const rawAnswers = (Array.isArray(rec.answers) ? rec.answers : []) as ExamAnswerRecord[];
+      return {
+        session,
+        answers: rawAnswers.map(a => ({
+          ...a,
+          question: questionsMap.get(a.question_id) ?? ({
+            id: a.question_id,
+            stem: 'Pregunta no disponible',
+            options: [],
+            topic_name: a.topic_name ?? 'Desconocido',
+          } as unknown as ExamQuestion),
+        })),
+      };
+    }
+  } catch (err) {
+    console.warn('[examService] get_exam_session_review failed:', err);
+  }
+
   try {
     const [sessionRes, answersRes] = await Promise.all([
       sb.from('exam_sessions').select('*').eq('id', sessionId).single(),
@@ -427,14 +592,7 @@ export async function loadExamResults(
 
     const session = sessionRes.data as ExamSession;
     const rawAnswers = (answersRes.data ?? []) as ExamAnswerRecord[];
-
-    // Crear mapa de preguntas para lookup rápido
     const questionsMap = new Map(allQuestions.map(q => [q.id, q]));
-
-    // También buscar en fallback
-    EMG_QUESTIONS_FALLBACK.forEach(q => {
-      if (!questionsMap.has(q.id)) questionsMap.set(q.id, q);
-    });
 
     const answers = rawAnswers.map(a => ({
       ...a,
@@ -465,7 +623,7 @@ export async function loadGapAnalysis(userId: string): Promise<ExamGapAnalysis[]
   }
 }
 
-/** Lista los temas disponibles con sus conteos directamente de Supabase */
+/** Lista los temas disponibles con sus conteos (sin descargar el banco). */
 export async function loadAvailableTopics(): Promise<Array<{
   topic_name: string;
   module_id: string;
@@ -473,31 +631,24 @@ export async function loadAvailableTopics(): Promise<Array<{
   critical_count: number;
 }>> {
   try {
-    const { data, error } = await supabase
-      .from('exam_questions')
-      .select('topic_name, module_id, is_critical')
-      .eq('status', 'PUBLISHED');
-
-    if (error) throw error;
-
-    const topicMap = new Map<string, { module_id: string; count: number; critical_count: number }>();
-    (data ?? []).forEach((q: { topic_name: string; module_id: string; is_critical: boolean }) => {
-      const existing = topicMap.get(q.topic_name) ?? { module_id: q.module_id, count: 0, critical_count: 0 };
-      existing.count++;
-      if (q.is_critical) existing.critical_count++;
-      topicMap.set(q.topic_name, existing);
-    });
-
-    return Array.from(topicMap.entries())
-      .map(([topic_name, stats]) => ({ topic_name, ...stats }))
-      .sort((a, b) => b.count - a.count);
-  } catch {
-    // Fallback desde datos locales
-    return Object.entries(QUESTIONS_BY_TOPIC).map(([topic_name, qs]) => ({
-      topic_name,
-      module_id: qs[0].module_id,
-      count: qs.length,
-      critical_count: qs.filter(q => q.is_critical).length,
-    })).sort((a, b) => b.count - a.count);
+    const { data, error } = await sb.rpc('get_exam_topic_stats');
+    if (!error && Array.isArray(data) && data.length > 0) {
+      return (data as Array<{ topic_name: string; module_id: string; count: number; critical_count: number }>).map(row => ({
+        topic_name: row.topic_name,
+        module_id: row.module_id,
+        count: Number(row.count),
+        critical_count: Number(row.critical_count),
+      }));
+    }
+    if (error && !rpcLooksUnavailable(error)) throw error;
+  } catch (err) {
+    console.warn('[examService] get_exam_topic_stats failed:', err);
   }
+
+  return Object.entries(QUESTIONS_BY_TOPIC).map(([topic_name, qs]) => ({
+    topic_name,
+    module_id: qs[0].module_id,
+    count: qs.length,
+    critical_count: qs.filter(q => q.is_critical).length,
+  })).sort((a, b) => b.count - a.count);
 }
