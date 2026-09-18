@@ -1,5 +1,6 @@
 import type { Module, Topic } from '../types/content';
 import type { PublishedTopic, RevisionPayload } from '../types/database';
+import { getLessonExpansion } from '../content/lessonExpansions';
 
 export function publishedTopicToTopic(pt: PublishedTopic): Topic {
   const media = pt.media ?? {};
@@ -132,6 +133,31 @@ function appendChildToTree(topics: Topic[], parentId: string, child: Topic): Top
   });
 }
 
+function overlayExpansion(topic: Topic): Topic {
+  const expansion = getLessonExpansion(topic.id, topic.title);
+  if (!expansion) {
+    return {
+      ...topic,
+      children: topic.children?.map(overlayExpansion),
+    };
+  }
+  return {
+    ...topic,
+    content: [topic.content, expansion.content].filter(Boolean).join('\n\n'),
+    contentEn: [topic.contentEn, expansion.contentEn].filter(Boolean).join('\n\n') || topic.contentEn,
+    clinicalPearls: [...(topic.clinicalPearls ?? []), ...(expansion.clinicalPearls ?? [])],
+    clinicalPearlsEn: [...(topic.clinicalPearlsEn ?? []), ...(expansion.clinicalPearlsEn ?? [])],
+    keyPoints: [...(topic.keyPoints ?? []), ...(expansion.keyPoints ?? [])],
+    keyPointsEn: [...(topic.keyPointsEn ?? []), ...(expansion.keyPointsEn ?? [])],
+    imageUrls: [...(topic.imageUrls ?? []), ...(expansion.imageUrls ?? [])],
+    children: topic.children?.map(overlayExpansion),
+  };
+}
+
+export function applyLessonExpansions(mod: Module): Module {
+  return { ...mod, topics: mod.topics.map(overlayExpansion) };
+}
+
 export function mergeModuleTopics(mod: Module, publishedList: PublishedTopic[]): Module {
   let topics: Topic[] = structuredClone(mod.topics);
 
@@ -148,7 +174,7 @@ export function mergeModuleTopics(mod: Module, publishedList: PublishedTopic[]):
     }
   }
 
-  return { ...mod, topics };
+  return applyLessonExpansions({ ...mod, topics });
 }
 
 export function findTopicByPath(

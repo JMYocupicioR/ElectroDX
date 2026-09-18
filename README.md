@@ -38,7 +38,16 @@ npm run dev
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 | `npm run lint` | ESLint |
-| `npm run test` | Vitest |
+| `npm run test` | Vitest (una pasada) |
+| `npm run test:watch` | Vitest en modo vigilancia |
+| `npm run typecheck` | TypeScript de `src` (hay deuda previa; CI no bloquea) |
+| `npm run typecheck:ejercicios` | TypeScript del simulador `ejercicios` |
+| `npm run validate:secrets` | Bloquea secretos conocidos en el árbol |
+| `npm run validate:content` | Regenera TEMARIO con expansiones de lección |
+| `npm run validate:quizzes` | Valida semilla de quizzes (pendiente de revisión clínica) |
+| `npm run import:pending-quizzes` | Resuelve `module_id` y genera SQL de importación del banco pendiente |
+
+Ver también [docs/MANUAL_ACTIONS.md](docs/MANUAL_ACTIONS.md), [docs/QUIZ_VALIDATION_STATUS.md](docs/QUIZ_VALIDATION_STATUS.md) y [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
 
 ## Rutas principales
 
@@ -47,9 +56,10 @@ npm run dev
 | Ruta | Descripción |
 |------|-------------|
 | `/` | Landing y módulos |
-| `/modulo/:moduleId/*` | Contenido educativo |
-| `/ejercicios` | Modo ejercicios clínicos |
-| `/herramientas/plexo-braquial` | Calculadora de plexo |
+| `/modulo/:moduleId/*` | Contenido educativo (requiere inscripción) |
+| `/simuladores` | Hub de plexo, casos y examen |
+| `/examenes` | Simulador de examen |
+| `/verificar/:folio` | Verificación pública de constancia |
 | `/especialistas` | Perfiles públicos verificados |
 | `/comite-editorial` | Proceso editorial |
 
@@ -59,7 +69,7 @@ npm run dev
 |------|-------------|
 | `/auth/login` | Magic link (acceso médico) |
 | `/colaborador/perfil` | Perfil profesional + solicitud de inscripción |
-| `/mi-progreso` | Historial de evaluaciones (requiere inscripción aprobada) |
+| `/portal` | Portal del alumno (`?tab=`). `/dashboard`, `/estudiante` y `/mi-progreso` redirigen aquí |
 
 Las evaluaciones al final de cada tema hoja están protegidas por RLS: solo médicos con `enrollment_status = approved` (o colaboradores verificados).
 

@@ -33,13 +33,15 @@ export default function AccountPage() {
     isAdmin,
   });
 
+  const [claimError, setClaimError] = useState<string | null>(null);
+
   const handleClaim = async () => {
     const result = await claimBootstrapAdmin();
-    if (result.error) alert(result.error);
+    setClaimError(result.error);
   };
 
   return (
-    <div className="pt-24 pb-16 px-4 max-w-2xl mx-auto">
+    <div id="contenido-principal" className="pt-24 pb-16 px-4 max-w-2xl mx-auto">
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Mi cuenta</h1>
@@ -66,10 +68,15 @@ export default function AccountPage() {
               <button
                 type="button"
                 onClick={handleClaim}
-                className="mt-3 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium"
+                className="mt-3 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium min-h-[44px]"
               >
                 Activar administrador
               </button>
+              {claimError && (
+                <p className="mt-2 text-sm text-red-700" role="alert">
+                  {claimError}
+                </p>
+              )}
             </div>
           </div>
         </div>

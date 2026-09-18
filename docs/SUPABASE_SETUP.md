@@ -4,14 +4,31 @@ Plataforma de recursos de neurorehabilitación y cursos de electrodiagnóstico a
 
 ## Credenciales del Proyecto
 
-Configuradas en `.env`:
+Configuradas en `.env` (nunca commitear valores reales):
 
 ```env
-VITE_SUPABASE_URL=https://pubodzfmiqmawrfnmrce.supabase.co
-VITE_SUPABASE_ANON_KEY=sb_publishable_KRurFJ2qlMynInI4XGyAUA_wwu8s5AN
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SEP_CLIENT_ID=
+SEP_API_KEY=
+ALLOWED_ORIGINS=http://localhost:5173
+PUBLIC_SITE_URL=http://localhost:5173
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
 ```
 
-**Project Ref:** `pubodzfmiqmawrfnmrce`
+**No aplique migraciones remotas desde el agente.** Pruebe primero con `npx supabase start` y `npx supabase db reset` en local.
+
+Migración de integridad académica: `supabase/migrations/20260916000000_academic_integrity_and_student_tools.sql`
+Migración de validación clínica y herramientas: `supabase/migrations/20260917000000_quiz_clinical_validation_and_platform.sql`
+
+Secrets de Edge Functions (dashboard, no git):
+- `SEP_API_KEY`, `SEP_CLIENT_ID`, `ALLOWED_ORIGINS`, `PUBLIC_SITE_URL`
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`
+
+Si una clave SEP estuvo en el repositorio, **rótela**.
+
+Pruebas RLS: `supabase/tests/academic_integrity.sql` (requiere pgTAP en local).
 
 ---
 

@@ -9,6 +9,53 @@ export type RevisionAction = 'create' | 'update' | 'delete';
 export type EnrollmentStatus = 'none' | 'pending' | 'approved' | 'rejected';
 export type AccessTier = 'free' | 'premium';
 export type WorkshopStatus = 'draft' | 'scheduled' | 'live' | 'completed' | 'cancelled';
+export type CourseId = 'principiante' | 'intermedio' | 'avanzado' | 'referencia';
+export type CourseEnrollmentStatus = 'active' | 'revoked';
+
+export interface Course {
+  id: CourseId;
+  title: string;
+  description: string;
+  sort_order: number;
+  price_display: string | null;
+  is_active: boolean;
+  is_sellable: boolean;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface CourseModuleRow {
+  module_id: string;
+  course_id: CourseId;
+  sort_order: number;
+  is_visible: boolean;
+  updated_at?: string;
+  updated_by?: string | null;
+}
+
+export interface CourseEnrollment {
+  id: string;
+  user_id: string;
+  course_id: CourseId;
+  status: CourseEnrollmentStatus;
+  granted_by: string | null;
+  granted_at: string;
+  expires_at: string | null;
+  payment_method: string | null;
+  payment_reference: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SyllabusTopicOverride {
+  module_id: string;
+  topic_id: string;
+  sort_order: number;
+  is_visible: boolean;
+  updated_at?: string;
+  updated_by?: string | null;
+}
 
 export interface Profile {
   id: string;
@@ -284,6 +331,160 @@ export interface Database {
         Insert: never;
         Update: never;
       };
+      student_lesson_notes: {
+        Row: {
+          id: string;
+          user_id: string;
+          module_id: string;
+          topic_id: string;
+          body: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          module_id: string;
+          topic_id: string;
+          body?: string;
+          updated_at?: string;
+        };
+        Update: { body?: string; updated_at?: string };
+      };
+      student_bookmarks: {
+        Row: {
+          id: string;
+          user_id: string;
+          module_id: string;
+          topic_id: string;
+          url: string;
+          title: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          module_id: string;
+          topic_id: string;
+          url: string;
+          title?: string | null;
+        };
+        Update: { title?: string | null };
+      };
+      student_flashcards: {
+        Row: {
+          id: string;
+          user_id: string;
+          topic_id: string;
+          front: string;
+          back: string;
+          due_at: string;
+          interval_days: number;
+          ease: number;
+          repetitions?: number;
+          source?: string;
+        };
+        Insert: {
+          user_id: string;
+          topic_id: string;
+          front: string;
+          back: string;
+          due_at?: string;
+          interval_days?: number;
+          ease?: number;
+          repetitions?: number;
+          source?: string;
+        };
+        Update: { due_at?: string; interval_days?: number; ease?: number; repetitions?: number };
+      };
+      student_qa_threads: {
+        Row: {
+          id: string;
+          student_id: string;
+          module_id: string | null;
+          topic_id: string | null;
+          title: string;
+          body: string;
+          status: 'open' | 'answered' | 'closed';
+          visibility?: 'private' | 'cohort';
+          created_at: string;
+        };
+        Insert: {
+          student_id: string;
+          title: string;
+          body: string;
+          module_id?: string | null;
+          topic_id?: string | null;
+          visibility?: 'private' | 'cohort';
+        };
+        Update: { status?: 'open' | 'answered' | 'closed'; visibility?: 'private' | 'cohort' };
+      };
+      student_qa_replies: {
+        Row: { id: string; thread_id: string; author_id: string; body: string; created_at: string };
+        Insert: { thread_id: string; author_id: string; body: string };
+        Update: { body?: string };
+      };
+      academic_certificates: {
+        Row: {
+          id: string;
+          user_id: string;
+          folio: string;
+          issued_at: string;
+          overall_progress_pct: number;
+          average_score: number;
+          verification_code: string;
+          revoked_at: string | null;
+          course_id: CourseId | null;
+        };
+        Insert: never;
+        Update: never;
+      };
+      courses: {
+        Row: Course;
+        Insert: Partial<Course> & { id: CourseId; title: string };
+        Update: Partial<Course>;
+      };
+      course_modules: {
+        Row: CourseModuleRow;
+        Insert: Partial<CourseModuleRow> & { module_id: string; course_id: CourseId };
+        Update: Partial<CourseModuleRow>;
+      };
+      course_enrollments: {
+        Row: CourseEnrollment;
+        Insert: Partial<CourseEnrollment> & { user_id: string; course_id: CourseId };
+        Update: Partial<CourseEnrollment>;
+      };
+      syllabus_topic_overrides: {
+        Row: SyllabusTopicOverride;
+        Insert: Partial<SyllabusTopicOverride> & { module_id: string; topic_id: string };
+        Update: Partial<SyllabusTopicOverride>;
+      };
+      push_subscriptions: {
+        Row: { id: string; user_id: string; endpoint: string; p256dh: string; auth: string };
+        Insert: { user_id: string; endpoint: string; p256dh?: string; auth?: string };
+        Update: never;
+      };
+      emg_report_submissions: {
+        Row: {
+          id: string;
+          student_id: string;
+          assignment_id: string | null;
+          title: string;
+          file_url: string | null;
+          interpretation: Record<string, unknown>;
+          feedback: string | null;
+          status: string;
+          rubric?: Record<string, unknown>;
+          rubric_score?: number | null;
+          created_at: string;
+        };
+        Insert: {
+          student_id: string;
+          title: string;
+          file_url?: string | null;
+          interpretation?: Record<string, unknown>;
+          assignment_id?: string | null;
+          status?: string;
+        };
+        Update: { feedback?: string | null; status?: string };
+      };
     };
     Functions: {
       is_admin: { Args: { check_user_id?: string }; Returns: boolean };
@@ -331,10 +532,24 @@ export interface Database {
           bootstrap_available: boolean;
           has_premium: boolean;
           subscription: Subscription | null;
+          course_ids: CourseId[];
         } | null;
       };
       has_premium_access: { Args: { check_user_id?: string }; Returns: boolean };
+      has_course_access: { Args: { p_course_id: string; check_user_id?: string }; Returns: boolean };
       can_access_module: { Args: { p_module_id: string; check_user_id?: string }; Returns: boolean };
+      grant_course_access: {
+        Args: {
+          target_user_id: string;
+          p_course_id: string;
+          p_method?: string;
+          p_reference?: string | null;
+          p_notes?: string | null;
+          p_expires_at?: string | null;
+        };
+        Returns: void;
+      };
+      revoke_course_access: { Args: { target_user_id: string; p_course_id: string }; Returns: void };
       grant_premium_access: {
         Args: {
           target_user_id: string;
@@ -346,6 +561,57 @@ export interface Database {
         Returns: void;
       };
       revoke_premium_access: { Args: { target_user_id: string }; Returns: void };
+      get_quiz_for_attempt: { Args: { p_topic_id: string }; Returns: unknown };
+      admin_list_quizzes_for_validation: {
+        Args: { p_status?: string | null; p_module_id?: string | null };
+        Returns: unknown;
+      };
+      admin_set_quiz_validation_status: {
+        Args: { p_quiz_ids: string[]; p_status: string; p_notes?: string | null };
+        Returns: unknown;
+      };
+      admin_import_pending_quizzes: { Args: { p_payload: Record<string, unknown> }; Returns: unknown };
+      admin_question_stats: { Args: { p_module_id?: string | null }; Returns: unknown };
+      grade_emg_report: {
+        Args: { p_report_id: string; p_rubric: Record<string, unknown>; p_score: number; p_feedback?: string | null };
+        Returns: unknown;
+      };
+      update_my_profile: { Args: { p_updates: Record<string, unknown> }; Returns: Profile };
+      submit_my_assignment: {
+        Args: { p_assignment_id: string; p_notes?: string | null; p_submission_url?: string | null };
+        Returns: unknown;
+      };
+      complete_my_assigned_exam: {
+        Args: {
+          p_assignment_id: string;
+          p_exam_session_id?: string | null;
+          p_score?: number | null;
+          p_duration_seconds?: number | null;
+        };
+        Returns: unknown;
+      };
+      issue_my_certificate: { Args: { p_course_id?: string | null }; Returns: unknown };
+      verify_certificate: { Args: { p_folio: string }; Returns: unknown };
+    };
+    Views: {
+      public_specialist_profiles: {
+        Row: Pick<
+          Profile,
+          | 'id'
+          | 'display_name'
+          | 'credentials'
+          | 'institution'
+          | 'academic_institution'
+          | 'specialty'
+          | 'residency_year'
+          | 'avatar_url'
+          | 'bio'
+          | 'is_public'
+          | 'show_in_editorial_committee'
+          | 'cedula_verified'
+          | 'created_at'
+        >;
+      };
     };
   };
 }

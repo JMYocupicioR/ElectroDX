@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Lock, LogIn, Clock, XCircle, ClipboardList } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
-import { isEnrollmentProfileComplete } from '../../utils/adminUtils';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { QuizPlayer } from './QuizPlayer';
 
@@ -21,13 +20,26 @@ export function QuizGate({
   const location = useLocation();
   const {
     user,
-    profile,
     isEnrolledPhysician,
-    enrollmentStatus,
     isLoading,
   } = useAuth();
 
   if (!quizFlag || quizFlag.question_count === 0) return null;
+
+  const validationStatus = quizFlag.clinical_validation_status ?? 'pending_review';
+  if (validationStatus !== 'approved') {
+    return (
+      <LockedCard
+        icon={<ClipboardList className="w-6 h-6 text-indigo-600" />}
+        title="En validación académica"
+        description={
+          validationStatus === 'rejected'
+            ? 'Esta evaluación fue observada por el responsable académico y no está disponible para acreditación.'
+            : 'Los reactivos de este tema están en revisión clínica. Podrá acreditarla cuando el responsable académico la apruebe.'
+        }
+      />
+    );
+  }
 
   const loginUrl = `/auth/login?next=${encodeURIComponent(location.pathname)}`;
 

@@ -40,7 +40,6 @@ export default function SpecialistsPage() {
           p.institution?.toLowerCase().includes(q) ||
           p.specialty?.toLowerCase().includes(q) ||
           p.academic_institution?.toLowerCase().includes(q) ||
-          p.cedula_profesional?.toLowerCase().includes(q) ||
           p.credentials?.toLowerCase().includes(q)
         );
       });

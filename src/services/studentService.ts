@@ -1,5 +1,5 @@
 import { allModules } from '../content/modules';
-import { supabase } from '../lib/supabase';
+import { supabase, sb } from '../lib/supabase';
 import type { Topic } from '../types/content';
 import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
@@ -97,23 +97,35 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
 
   const merged = new Set<string>();
 
-  // 1. Read from localStorage first
-  const localSet = getCompletedTopics(userId);
-  localSet.forEach((id) => merged.add(id));
-
-  // 2. Read from Supabase student_completed_topics table
+  // 1. Fuente autoritativa: Supabase
   let dbTopics: string[] = [];
+  let cloudReached = false;
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('student_completed_topics')
       .select('topic_id')
       .eq('user_id', userId);
 
     if (!error && data && Array.isArray(data)) {
-      dbTopics = data.map((r: any) => r.topic_id);
+      cloudReached = true;
+      dbTopics = data.map((r: { topic_id: string }) => r.topic_id);
       dbTopics.forEach((id) => merged.add(id));
     }
-  } catch {}
+  } catch {
+    cloudReached = false;
+  }
+
+  // 2. Caché local identificada (no acredita por sí sola si el servidor respondió)
+  const localSet = getCompletedTopics(userId);
+  if (!cloudReached) {
+    localSet.forEach((id) => merged.add(id));
+  } else {
+    localSet.forEach((id) => {
+      if (merged.has(id)) return;
+      // Conservar en cola local solo para reconciliar lecciones sin evaluación
+      merged.add(id);
+    });
+  }
 
   // 3. Read from profiles.completed_topics as complementary/fallback source
   try {
@@ -147,8 +159,8 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
     }
   }
 
-  // 5. If there are topics in merged that are missing in DB, auto-sync them up to Supabase!
-  const missingInDb = Array.from(merged).filter((id) => !dbTopics.includes(id));
+  // 5. Reconciliar caché local hacia student_completed_topics (no profiles)
+  const missingInDb = cloudReached ? Array.from(merged).filter((id) => !dbTopics.includes(id)) : [];
   if (missingInDb.length > 0) {
     try {
       const rows = missingInDb.map((tid) => ({
@@ -156,18 +168,10 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
         topic_id: tid,
         completed_at: new Date().toISOString(),
       }));
-      await supabase.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
-    } catch {}
-
-    try {
-      await supabase
-        .from('profiles')
-        .update({
-          completed_topics: Array.from(merged),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-    } catch {}
+      await sb.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
+    } catch (e) {
+      console.warn('[StudentService] No se pudieron reconciliar temas locales:', e);
+    }
   }
 
   // 6. Cache merged truth back into localStorage
@@ -190,22 +194,9 @@ async function syncTopicCompletionToSupabase(
   isCompleted: boolean,
   fullCurrentSet: Set<string>
 ) {
+  void fullCurrentSet;
   if (!userId || userId === 'anonymous_student') return;
 
-  // 1. Update profiles.completed_topics
-  try {
-    await supabase
-      .from('profiles')
-      .update({
-        completed_topics: Array.from(fullCurrentSet),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', userId);
-  } catch (e) {
-    console.warn('[StudentService] Error updating profiles.completed_topics:', e);
-  }
-
-  // 2. Insert/Delete in student_completed_topics
   try {
     if (isCompleted) {
       const rows = topicIds.map((tid) => ({
@@ -213,7 +204,7 @@ async function syncTopicCompletionToSupabase(
         topic_id: tid,
         completed_at: new Date().toISOString(),
       }));
-      await supabase.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
+      await sb.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
     } else {
       for (const tid of topicIds) {
         await supabase
@@ -227,9 +218,8 @@ async function syncTopicCompletionToSupabase(
     console.warn('[StudentService] Error syncing student_completed_topics:', e);
   }
 
-  // 3. Log to student_activity_logs
   try {
-    await supabase.from('student_activity_logs').insert({
+    await sb.from('student_activity_logs').insert({
       user_id: userId,
       action: isCompleted ? 'topic_completed' : 'topic_uncompleted',
       details: { topicIds, count: topicIds.length },
@@ -710,4 +700,18 @@ export function checkCertificationEligibility(
     isEligible,
     certificateFolio,
   };
+}
+
+export function checkCourseCertificationEligibility(
+  profile: Profile | null,
+  completedTopics: Set<string>,
+  moduleProgressList: ModuleQuizProgress[],
+  courseModuleIds: string[]
+): CertificationRequirements {
+  const modules = allModules.filter((m) => courseModuleIds.includes(m.id));
+  const topicIds = modules.flatMap((m) => getAllTopicIds(m.topics));
+  const completedCount = topicIds.filter((id) => completedTopics.has(id)).length;
+  const overallProgressPct = topicIds.length > 0 ? Math.round((completedCount / topicIds.length) * 100) : 0;
+  const filteredProgress = moduleProgressList.filter((m) => courseModuleIds.includes(m.moduleId));
+  return checkCertificationEligibility(profile, overallProgressPct, filteredProgress);
 }

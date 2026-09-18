@@ -8,7 +8,7 @@ export interface QuizOption {
   id: string;
   text: string;
   textEn?: string;
-  isCorrect: boolean;
+  isCorrect?: boolean;
   feedback?: string;
 }
 
@@ -26,6 +26,8 @@ export interface QuizQuestionDraft {
   difficulty?: QuizDifficulty;
 }
 
+export type ClinicalValidationStatus = 'pending_review' | 'approved' | 'rejected';
+
 export interface PublishedQuiz {
   id: string;
   topic_id: string;
@@ -41,6 +43,10 @@ export interface PublishedQuiz {
   published_by: string | null;
   last_edited_by: string | null;
   source_revision_id: string | null;
+  clinical_validation_status?: ClinicalValidationStatus;
+  validated_by?: string | null;
+  validated_at?: string | null;
+  validation_notes?: string | null;
 }
 
 export interface QuizQuestion {
@@ -66,6 +72,14 @@ export interface QuizTopicFlag {
   max_attempts: number | null;
   version: number;
   question_count: number;
+  clinical_validation_status?: ClinicalValidationStatus;
+  user_has_passed?: boolean;
+  user_attempt_count?: number;
+}
+
+export interface QuizValidationItem extends PublishedQuiz {
+  attempt_count: number;
+  questions: QuizQuestion[];
 }
 
 export interface QuizWithQuestions extends PublishedQuiz {
@@ -76,6 +90,7 @@ export interface QuizAnswerRecord {
   questionId: string;
   selectedIds: string[];
   correct: boolean;
+  correctIds?: string[];
 }
 
 export interface QuizAttempt {
@@ -90,16 +105,17 @@ export interface QuizAttempt {
   answers: QuizAnswerRecord[];
   duration_seconds: number | null;
   completed_at: string;
+  revealed_questions?: QuizQuestion[];
 }
 
 export interface QuizAttemptInput {
-  quizId: string;
-  quizVersion: number;
+  quizId?: string;
+  quizVersion?: number;
   topicId: string;
-  moduleId: string;
-  score: number;
-  passed: boolean;
-  answers: QuizAnswerRecord[];
+  moduleId?: string;
+  score?: number;
+  passed?: boolean;
+  answers: { questionId: string; selectedIds: string[] }[];
   durationSeconds: number;
 }
 

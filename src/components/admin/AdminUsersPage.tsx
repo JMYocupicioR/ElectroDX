@@ -46,9 +46,11 @@ import {
   adminDeleteUser,
 } from '../../services/editorialService';
 import type { AdminProfileRow } from '../../types/admin';
-import type { AppRole } from '../../types/database';
+import type { AppRole, CourseEnrollment, CourseId } from '../../types/database';
 import { isEnrollmentProfileComplete, isProfileComplete } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
+import { getCourseEnrollmentsForUsers, grantCourseAccess, revokeCourseAccess } from '../../services/courseService';
+import { SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
 
 type Tab = 'enrollment_pending' | 'enrolled' | 'comite' | 'all' | 'premium';
 
@@ -70,6 +72,7 @@ export default function AdminUsersPage() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [users, setUsers] = useState<AdminProfileRow[]>([]);
   const [allUsersCache, setAllUsersCache] = useState<AdminProfileRow[]>([]);
+  const [courseEnrollments, setCourseEnrollments] = useState<CourseEnrollment[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +94,12 @@ export default function AdminUsersPage() {
       ]);
       setUsers(currentTabData);
       setAllUsersCache(allData);
+      const ids = Array.from(new Set([...currentTabData, ...allData].map((u) => u.id)));
+      try {
+        setCourseEnrollments(await getCourseEnrollmentsForUsers(ids));
+      } catch {
+        setCourseEnrollments([]);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al cargar usuarios');
     } finally {
@@ -798,6 +807,55 @@ export default function AdminUsersPage() {
                             <span className="text-[10px] text-amber-600 underline">Revocar</span>
                           </button>
                         )}
+
+                        <div className="pt-1 space-y-1.5">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cursos por nivel</p>
+                          {SELLABLE_COURSE_IDS.map((courseId) => {
+                            const enrollment = courseEnrollments.find(
+                              (row) => row.user_id === u.id && row.course_id === courseId && row.status === 'active'
+                            );
+                            const label =
+                              courseId === 'principiante'
+                                ? 'Principiante'
+                                : courseId === 'intermedio'
+                                  ? 'Intermedio'
+                                  : 'Avanzado';
+                            return enrollment ? (
+                              <button
+                                key={courseId}
+                                type="button"
+                                disabled={loadingId === u.id}
+                                onClick={() => {
+                                  if (!confirm(`¿Revocar ${label} para ${u.display_name}?`)) return;
+                                  run(u.id, () => revokeCourseAccess(u.id, courseId));
+                                }}
+                                className="w-full inline-flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold"
+                              >
+                                <span>{label} activo</span>
+                                <span className="text-[10px] underline">Revocar</span>
+                              </button>
+                            ) : (
+                              <button
+                                key={courseId}
+                                type="button"
+                                disabled={loadingId === u.id}
+                                onClick={() => {
+                                  const ref = window.prompt(`Referencia de pago para ${label} (opcional):`, '');
+                                  if (ref === null) return;
+                                  run(u.id, () =>
+                                    grantCourseAccess(u.id, courseId as CourseId, {
+                                      method: 'manual',
+                                      reference: ref || undefined,
+                                    })
+                                  );
+                                }}
+                                className="w-full inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium"
+                              >
+                                Otorgar {label}
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 

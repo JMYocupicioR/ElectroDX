@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Play,
   Calendar,
-  Bell,
   BellRing,
   FileCheck,
   ChevronRight,
@@ -26,11 +25,8 @@ import {
   Video,
   FileText,
   Brain,
-  Zap,
   Flame,
-  Target,
   Send,
-  Check,
   Lock,
   AlertTriangle,
   Edit3,
@@ -81,20 +77,29 @@ import {
   getStudentActivityAndStreak,
   getActiveExamLock,
   startAssignedExam,
+  assignedExamLocationState,
+  buildAssignedExamConfig,
   requestExamRetake,
+  getStudentLearningPlans,
 } from '../../services/studentPlanService';
+import { StudentStudyHub } from './StudentStudyHub';
+import { StudentCertificatePanel } from './StudentCertificatePanel';
+import { StudentPortalTabBar, type StudentPortalTab } from './StudentPortalTabBar';
+import { savePushSubscription } from '../../services/studentToolsService';
 import {
   getClinicalCaseExerciseLocation,
   getClinicalCaseLaunchState,
   resolveClinicalAssignmentMode,
 } from '../../services/emgExerciseService';
-import type { StudentAssignment, StudentStreakInfo, ActiveExamLock } from '../../types/studentPlan';
+import type { StudentAssignment, StudentStreakInfo, ActiveExamLock, StudentLearningPlan } from '../../types/studentPlan';
 import { allModules } from '../../content/modules';
 import { BRAND } from '../../config/brand';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { LiveWorkshop } from '../../types/database';
 import StudentKardexModal from '../admin/StudentKardexModal';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { moduleIdsForCourse, recommendedNextCourse, SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
 
 function formatRemainingExamTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -105,9 +110,11 @@ function formatRemainingExamTime(seconds: number) {
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, profile, hasPremiumAccess, isAdmin, isEditor } = useAuth();
+  const { user, profile, hasPremiumAccess, isAdmin, isEditor, hasCourseAccess, courseIds } = useAuth();
   const isPremiumUser = hasPremiumAccess || isAdmin || isEditor;
   const { quizGate } = useQuizTopicFlags();
+  const { grouped, assignments: courseAssignments } = useSyllabusCatalog();
+  const nextSuggested = recommendedNextCourse(courseIds);
 
   const openAssignedCase = (asg: StudentAssignment) => {
     navigate(getClinicalCaseExerciseLocation(asg.id), {
@@ -115,7 +122,10 @@ export default function StudentDashboard() {
     });
   };
 
-  const [activeTab, setActiveTab] = useState<'summary' | 'modules' | 'quizzes' | 'assignments' | 'notifications' | 'certificate'>('summary');
+  const [activeTab, setActiveTab] = useState<StudentPortalTab>('summary');
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [planCount, setPlanCount] = useState(0);
+  const [learningPlans, setLearningPlans] = useState<StudentLearningPlan[]>([]);
   const [showKardexModal, setShowKardexModal] = useState(false);
   const [showPendingTasksModal, setShowPendingTasksModal] = useState(false);
   const [dismissedTopBanner, setDismissedTopBanner] = useState(false);
@@ -133,11 +143,16 @@ export default function StudentDashboard() {
   const [savingSubmission, setSavingSubmission] = useState(false);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
 
+  const selectTab = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    setSearchParams({ tab }, { replace: true });
+  };
+
   // Sync tab with URL search param ?tab=...
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['summary', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate'].includes(tabParam)) {
-      setActiveTab(tabParam as any);
+    if (tabParam && ['summary', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
+      setActiveTab(tabParam as typeof activeTab);
     }
   }, [searchParams]);
 
@@ -199,13 +214,16 @@ export default function StudentDashboard() {
       getStudentAssignments(user.id),
       getStudentActivityAndStreak(user.id),
       fetchStudentCompletedTopics(user.id),
+      getStudentLearningPlans(user.id).catch(() => []),
     ])
-      .then(([att, modProg, ws, asgs, stk, syncedTopics]) => {
+      .then(([att, modProg, ws, asgs, stk, syncedTopics, plans]) => {
         setAttempts(att);
         setModuleProgress(modProg);
         setWorkshops(ws);
         setAssignments(asgs);
         setStreak(stk);
+        setPlanCount(Array.isArray(plans) ? plans.length : 0);
+        setLearningPlans(Array.isArray(plans) ? plans : []);
         if (syncedTopics) {
           setCompletedTopicsSet(syncedTopics);
         }
@@ -230,7 +248,10 @@ export default function StudentDashboard() {
         const last = getLastVisitedTopic(user.id);
         setLastVisited(last);
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setActionError('No se pudieron cargar tus datos académicos. Revisa tu conexión e inténtalo de nuevo.');
+      })
       .finally(() => setLoading(false));
   }, [user, profile, refreshTrigger]);
 
@@ -311,7 +332,7 @@ export default function StudentDashboard() {
       setSubmitNotes('');
       setRefreshTrigger((prev) => prev + 1);
     } catch {
-      alert('Error al enviar la tarea');
+      setActionError('Error al enviar la tarea. Inténtalo de nuevo.');
     } finally {
       setSavingSubmission(false);
     }
@@ -327,10 +348,10 @@ export default function StudentDashboard() {
       setAssignments(updated);
       setRetakeModalAssignment(null);
       setRetakeReason('');
-      alert('Tu solicitud de reintento ha sido enviada al profesor. Recibirás respuesta en cuanto el docente revise tu justificación.');
+      setActionError('Tu solicitud de reintento ha sido enviada al profesor.');
     } catch (err: any) {
       console.error('Error al solicitar reintento:', err);
-      alert('Hubo un error al enviar la solicitud: ' + (err?.message || 'Intenta de nuevo'));
+      setActionError('Hubo un error al enviar la solicitud: ' + (err?.message || 'Intenta de nuevo'));
     } finally {
       setSendingRetake(false);
     }
@@ -340,39 +361,31 @@ export default function StudentDashboard() {
     if (!selectedExamForModal || !user) return;
     setStartingExam(true);
     try {
-      const timeLimitMinutes = selectedExamForModal.target_exam_config?.timeLimitMinutes || 20;
-      const lock = await startAssignedExam(selectedExamForModal.id, user.id, timeLimitMinutes);
-      setActiveExamLock(lock);
-      const targetConfig = selectedExamForModal.target_exam_config || {
-        mode: 'FULL_SIMULATION',
-        feedbackMode: 'end',
-        timeLimitMinutes,
-      };
       const examAssignment = selectedExamForModal;
+      const timeLimitMinutes = examAssignment.target_exam_config?.timeLimitMinutes || 20;
+      const examConfig = buildAssignedExamConfig(examAssignment);
+      const lock = await startAssignedExam(examAssignment.id, user.id, timeLimitMinutes, {
+        assignmentTitle: examAssignment.title,
+        selectedQuestionIds: examAssignment.target_exam_config?.selectedQuestionIds,
+        config: examConfig,
+        moduleId: examConfig.moduleId,
+        topicTitle: examAssignment.target_exam_config?.subtopicTitle,
+        subtopicTitle: examAssignment.target_subtopic_title || examAssignment.target_exam_config?.subtopicTitle,
+      });
+      setActiveExamLock(lock);
       setSelectedExamForModal(null);
       setAcceptedExamRules(false);
-      navigate('/examenes/sesion', {
-        state: {
-          assignmentId: examAssignment.id,
-          config: {
-            ...targetConfig,
-            timeLimitMinutes,
-            strictLock: true,
-            expiresAt: lock.expiresAt,
-            selectedQuestionIds: targetConfig.selectedQuestionIds,
-          },
-          expiresAt: lock.expiresAt,
-          strictLock: true,
-          selectedQuestionIds: targetConfig.selectedQuestionIds,
-          assignmentTitle: examAssignment.title,
-        },
-      });
+      navigate('/examenes/sesion', { state: assignedExamLocationState(examAssignment, lock) });
     } catch (err) {
       console.error('Error starting strict exam:', err);
-      alert('No se pudo iniciar el examen. Por favor intenta de nuevo.');
+      setActionError('No se pudo iniciar el examen. Por favor intenta de nuevo.');
     } finally {
       setStartingExam(false);
     }
+  };
+
+  const resumeAssignedExam = (assignment: StudentAssignment, lock?: ActiveExamLock | null) => {
+    navigate('/examenes/sesion', { state: assignedExamLocationState(assignment, lock ?? activeExamLock) });
   };
 
   useEffect(() => {
@@ -474,7 +487,12 @@ export default function StudentDashboard() {
   const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico Residente';
 
   return (
-    <div className="min-h-screen pt-20 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+    <div id="contenido-principal" className="min-h-screen pt-20 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+      {actionError && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-50 text-amber-900 text-sm" role="alert">
+          {actionError}
+        </div>
+      )}
       {/* ─── Hero Header ─── */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-950 text-white p-6 sm:p-8 md:p-10 shadow-2xl border border-indigo-500/20 mb-8">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-72 h-72 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
@@ -578,7 +596,7 @@ export default function StudentDashboard() {
                 <p className="text-xs text-slate-300 mb-3">Puedes repasar cualquier módulo cuando lo desees</p>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('modules')}
+                  onClick={() => selectTab('modules')}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 transition-all"
                 >
                   Repasar módulos
@@ -618,10 +636,36 @@ export default function StudentDashboard() {
           <button
             type="button"
             onClick={() => {
+              const asg = assignments.find((a) => a.id === activeExamLock.assignmentId);
+              if (asg) {
+                resumeAssignedExam(asg, activeExamLock);
+                return;
+              }
               navigate('/examenes/sesion', {
                 state: {
                   assignmentId: activeExamLock.assignmentId,
-                  config: activeExamLock.config,
+                  config: buildAssignedExamConfig(
+                    {
+                      id: activeExamLock.assignmentId,
+                      student_id: user?.id || '',
+                      title: activeExamLock.assignmentTitle,
+                      type: 'exam',
+                      description: '',
+                      due_date: activeExamLock.expiresAt,
+                      status: 'pending',
+                      priority: 'normal',
+                      created_at: activeExamLock.startedAt,
+                      updated_at: activeExamLock.startedAt,
+                      target_exam_config: {
+                        ...activeExamLock.config,
+                        selectedQuestionIds: activeExamLock.selectedQuestionIds,
+                        timeLimitMinutes: activeExamLock.timeLimitMinutes,
+                        moduleId: activeExamLock.moduleId,
+                      },
+                      target_module_id: activeExamLock.moduleId,
+                    },
+                    activeExamLock
+                  ),
                   expiresAt: activeExamLock.expiresAt,
                   strictLock: true,
                   selectedQuestionIds: activeExamLock.selectedQuestionIds,
@@ -750,7 +794,7 @@ export default function StudentDashboard() {
           </p>
           <div className="flex items-center gap-3 pt-1">
             <button
-              onClick={() => setActiveTab('certificate')}
+              onClick={() => selectTab('certificate')}
               className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
             >
               Requisitos y Diploma <ChevronRight className="w-3.5 h-3.5" />
@@ -816,7 +860,7 @@ export default function StudentDashboard() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab('assignments')}
+                onClick={() => selectTab('assignments')}
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white transition shadow-sm cursor-pointer flex items-center gap-1.5"
               >
                 <span>Ir a Tareas Asignadas</span>
@@ -835,91 +879,19 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* ─── Tabs Navigation ─── */}
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-2 mb-8">
-        <button
-          onClick={() => setActiveTab('summary')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'summary'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Activity className="w-4 h-4" />
-          Resumen General
-        </button>
+      <StudentPortalTabBar
+        activeTab={activeTab}
+        onSelect={selectTab}
+        counts={{
+          modules: allModules.length,
+          quizzes: quizzesList.length,
+          assignments: pendingAssignmentsCount,
+          notifications: unreadCount,
+          study: planCount,
+        }}
+      />
 
-        <button
-          onClick={() => setActiveTab('modules')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'modules'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <BookOpen className="w-4 h-4" />
-          Mis Clases y Módulos ({allModules.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('quizzes')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'quizzes'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          Quizzes del Curso ({quizzesList.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('assignments')}
-          className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'assignments'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Calendar className="w-4 h-4" />
-          Tareas Asignadas
-          {pendingAssignmentsCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-500 text-white">
-              {pendingAssignmentsCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('notifications')}
-          className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'notifications'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Bell className="w-4 h-4" />
-          Notificaciones
-          {unreadCount > 0 && (
-            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-red-500 text-white">
-              {unreadCount}
-            </span>
-          )}
-        </button>
-
-        <button
-          onClick={() => setActiveTab('certificate')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
-            activeTab === 'certificate'
-              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Award className="w-4 h-4" />
-          Constancia COMEFYR
-        </button>
-      </div>
-
+      <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
       {/* ─── TAB 1: Resumen General ─── */}
       {activeTab === 'summary' && (
         <div className="space-y-8">
@@ -960,7 +932,7 @@ export default function StudentDashboard() {
                       </button>
                     )}
                     <button
-                      onClick={() => setActiveTab(pendingAssignmentsCount > 0 ? 'assignments' : 'quizzes')}
+                      onClick={() => selectTab(pendingAssignmentsCount > 0 ? 'assignments' : 'quizzes')}
                       className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
                     >
                       Ver todas
@@ -989,7 +961,7 @@ export default function StudentDashboard() {
                             <Calendar className="w-3.5 h-3.5" /> Asignadas por tus Profesores ({pendingAssignmentsCount})
                           </span>
                           <button
-                            onClick={() => setActiveTab('assignments')}
+                            onClick={() => selectTab('assignments')}
                             className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                           >
                             Ir a Tareas Asignadas &rarr;
@@ -1087,7 +1059,7 @@ export default function StudentDashboard() {
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          setActiveTab('assignments');
+                                          selectTab('assignments');
                                           setSubmittingAsg(asg);
                                         }}
                                         className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition cursor-pointer"
@@ -1167,7 +1139,7 @@ export default function StudentDashboard() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setActiveTab('modules')}
+                      onClick={() => selectTab('modules')}
                       className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
                     >
                       Ver módulos
@@ -1221,7 +1193,7 @@ export default function StudentDashboard() {
                     </div>
                   </div>
                   <button
-                    onClick={() => setActiveTab('modules')}
+                    onClick={() => selectTab('modules')}
                     className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
                   >
                     Ver los 13 módulos
@@ -1433,9 +1405,7 @@ export default function StudentDashboard() {
                 Plan de Estudios: Currículo ElectoDX Diplomado
               </h2>
               <p className="text-sm text-slate-500">
-                {BRAND.enableAccreditation
-                  ? '13 módulos formativos avalados por el Colegio Mexicano de Medicina de Rehabilitación'
-                  : '13 módulos formativos de posgrado en neurofisiología clínica y electrodiagnóstico'}
+                Tres cursos independientes: Principiante, Intermedio y Avanzado. La referencia rápida se desbloquea con cualquiera.
               </p>
             </div>
             <div className="relative w-full sm:w-72">
@@ -1448,6 +1418,44 @@ export default function StudentDashboard() {
                 className="w-full pl-9 pr-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
+          </div>
+
+          {nextSuggested && (
+            <Link
+              to="/cursos"
+              className="flex items-center justify-between gap-3 p-4 rounded-2xl border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/30 text-sm"
+            >
+              <span>
+                Siguiente curso sugerido:{' '}
+                <strong>{grouped.find((g) => g.course.id === nextSuggested)?.course.title}</strong>
+              </span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
+
+          <div className="grid sm:grid-cols-3 gap-3">
+            {SELLABLE_COURSE_IDS.map((courseId) => {
+              const ids = moduleIdsForCourse(courseAssignments, courseId);
+              const stats = (metrics?.moduleStats ?? []).filter((m) => ids.includes(m.moduleId));
+              const pct =
+                stats.length > 0
+                  ? Math.round(stats.reduce((acc, m) => acc + m.progressPct, 0) / stats.length)
+                  : 0;
+              const unlocked = hasCourseAccess(courseId);
+              const title = grouped.find((g) => g.course.id === courseId)?.course.title ?? courseId;
+              return (
+                <div key={courseId} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+                  <p className="text-sm font-bold flex items-center gap-2">
+                    {title}
+                    {!unlocked && <Lock className="w-3.5 h-3.5 text-amber-500" />}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">{pct}% de avance</p>
+                  <div className="mt-2 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <div className="h-full bg-blue-600" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -2000,18 +2008,7 @@ export default function StudentDashboard() {
                         activeExamLock && activeExamLock.assignmentId === asg.id ? (
                           <button
                             type="button"
-                            onClick={() => {
-                              navigate('/examenes/sesion', {
-                                state: {
-                                  assignmentId: asg.id,
-                                  config: asg.target_exam_config || { mode: 'FULL_SIMULATION', feedbackMode: 'end' },
-                                  expiresAt: activeExamLock.expiresAt,
-                                  strictLock: true,
-                                  selectedQuestionIds: asg.target_exam_config?.selectedQuestionIds,
-                                  assignmentTitle: asg.title,
-                                },
-                              });
-                            }}
+                            onClick={() => resumeAssignedExam(asg, activeExamLock)}
                             className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-amber-600 hover:from-red-700 hover:to-amber-700 text-white text-xs font-bold transition shadow-xs cursor-pointer animate-pulse"
                           >
                             <Play className="w-3.5 h-3.5 fill-white" />
@@ -2186,10 +2183,12 @@ export default function StudentDashboard() {
               })}
             </div>
           )}
+        </div>
+      )}
 
           {/* Modal para que el Alumno entregue su Tarea */}
           {submittingAsg && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -2249,7 +2248,7 @@ export default function StudentDashboard() {
 
           {/* Modal para que el Alumno solicite permiso de repetición de examen */}
           {retakeModalAssignment && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
               <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -2354,7 +2353,7 @@ export default function StudentDashboard() {
 
           {/* Modal de Advertencia y Confirmación de Examen Asignado (Candado Estricto) */}
           {selectedExamForModal && (
-            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-[80] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl border-2 border-indigo-500/40 dark:border-indigo-500/30 p-6 sm:p-7 space-y-5 shadow-2xl">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4">
@@ -2494,8 +2493,6 @@ export default function StudentDashboard() {
               </div>
             </div>
           )}
-        </div>
-      )}
 
       {/* ─── TAB 4: Centro de Notificaciones ─── */}
       {activeTab === 'notifications' && (
@@ -2566,6 +2563,18 @@ export default function StudentDashboard() {
                     onClick={async () => {
                       const res = await requestNotificationPermission(user?.id);
                       setDeviceNotifStatus(res);
+                      if (res === 'granted' && 'serviceWorker' in navigator && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+                        try {
+                          const reg = await navigator.serviceWorker.ready;
+                          const sub = await reg.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
+                          });
+                          await savePushSubscription(sub);
+                        } catch (e) {
+                          console.warn('Web Push no disponible:', e);
+                        }
+                      }
                     }}
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition shadow-sm cursor-pointer flex items-center gap-1.5"
                   >
@@ -2641,6 +2650,11 @@ export default function StudentDashboard() {
       {/* ─── TAB 5: Constancia y Certificación COMEFYR ─── */}
       {activeTab === 'certificate' && (
         <div className="space-y-8">
+          <StudentCertificatePanel
+            requirements={certRequirements}
+            moduleProgress={moduleProgress}
+            completedTopics={completedTopicsSet}
+          />
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
               Acreditación y Certificado de Educación Médica Continua
@@ -2712,7 +2726,7 @@ export default function StudentDashboard() {
                   </Link>
                 ) : (
                   <button
-                    onClick={() => setActiveTab('modules')}
+                    onClick={() => selectTab('modules')}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   >
                     Continuar temario
@@ -2738,7 +2752,7 @@ export default function StudentDashboard() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setActiveTab('quizzes')}
+                  onClick={() => selectTab('quizzes')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   Ver evaluaciones
@@ -2810,6 +2824,21 @@ export default function StudentDashboard() {
         </div>
       )}
 
+      {activeTab === 'study' && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">Estudio, planes y reportes</h2>
+          <p className="text-sm text-slate-500">
+            Planes personalizados activos: {planCount}. Use esta sección para repaso adaptativo, Q&A y entrega de reportes EMG.
+          </p>
+          <StudentStudyHub
+            attempts={attempts}
+            moduleProgress={moduleProgress}
+            plans={learningPlans}
+          />
+        </div>
+      )}
+      </div>
+
       {user?.id && (
         <PendingTasksAlertModal
           isOpen={showPendingTasksModal}
@@ -2825,11 +2854,11 @@ export default function StudentDashboard() {
             openAssignedCase(asg);
           }}
           onSelectOther={(asg) => {
-            setActiveTab('assignments');
+            selectTab('assignments');
             setSubmittingAsg(asg);
           }}
           onGoToAllAssignments={() => {
-            setActiveTab('assignments');
+            selectTab('assignments');
           }}
         />
       )}

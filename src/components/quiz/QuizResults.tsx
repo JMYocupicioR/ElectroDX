@@ -193,7 +193,9 @@ export function QuizResults({
                     <div className="space-y-1.5">
                       {q.options.map((opt, oIdx) => {
                         const isSelected = selectedOptIds.includes(opt.id);
-                        const isOptCorrect = opt.isCorrect;
+                        const isOptCorrect =
+                          opt.isCorrect === true ||
+                          Boolean(answer?.correctIds?.includes(opt.id));
 
                         return (
                           <div

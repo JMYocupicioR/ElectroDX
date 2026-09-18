@@ -23,3 +23,6 @@ export const supabase = createClient<Database>(
 );
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+
+/** Cliente con tipos relajados para tablas/RPCs nuevas aún no cubiertas por generate_typescript_types. */
+export const sb = supabase as any;

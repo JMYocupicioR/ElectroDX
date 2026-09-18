@@ -95,6 +95,13 @@ export function AdminLayout({
       adminOnly: true,
     },
     {
+      to: '/admin/temario',
+      label: 'Organizador del temario',
+      icon: ClipboardList,
+      exact: false,
+      badge: 0,
+    },
+    {
       to: '/admin/auditoria',
       label: 'Auditoría del Sistema',
       icon: ScrollText,

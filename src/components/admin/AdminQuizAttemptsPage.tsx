@@ -3,20 +3,42 @@ import { Link } from 'react-router-dom';
 import { ClipboardList, CheckCircle, XCircle, GraduationCap } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { getAdminQuizAttempts } from '../../services/editorialService';
+import { getQuestionStats } from '../../services/quizValidationService';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
+import { allModules } from '../../content/modules';
 import type { AdminQuizAttemptRow } from '../../types/admin';
 
 export default function AdminQuizAttemptsPage() {
   const [attempts, setAttempts] = useState<AdminQuizAttemptRow[]>([]);
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof getQuestionStats>>>([]);
+  const [moduleFilter, setModuleFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
     getAdminQuizAttempts(200)
-      .then(setAttempts)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar'))
-      .finally(() => setLoading(false));
-  }, []);
+      .then((rows) => {
+        if (!cancelled) setAttempts(rows);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Error al cargar');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    getQuestionStats(moduleFilter || null)
+      .then((questionStats) => {
+        if (!cancelled) setStats(questionStats);
+      })
+      .catch(() => {
+        if (!cancelled) setStats([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [moduleFilter]);
 
   return (
     <AdminLayout title="Intentos de evaluación">
@@ -34,6 +56,53 @@ export default function AdminQuizAttemptsPage() {
           <GraduationCap className="w-4 h-4" />
           <span>Editor de Quizzes</span>
         </Link>
+      </div>
+
+      <div className="mb-6 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <h3 className="text-sm font-bold">Reactivos con mayor tasa de fallo</h3>
+          <select
+            value={moduleFilter}
+            onChange={(e) => setModuleFilter(e.target.value)}
+            className="text-sm px-3 py-1.5 rounded-lg border"
+          >
+            <option value="">Todos los módulos</option>
+            {allModules.map((mod) => (
+              <option key={mod.id} value={mod.id}>
+                {mod.number}. {mod.title}
+              </option>
+            ))}
+          </select>
+        </div>
+        {stats.length === 0 ? (
+          <p className="text-xs text-slate-500">Aún no hay suficientes intentos para calcular tasas por reactivo.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="text-left text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-3 py-2">Reactivo</th>
+                  <th className="px-3 py-2">Módulo</th>
+                  <th className="px-3 py-2">Intentos</th>
+                  <th className="px-3 py-2">Fallo</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {stats.map((row) => (
+                  <tr key={row.question_id}>
+                    <td className="px-3 py-2">
+                      <p className="line-clamp-2">{row.stem}</p>
+                      <p className="text-[11px] text-slate-400">{row.quiz_title}</p>
+                    </td>
+                    <td className="px-3 py-2 text-xs">{getModuleLabel(row.module_id)}</td>
+                    <td className="px-3 py-2">{row.attempt_count}</td>
+                    <td className="px-3 py-2 font-semibold text-amber-700">{row.miss_rate}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       {loading && <p className="text-sm text-slate-500">Cargando intentos…</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}

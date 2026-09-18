@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Video, Plus, Users, XCircle } from 'lucide-react';
+import { Calendar, Video, Plus, Users, XCircle, Bell } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { getWorkshops, createWorkshop, updateWorkshop } from '../../services/courseService';
+import { sendAcademicPush } from '../../services/studentToolsService';
 import { allModules } from '../../content/modules';
 import type { LiveWorkshop, WorkshopStatus } from '../../types/database';
 import type { Module } from '../../types/content';
@@ -18,6 +19,9 @@ export default function AdminWorkshopsPage() {
   const [moduleId, setModuleId] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [streamUrl, setStreamUrl] = useState('');
+  const [pushTitle, setPushTitle] = useState('Aviso académico ElectoDX');
+  const [pushBody, setPushBody] = useState('');
+  const [pushStatus, setPushStatus] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -72,6 +76,45 @@ export default function AdminWorkshopsPage() {
 
   return (
     <AdminLayout title="Gestión de Talleres En Vivo">
+      <div className="mb-6 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <h3 className="font-semibold flex items-center gap-2 mb-3">
+          <Bell className="w-4 h-4" /> Aviso push a inscritos
+        </h3>
+        <form
+          className="space-y-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setPushStatus(null);
+            try {
+              const result = await sendAcademicPush({ title: pushTitle, body: pushBody, url: '/talleres' });
+              setPushStatus(`Enviados ${result.sent} de ${result.queued}. Fallidos: ${result.failed}.`);
+              setPushBody('');
+            } catch (err) {
+              setPushStatus(err instanceof Error ? err.message : 'No se pudo enviar');
+            }
+          }}
+        >
+          <input
+            className="w-full min-h-[44px] rounded-lg border px-3 dark:bg-slate-800"
+            value={pushTitle}
+            onChange={(e) => setPushTitle(e.target.value)}
+            required
+          />
+          <textarea
+            className="w-full rounded-lg border px-3 py-2 dark:bg-slate-800"
+            rows={3}
+            placeholder="Mensaje del aviso (taller, recordatorio, cambio de horario)"
+            value={pushBody}
+            onChange={(e) => setPushBody(e.target.value)}
+            required
+          />
+          <button type="submit" className="min-h-[44px] px-4 rounded-xl bg-indigo-600 text-white text-sm font-semibold">
+            Enviar aviso
+          </button>
+          {pushStatus && <p className="text-xs text-slate-500">{pushStatus}</p>}
+        </form>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <p className="text-sm text-slate-500">
           Programa y administra los talleres híbridos de discusión de casos.

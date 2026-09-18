@@ -11,11 +11,16 @@ function sepCedulaProxyPlugin(): Plugin {
     if (cachedToken && Date.now() < tokenExpiresAt) {
       return cachedToken;
     }
+    const clientId = process.env.SEP_CLIENT_ID;
+    const apiKey = process.env.SEP_API_KEY;
+    if (!clientId || !apiKey) {
+      throw new Error('SEP_CLIENT_ID y SEP_API_KEY deben definirse en el entorno local. No incrustar secretos en el código.');
+    }
     const tokenRes = await fetch('https://cedulaprofesional.sep.gob.mx/api/auth/token', {
       method: 'GET',
       headers: {
-        'X-Client-Id': 'rnp-angular-app-prod',
-        'X-API-Key': '65da8s675f8s75fda675s8d76as87d5as675da',
+        'X-Client-Id': clientId,
+        'X-API-Key': apiKey,
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
       },
     });
@@ -38,9 +43,10 @@ function sepCedulaProxyPlugin(): Plugin {
         if (!req.url?.startsWith('/api/verify-cedula')) {
           return next();
         }
-        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Vary', 'Origin');
 
         if (req.method === 'OPTIONS') {
           res.statusCode = 204;
@@ -120,7 +126,7 @@ export default defineConfig({
     react(),
     sepCedulaProxyPlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       devOptions: { enabled: false },
       includeAssets: ['icons/*.png', 'icons/splash/*.png'],
       manifest: false, // Use the manifest.json in /public
@@ -128,8 +134,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,json}'],
         // iOS Safari aggressively caches sw.js — these ensure instant updates
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
+        skipWaiting: false,
+        clientsClaim: false,
         importScripts: ['/custom-sw.js'],
         // SPA offline fallback — serves index.html for any navigation request
         navigateFallback: '/index.html',

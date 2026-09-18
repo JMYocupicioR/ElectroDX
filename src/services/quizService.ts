@@ -1,24 +1,51 @@
-import { supabase } from '../lib/supabase';
+import { sb as supabase } from '../lib/supabase';
 import { allModules } from '../content/modules';
 import type {
   ModuleQuizProgress,
   QuizAttempt,
+  QuizAnswerRecord,
+  QuizOption,
+  QuizQuestion,
   QuizTopicFlag,
   QuizWithQuestions,
 } from '../types/quiz';
 
 import {
-  getLocalQuizFlagForTopic,
   getAllLocalQuizFlags,
-  getLocalQuizForTopic,
+  getLocalQuizFlagForTopic,
 } from './localQuizzesFallback';
-import { scoreQuiz, withPassResult } from '../utils/quizScoring';
 
-function mapQuestion(row: Record<string, unknown>) {
+function sanitizeOptions(options: unknown[]): QuizOption[] {
+  return (options ?? []).map((raw) => {
+    const opt = raw as QuizOption;
+    return {
+      id: opt.id,
+      text: opt.text,
+      textEn: opt.textEn,
+    };
+  });
+}
+
+function mapSanitizedQuestion(row: Record<string, unknown>): QuizQuestion {
   return {
-    ...row,
-    options: (row.options as unknown[]) ?? [],
+    ...(row as unknown as QuizQuestion),
+    options: sanitizeOptions((row.options as unknown[]) ?? []),
+    explanation: null,
+    explanation_en: null,
   };
+}
+
+function mapAttemptAnswers(raw: unknown): QuizAnswerRecord[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item) => {
+    const rec = item as Record<string, unknown>;
+    return {
+      questionId: String(rec.questionId ?? rec.question_id ?? ''),
+      selectedIds: Array.isArray(rec.selectedIds) ? (rec.selectedIds as string[]) : [],
+      correct: Boolean(rec.correct ?? rec.isCorrect),
+      correctIds: Array.isArray(rec.correctIds) ? (rec.correctIds as string[]) : undefined,
+    };
+  });
 }
 
 export async function getQuizFlagForTopic(topicId: string): Promise<QuizTopicFlag | null> {
@@ -32,7 +59,7 @@ export async function getQuizFlagForTopic(topicId: string): Promise<QuizTopicFla
       return data as QuizTopicFlag;
     }
   } catch (e) {
-    console.warn('[quizService] Error fetching quiz flag from DB, using fallback:', e);
+    console.warn('[quizService] Error fetching quiz flag from DB:', e);
   }
   return getLocalQuizFlagForTopic(topicId);
 }
@@ -49,38 +76,28 @@ export async function getAllQuizFlags(): Promise<QuizTopicFlag[]> {
       return Array.from(merged.values());
     }
   } catch (e) {
-    console.warn('[quizService] Error fetching all quiz flags from DB, using fallback:', e);
+    console.warn('[quizService] Error fetching all quiz flags from DB:', e);
   }
   return local;
 }
 
 export async function getQuizWithQuestions(topicId: string): Promise<QuizWithQuestions | null> {
-  try {
-    const { data: quiz, error: quizError } = await supabase
-      .from('published_quizzes')
-      .select('*')
-      .eq('topic_id', topicId)
-      .maybeSingle();
+  const { data, error } = await supabase.rpc('get_quiz_for_attempt', {
+    p_topic_id: topicId,
+  });
 
-    if (!quizError && quiz) {
-      const { data: questions, error: qError } = await supabase
-        .from('quiz_questions')
-        .select('*')
-        .eq('quiz_id', (quiz as { id: string }).id)
-        .order('sort_order');
-
-      if (!qError && questions && questions.length > 0) {
-        return {
-          ...(quiz as QuizWithQuestions),
-          questions: (questions ?? []).map((q) => mapQuestion(q as Record<string, unknown>)) as QuizWithQuestions['questions'],
-        };
-      }
-    }
-  } catch (e) {
-    console.warn('[quizService] Error fetching quiz with questions from DB, using fallback:', e);
+  if (error) {
+    throw new Error(error.message || 'No fue posible cargar la evaluación en el servidor.');
   }
 
-  return getLocalQuizForTopic(topicId);
+  if (!data || typeof data !== 'object') return null;
+  const payload = data as QuizWithQuestions;
+  return {
+    ...payload,
+    questions: (payload.questions ?? []).map((q) =>
+      mapSanitizedQuestion(q as unknown as Record<string, unknown>)
+    ),
+  };
 }
 
 export interface QuizAttemptSubmitInput {
@@ -90,46 +107,24 @@ export interface QuizAttemptSubmitInput {
 }
 
 export async function submitQuizAttempt(input: QuizAttemptSubmitInput): Promise<QuizAttempt> {
-  try {
-    const { data, error } = await (supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>)('submit_quiz_attempt', {
-      p_topic_id: input.topicId,
-      p_answers: input.answers,
-      p_duration_seconds: input.durationSeconds,
-    });
-    if (!error && data) {
-      return data as QuizAttempt;
-    }
-    if (error) {
-      console.warn('[quizService] submit_quiz_attempt RPC error, using local fallback calculation:', error);
-    }
-  } catch (e) {
-    console.warn('[quizService] submit_quiz_attempt network error, using local fallback calculation:', e);
-  }
-
-  // Local fallback calculation if DB is unreachable
-  const localQuiz = getLocalQuizForTopic(input.topicId);
-  const passScore = localQuiz?.pass_score ?? 70;
-  const questions = localQuiz?.questions ?? [];
-  const answerMap: Record<string, string[]> = {};
-  input.answers.forEach((a) => {
-    answerMap[a.questionId] = a.selectedIds;
+  const { data, error } = await supabase.rpc('submit_quiz_attempt', {
+    p_topic_id: input.topicId,
+    p_answers: input.answers,
+    p_duration_seconds: input.durationSeconds,
   });
 
-  const { score, answers } = scoreQuiz(questions, answerMap);
-  const { passed } = withPassResult(score, passScore, answers);
+  if (error || !data) {
+    throw new Error(
+      error?.message ||
+        'No fue posible calificar la evaluación. Verifica tu conexión e inténtalo de nuevo. El intento no se acreditó.'
+    );
+  }
 
+  const payload = data as QuizAttempt & { revealed_questions?: QuizQuestion[] };
   return {
-    id: `local_attempt_${Date.now()}`,
-    quiz_id: localQuiz?.id ?? 'local_quiz',
-    quiz_version: 1,
-    topic_id: input.topicId,
-    module_id: localQuiz?.module_id ?? '',
-    user_id: 'local_user',
-    score,
-    passed,
-    answers,
-    duration_seconds: input.durationSeconds,
-    completed_at: new Date().toISOString(),
+    ...payload,
+    answers: mapAttemptAnswers(payload.answers),
+    revealed_questions: payload.revealed_questions,
   };
 }
 
@@ -141,7 +136,10 @@ export async function getMyAttempts(userId: string, limit = 100): Promise<QuizAt
     .order('completed_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
-  return (data ?? []) as QuizAttempt[];
+  return ((data ?? []) as QuizAttempt[]).map((attempt) => ({
+    ...attempt,
+    answers: mapAttemptAnswers(attempt.answers),
+  }));
 }
 
 export async function getAttemptCountForQuiz(quizId: string, userId: string): Promise<number> {
@@ -164,7 +162,9 @@ export async function getBestAttempt(topicId: string, userId: string): Promise<Q
     .limit(1)
     .maybeSingle();
   if (error) throw error;
-  return (data as QuizAttempt | null) ?? null;
+  if (!data) return null;
+  const attempt = data as QuizAttempt;
+  return { ...attempt, answers: mapAttemptAnswers(attempt.answers) };
 }
 
 export async function getMyProgressByModule(userId: string): Promise<ModuleQuizProgress[]> {
@@ -175,7 +175,9 @@ export async function getMyProgressByModule(userId: string): Promise<ModuleQuizP
   if (flagsError) throw flagsError;
   if (attemptsError) throw attemptsError;
 
-  const quizFlags = (flags ?? []) as QuizTopicFlag[];
+  const quizFlags = ((flags ?? []) as QuizTopicFlag[]).filter(
+    (flag) => (flag.clinical_validation_status ?? 'pending_review') === 'approved'
+  );
   const userAttempts = (attempts ?? []) as QuizAttempt[];
 
   const bestByTopic = new Map<string, QuizAttempt>();

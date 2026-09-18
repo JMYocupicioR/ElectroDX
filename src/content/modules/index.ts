@@ -1,5 +1,5 @@
 // src/content/modules/index.ts
-// Central registry of all 13 learning modules
+// Central registry of learning modules
 
 import { Module } from '../../types/content';
 import { module01 } from './module-01-fundamentals';
@@ -15,6 +15,10 @@ import { module10 } from './module-10-diagnostic-criteria';
 import { module11 } from './module-11-quick-reference';
 import { module12 } from './module-12-bibliography';
 import { module13 } from './module-13-safety-qc';
+import { module14 } from './module-14-syndrome-differential';
+import { module15 } from './module-15-emg-report-planning';
+import { module16 } from './module-16-complex-clinical-cases';
+import { module17 } from './module-17-pathology-updates';
 
 export const allModules: Module[] = [
   module01,
@@ -30,6 +34,10 @@ export const allModules: Module[] = [
   module11,
   module12,
   module13,
+  module14,
+  module15,
+  module16,
+  module17,
 ];
 
 export const MODULE_ALIASES: Record<string, string> = {
@@ -170,6 +178,24 @@ export const MODULE_ALIASES: Record<string, string> = {
   'module-13-safety-qc': 'safety-qc',
   'seguridad-control-calidad': 'safety-qc',
   'seguridad': 'safety-qc',
+
+  '14': 'syndrome-differential',
+  'modulo-14': 'syndrome-differential',
+  'sindromes': 'syndrome-differential',
+  'diagnostico-diferencial': 'syndrome-differential',
+
+  '15': 'emg-report-planning',
+  'modulo-15': 'emg-report-planning',
+  'informe-emg': 'emg-report-planning',
+  'planificacion-estudio': 'emg-report-planning',
+
+  '16': 'complex-clinical-cases',
+  'modulo-16': 'complex-clinical-cases',
+  'casos-complejos': 'complex-clinical-cases',
+
+  '17': 'pathology-updates',
+  'modulo-17': 'pathology-updates',
+  'actualizaciones': 'pathology-updates',
 };
 
 export function resolveModuleId(input: string | undefined | null): string | undefined {

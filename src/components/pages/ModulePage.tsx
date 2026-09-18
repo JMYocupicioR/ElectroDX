@@ -9,7 +9,7 @@ import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
 import { useAuth } from '../../contexts/AuthProvider';
 import { ProposeSubtopicLink } from '../editorial/TopicContribution';
 import { ModuleTopicRow, TopicFilterType } from './ModuleTopicTree';
-import { PremiumGate } from '../PremiumGate';
+import { CourseGate } from '../CourseGate';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { listPendingCurriculumLessons } from '../../services/studentResume';
 
@@ -66,7 +66,7 @@ export default function ModulePage() {
   const quizCount = moduleQuizCount(mod.id);
 
   return (
-    <PremiumGate moduleId={mod.id}>
+    <CourseGate moduleId={mod.id}>
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-20">
         <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6 sm:mb-8">
           <Link to="/" className="hover:text-blue-500 transition-colors flex items-center gap-1 min-h-[2rem]">
@@ -325,6 +325,6 @@ export default function ModulePage() {
           </Link>
         </div>
       </main>
-    </PremiumGate>
+    </CourseGate>
   );
 }

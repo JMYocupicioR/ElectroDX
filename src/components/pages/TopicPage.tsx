@@ -1,14 +1,15 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { findTopicByPath, getAllFlatTopics, findTopicInTree } from '../../services/contentMerge';
+import { findTopicByPath, getAllFlatTopics } from '../../services/contentMerge';
 import { useMergedModule } from '../../hooks/useMergedModule';
 import { useAuth } from '../../contexts/AuthProvider';
 import { ContributionBanner, ContributorContentActions, ProposeQuizLink } from '../editorial/TopicContribution';
 import { QuizGate } from '../quiz/QuizGate';
+import { TopicStudyTools } from '../student/TopicStudyTools';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { getQuizFlagForTopic } from '../../services/quizService';
-import { PremiumGate } from '../PremiumGate';
+import { CourseGate } from '../CourseGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
 import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList } from 'lucide-react';
@@ -374,6 +375,173 @@ function ImageGallery({ images }: { images: { src: string; alt: string; caption?
   );
 }
 
+function TopicBody({ topic, lang }: { topic: Topic; lang: 'es' | 'en' }) {
+  const lt = localizedTopic(topic, lang);
+  const hasContent = Boolean(lt.content);
+  const hasExtras = Boolean(
+    (lt.clinicalPearls && lt.clinicalPearls.length > 0)
+    || (lt.keyPoints && lt.keyPoints.length > 0)
+    || (topic.imageUrls && topic.imageUrls.length > 0)
+    || topicHasVideos(topic)
+  );
+  if (!hasContent && !hasExtras) return null;
+
+  return (
+    <div>
+      {hasContent && <RichContent text={lt.content!} />}
+      {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
+        <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
+      )}
+      {lt.keyPoints && lt.keyPoints.length > 0 && (
+        <KeyPointsBox points={lt.keyPoints} lang={lang} />
+      )}
+      {topic.imageUrls && topic.imageUrls.length > 0 && (
+        <ImageGallery images={topic.imageUrls} />
+      )}
+      {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
+    </div>
+  );
+}
+
+function NestedTopicSections({
+  topics,
+  lang,
+  parentIndex,
+  registerRef,
+  headingLevel = 3,
+}: {
+  topics: Topic[];
+  lang: 'es' | 'en';
+  parentIndex: string;
+  registerRef: (id: string, el: HTMLElement | null) => void;
+  headingLevel?: 3 | 4;
+}) {
+  const Heading = headingLevel === 3 ? 'h3' : 'h4';
+  return (
+    <div className="space-y-6">
+      {topics.map((child, i) => {
+        const lt = localizedTopic(child, lang);
+        const nested = Boolean(child.children?.length);
+        return (
+          <section
+            key={child.id}
+            ref={(el) => registerRef(child.id, el)}
+            id={`section-${child.id}`}
+            className="scroll-mt-24"
+          >
+            <Heading className="text-base sm:text-lg font-semibold text-slate-800 dark:text-slate-100 leading-tight">
+              <span className="font-mono text-xs text-slate-400 dark:text-slate-500 mr-2">
+                {parentIndex}.{i + 1}
+              </span>
+              {lt.title}
+            </Heading>
+            {lang === 'es' && child.titleEn && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 italic mt-0.5 pl-8">{child.titleEn}</p>
+            )}
+            {lang === 'en' && child.title !== lt.title && (
+              <p className="text-xs text-slate-400 dark:text-slate-500 italic mt-0.5 pl-8">{child.title}</p>
+            )}
+            <div className="mt-3">
+              <TopicBody topic={child} lang={lang} />
+            </div>
+            {nested && (
+              <div className="mt-4 ml-3 sm:ml-4 pl-3 sm:pl-4 border-l border-slate-200/70 dark:border-slate-700/50">
+                <NestedTopicSections
+                  topics={child.children!}
+                  lang={lang}
+                  parentIndex={`${parentIndex}.${i + 1}`}
+                  registerRef={registerRef}
+                  headingLevel={4}
+                />
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+function TocTopicTree({
+  topics,
+  lang,
+  activeSection,
+  isTopicDone,
+  scrollToSection,
+  depth = 0,
+  canProposeContent,
+  moduleId,
+}: {
+  topics: Topic[];
+  lang: 'es' | 'en';
+  activeSection: string;
+  isTopicDone: (id: string) => boolean;
+  scrollToSection: (id: string) => void;
+  depth?: number;
+  canProposeContent?: boolean;
+  moduleId?: string;
+}) {
+  return (
+    <nav className={depth === 0 ? 'space-y-1' : 'mt-0.5 ml-3 space-y-0.5 border-l border-slate-200/70 dark:border-slate-700/40 pl-2'}>
+      {topics.map((child, i) => {
+        const childDone = isTopicDone(child.id);
+        const isActive = activeSection === child.id;
+        const hasKids = Boolean(child.children?.length);
+        return (
+          <div key={child.id}>
+            <button
+              type="button"
+              onClick={() => scrollToSection(child.id)}
+              className={`w-full text-left rounded-xl transition-all duration-200 flex items-start gap-2 ${
+                depth === 0 ? 'px-3 py-2 text-sm' : 'px-2 py-1.5 text-xs'
+              } ${
+                isActive
+                  ? childDone
+                    ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-medium border-l-2 border-emerald-500 shadow-xs'
+                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-l-2 border-blue-500 shadow-xs'
+                  : childDone
+                    ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 font-medium'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              {childDone ? (
+                <CheckCircle2 className={`${depth === 0 ? 'w-3.5 h-3.5' : 'w-3 h-3'} text-emerald-500 flex-shrink-0 mt-0.5`} />
+              ) : (
+                <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">
+                  {i + 1}
+                </span>
+              )}
+              <span className="line-clamp-2 leading-snug flex-1">{localizedTopic(child, lang).title}</span>
+              {childDone && depth === 0 && (
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
+                  ✓
+                </span>
+              )}
+            </button>
+            {canProposeContent && moduleId && !hasKids && (
+              <div className="pl-7 pr-1">
+                <ProposeQuizLink moduleId={moduleId} topicId={child.id} />
+              </div>
+            )}
+            {hasKids && (
+              <TocTopicTree
+                topics={child.children!}
+                lang={lang}
+                activeSection={activeSection}
+                isTopicDone={isTopicDone}
+                scrollToSection={scrollToSection}
+                depth={depth + 1}
+                canProposeContent={canProposeContent}
+                moduleId={moduleId}
+              />
+            )}
+          </div>
+        );
+      })}
+    </nav>
+  );
+}
+
 /* ─── References Section ─── */
 function ReferencesSection({ references }: { references: Reference[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -437,8 +605,8 @@ export default function TopicPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const lang = useSettingsStore((s) => s.language);
-  const { canProposeContent, user, roles, profile } = useAuth();
-  const { module: mod, staticModule, loading: moduleLoading } = useMergedModule(moduleId);
+  const { canProposeContent, user } = useAuth();
+  const { module: mod, loading: moduleLoading } = useMergedModule(moduleId);
 
   const [showTOC, setShowTOC] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -582,26 +750,11 @@ export default function TopicPage() {
     };
   }, [currentTopicCandidates]);
 
-  if (moduleLoading && !mod) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 pt-28 text-center text-slate-500">
-        {lang === 'en' ? 'Loading…' : 'Cargando…'}
-      </div>
-    );
-  }
-
-  if (!mod) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
-        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
-        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
-      </div>
-    );
-  }
-
-  const basePath = `/modulo/${moduleId}/`;
-  const topicPathStr = location.pathname.replace(basePath, '');
-  const pathParts = topicPathStr.split('/').filter(Boolean);
+  const pathParts = useMemo(() => {
+    const basePath = `/modulo/${moduleId}/`;
+    const topicPathStr = location.pathname.replace(basePath, '');
+    return topicPathStr.split('/').filter(Boolean);
+  }, [moduleId, location.pathname]);
 
   useEffect(() => {
     if (mod && moduleId && moduleId !== mod.id) {
@@ -612,31 +765,15 @@ export default function TopicPage() {
     }
   }, [mod, moduleId, navigate, pathParts]);
 
-  const { topic, breadcrumbs } = findTopicByPath(mod.topics, pathParts);
-  const allFlat = getAllFlatTopics(mod.topics);
-  const currentIndex = allFlat.findIndex(f => f.path.join('/') === pathParts.join('/'));
+  const { topic, breadcrumbs } = useMemo(() => {
+    if (!mod) return { topic: null as Topic | null, breadcrumbs: [] as Topic[] };
+    return findTopicByPath(mod.topics, pathParts);
+  }, [mod, pathParts]);
+
+  const allFlat = useMemo(() => (mod ? getAllFlatTopics(mod.topics) : []), [mod]);
+  const currentIndex = allFlat.findIndex((f) => f.path.join('/') === pathParts.join('/'));
   const prevTopic = currentIndex > 0 ? allFlat[currentIndex - 1] : null;
-  const nextTopic = currentIndex < allFlat.length - 1 ? allFlat[currentIndex + 1] : null;
-
-  if (!topic) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
-        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Topic not found' : 'Tema no encontrado'}</h1>
-        <Link to={`/modulo/${moduleId}`} className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to module' : '← Volver al módulo'}</Link>
-      </div>
-    );
-  }
-
-  const hasChildContent = topic.children && topic.children.length > 0;
-  const isLeafTopic = !hasChildContent;
-
-  // Get references for first-level topic
-  const firstLevelTopicId = pathParts[0] || topic.id;
-  const references = getReferencesForTopic(mod.id, firstLevelTopicId);
-
-  // Localized fields for the main topic
-  const lt = localizedTopic(topic, lang);
-  const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
+  const nextTopic = currentIndex >= 0 && currentIndex < allFlat.length - 1 ? allFlat[currentIndex + 1] : null;
 
   const { isCompleted: isTopicDoneHook, getModuleStats, completedTopicIds, quizGate } = useTopicProgress();
   const modStats = useMemo(() => {
@@ -645,6 +782,7 @@ export default function TopicPage() {
   const isModuleCompleted = modStats?.isFullyCompleted ?? false;
 
   const nextPendingTarget = useMemo(() => {
+    if (!mod || !topic) return null;
     const nextInModule = findNextIncompleteFlatTopic(allFlat, currentIndex, completedTopicIds, quizGate);
     if (nextInModule) {
       return {
@@ -663,7 +801,7 @@ export default function TopicPage() {
     );
     if (!nextAcross) return null;
     return { title: nextAcross.topicTitle, url: nextAcross.url };
-  }, [allFlat, currentIndex, completedTopicIds, lang, mod.id, pathParts, quizGate, topic.id]);
+  }, [allFlat, currentIndex, completedTopicIds, lang, mod, pathParts, quizGate, topic]);
 
   const hasEvaluation = Boolean(quizFlag && quizFlag.question_count > 0);
   const evaluationPassed = Boolean(
@@ -705,9 +843,42 @@ export default function TopicPage() {
     return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
   }, [user, topic, quizGate, hasEvaluation, quizFlag]);
 
+  if (moduleLoading && !mod) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 pt-28 text-center text-slate-500">
+        {lang === 'en' ? 'Loading…' : 'Cargando…'}
+      </div>
+    );
+  }
+
+  if (!mod) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
+        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Module not found' : 'Módulo no encontrado'}</h1>
+        <Link to="/" className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to home' : '← Volver al inicio'}</Link>
+      </div>
+    );
+  }
+
+  if (!topic) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 pt-28 text-center">
+        <h1 className="text-2xl font-bold mb-4">{lang === 'en' ? 'Topic not found' : 'Tema no encontrado'}</h1>
+        <Link to={`/modulo/${moduleId}`} className="text-blue-500 hover:underline">{lang === 'en' ? '← Back to module' : '← Volver al módulo'}</Link>
+      </div>
+    );
+  }
+
+  const hasChildContent = topic.children && topic.children.length > 0;
+  const isLeafTopic = !hasChildContent;
+  const firstLevelTopicId = pathParts[0] || topic.id;
+  const references = getReferencesForTopic(mod.id, firstLevelTopicId);
+  const lt = localizedTopic(topic, lang);
+  const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
+
   return (
-    <PremiumGate moduleId={moduleId!} topicId={topic.id}>
-      <main ref={mainRef} className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 pt-20 sm:pt-24 pb-24">
+    <CourseGate moduleId={moduleId!} topicId={topic.id}>
+      <main ref={mainRef} id="contenido-principal" className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 pt-20 sm:pt-24 pb-24">
         {/* Grid layout: content + sidebar */}
         <div className="lg:grid lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px] lg:gap-10 xl:gap-14">
         {/* Content Column */}
@@ -949,35 +1120,23 @@ export default function TopicPage() {
                         </div>
                       )}
 
-                      {/* Section content — always visible */}
-                      {lc.content && (
+                      {(hasGrandchildren
+                        || lc.content
+                        || lc.clinicalPearls?.length
+                        || lc.keyPoints?.length
+                        || child.imageUrls?.length
+                        || topicHasVideos(child)) && (
                         <div className="px-5 sm:px-6 pb-5 sm:pb-6">
-                          <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4">
-                            <RichContent text={lc.content} />
-                            {lc.clinicalPearls && lc.clinicalPearls.length > 0 && (
-                              <ClinicalPearlsBox pearls={lc.clinicalPearls} lang={lang} />
+                          <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4 space-y-5">
+                            <TopicBody topic={child} lang={lang} />
+                            {hasGrandchildren && (
+                              <NestedTopicSections
+                                topics={child.children!}
+                                lang={lang}
+                                parentIndex={String(i + 1)}
+                                registerRef={registerRef}
+                              />
                             )}
-                            {lc.keyPoints && lc.keyPoints.length > 0 && (
-                              <KeyPointsBox points={lc.keyPoints} lang={lang} />
-                            )}
-                            {child.imageUrls && child.imageUrls.length > 0 && (
-                              <ImageGallery images={child.imageUrls} />
-                            )}
-                            {topicHasVideos(child) && <ExternalVideosSection topic={child} />}
-                          </div>
-                        </div>
-                      )}
-                      {/* Media without content */}
-                      {!lc.content && (topicHasVideos(child) || lc.clinicalPearls?.length || lc.keyPoints?.length) && (
-                        <div className="px-5 sm:px-6 pb-5 sm:pb-6">
-                          <div className="border-t border-slate-100 dark:border-slate-700/40 pt-4">
-                            {lc.clinicalPearls && lc.clinicalPearls.length > 0 && (
-                              <ClinicalPearlsBox pearls={lc.clinicalPearls} lang={lang} />
-                            )}
-                            {lc.keyPoints && lc.keyPoints.length > 0 && (
-                              <KeyPointsBox points={lc.keyPoints} lang={lang} />
-                            )}
-                            {topicHasVideos(child) && <ExternalVideosSection topic={child} />}
                           </div>
                         </div>
                       )}
@@ -991,6 +1150,17 @@ export default function TopicPage() {
           {/* ── Per-Topic Bibliography ── */}
           {references.length > 0 && (
             <ReferencesSection references={references} />
+          )}
+
+          {user && mod && topic && (
+            <TopicStudyTools
+              moduleId={mod.id}
+              topicId={topic.id}
+              url={location.pathname}
+              title={lt.title}
+              pearls={lt.clinicalPearls}
+              keyPoints={lt.keyPoints}
+            />
           )}
 
           {quizFlag && quizFlag.question_count > 0 && mod && (
@@ -1170,44 +1340,15 @@ export default function TopicPage() {
                           </span>
                         )}
                       </h4>
-                      <nav className="space-y-1">
-                        {topic.children!.map((child, i) => {
-                          const childDone = isTopicDoneHook(child.id);
-                          return (
-                            <div key={child.id} className="space-y-1">
-                              <button
-                                onClick={() => scrollToSection(child.id)}
-                                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all duration-200 flex items-start gap-2.5 ${
-                                  activeSection === child.id
-                                    ? childDone
-                                      ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-medium border-l-2 border-emerald-500 shadow-xs'
-                                      : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-l-2 border-blue-500 shadow-xs'
-                                    : childDone
-                                    ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/30 font-medium'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/30 hover:text-slate-800 dark:hover:text-slate-200'
-                                }`}
-                              >
-                                {childDone ? (
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                                ) : (
-                                  <span className="font-mono text-[0.65rem] text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                                )}
-                                <span className="line-clamp-2 leading-snug flex-1">{localizedTopic(child, lang).title}</span>
-                                {childDone && (
-                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5">
-                                    ✓
-                                  </span>
-                                )}
-                              </button>
-                              {canProposeContent && mod && !child.children?.length && (
-                                <div className="pl-7 pr-1">
-                                  <ProposeQuizLink moduleId={mod.id} topicId={child.id} />
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </nav>
+                      <TocTopicTree
+                        topics={topic.children!}
+                        lang={lang}
+                        activeSection={activeSection}
+                        isTopicDone={isTopicDoneHook}
+                        scrollToSection={scrollToSection}
+                        canProposeContent={canProposeContent}
+                        moduleId={mod?.id}
+                      />
                     </>
                   );
                 })()}
@@ -1274,38 +1415,15 @@ export default function TopicPage() {
                   <X className="w-5 h-5 text-slate-500" />
                 </button>
               </div>
-              <nav className="overflow-y-auto max-h-[calc(70vh-4rem)] p-4 space-y-1">
-                {topic.children!.map((child, i) => {
-                  const childDone = isTopicDoneHook(child.id);
-                  return (
-                    <button
-                      key={child.id}
-                      onClick={() => scrollToSection(child.id)}
-                      className={`w-full text-left px-4 py-3 rounded-xl text-sm transition-all flex items-start gap-3 min-h-[44px] ${
-                        activeSection === child.id
-                          ? childDone
-                            ? 'bg-emerald-100/70 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 font-medium'
-                            : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium'
-                          : childDone
-                          ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 font-medium'
-                          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {childDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <span className="font-mono text-xs text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0">{i + 1}</span>
-                      )}
-                      <span className="leading-snug flex-1">{localizedTopic(child, lang).title}</span>
-                      {childDone && (
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                          ✓
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
+              <div className="overflow-y-auto max-h-[calc(70vh-4rem)] p-4">
+                <TocTopicTree
+                  topics={topic.children!}
+                  lang={lang}
+                  activeSection={activeSection}
+                  isTopicDone={isTopicDoneHook}
+                  scrollToSection={scrollToSection}
+                />
+              </div>
             </motion.div>
           </>
         )}
@@ -1324,6 +1442,6 @@ export default function TopicPage() {
           </motion.button>
         )}
       </AnimatePresence>
-    </PremiumGate>
+    </CourseGate>
   );
 }

@@ -8,13 +8,14 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { AppRole, EnrollmentStatus, Profile, Subscription } from '../types/database';
+import { supabase, isSupabaseConfigured, sb } from '../lib/supabase';
+import type { AppRole, CourseId, EnrollmentStatus, Profile, Subscription } from '../types/database';
+import { COURSE_IDS, SELLABLE_COURSE_IDS } from '../content/courseCatalog';
 import { recordUserActivity } from '../services/studentPlanService';
 
 export interface StudentRegistrationData {
   email: string;
-  password?: string;
+  password: string;
   fullName: string;
   credentials?: string;
   institution: string;
@@ -40,6 +41,9 @@ interface AuthContextValue {
   canProposeContent: boolean;
   isEnrolledPhysician: boolean;
   hasPremiumAccess: boolean;
+  courseIds: CourseId[];
+  hasCourseAccess: (courseId: CourseId) => boolean;
+  hasAnySellableCourse: boolean;
   subscription: Subscription | null;
   enrollmentStatus: EnrollmentStatus;
   isEnrollmentPending: boolean;
@@ -71,19 +75,25 @@ async function fetchUserData(userId: string) {
       bootstrap_available?: boolean;
       has_premium?: boolean;
       subscription?: Subscription | null;
+      course_ids?: CourseId[] | null;
     };
+    const parsedCourseIds = Array.isArray(payload.course_ids)
+      ? payload.course_ids.filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id))
+      : [];
     return {
       profile: payload.profile ?? null,
       roles: (payload.roles ?? []) as AppRole[],
       bootstrapAvailable: payload.bootstrap_available === true,
       hasPremiumAccess: payload.has_premium === true,
       subscription: payload.subscription ?? null,
+      courseIds: parsedCourseIds,
+      courseSchemaReady: Object.prototype.hasOwnProperty.call(payload, 'course_ids'),
     };
   }
 
   if (ctxError) console.error('[Auth] get_my_auth_context:', ctxError.message);
 
-  const [profileRes, rolesRes, bootstrapRes, subRes] = await Promise.all([
+  const [profileRes, rolesRes, bootstrapRes, subRes, coursesRes] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
     supabase.from('user_roles').select('role').eq('user_id', userId),
     supabase.rpc('bootstrap_admin_available'),
@@ -94,6 +104,11 @@ async function fetchUserData(userId: string) {
       .eq('tier', 'premium')
       .eq('is_active', true)
       .maybeSingle(),
+    supabase
+      .from('course_enrollments')
+      .select('course_id')
+      .eq('user_id', userId)
+      .eq('status', 'active'),
   ]);
 
   if (profileRes.error) console.error('[Auth] profiles:', profileRes.error.message);
@@ -105,12 +120,18 @@ async function fetchUserData(userId: string) {
   const hasPremiumFromSub = !!sub && sub.is_active && !subExpired;
   const hasPremiumFromRole = roles.includes('admin') || roles.includes('editor');
 
+  const fallbackCourseIds = ((coursesRes.data as { course_id: string }[] | null) ?? [])
+    .map((row) => row.course_id)
+    .filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id));
+
   return {
     profile: (profileRes.data as Profile | null) ?? null,
     roles,
     bootstrapAvailable: bootstrapRes.data === true,
     hasPremiumAccess: hasPremiumFromSub || hasPremiumFromRole,
     subscription: sub ?? null,
+    courseIds: fallbackCourseIds,
+    courseSchemaReady: !coursesRes.error,
   };
 }
 
@@ -120,6 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [bootstrapAvailable, setBootstrapAvailable] = useState(false);
   const [hasPremiumAccess, setHasPremiumAccess] = useState(false);
+  const [courseIds, setCourseIds] = useState<CourseId[]>([]);
+  const [courseSchemaReady, setCourseSchemaReady] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
 
@@ -129,6 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles(data.roles);
     setBootstrapAvailable(data.bootstrapAvailable);
     setHasPremiumAccess(data.hasPremiumAccess);
+    setCourseIds(data.courseIds);
+    setCourseSchemaReady(data.courseSchemaReady);
     setSubscription(data.subscription);
   }, []);
 
@@ -190,6 +215,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRoles([]);
         setBootstrapAvailable(false);
         setHasPremiumAccess(false);
+        setCourseIds([]);
+        setCourseSchemaReady(false);
         setSubscription(null);
         return;
       }
@@ -204,6 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRoles([]);
         setBootstrapAvailable(false);
         setHasPremiumAccess(false);
+        setCourseIds([]);
+        setCourseSchemaReady(false);
         setSubscription(null);
       }
     });
@@ -256,9 +285,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         cedulaData,
       } = data;
 
+      if (!password || password.length < 8) {
+        return { error: 'La contraseña es obligatoria y debe tener al menos 8 caracteres.', needsEmailConfirmation: false };
+      }
+
       const { data: signUpData, error } = await supabase.auth.signUp({
         email: email.trim(),
-        password: password || 'TempMed2026!#',
+        password,
         options: {
           data: {
             full_name: fullName.trim(),
@@ -296,6 +329,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRoles([]);
     setBootstrapAvailable(false);
     setHasPremiumAccess(false);
+    setCourseIds([]);
+    setCourseSchemaReady(false);
     setSubscription(null);
   }, []);
 
@@ -331,25 +366,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = useCallback(
     async (updates: Partial<Profile>) => {
       if (!session?.user.id) return { error: 'No autenticado' };
-      let { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', session.user.id);
-
-      // Si la columna academic_institution aún no existe en Supabase (PGRST204 / 42703), reintentar sin ella
-      if (error && (error.message?.includes('academic_institution') || (error as any).code === 'PGRST204')) {
-        const { academic_institution, ...fallbackUpdates } = updates as any;
-        const retry = await supabase
-          .from('profiles')
-          .update(fallbackUpdates)
-          .eq('id', session.user.id);
-        if (!retry.error) {
-          await refreshProfile();
-          return { error: null };
-        }
-        error = retry.error;
+      const allowed: (keyof Profile)[] = [
+        'display_name',
+        'credentials',
+        'institution',
+        'academic_institution',
+        'specialty',
+        'residency_year',
+        'cedula_profesional',
+        'comefyr_member_id',
+        'avatar_url',
+        'bio',
+        'subspecialty',
+        'specialty_cedula',
+        'cmmr_certified',
+        'cmmr_number',
+        'phone',
+        'linkedin_url',
+        'orcid_id',
+        'clinical_interests',
+      ];
+      const payload: Record<string, unknown> = {};
+      for (const key of allowed) {
+        if (key in updates) payload[key] = updates[key];
       }
 
+      const { error } = await sb.rpc('update_my_profile', { p_updates: payload });
       if (!error) await refreshProfile();
       return { error: error?.message ?? null };
     },
@@ -397,34 +439,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<AuthContextValue>(() => {
-    const userEmail = (session?.user?.email ?? '').toLowerCase().trim();
-    // SuperAdmin bypass estricto únicamente para la cuenta principal del director
-    const isSuperAdminEmail = userEmail === 'jmyocupicior@gmail.com';
-
     const hasContributorRole = roles.includes('contributor');
-    const isAdmin = roles.includes('admin') || isSuperAdminEmail;
-    const isEditor = roles.includes('editor') || isSuperAdminEmail;
-    const isStudent = roles.includes('student') || isSuperAdminEmail;
-    // Admin/editor siempre pueden proponer; colaboradores tras verificación
+    const isAdmin = roles.includes('admin');
+    const isEditor = roles.includes('editor');
+    const isStudent = roles.includes('student');
     const canProposeContent =
       isAdmin ||
       isEditor ||
       (Boolean(profile?.verified_at) && hasContributorRole);
-    const isVerifiedContributor = canProposeContent || isSuperAdminEmail;
-    const enrollmentStatus: EnrollmentStatus = isSuperAdminEmail
-      ? 'approved'
-      : (profile?.enrollment_status ?? 'none');
+    const isVerifiedContributor = canProposeContent;
+    const enrollmentStatus: EnrollmentStatus = profile?.enrollment_status ?? 'none';
     const isEnrolledPhysician =
-      isSuperAdminEmail ||
       isAdmin ||
       isEditor ||
       (enrollmentStatus === 'approved' && Boolean(profile?.enrollment_verified_at));
     const isPendingApproval =
-      !isSuperAdminEmail && !isAdmin && !isEditor && (enrollmentStatus === 'pending' || enrollmentStatus === 'none');
+      !isAdmin && !isEditor && (enrollmentStatus === 'pending' || enrollmentStatus === 'none');
     const isRejected =
-      !isSuperAdminEmail && !isAdmin && !isEditor && enrollmentStatus === 'rejected';
+      !isAdmin && !isEditor && enrollmentStatus === 'rejected';
     const isCommitteeMember = isAdmin || isEditor;
-    const effectivePremium = hasPremiumAccess || isSuperAdminEmail;
+    const effectivePremium = hasPremiumAccess;
+    const staffOrPremium = isAdmin || isEditor || effectivePremium;
+    const legacyUnlock = !courseSchemaReady && isEnrolledPhysician;
+    const ownedCourses: CourseId[] = staffOrPremium || legacyUnlock
+      ? [...COURSE_IDS]
+      : courseIds;
+    const hasAnySellableCourse =
+      staffOrPremium || legacyUnlock || SELLABLE_COURSE_IDS.some((id) => ownedCourses.includes(id));
+    const hasCourseAccess = (courseId: CourseId) => {
+      if (staffOrPremium || legacyUnlock) return true;
+      if (courseId === 'referencia') return hasAnySellableCourse;
+      return ownedCourses.includes(courseId);
+    };
 
     return {
       session,
@@ -439,6 +485,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       canProposeContent,
       isEnrolledPhysician,
       hasPremiumAccess: effectivePremium,
+      courseIds: ownedCourses,
+      hasCourseAccess,
+      hasAnySellableCourse,
       subscription,
       enrollmentStatus,
       isEnrollmentPending: enrollmentStatus === 'pending',
@@ -463,6 +512,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roles,
       isLoading,
       hasPremiumAccess,
+      courseIds,
+      courseSchemaReady,
       subscription,
       bootstrapAvailable,
       refreshProfile,

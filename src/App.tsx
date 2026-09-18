@@ -1,10 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route, useSearchParams } from 'react-router-dom';
 import { Suspense } from 'react';
 import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
 import { useSettingsStore } from './stores/settingsStore';
 import { Header } from './Header';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import IOSInstallBanner from './components/IOSInstallBanner';
+import { SkipLink } from './components/a11y/SkipLink';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
@@ -27,8 +28,10 @@ const SpecialistsPage = lazy(() => import('./components/editorial/SpecialistsPag
 const PublicProfilePage = lazy(() => import('./components/editorial/PublicProfilePage'));
 const QuizEditorPage = lazy(() => import('./components/quiz/QuizEditorPage'));
 const ClinicalCaseEditorPage = lazy(() => import('./components/editorial/ClinicalCaseEditorPage'));
-const MyProgressPage = lazy(() => import('./components/quiz/MyProgressPage'));
 const StudentDashboard = lazy(() => import('./components/student/StudentDashboard'));
+const SimulatorsHubPage = lazy(() => import('./components/pages/SimulatorsHubPage'));
+const TraceSimulatorPage = lazy(() => import('./components/pages/TraceSimulatorPage'));
+const CertificateVerifyPage = lazy(() => import('./components/pages/CertificateVerifyPage'));
 const EditorialCommitteePage = lazy(() => import('./components/editorial/EditorialCommitteePage'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const AdminReviewQueue = lazy(() => import('./components/admin/AdminReviewQueue'));
@@ -45,7 +48,18 @@ const ExamSessionPage = lazy(() => import('./components/exam/ExamSessionPage'));
 const ExamResultsPage = lazy(() => import('./components/exam/ExamResultsPage'));
 const AdminStudentsListPage = lazy(() => import('./components/admin/AdminStudentsListPage'));
 const AdminStudentProgressPage = lazy(() => import('./components/admin/AdminStudentProgressPage'));
+const AdminExamAnalyticsPage = lazy(() => import('./components/admin/AdminExamAnalyticsPage'));
+const AdminAssignmentsAnalyticsPage = lazy(() => import('./components/admin/AdminAssignmentsAnalyticsPage'));
+const AdminAttendanceAnalyticsPage = lazy(() => import('./components/admin/AdminAttendanceAnalyticsPage'));
 const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerciseCasesPage'));
+const AdminSyllabusPage = lazy(() => import('./components/admin/AdminSyllabusPage'));
+const CoursesCatalogPage = lazy(() => import('./components/pages/CoursesCatalogPage'));
+
+function RedirectToPortal() {
+  const [params] = useSearchParams();
+  const query = params.toString();
+  return <Navigate to={query ? `/portal?${query}` : '/portal'} replace />;
+}
 
 function App() {
   const { isDarkMode } = useSettingsStore();
@@ -53,19 +67,24 @@ function App() {
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+        <SkipLink />
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Header />
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/verificar/:folio" element={<CertificateVerifyPage />} />
               <Route path="/temario" element={<SyllabusPage />} />
               <Route path="/programa" element={<SyllabusPage />} />
+              <Route path="/cursos" element={<CoursesCatalogPage />} />
 
               {/* Contenido formativo exclusivo para alumnos con suscripción */}
               <Route path="/modulo/:moduleId" element={<ProtectedRoute mode="enrolled"><ModulePage /></ProtectedRoute>} />
               <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
               
               {/* Simuladores y herramientas con candado exclusivo Premium */}
+              <Route path="/simuladores" element={<ProtectedRoute mode="premium"><SimulatorsHubPage /></ProtectedRoute>} />
+              <Route path="/simuladores/trazos" element={<ProtectedRoute mode="premium"><TraceSimulatorPage /></ProtectedRoute>} />
               <Route path="/ejercicios" element={<ProtectedRoute mode="premium"><ExerciseMode /></ProtectedRoute>} />
               <Route path="/herramientas/plexo-braquial" element={<ProtectedRoute mode="premium"><PlexoCalculatorPage /></ProtectedRoute>} />
 
@@ -107,12 +126,12 @@ function App() {
               <Route path="/colaborador/nuevo-caso" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/caso-clinico/:revisionId" element={<ProtectedRoute mode="verified"><ClinicalCaseEditorPage /></ProtectedRoute>} />
               <Route path="/colaborador/revision/:revisionId" element={<ProtectedRoute mode="verified"><RevisionEditorPage /></ProtectedRoute>} />
-              <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/mi-progreso" element={<ProtectedRoute mode="enrolled"><RedirectToPortal /></ProtectedRoute>} />
 
               {/* Portal del Estudiante / Alumno */}
-              <Route path="/dashboard" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
-              <Route path="/estudiante" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
               <Route path="/portal" element={<ProtectedRoute mode="student"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute mode="student"><RedirectToPortal /></ProtectedRoute>} />
+              <Route path="/estudiante" element={<ProtectedRoute mode="student"><RedirectToPortal /></ProtectedRoute>} />
 
               {/* Cuenta */}
               <Route path="/cuenta" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
@@ -123,8 +142,14 @@ function App() {
               <Route path="/admin/revisiones" element={<ProtectedRoute mode="editor"><AdminReviewQueue /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
+              <Route path="/admin/alumnos/examenes" element={<ProtectedRoute mode="editor"><AdminExamAnalyticsPage /></ProtectedRoute>} />
+              <Route path="/admin/alumnos/tareas" element={<ProtectedRoute mode="editor"><AdminAssignmentsAnalyticsPage /></ProtectedRoute>} />
+              <Route path="/admin/alumnos/asistencias" element={<ProtectedRoute mode="editor"><AdminAttendanceAnalyticsPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos/:studentId" element={<ProtectedRoute mode="editor"><AdminStudentProgressPage /></ProtectedRoute>} />
               <Route path="/admin/progreso" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
+              <Route path="/admin/progreso/examenes" element={<ProtectedRoute mode="editor"><AdminExamAnalyticsPage /></ProtectedRoute>} />
+              <Route path="/admin/progreso/tareas" element={<ProtectedRoute mode="editor"><AdminAssignmentsAnalyticsPage /></ProtectedRoute>} />
+              <Route path="/admin/progreso/asistencias" element={<ProtectedRoute mode="editor"><AdminAttendanceAnalyticsPage /></ProtectedRoute>} />
               <Route path="/admin/progreso/:studentId" element={<ProtectedRoute mode="editor"><AdminStudentProgressPage /></ProtectedRoute>} />
               <Route path="/admin/quizzes" element={<ProtectedRoute mode="editor"><AdminQuizzesPage /></ProtectedRoute>} />
               <Route path="/admin/quizzes/:topicId" element={<ProtectedRoute mode="editor"><AdminQuizzesPage /></ProtectedRoute>} />
@@ -132,6 +157,7 @@ function App() {
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
               <Route path="/admin/talleres" element={<ProtectedRoute mode="admin"><AdminWorkshopsPage /></ProtectedRoute>} />
               <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
+              <Route path="/admin/temario" element={<ProtectedRoute mode="editor"><AdminSyllabusPage /></ProtectedRoute>} />
               <Route path="/admin/ejercicios" element={<ProtectedRoute mode="editor"><AdminExerciseCasesPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>

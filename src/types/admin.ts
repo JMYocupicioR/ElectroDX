@@ -62,6 +62,7 @@ export interface AuditLogEntry {
 
 export interface AdminQuizAttemptRow {
   id: string;
+  user_id?: string | null;
   user_email: string;
   display_name: string;
   module_id: string;

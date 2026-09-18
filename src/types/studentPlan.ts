@@ -16,6 +16,7 @@ export interface StudentLearningPlan {
   priority_topics: string[];
   target_date?: string | null;
   status: 'active' | 'completed' | 'archived';
+  weekly_goal_minutes?: number | null;
   created_by?: string | null;
   created_at: string;
   updated_at: string;

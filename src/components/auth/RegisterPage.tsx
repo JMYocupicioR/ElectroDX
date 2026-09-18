@@ -106,7 +106,7 @@ export default function RegisterPage() {
   const academicInputRef = useRef<HTMLInputElement>(null);
   const [cedula, setCedula] = useState('');
   const [comefyrId, setComefyrId] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(true);
+  const [acceptTerms, setAcceptTerms] = useState(false);
 
   // Estados de verificación de Cédula Profesional SEP
   const [cedulaInput, setCedulaInput] = useState('');
@@ -194,12 +194,16 @@ export default function RegisterPage() {
     return score; // 0 a 4
   }, [password]);
 
-  const canProceedStep1 = fullName.trim().length >= 3 && email.includes('@') && password.length >= 6;
+  const canProceedStep1 = fullName.trim().length >= 3 && email.includes('@') && password.length >= 8;
   const canProceedStep2 = institution.trim().length >= 3;
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError(null);
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
     setLoading(true);
 
     const fullSpecialty =

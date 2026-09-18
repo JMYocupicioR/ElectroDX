@@ -10,6 +10,7 @@ import {
   reCacheAppShell,
   isIOSStandalone,
 } from './utils/pwaUtils';
+import { registerPwaUpdates } from './utils/pwaUpdate';
 
 // Stale service workers from preview/production builds can intercept Vite dev
 // requests and leave a blank page on localhost.
@@ -65,6 +66,7 @@ window.addEventListener(
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   requestPersistentStorage();
   reCacheAppShell();
+  registerPwaUpdates();
 
   if (isIOSStandalone()) {
     console.log('[PWA] Running in iOS standalone mode');

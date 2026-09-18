@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, sb } from '../lib/supabase';
 import type {
   AppRole,
   ContentRevision,
@@ -11,11 +11,9 @@ import type {
 } from '../types/database';
 
 export async function getPublicProfiles(): Promise<Profile[]> {
-  const { data, error } = await supabase
-    .from('profiles')
+  const { data, error } = await sb
+    .from('public_specialist_profiles')
     .select('*')
-    .eq('is_public', true)
-    .eq('enrollment_status', 'approved')
     .order('display_name');
   if (error) throw error;
   const seen = new Set<string>();
@@ -27,6 +25,13 @@ export async function getPublicProfiles(): Promise<Profile[]> {
 }
 
 export async function getProfileById(id: string): Promise<Profile | null> {
+  const { data: publicRow, error: publicError } = await sb
+    .from('public_specialist_profiles')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (!publicError && publicRow) return publicRow as Profile;
+
   const { data, error } = await supabase.from('profiles').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
   return (data as Profile | null) ?? null;
@@ -446,27 +451,7 @@ export async function getQuizEditorDataForTopic(topicId: string): Promise<{
     console.warn('[getQuizEditorDataForTopic] Error al consultar Supabase, probando fallback:', e);
   }
 
-  // 2. Fallback local estructurado con las 85 preguntas
-  try {
-    const { getLocalQuizForTopic } = await import('./localQuizzesFallback');
-    const { publishedQuestionsToDraft } = await import('../utils/quizScoring');
-    const local = getLocalQuizForTopic(topicId);
-    if (local && local.questions && local.questions.length > 0) {
-      return {
-        source: 'fallback',
-        title: local.title ?? 'Evaluación del tema',
-        passScore: local.pass_score ?? 70,
-        maxAttempts: local.max_attempts,
-        shuffleQuestions: local.shuffle_questions ?? true,
-        shuffleOptions: local.shuffle_options ?? true,
-        version: local.version ?? 1,
-        questionCount: local.question_count ?? local.questions.length,
-        questions: publishedQuestionsToDraft(local.questions),
-      };
-    }
-  } catch (e) {
-    console.warn('[getQuizEditorDataForTopic] Fallback error:', e);
-  }
+  // El banco de respuestas no se envía al cliente. El editor debe cargar desde Supabase.
 
   // 3. Vacío por defecto
   return {

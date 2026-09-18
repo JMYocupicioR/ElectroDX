@@ -8,7 +8,14 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:ejercicios": "tsc --noEmit -p tsconfig.ejercicios.json",
+    "validate:content": "node scripts/generate-clinical-content.mjs && npx --yes tsx --import ./scripts/register-assets.mjs scripts/generate-temario.ts",
+    "validate:quizzes": "node scripts/validate-quizzes.mjs",
+    "import:pending-quizzes": "node scripts/import-pending-quizzes.mjs",
+    "validate:secrets": "node scripts/check-secrets.mjs"
   },
   "dependencies": {
     "@fontsource/inter": "^5.0.16",

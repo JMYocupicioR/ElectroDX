@@ -1,14 +1,17 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { allModules } from '../content/modules';
 import { Topic } from '../types/content';
-import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, Unlock, CheckCircle2, Circle } from 'lucide-react';
+import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, CheckCircle2, Circle } from 'lucide-react';
 import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from './quiz/QuizTopicBadge';
 import { useAuth } from '../contexts/AuthProvider';
 import { useCourseStore } from '../stores/courseStore';
 import { useTopicProgress } from '../hooks/useTopicProgress';
+import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useSyllabusCatalog } from '../hooks/useSyllabusCatalog';
+import { getCourseIdForModule } from '../content/courseCatalog';
+import type { CourseId } from '../types/database';
 
 interface CourseSidebarProps {
   isOpen: boolean;
@@ -39,8 +42,9 @@ function topicTreeHasQuiz(topic: Topic, hasQuiz: (id: string) => boolean): boole
 export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const location = useLocation();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
-  const { hasPremiumAccess } = useAuth();
+  const { hasPremiumAccess, hasCourseAccess } = useAuth();
   const { moduleAccess, load: loadCourse } = useCourseStore();
+  const { grouped, modulesWithOverrides, assignments } = useSyllabusCatalog();
   const { isCompleted, getModuleStats } = useTopicProgress();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
@@ -69,10 +73,10 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
 
   // Flat search index
   const allTopics = useMemo(() => {
-    return allModules.flatMap(mod =>
+    return modulesWithOverrides.flatMap((mod) =>
       flattenForSearch(mod.topics, mod.id, mod.emoji)
     );
-  }, []);
+  }, [modulesWithOverrides]);
 
   // Search results
   const searchResults = useMemo(() => {
@@ -93,6 +97,16 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   }, []);
 
   const isSearching = searchQuery.trim().length >= 2;
+  const panelRef = useFocusTrap(isOpen);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
@@ -105,17 +119,22 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            aria-hidden="true"
             onClick={onClose}
           />
 
           {/* Sidebar Panel */}
           <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Temario curricular"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className="fixed left-0 top-0 bottom-0 z-[70] w-[85vw] sm:w-80 md:w-96 bg-white dark:bg-slate-900 shadow-2xl flex flex-col overflow-hidden"
           >
+            <div ref={panelRef} className="flex flex-col h-full min-h-0">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200/60 dark:border-slate-800/60 flex-shrink-0">
               <div className="flex items-center gap-2.5">
@@ -124,7 +143,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                 </div>
                 <div>
                   <h2 className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">Temario del Curso</h2>
-                  <p className="text-[0.65rem] text-slate-400 dark:text-slate-500">{allModules.length} módulos · {allTopics.length}+ temas</p>
+                  <p className="text-[0.65rem] text-slate-400 dark:text-slate-500">{modulesWithOverrides.length} módulos · 3 cursos</p>
                 </div>
               </div>
               <button
@@ -181,13 +200,26 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                 </div>
               ) : (
                 /* ── Module Tree ── */
-                <div className="space-y-1">
-                  {allModules.map((mod) => {
+                <div className="space-y-4">
+                  {grouped.map(({ course, modules }) => {
+                    if (!modules.length) return null;
+                    const courseLocked = !hasCourseAccess(course.id);
+                    return (
+                      <div key={course.id}>
+                        <div className="px-3 py-1.5 mb-1 flex items-center gap-2">
+                          <p className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            {course.title}
+                          </p>
+                          {courseLocked && <Lock className="w-3 h-3 text-amber-500" />}
+                        </div>
+                        <div className="space-y-1">
+                  {modules.map((mod) => {
                     const isExpanded = expandedModules.has(mod.id);
                     const isCurrent = currentModuleId === mod.id;
                     const access = moduleAccess.get(mod.id);
-                    const isPremium = access?.required_tier === 'premium';
-                    const isLocked = isPremium && !hasPremiumAccess;
+                    const isFree = access?.required_tier === 'free';
+                    const assignedCourse = getCourseIdForModule(assignments, mod.id);
+                    const isLocked = !isFree && !(assignedCourse ? hasCourseAccess(assignedCourse as CourseId) : hasPremiumAccess);
 
                     return (
                       <div key={mod.id}>
@@ -205,7 +237,6 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                             {mod.title}
                           </span>
                           {isLocked && <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mr-1" />}
-                          {!isPremium && <Unlock className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0 mr-1" />}
                           {moduleQuizCount(mod.id) > 0 && (
                             <QuizTopicBadge compact />
                           )}
@@ -267,6 +298,10 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                       </div>
                     );
                   })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </nav>
@@ -286,6 +321,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
               >
                 Ir al inicio
               </Link>
+            </div>
             </div>
           </motion.aside>
         </>

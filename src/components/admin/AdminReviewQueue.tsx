@@ -22,8 +22,9 @@ import {
   getTopicPublicUrl,
   REVISION_STATUS_LABELS,
 } from '../../utils/adminUtils';
+import { ClinicalQuizValidationPanel } from './ClinicalQuizValidationPanel';
 
-type QueueTab = 'pending' | 'history';
+type QueueTab = 'pending' | 'history' | 'clinical';
 
 async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayload | null> {
   if (rev.payload.revisionType === 'quiz') {
@@ -96,6 +97,10 @@ export default function AdminReviewQueue() {
   const [confirmApprove, setConfirmApprove] = useState(false);
 
   const load = async () => {
+    if (queueTab === 'clinical') {
+      setRevisions([]);
+      return;
+    }
     const data =
       queueTab === 'pending'
         ? await getPendingRevisions()
@@ -175,7 +180,7 @@ export default function AdminReviewQueue() {
   return (
     <AdminLayout title="Cola de revisión">
       <div className="flex flex-wrap gap-2 mb-4">
-        {(['pending', 'history'] as QueueTab[]).map((t) => (
+        {(['pending', 'history', 'clinical'] as QueueTab[]).map((t) => (
           <button
             key={t}
             type="button"
@@ -186,11 +191,15 @@ export default function AdminReviewQueue() {
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-600'
             }`}
           >
-            {t === 'pending' ? 'Pendientes' : 'Historial'}
+            {t === 'pending' ? 'Pendientes' : t === 'history' ? 'Historial' : 'Validación clínica'}
           </button>
         ))}
       </div>
 
+      {queueTab === 'clinical' && <ClinicalQuizValidationPanel />}
+
+      {queueTab !== 'clinical' && (
+      <>
       <div className="flex flex-wrap items-center gap-3 mb-6 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
         <Filter className="w-4 h-4 text-slate-400" />
         <select
@@ -372,6 +381,8 @@ export default function AdminReviewQueue() {
           </div>
         )}
       </div>
+      </>
+      )}
     </AdminLayout>
   );
 }

@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import type { ExamConfig, ExamQuestion } from '../../types/exam';
 import { loadExamResults } from '../../services/examService';
+import { useAuth } from '../../contexts/AuthProvider';
+import { completeAssignedExam } from '../../services/studentPlanService';
 
 type LocationState = {
   sessionId: string | null;
@@ -21,6 +23,7 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 export default function ExamResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const state = location.state as LocationState | null;
 
   const [results, setResults] = useState<{
@@ -79,7 +82,15 @@ export default function ExamResultsPage() {
         return { question: q, selectedIndex, isCorrect };
       });
 
-      const scorePercentage = Math.round((correct / questions.length) * 100);
+      const scorePercentage = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
+
+      if (assignmentId && user?.id) {
+        try {
+          await completeAssignedExam(assignmentId, user.id, scorePercentage, duration, sessionId);
+        } catch (err) {
+          console.error('[ExamResultsPage] No se pudo asentar el examen asignado:', err);
+        }
+      }
 
       // Breakdown por tema
       const topicMap = new Map<string, { correct: number; total: number; criticalFailures: number }>();
@@ -111,7 +122,7 @@ export default function ExamResultsPage() {
     }
 
     computeResults();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!results) {
     return (

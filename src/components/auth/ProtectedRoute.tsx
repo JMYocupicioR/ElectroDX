@@ -42,7 +42,7 @@ export function ProtectedRoute({
 
   // Si es un médico en espera de admisión o rechazado intentando entrar al curso o portal
   if (!isAdmin && !isEditor && (isPendingApproval || isRejected)) {
-    if (mode === 'enrolled' || mode === 'student' || mode === 'premium' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/modulo') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes') || location.pathname.startsWith('/herramientas')) {
+    if (mode === 'enrolled' || mode === 'student' || mode === 'premium' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/estudiante') || location.pathname.startsWith('/modulo') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes') || location.pathname.startsWith('/herramientas')) {
       return <PendingApprovalGate />;
     }
   }
@@ -57,19 +57,19 @@ export function ProtectedRoute({
 
   // Rutas exclusivas del equipo editorial / colaboradores
   if (mode === 'contributor' && !isAdmin && !isEditor && !roles.includes('contributor')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/portal" replace />;
   }
 
   if (mode === 'verified') {
     if (!isAdmin && !isEditor && !roles.includes('contributor')) {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/portal" replace />;
     }
     if (!isVerifiedContributor) {
       return <Navigate to="/perfil" replace />;
     }
   }
 
-  const canAccessEnrolled = isEnrolledPhysician || hasPremiumAccess;
+  const canAccessEnrolled = isEnrolledPhysician || hasPremiumAccess || isAdmin || isEditor;
   if ((mode === 'enrolled' || mode === 'student') && !canAccessEnrolled) {
     if (isPendingApproval || isRejected) {
       return <PendingApprovalGate />;
@@ -78,11 +78,11 @@ export function ProtectedRoute({
   }
 
   if (mode === 'editor' && !isAdmin && !isEditor) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/portal" replace />;
   }
 
   if (mode === 'admin' && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/portal" replace />;
   }
 
   return <>{children}</>;

@@ -55,6 +55,7 @@ export interface StudentMilestoneAudit {
 }
 
 export type AttendanceStatus = 'present' | 'late' | 'excused' | 'absent';
+export type SessionModality = 'in_person' | 'online';
 
 export interface ClassAttendanceRecord {
   id: string;
@@ -63,6 +64,7 @@ export interface ClassAttendanceRecord {
   workshop_id?: string | null;
   student_id: string;
   status: AttendanceStatus;
+  session_modality?: SessionModality | null;
   minutes_attended?: number | null;
   notes?: string | null;
   created_at: string;

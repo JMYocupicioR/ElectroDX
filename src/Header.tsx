@@ -19,6 +19,8 @@ import {
   BrainCircuit,
   Wrench,
   Lock,
+  ClipboardList,
+  PanelLeft,
 } from 'lucide-react';
 import { BrandLogo } from './components/brand/BrandLogo';
 import { CourseSidebar } from './components/CourseSidebar';
@@ -83,9 +85,21 @@ export function Header() {
             </Link>
 
             <Link
-              to="/herramientas/plexo-braquial"
+              to="/cursos"
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                location.pathname.startsWith('/herramientas') || location.pathname === '/ejercicios'
+                location.pathname === '/cursos'
+                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>Cursos</span>
+            </Link>
+
+            <Link
+              to="/simuladores"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                location.pathname.startsWith('/herramientas') || location.pathname === '/ejercicios' || location.pathname === '/simuladores'
                   ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
                   : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
               }`}
@@ -96,6 +110,30 @@ export function Header() {
                 PRO
               </span>
             </Link>
+
+            <Link
+              to="/examenes"
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                location.pathname.startsWith('/examenes')
+                  ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <ClipboardList className="w-4 h-4" />
+              <span>Exámenes</span>
+            </Link>
+
+            {user && (
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('open-course-sidebar'))}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                aria-label="Abrir temario curricular"
+              >
+                <PanelLeft className="w-4 h-4" />
+                <span>Currículo</span>
+              </button>
+            )}
 
             {isSupabaseConfigured && (
               <>
@@ -149,7 +187,7 @@ export function Header() {
 
             {isSupabaseConfigured && user && !isAdmin && isPendingApproval && (
               <Link
-                to="/dashboard"
+                to="/portal"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-300/80 dark:border-amber-700/80 hover:bg-amber-100/60 transition-all shadow-xs"
                 title="En espera de aprobación por el Comité"
               >
@@ -160,7 +198,7 @@ export function Header() {
 
             {isSupabaseConfigured && user && !isAdmin && !isPendingApproval && (
               <Link
-                to="/dashboard"
+                to="/portal"
                 className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600/10 via-indigo-600/10 to-cyan-500/10 dark:from-blue-950/60 dark:to-indigo-950/60 text-blue-600 dark:text-cyan-300 border border-blue-200/80 dark:border-blue-800/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all shadow-xs"
                 title="Ir a Mi Portal de Estudiante"
               >
@@ -278,7 +316,7 @@ export function Header() {
                       </Link>
                     ) : isPendingApproval ? (
                       <Link
-                        to="/dashboard"
+                        to="/portal"
                         onClick={() => setMobileMenuOpen(false)}
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold shadow-xs"
                       >
@@ -287,7 +325,7 @@ export function Header() {
                       </Link>
                     ) : (
                       <Link
-                        to="/dashboard"
+                        to="/portal"
                         onClick={() => setMobileMenuOpen(false)}
                         className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
                       >
@@ -336,24 +374,45 @@ export function Header() {
                   >
                     <div className="flex items-center gap-3">
                       <BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-                      <span>Temario y 13 Módulos</span>
+                      <span>Temario curricular</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
 
                   <Link
-                    to="/herramientas/plexo-braquial"
+                    to="/cursos"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <GraduationCap className="w-4 h-4" />
+                      <span>Cursos por nivel</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </Link>
+
+                  <Link
+                    to="/simuladores"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
                   >
                     <div className="flex items-center gap-3">
                       <Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Calculadora de Plexo Braquial</span>
+                      <span>Simuladores</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">Premium</span>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                  </Link>
+
+                  <Link
+                    to="/examenes"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
+                  >
+                    <div className="flex items-center gap-3">
+                      <ClipboardList className="w-4 h-4 text-cyan-600" />
+                      <span>Exámenes</span>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </Link>
 
                   <Link

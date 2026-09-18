@@ -4,97 +4,12 @@ Este documento contiene el índice jerárquico de todos los módulos, temas y su
 
 ## 📊 Resumen General del Contenido
 
-- **Módulos totales:** 13
-- **Temas/Subtemas totales:** 468
-- **Temas con contenido redactado:** 369
+- **Módulos totales:** 17
+- **Temas/Subtemas totales:** 497
+- **Temas con contenido redactado:** 396
 - **Temas vacíos / por redactar:** 0
-- **Temas con contenido muy corto (< 60 palabras) para ampliación:** 73
-- **Total de palabras del curso:** 52,262 palabras
-
-### ⚠️ Temas Cortos Sugeridos para Ampliación (Menos de 60 palabras)
-Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deben ser expandidos:
-
-* **Fundamentos de Neurofisiología Clínica**:
-  - `axonal-membrane` — **Membrana axonal y canales iónicos** (41 palabras)
-  - `myelin-sheath` — **Vaina de mielina y células de Schwann** (48 palabras)
-  - `nodes-saltatory` — **Nódulos de Ranvier y conducción saltatoria** (47 palabras)
-  - `wallerian-degeneration` — **Degeneración Walleriana y regeneración axonal** (42 palabras)
-  - `fiber-types` — **Fibras Aα, Aβ, Aδ, B y C** (51 palabras)
-  - `endo-peri-epineurium` — **Endoneuro, perineuro, epineuro** (52 palabras)
-  - `motor-unit-composition` — **Composición: motoneurona + axón + UNM + fibras musculares** (49 palabras)
-  - `innervation-ratio` — **Ratio de inervación** (35 palabras)
-  - `motor-unit-territory` — **Territorio de la unidad motora** (45 palabras)
-  - `action-potential-generation` — **Generación y propagación del potencial de acción** (48 palabras)
-  - `neuromuscular-transmission` — **Transmisión neuromuscular: acetilcolina y receptores nicotínicos** (55 palabras)
-  - `excitation-contraction` — **Acoplamiento excitación-contracción** (48 palabras)
-  - `fiber-types` — **Fibras musculares tipo I vs. tipo II** (50 palabras)
-* **Estudios de Conducción Nerviosa**:
-  - `facial-motor` — **Nervio Facial (VII)** (30 palabras)
-  - `trigeminal-motor` — **Nervio Trigémino motor (V)** (8 palabras)
-  - `accessory-motor` — **Nervio Espinal Accesorio (XI)** (13 palabras)
-  - `hypoglossal-motor` — **Nervio Hipogloso (XII)** (9 palabras)
-  - `glossopharyngeal-motor` — **Nervio Glosofaríngeo motor (IX)** (8 palabras)
-  - `vagus-motor` — **Nervio Vago motor (X)** (11 palabras)
-  - `motor-interpretation` — **Interpretación: normal vs. axonal vs. desmielinizante** (37 palabras)
-  - `snap-morphology` — **El PANS (SNAP): morfología y medición** (43 palabras)
-  - `onset-peak-latency` — **Latencia de inicio y latencia pico** (37 palabras)
-  - `snap-amplitude` — **Amplitud del SNAP** (43 palabras)
-  - `sensory-cv` — **Velocidad de conducción sensitiva (VCS)** (30 palabras)
-  - `antidromic-orthodromic` — **Técnica antidrómica vs. ortodrómica** (33 palabras)
-  - `pre-post-ganglionic` — **Significado clínico: lesiones pre vs. postganglionares** (49 palabras)
-  - `age-height` — **Efecto de la edad y estatura** (36 palabras)
-  - `stimulus-artifact` — **Artefacto de estímulo** (32 palabras)
-  - `martin-gruber` — **Anomalías anatómicas: Martin-Gruber y Riche-Cannieu** (44 palabras)
-* **Electromiografía de Aguja**:
-  - `early-recruitment` — **Reclutamiento precoz (miopático)** (55 palabras)
-  - `reduced-recruitment` — **Reclutamiento disminuido (neurogénico)** (53 palabras)
-  - `fdi` — **Primer interóseo dorsal** (17 palabras)
-  - `apb` — **Abductor corto del pulgar** (21 palabras)
-  - `biceps` — **Bíceps braquial** (17 palabras)
-  - `triceps` — **Tríceps braquial** (14 palabras)
-  - `deltoid` — **Deltoides** (16 palabras)
-  - `forearm-extensors` — **Extensores del antebrazo** (15 palabras)
-  - `cervical-paraspinals` — **Paraespinales cervicales** (15 palabras)
-  - `tibialis-anterior` — **Tibial anterior** (14 palabras)
-  - `medial-gastrocnemius` — **Gastrocnemio medial** (8 palabras)
-  - `vastus-lateralis` — **Vasto lateral** (13 palabras)
-  - `gluteus-medius` — **Glúteo medio** (12 palabras)
-  - `ehl` — **Extensor largo del hallux** (13 palabras)
-  - `lumbar-paraspinals` — **Paraespinales lumbares** (14 palabras)
-* **Respuestas Tardías y Reflejos**:
-  - `f-wave-utility` — **Utilidad Clínica** (52 palabras)
-  - `h-reflex-physiology` — **Fisiología** (59 palabras)
-  - `h-reflex-values-utilty` — **Valores Normales y Utilidad** (55 palabras)
-  - `a-wave-pathophysiology` — **Fisiopatología** (56 palabras)
-  - `blink-technique` — **Técnica de Registro** (55 palabras)
-* **Patologías Neuromusculares y Patrones Electrodiagnósticos**:
-  - `uremic-neuropathy` — **Neuropatía Urémica** (59 palabras)
-* **Referencia Rápida y Tablas Clínicas**:
-  - `block-vs-dispersion` — **Bloqueo Quirúrgico vs Dispersión Temporal** (50 palabras)
-  - `f-wave-tables` — **Latencias de Onda F y Criterios** (45 palabras)
-  - `h-reflex-tables` — **Reflejo H (S1 / Tibial-Sóleo)** (27 palabras)
-  - `ssep-vep-tables` — **PESS y Valores Centrales PEV** (42 palabras)
-  - `segmental-table` — **Miotomas Segmentarios Clínicos** (37 palabras)
-  - `dermatome-table` — **Dermatomas y Referencia Táctil** (34 palabras)
-  - `emg-muscle-table` — **Protocolos Musculares Needle EMG** (44 palabras)
-* **Referencias y Bibliografía**:
-  - `aanem-guidelines` — **Guías de la AANEM** (37 palabras)
-  - `atlases-videos` — **Atlas fotográficos y videos de técnica** (38 palabras)
-  - `online-resources` — **Recursos en línea y calculadoras** (40 palabras)
-* **Seguridad, Errores y Control de Calidad**:
-  - `clinical-impact` — **Impacto Clínico del Frío** (43 palabras)
-  - `standard-requirements` — **Requisitos Estándar** (34 palabras)
-  - `60hz-noise` — **Interferencia de línea (60Hz)** (37 palabras)
-  - `stimulus-artifact` — **Artefacto de Estímulo Excesivo** (35 palabras)
-  - `co-stimulation` — **Co-estimulación (Efecto de Volumen)** (31 palabras)
-  - `distance-errors` — **Errores de Medición de Distancia** (45 palabras)
-  - `pacemakers-icd` — **Marcapasos y Desfibriladores (DAI)** (49 palabras)
-  - `bleeding-risk` — **Riesgo de Sangrado (Anticoagulantes)** (45 palabras)
-  - `infection-risk` — **Riesgo de Infección y Daño Cutáneo** (34 palabras)
-  - `pneumothorax` — **Riesgo Crítico de Neumotórax** (38 palabras)
-  - `supramaximal` — **Estímulo Supramáximo Riguroso** (42 palabras)
-  - `sweep-gain` — **Configuración Sensitiva vs Motora** (28 palabras)
-  - `reproducibility` — **Reproducibilidad Mínima** (36 palabras)
+- **Temas con contenido muy corto (< 60 palabras) para ampliación:** 0
+- **Total de palabras del curso:** 79,753 palabras
 
 ---
 
@@ -118,26 +33,26 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
     - **Soma, dendritas, axón, terminales sinápticas** `(soma-dendrites-axon)` — ✅ **[144 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Neurona motora superior vs. inferior** `(umn-vs-lmn)` — ✅ **[123 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
   - **El axón periférico** `(peripheral-axon)` — *(Agrupador: 4 subtemas)*
-    - **Membrana axonal y canales iónicos** `(axonal-membrane)` — ⚠️ **[Muy corto: 41 palabras]**
-    - **Vaina de mielina y células de Schwann** `(myelin-sheath)` — ⚠️ **[Muy corto: 48 palabras]**
-    - **Nódulos de Ranvier y conducción saltatoria** `(nodes-saltatory)` — ⚠️ **[Muy corto: 47 palabras]**
-    - **Degeneración Walleriana y regeneración axonal** `(wallerian-degeneration)` — ⚠️ **[Muy corto: 42 palabras]**
+    - **Membrana axonal y canales iónicos** `(axonal-membrane)` — ✅ **[340 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Vaina de mielina y células de Schwann** `(myelin-sheath)` — ✅ **[347 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Nódulos de Ranvier y conducción saltatoria** `(nodes-saltatory)` — ✅ **[345 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Degeneración Walleriana y regeneración axonal** `(wallerian-degeneration)` — ✅ **[341 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **Clasificación de fibras nerviosas** `(nerve-fiber-classification)` — *(Agrupador: 3 subtemas)*
-    - **Fibras Aα, Aβ, Aδ, B y C** `(fiber-types)` — ⚠️ **[Muy corto: 51 palabras]**
+    - **Fibras Aα, Aβ, Aδ, B y C** `(fiber-types)` — ✅ **[351 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Velocidades de conducción por tipo de fibra** `(cv-by-fiber)` — ✅ **[143 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Correlación clínica de cada grupo de fibras** `(clinical-correlation)` — ✅ **[116 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **Anatomía del nervio periférico** `(peripheral-nerve-anatomy)` — *(Agrupador: 2 subtemas)*
-    - **Endoneuro, perineuro, epineuro** `(endo-peri-epineurium)` — ⚠️ **[Muy corto: 52 palabras]**
+    - **Endoneuro, perineuro, epineuro** `(endo-peri-epineurium)` — ✅ **[343 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Vasa nervorum y barrera hemato-neural** `(vasa-nervorum)` — ✅ **[114 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **La unidad motora** `(motor-unit)` — *(Agrupador: 3 subtemas)*
-    - **Composición: motoneurona + axón + UNM + fibras musculares** `(motor-unit-composition)` — ⚠️ **[Muy corto: 49 palabras]**
-    - **Ratio de inervación** `(innervation-ratio)` — ⚠️ **[Muy corto: 35 palabras]**
-    - **Territorio de la unidad motora** `(motor-unit-territory)` — ⚠️ **[Muy corto: 45 palabras]**
+    - **Composición: motoneurona + axón + UNM + fibras musculares** `(motor-unit-composition)` — ✅ **[361 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Ratio de inervación** `(innervation-ratio)` — ✅ **[321 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Territorio de la unidad motora** `(motor-unit-territory)` — ✅ **[338 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Neurofisiología de la Contracción Muscular** `(muscle-contraction-physiology)` — *(Agrupador: 4 subtemas)*
-  - **Generación y propagación del potencial de acción** `(action-potential-generation)` — ⚠️ **[Muy corto: 48 palabras]**
-  - **Transmisión neuromuscular: acetilcolina y receptores nicotínicos** `(neuromuscular-transmission)` — ⚠️ **[Muy corto: 55 palabras]**
-  - **Acoplamiento excitación-contracción** `(excitation-contraction)` — ⚠️ **[Muy corto: 48 palabras]**
-  - **Fibras musculares tipo I vs. tipo II** `(fiber-types)` — ⚠️ **[Muy corto: 50 palabras]**
+  - **Generación y propagación del potencial de acción** `(action-potential-generation)` — ✅ **[346 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Transmisión neuromuscular: acetilcolina y receptores nicotínicos** `(neuromuscular-transmission)` — ✅ **[348 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Acoplamiento excitación-contracción** `(excitation-contraction)` — ✅ **[328 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Fibras musculares tipo I vs. tipo II** `(fiber-types)` — ✅ **[263 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
 
 ---
 
@@ -146,11 +61,11 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 
 - **Principios Generales de Neuroconducción** `(general-principles)` — *(Agrupador: 5 subtemas)*
   - **Estimulación eléctrica: cátodo vs. ánodo** `(cathode-anode)` — ✅ **[185 palabras]** _(🎬 1 YouTube, 💡 2 perlas, 📌 4 puntos clave)_
-  - **Estimulación supramáxima** `(supramaximal)` — ✅ **[220 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
+  - **Estimulación supramáxima** `(supramaximal)` — ✅ **[495 palabras]** _(💡 4 perlas, 📌 7 puntos clave)_
   - **Electrodos de registro: activo, referencia, tierra** `(electrodes)` — ✅ **[196 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
   - **Distancia entre electrodos y conducción de volumen** `(distance-volume)` — ✅ **[226 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
   - **Promedios y artefactos** `(averaging-artifacts)` — ✅ **[193 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
-- **Neuroconducción Motora** `(motor-conduction)` — *(Agrupador: 9 subtemas)*
+- **Neuroconducción Motora** `(motor-conduction)` — *(Agrupador: 10 subtemas)*
   - **El PAMC (CMAP): componentes y morfología** `(cmap-components)` — ✅ **[208 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
   - **Latencia motora distal (LMD)** `(distal-latency)` — ✅ **[182 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
   - **Amplitud del CMAP** `(cmap-amplitude)` — ✅ **[164 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
@@ -168,19 +83,21 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
     - **Nervio Peroneo Común (profundo)** `(peroneal-motor)` — ✅ **[576 palabras]** _(💡 8 perlas, 📌 6 puntos clave)_
     - **Nervio Femoral** `(femoral-motor)` — ✅ **[402 palabras]** _(💡 6 perlas, 📌 6 puntos clave)_
   - **Nervios craneales motores** `(cranial-motor)` — *(Agrupador: 6 subtemas)*
-    - **Nervio Facial (VII)** `(facial-motor)` — ⚠️ **[Muy corto: 30 palabras]**
-    - **Nervio Trigémino motor (V)** `(trigeminal-motor)` — ⚠️ **[Muy corto: 8 palabras]**
-    - **Nervio Espinal Accesorio (XI)** `(accessory-motor)` — ⚠️ **[Muy corto: 13 palabras]**
-    - **Nervio Hipogloso (XII)** `(hypoglossal-motor)` — ⚠️ **[Muy corto: 9 palabras]**
-    - **Nervio Glosofaríngeo motor (IX)** `(glossopharyngeal-motor)` — ⚠️ **[Muy corto: 8 palabras]**
-    - **Nervio Vago motor (X)** `(vagus-motor)` — ⚠️ **[Muy corto: 11 palabras]**
-  - **Interpretación: normal vs. axonal vs. desmielinizante** `(motor-interpretation)` — ⚠️ **[Muy corto: 37 palabras]**
+    - **Nervio Facial (VII)** `(facial-motor)` — ✅ **[608 palabras]** _(💡 6 perlas, 📌 9 puntos clave)_
+    - **Nervio Trigémino motor (V)** `(trigeminal-motor)` — ✅ **[630 palabras]** _(💡 5 perlas, 📌 8 puntos clave)_
+    - **Nervio Espinal Accesorio (XI)** `(accessory-motor)` — ✅ **[293 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Nervio Hipogloso (XII)** `(hypoglossal-motor)` — ✅ **[286 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Nervio Glosofaríngeo motor (IX)** `(glossopharyngeal-motor)` — ✅ **[294 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Nervio Vago motor (X)** `(vagus-motor)` — ✅ **[290 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Nervios del Tronco y Respiratorios** `(trunk-nerves)` — *(Agrupador: 1 subtemas)*
+    - **Nervio Frénico y Diafragma** `(phrenic-motor)` — ✅ **[306 palabras]** _(💡 4 perlas, 📌 5 puntos clave)_
+  - **Interpretación: normal vs. axonal vs. desmielinizante** `(motor-interpretation)` — ✅ **[323 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Neuroconducción Sensitiva** `(sensory-conduction)` — *(Agrupador: 8 subtemas)*
-  - **El PANS (SNAP): morfología y medición** `(snap-morphology)` — ⚠️ **[Muy corto: 43 palabras]**
-  - **Latencia de inicio y latencia pico** `(onset-peak-latency)` — ⚠️ **[Muy corto: 37 palabras]**
-  - **Amplitud del SNAP** `(snap-amplitude)` — ⚠️ **[Muy corto: 43 palabras]**
-  - **Velocidad de conducción sensitiva (VCS)** `(sensory-cv)` — ⚠️ **[Muy corto: 30 palabras]**
-  - **Técnica antidrómica vs. ortodrómica** `(antidromic-orthodromic)` — ⚠️ **[Muy corto: 33 palabras]**
+  - **El PANS (SNAP): morfología y medición** `(snap-morphology)` — ✅ **[330 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Latencia de inicio y latencia pico** `(onset-peak-latency)` — ✅ **[325 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Amplitud del SNAP** `(snap-amplitude)` — ✅ **[321 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Velocidad de conducción sensitiva (VCS)** `(sensory-cv)` — ✅ **[319 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Técnica antidrómica vs. ortodrómica** `(antidromic-orthodromic)` — ✅ **[314 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **Nervios sensitivos del miembro superior** `(upper-limb-sensory)` — *(Agrupador: 5 subtemas)*
     - **Nervio Mediano sensitivo (dedo 2 y 3)** `(median-sensory)` — ✅ **[418 palabras]** _(💡 6 perlas, 📌 6 puntos clave)_
     - **Nervio Ulnar sensitivo (dedo 5)** `(ulnar-sensory)` — ✅ **[339 palabras]** _(💡 5 perlas, 📌 5 puntos clave)_
@@ -193,22 +110,27 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
     - **Nervio Safeno** `(saphenous-sensory)` — ✅ **[322 palabras]** _(💡 5 perlas, 📌 5 puntos clave)_
     - **Nervio Femorocutáneo Lateral** `(lateral-femoral-cutaneous)` — ✅ **[304 palabras]** _(💡 5 perlas, 📌 5 puntos clave)_
     - **Nervio Plantar (medial y lateral)** `(plantar-nerves)` — ✅ **[336 palabras]** _(💡 5 perlas, 📌 5 puntos clave)_
-  - **Significado clínico: lesiones pre vs. postganglionares** `(pre-post-ganglionic)` — ⚠️ **[Muy corto: 49 palabras]**
+  - **Significado clínico: lesiones pre vs. postganglionares** `(pre-post-ganglionic)` — ✅ **[335 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Neuroconducción Mixta** `(mixed-conduction)` — *(Agrupador: 3 subtemas)*
   - **Registro de fibras motoras y sensitivas combinadas** `(mixed-recording)` — ✅ **[140 palabras]** _(💡 1 perlas, 📌 3 puntos clave)_
   - **Palmar mixing study** `(palmar-mixing)` — ✅ **[141 palabras]** _(💡 1 perlas, 📌 3 puntos clave)_
   - **Aferentes Ia (fibras propioceptivas)** `(ia-afferents)` — ✅ **[114 palabras]** _(📌 3 puntos clave)_
 - **Factores Técnicos y Artefactos** `(technical-factors)` — *(Agrupador: 6 subtemas)*
   - **Efecto de la temperatura** `(temperature-effect)` — ✅ **[121 palabras]**
-  - **Efecto de la edad y estatura** `(age-height)` — ⚠️ **[Muy corto: 36 palabras]**
-  - **Artefacto de estímulo** `(stimulus-artifact)` — ⚠️ **[Muy corto: 32 palabras]**
+  - **Efecto de la edad y estatura** `(age-height)` — ✅ **[328 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Artefacto de estímulo** `(stimulus-artifact)` — ✅ **[312 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **Coestimulación y anastomosis** `(costimulation)` — ✅ **[128 palabras]** _(💡 1 perlas, 📌 3 puntos clave)_
   - **Errores comunes en la colocación de electrodos** `(electrode-errors)` — ✅ **[155 palabras]** _(💡 1 perlas, 📌 4 puntos clave)_
-  - **Anomalías anatómicas: Martin-Gruber y Riche-Cannieu** `(martin-gruber)` — ⚠️ **[Muy corto: 44 palabras]**
+  - **Anomalías anatómicas: Martin-Gruber y Riche-Cannieu** `(martin-gruber)` — ✅ **[329 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Fenómenos Patológicos en Neuroconducción** `(pathological-phenomena)` — *(Agrupador: 3 subtemas)*
   - **Bloqueo de conducción: definición y criterios** `(conduction-block)` — ✅ **[156 palabras]**
   - **Dispersión temporal** `(temporal-dispersion)` — ✅ **[126 palabras]**
   - **Patrón axonal vs. desmielinizante** `(axonal-vs-demyelinating)` — ✅ **[110 palabras]**
+- **Variantes Anatómicas y Técnicas Especiales** `(nerve-conduction-special)` — *(Agrupador: 4 subtemas)*
+  - **Anastomosis de Martin-Gruber (AMG)** `(martin-gruber)` — ✅ **[773 palabras]** _(💡 6 perlas, 📌 7 puntos clave)_
+  - **Técnica de Inching Segmentario** `(inching-technique)` — ✅ **[366 palabras]** _(💡 3 perlas, 📌 4 puntos clave)_
+  - **Estudios en Palma (Nervio Mixto Mediano vs. Cubital)** `(palm-studies)` — ✅ **[352 palabras]** _(💡 3 perlas, 📌 4 puntos clave)_
+  - **Estudio Lumbrical-Interóseo (L2-INT1)** `(lumbrical-interosseous)` — ✅ **[322 palabras]** _(💡 3 perlas, 📌 4 puntos clave)_
 - **Respuestas Tardías (Onda F y Reflejo H)** `(late-responses)` — *(Agrupador: 3 subtemas)*
   - **La Onda F: principios y técnica** `(f-wave-principles)` — ✅ **[125 palabras]** _(💡 1 perlas)_
   - **El Reflejo H: el arco reflejo S1** `(h-reflex-principles)` — ✅ **[112 palabras]** _(💡 1 perlas)_
@@ -255,8 +177,8 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
   - **Contracción voluntaria máxima** `(voluntary-maximal)` — *(Agrupador: 5 subtemas)*
     - **Patrón de reclutamiento** `(recruitment-pattern)` — ✅ **[137 palabras]** _(🎥 1 video(s), 💡 2 perlas, 📌 4 puntos clave)_
     - **Patrón de interferencia completo** `(full-interference)` — ✅ **[127 palabras]** _(📌 4 puntos clave)_
-    - **Reclutamiento precoz (miopático)** `(early-recruitment)` — ⚠️ **[Muy corto: 55 palabras]**
-    - **Reclutamiento disminuido (neurogénico)** `(reduced-recruitment)` — ⚠️ **[Muy corto: 53 palabras]** _(🎥 1 video(s))_
+    - **Reclutamiento precoz (miopático)** `(early-recruitment)` — ✅ **[336 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Reclutamiento disminuido (neurogénico)** `(reduced-recruitment)` — ✅ **[335 palabras]** _(🎥 1 video(s), 💡 2 perlas, 📌 3 puntos clave)_
     - **Análisis cuantitativo turns/amplitud** `(turns-amplitude)` — ✅ **[65 palabras]**
 - **EMG Cuantitativa** `(quantitative-emg)` — *(Agrupador: 3 subtemas)*
   - **Análisis automático de PUM** `(automatic-mup)` — ✅ **[99 palabras]** _(📌 4 puntos clave)_
@@ -273,20 +195,21 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
   - **Evaluación de fatiga muscular** `(fatigue-assessment)` — ✅ **[121 palabras]** _(📌 4 puntos clave)_
 - **Músculos Explorados en EMG** `(muscles-explored)` — *(Agrupador: 4 subtemas)*
   - **Miembro superior** `(upper-limb-muscles)` — *(Agrupador: 7 subtemas)*
-    - **Primer interóseo dorsal** `(fdi)` — ⚠️ **[Muy corto: 17 palabras]**
-    - **Abductor corto del pulgar** `(apb)` — ⚠️ **[Muy corto: 21 palabras]**
-    - **Bíceps braquial** `(biceps)` — ⚠️ **[Muy corto: 17 palabras]**
-    - **Tríceps braquial** `(triceps)` — ⚠️ **[Muy corto: 14 palabras]**
-    - **Deltoides** `(deltoid)` — ⚠️ **[Muy corto: 16 palabras]**
-    - **Extensores del antebrazo** `(forearm-extensors)` — ⚠️ **[Muy corto: 15 palabras]**
-    - **Paraespinales cervicales** `(cervical-paraspinals)` — ⚠️ **[Muy corto: 15 palabras]** _(🎥 1 video(s))_
-  - **Miembro inferior** `(lower-limb-muscles)` — *(Agrupador: 6 subtemas)*
-    - **Tibial anterior** `(tibialis-anterior)` — ⚠️ **[Muy corto: 14 palabras]**
-    - **Gastrocnemio medial** `(medial-gastrocnemius)` — ⚠️ **[Muy corto: 8 palabras]**
-    - **Vasto lateral** `(vastus-lateralis)` — ⚠️ **[Muy corto: 13 palabras]**
-    - **Glúteo medio** `(gluteus-medius)` — ⚠️ **[Muy corto: 12 palabras]**
-    - **Extensor largo del hallux** `(ehl)` — ⚠️ **[Muy corto: 13 palabras]**
-    - **Paraespinales lumbares** `(lumbar-paraspinals)` — ⚠️ **[Muy corto: 14 palabras]**
+    - **Primer interóseo dorsal (FDI / PID)** `(fdi)` — ✅ **[347 palabras]** _(💡 4 perlas, 📌 7 puntos clave)_
+    - **Abductor corto del pulgar (APB)** `(apb)` — ✅ **[352 palabras]** _(💡 6 perlas, 📌 7 puntos clave)_
+    - **Bíceps braquial** `(biceps)` — ✅ **[339 palabras]** _(💡 4 perlas, 📌 7 puntos clave)_
+    - **Tríceps braquial (Cabeza lateral)** `(triceps)` — ✅ **[359 palabras]** _(💡 5 perlas, 📌 7 puntos clave)_
+    - **Deltoides (Cabeza media)** `(deltoid)` — ✅ **[331 palabras]** _(💡 5 perlas, 📌 7 puntos clave)_
+    - **Extensores del antebrazo** `(forearm-extensors)` — ✅ **[293 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Paraespinales cervicales** `(cervical-paraspinals)` — ✅ **[364 palabras]** _(🎥 1 video(s), 💡 6 perlas, 📌 7 puntos clave)_
+  - **Miembro inferior** `(lower-limb-muscles)` — *(Agrupador: 7 subtemas)*
+    - **Tibial anterior** `(tibialis-anterior)` — ✅ **[349 palabras]** _(💡 5 perlas, 📌 7 puntos clave)_
+    - **Gastrocnemio medial** `(medial-gastrocnemius)` — ✅ **[307 palabras]** _(💡 3 perlas, 📌 7 puntos clave)_
+    - **Bíceps femoral (Cabeza corta)** `(biceps-femoris-short)` — ✅ **[89 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
+    - **Vasto lateral** `(vastus-lateralis)` — ✅ **[284 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Glúteo medio** `(gluteus-medius)` — ✅ **[297 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Extensor largo del hallux** `(ehl)` — ✅ **[287 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+    - **Paraespinales lumbares** `(lumbar-paraspinals)` — ✅ **[352 palabras]** _(💡 6 perlas, 📌 7 puntos clave)_
   - **Cráneo y cuello** `(cranial-muscles)` — *(Agrupador: 5 subtemas)*
     - **Orbicular de los ojos** `(orbicularis-oculi)` — ✅ **[92 palabras]** _(📌 4 puntos clave)_
     - **Masetero** `(masseter)` — ✅ **[104 palabras]** _(📌 4 puntos clave)_
@@ -300,22 +223,23 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 ## 📦 Módulo 04: 🔄 Respuestas Tardías y Reflejos `(late-responses)`
 > Onda F, Reflejo H, reflejo axónico y reflejo de parpadeo
 
-- **Onda F** `(f-wave)` — *(Agrupador: 4 subtemas)*
+- **Onda F** `(f-wave)` — *(Agrupador: 5 subtemas)*
   - **Fisiología de la Onda F** `(f-wave-physiology)` — ✅ **[102 palabras]** _(📌 3 puntos clave)_
   - **Configuración y Técnica** `(f-wave-technique)` — ✅ **[80 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
   - **Valores Normales y Parámetros** `(f-latencies)` — ✅ **[83 palabras]** _(💡 1 perlas)_
-  - **Utilidad Clínica** `(f-wave-utility)` — ⚠️ **[Muy corto: 52 palabras]** _(📌 2 puntos clave)_
-- **Reflejo H (Hoffmann)** `(h-reflex)` — *(Agrupador: 3 subtemas)*
-  - **Fisiología** `(h-reflex-physiology)` — ⚠️ **[Muy corto: 59 palabras]** _(📌 3 puntos clave)_
+  - **Utilidad Clínica** `(f-wave-utility)` — ✅ **[330 palabras]** _(💡 2 perlas, 📌 5 puntos clave)_
+  - **Repeaters (Ondas F Repetidas)** `(f-wave-repeaters)` — ✅ **[143 palabras]** _(💡 1 perlas, 📌 3 puntos clave)_
+- **Reflejo H (Hoffmann)** `(h-reflex)` — *(Agrupador: 4 subtemas)*
+  - **Fisiología** `(h-reflex-physiology)` — ✅ **[338 palabras]** _(💡 2 perlas, 📌 6 puntos clave)_
   - **Técnica y Fenómeno de Colisión** `(h-reflex-technique-collision)` — ✅ **[79 palabras]** _(💡 1 perlas, 📌 2 puntos clave)_
-  - **Valores Normales y Utilidad** `(h-reflex-values-utilty)` — ⚠️ **[Muy corto: 55 palabras]** _(💡 1 perlas, 📌 3 puntos clave)_
-- **Reflejo Axónico (Onda A)** `(axon-reflex)` — *(Agrupador: 2 subtemas)*
-  - **Fisiopatología** `(a-wave-pathophysiology)` — ⚠️ **[Muy corto: 56 palabras]** _(💡 1 perlas)_
-  - **Identificación y Utilidad Clínica** `(a-vs-f-wave)` — ✅ **[76 palabras]**
+  - **Valores Normales y Utilidad** `(h-reflex-values-utilty)` — ✅ **[323 palabras]** _(💡 3 perlas, 📌 5 puntos clave)_
+  - **Relación H/M (Excitabilidad del Asta Anterior)** `(h-reflex-hm-ratio)` — ✅ **[171 palabras]** _(📌 3 puntos clave)_
+- **Reflejo Axónico (Onda A)** `(axon-reflex)` — *(Agrupador: 1 subtemas)*
+  - **Fisiopatología y Utilidad Clínica** `(a-wave-pathophysiology)` — ✅ **[492 palabras]** _(💡 4 perlas, 📌 6 puntos clave)_
 - **Reflejo de Parpadeo (Blink Reflex)** `(blink-reflex)` — *(Agrupador: 3 subtemas)*
   - **Vía Trigémino-Facial** `(trigeminal-facial-pathway)` — ✅ **[78 palabras]**
-  - **Técnica de Registro** `(blink-technique)` — ⚠️ **[Muy corto: 55 palabras]** _(💡 3 perlas)_
-  - **Patrones Patológicos y Correlación Lesional** `(blink-patterns)` — ✅ **[88 palabras]** _(📌 2 puntos clave)_
+  - **Técnica de Registro** `(blink-technique)` — ✅ **[396 palabras]** _(💡 5 perlas, 📌 3 puntos clave)_
+  - **Patrones Patológicos y Correlación Lesional** `(blink-patterns)` — ✅ **[206 palabras]** _(📌 4 puntos clave)_
 
 ---
 
@@ -328,8 +252,9 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 - **ENR a Baja Frecuencia (MG)** `(low-frequency-rns)` — *(Agrupador: 2 subtemas)*
   - **Protocolo Estándar (2-5 Hz)** `(standard-protocol)` — ✅ **[248 palabras]** _(💡 2 perlas, 📌 5 puntos clave)_
   - **Maniobras de Ejercicio** `(exercise-maneuvers)` — ✅ **[152 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
-- **Trastornos Presinápticos (LEMS)** `(high-frequency-rns)` — *(Agrupador: 1 subtemas)*
-  - **Incremento y Facilitación masiva** `(facilitation-increment)` — ✅ **[218 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
+- **Trastornos Presinápticos (LEMS)** `(high-frequency-rns)` — *(Agrupador: 2 subtemas)*
+  - **Protocolo LEMS Clásico (Estimulación a 20-50 Hz)** `(lems-protocol)` — ✅ **[226 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Prueba de Ejercicio Corto (10s)** `(exercise-test-short)` — ✅ **[207 palabras]** _(💡 2 perlas, 📌 4 puntos clave)_
 - **Perlas y Errores Técnicos** `(rns-pitfalls)` — *(Agrupador: 1 subtemas)*
   - **Errores comunes y cómo evitarlos** `(standard-pitfalls)` — ✅ **[274 palabras]** _(💡 2 perlas, 📌 5 puntos clave)_
 
@@ -478,22 +403,22 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
     - **CMT Tipo 2 (Axonal)** `(cmt2)` — ✅ **[73 palabras]** _(📌 2 puntos clave)_
     - **CMT Tipos Intermedios, X-linked y Severos** `(cmt-others)` — ✅ **[64 palabras]** _(💡 1 perlas)_
   - **HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)** `(hnpp)` — ✅ **[107 palabras]** _(💡 2 perlas)_
-  - **Neuropatía Urémica** `(uremic-neuropathy)` — ⚠️ **[Muy corto: 59 palabras]** _(💡 1 perlas)_
+  - **Neuropatía Urémica** `(uremic-neuropathy)` — ✅ **[335 palabras]** _(💡 3 perlas, 📌 3 puntos clave)_
   - **Neuropatía Vasculítica** `(vasculitic-neuropathy)` — ✅ **[89 palabras]** _(💡 2 perlas)_
   - **Polineuropatía y Miopatía del Paciente Crítico (CIP/CIM)** `(cip-cin)` — ✅ **[139 palabras]** _(💡 2 perlas)_
 - **Neuropatías Inflamatorias** `(inflammatory-neuropathies)` — *(Agrupador: 4 subtemas)* _(💡 1 perlas)_
   - **Síndrome de Guillain-Barré (SGB)** `(gbs)` — *(Agrupador: 4 subtemas)* _(💡 1 perlas)_
     - **AIDP (Polirradiculoneuropatía Desmielinizante Inflamatoria Aguda)** `(aidp)` — ✅ **[201 palabras]** _(💡 3 perlas, 📌 4 puntos clave)_
-    - **AMAN y AMSAN (Variantes Axonales)** `(aman-amsan)` — ✅ **[154 palabras]** _(💡 2 perlas)_
-    - **Síndrome de Miller Fisher (MFS)** `(fisher)` — ✅ **[88 palabras]** _(💡 2 perlas)_
+    - **AMAN y AMSAN (Variantes Axonales) y RCF** `(aman-amsan)` — ✅ **[221 palabras]** _(💡 2 perlas)_
+    - **Síndrome de Miller Fisher (MFS)** `(fisher)` — ✅ **[187 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Evolución Temporal EDX y Algoritmo Diagnóstico** `(gbs-temporal)` — ✅ **[132 palabras]** _(📌 3 puntos clave)_
   - **PDIC (CIDP — Polineuropatía Desmielinizante Inflamatoria Crónica)** `(cidp)` — *(Agrupador: 3 subtemas)*
     - **Criterios Electrodiagnósticos EAN/PNS 2021** `(ean-pns-criteria)` — ✅ **[176 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
     - **Variantes Clínicas de CIDP** `(cidp-variants)` — ✅ **[144 palabras]** _(💡 2 perlas)_
     - **Nodopatías Autoinmunes (Entidad Emergente)** `(autoimmune-nodopathies)` — ✅ **[107 palabras]** _(💡 2 perlas)_
   - **Neuropatía Motora Multifocal (NMM)** `(mmn)` — *(Agrupador: 2 subtemas)*
-    - **Bloqueo de Conducción Motor como Criterio Diagnóstico** `(mmn-block)` — ✅ **[122 palabras]** _(💡 2 perlas)_
-    - **Anti-GM1 y Diferencial con ELA** `(anti-gm1)` — ✅ **[145 palabras]** _(💡 2 perlas)_
+    - **Bloqueo de Conducción Motor como Criterio Diagnóstico** `(mmn-block)` — ✅ **[136 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+    - **Anti-GM1 y Diferencial con ELA** `(anti-gm1)` — ✅ **[208 palabras]** _(💡 2 perlas)_
   - **Síndrome POEMS** `(poems)` — ✅ **[109 palabras]** _(💡 2 perlas)_
 - **Mononeuropatías y Atrapamientos** `(mononeuropathies)` — *(Agrupador: 8 subtemas)* _(💡 1 perlas)_
   - **Síndrome del Túnel Carpiano (STC)** `(carpal-tunnel)` — *(Agrupador: 3 subtemas)*
@@ -539,13 +464,14 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
     - **Protocolo EDX: Facilitación Post-Ejercicio** `(lems-rns)` — ✅ **[149 palabras]** _(💡 3 perlas)_
   - **Botulismo** `(botulism)` — ✅ **[154 palabras]** _(💡 2 perlas)_
   - **Síndromes Miasténicos Congénitos (SMC)** `(congenital-myasthenic)` — ✅ **[125 palabras]** _(💡 2 perlas)_
-- **Miopatías** `(myopathies)` — *(Agrupador: 7 subtemas)* _(💡 2 perlas)_
+- **Miopatías** `(myopathies)` — *(Agrupador: 8 subtemas)* _(💡 2 perlas)_
   - **Miopatías Inflamatorias (PM, DM, NAM/IMNM)** `(inflammatory-myopathies)` — ✅ **[167 palabras]** _(💡 3 perlas)_
   - **Miositis por Cuerpos de Inclusión (IBM)** `(ibm)` — ✅ **[158 palabras]** _(💡 2 perlas)_
   - **Distrofias Musculares** `(muscular-dystrophies)` — ✅ **[173 palabras]** _(💡 2 perlas)_
   - **Canalopatías Musculares y Parálisis Periódicas** `(channelopathies)` — ✅ **[162 palabras]** _(💡 2 perlas)_
   - **Miopatías Tóxicas y Farmacológicas** `(toxic-myopathies)` — ✅ **[153 palabras]** _(💡 2 perlas)_
   - **Miopatías Metabólicas** `(metabolic-myopathies)` — ✅ **[169 palabras]** _(💡 2 perlas)_
+  - **Polineuropatía y Miopatía del Paciente Crítico (CIP/CIM)** `(critical-illness)` — ✅ **[213 palabras]** _(💡 2 perlas)_
   - **Resumen: PUM Miopático vs Neurogénico** `(myopathic-vs-neurogenic)` — ✅ **[226 palabras]** _(📌 4 puntos clave)_
 
 ---
@@ -599,13 +525,13 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 > Valores normales, tablas de ondas F, reflejo H, PESS, miotomas y dermatomas
 
 - **Valores Normales AANEM / NDTF** `(normal-values)` — ✅ **[190 palabras]**
-- **Bloqueo Quirúrgico vs Dispersión Temporal** `(block-vs-dispersion)` — ⚠️ **[Muy corto: 50 palabras]**
-- **Latencias de Onda F y Criterios** `(f-wave-tables)` — ⚠️ **[Muy corto: 45 palabras]**
-- **Reflejo H (S1 / Tibial-Sóleo)** `(h-reflex-tables)` — ⚠️ **[Muy corto: 27 palabras]**
-- **PESS y Valores Centrales PEV** `(ssep-vep-tables)` — ⚠️ **[Muy corto: 42 palabras]**
-- **Miotomas Segmentarios Clínicos** `(segmental-table)` — ⚠️ **[Muy corto: 37 palabras]**
-- **Dermatomas y Referencia Táctil** `(dermatome-table)` — ⚠️ **[Muy corto: 34 palabras]**
-- **Protocolos Musculares Needle EMG** `(emg-muscle-table)` — ⚠️ **[Muy corto: 44 palabras]**
+- **Bloqueo Quirúrgico vs Dispersión Temporal** `(block-vs-dispersion)` — ✅ **[335 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Latencias de Onda F y Criterios** `(f-wave-tables)` — ✅ **[332 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Reflejo H (S1 / Tibial-Sóleo)** `(h-reflex-tables)` — ✅ **[306 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **PESS y Valores Centrales PEV** `(ssep-vep-tables)` — ✅ **[322 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Miotomas Segmentarios Clínicos** `(segmental-table)` — ✅ **[316 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Dermatomas y Referencia Táctil** `(dermatome-table)` — ✅ **[312 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Protocolos Musculares Needle EMG** `(emg-muscle-table)` — ✅ **[328 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 
 ---
 
@@ -613,11 +539,11 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 > Libros de texto, guías AANEM/EFNS, artículos clásicos y recursos digitales
 
 - **Libros de texto fundamentales** `(textbooks)` — ✅ **[86 palabras]**
-- **Guías de la AANEM** `(aanem-guidelines)` — ⚠️ **[Muy corto: 37 palabras]**
+- **Guías de la AANEM** `(aanem-guidelines)` — ✅ **[317 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Guías EFNS/PNS (Europeas)** `(efns-pns-guidelines)` — ✅ **[61 palabras]**
 - **Artículos clásicos y revisiones** `(classic-articles)` — ✅ **[80 palabras]**
-- **Atlas fotográficos y videos de técnica** `(atlases-videos)` — ⚠️ **[Muy corto: 38 palabras]**
-- **Recursos en línea y calculadoras** `(online-resources)` — ⚠️ **[Muy corto: 40 palabras]**
+- **Atlas fotográficos y videos de técnica** `(atlases-videos)` — ✅ **[325 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+- **Recursos en línea y calculadoras** `(online-resources)` — ✅ **[319 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 
 ---
 
@@ -625,22 +551,64 @@ Estos temas son hojas finales de la estructura, pero tienen muy poco texto y deb
 > Manejo de temperatura, artefactos técnicos, marcapasos y estándares AANEM
 
 - **Control de Temperatura** `(temperature-control)` — *(Agrupador: 2 subtemas)*
-  - **Impacto Clínico del Frío** `(clinical-impact)` — ⚠️ **[Muy corto: 43 palabras]**
-  - **Requisitos Estándar** `(standard-requirements)` — ⚠️ **[Muy corto: 34 palabras]**
+  - **Impacto Clínico del Frío** `(clinical-impact)` — ✅ **[323 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Requisitos Estándar** `(standard-requirements)` — ✅ **[305 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Artefactos y Errores Técnicos Comunes** `(artifacts-errors)` — *(Agrupador: 4 subtemas)*
-  - **Interferencia de línea (60Hz)** `(60hz-noise)` — ⚠️ **[Muy corto: 37 palabras]**
-  - **Artefacto de Estímulo Excesivo** `(stimulus-artifact)` — ⚠️ **[Muy corto: 35 palabras]**
-  - **Co-estimulación (Efecto de Volumen)** `(co-stimulation)` — ⚠️ **[Muy corto: 31 palabras]**
-  - **Errores de Medición de Distancia** `(distance-errors)` — ⚠️ **[Muy corto: 45 palabras]**
+  - **Interferencia de línea (60Hz)** `(60hz-noise)` — ✅ **[318 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Artefacto de Estímulo Excesivo** `(stimulus-artifact)` — ✅ **[219 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+  - **Co-estimulación (Efecto de Volumen)** `(co-stimulation)` — ✅ **[312 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Errores de Medición de Distancia** `(distance-errors)` — ✅ **[331 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Seguridad del Paciente y Contraindicaciones** `(patient-safety)` — *(Agrupador: 4 subtemas)*
-  - **Marcapasos y Desfibriladores (DAI)** `(pacemakers-icd)` — ⚠️ **[Muy corto: 49 palabras]**
-  - **Riesgo de Sangrado (Anticoagulantes)** `(bleeding-risk)` — ⚠️ **[Muy corto: 45 palabras]**
-  - **Riesgo de Infección y Daño Cutáneo** `(infection-risk)` — ⚠️ **[Muy corto: 34 palabras]**
-  - **Riesgo Crítico de Neumotórax** `(pneumothorax)` — ⚠️ **[Muy corto: 38 palabras]**
+  - **Marcapasos y Desfibriladores (DAI)** `(pacemakers-icd)` — ✅ **[333 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Riesgo de Sangrado (Anticoagulantes)** `(bleeding-risk)` — ✅ **[325 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Riesgo de Infección y Daño Cutáneo** `(infection-risk)` — ✅ **[314 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Riesgo Crítico de Neumotórax** `(pneumothorax)` — ✅ **[315 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
 - **Criterios de Calidad AANEM / NDTF** `(aanem-ndtf)` — *(Agrupador: 3 subtemas)*
-  - **Estímulo Supramáximo Riguroso** `(supramaximal)` — ⚠️ **[Muy corto: 42 palabras]**
-  - **Configuración Sensitiva vs Motora** `(sweep-gain)` — ⚠️ **[Muy corto: 28 palabras]**
-  - **Reproducibilidad Mínima** `(reproducibility)` — ⚠️ **[Muy corto: 36 palabras]**
+  - **Estímulo Supramáximo Riguroso** `(supramaximal)` — ✅ **[317 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Configuración Sensitiva vs Motora** `(sweep-gain)` — ✅ **[310 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+  - **Reproducibilidad Mínima** `(reproducibility)` — ✅ **[311 palabras]** _(💡 2 perlas, 📌 3 puntos clave)_
+
+---
+
+## 📦 Módulo 14: 🧭 Abordaje por Síndrome: Diagnóstico Diferencial `(syndrome-differential)`
+> Traduce síntomas comunes (mano dormida, pie caído, debilidad proximal) en protocolos de NCS/EMG y diagnósticos diferenciales reales.
+
+- **Mano dormida y parestesias nocturnas** `(sleepy-hand)` — ✅ **[201 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Pie caído: peroneo, ciático, L5 o motoneurona** `(foot-drop)` — ✅ **[170 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Debilidad proximal: miopatía, plexo o polirradiculopatía** `(proximal-weakness)` — ✅ **[134 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Parestesias asimétricas y “múltiples túneles”** `(asymmetric-numbness)` — ✅ **[131 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Estrategia del estudio según la pregunta clínica** `(exam-strategy)` — ✅ **[131 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+
+---
+
+## 📦 Módulo 15: 📝 Planificación del Estudio e Informe EMG `(emg-report-planning)`
+> Diseño del protocolo, registro de datos y redacción de un informe electrodiagnóstico útil para el clínico que lo solicita.
+
+- **Planificación previa: pregunta, consentimiento y riesgos** `(pretest-planning)` — ✅ **[115 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Selección de nervios y músculos** `(protocol-selection)` — ✅ **[132 palabras]** _(📌 2 puntos clave)_
+- **Estructura del informe: datos, hallazgos e impresión** `(report-structure)` — ✅ **[117 palabras]** _(💡 2 perlas, 📌 2 puntos clave)_
+- **Lenguaje del informe y errores que generan confusión** `(wording-pitfalls)` — ✅ **[106 palabras]** _(📌 2 puntos clave)_
+
+---
+
+## 📦 Módulo 16: 🧩 Casos Clínicos de Alta Complejidad `(complex-clinical-cases)`
+> Casos donde conviven dos localizaciones, criterios incompletos o hallazgos que no caben en un único patrón.
+
+- **Debilidad progresiva: ELA versus MMN versus radiculopatía** `(als-versus-mmn)` — ✅ **[123 palabras]** _(💡 2 perlas, 📌 1 puntos clave)_
+- **CIDP y sus imitadores en el laboratorio** `(cidp-mimics)` — ✅ **[110 palabras]** _(📌 2 puntos clave)_
+- **Fatiga y CK: unión neuromuscular versus miopatía** `(nmj-versus-myopathy)` — ✅ **[117 palabras]** _(💡 1 perlas, 📌 1 puntos clave)_
+- **Plexopatía postquirúrgica y lesión iatrogénica** `(post-surgical-plexus)` — ✅ **[118 palabras]** _(📌 2 puntos clave)_
+
+---
+
+## 📦 Módulo 17: 📡 Actualizaciones por Patología `(pathology-updates)`
+> Criterios, biomarcadores y técnicas recientes que modifican la interpretación electrodiagnóstica de CIDP, ELA, miastenia y neuropatías.
+
+- **CIDP: criterios actuales y variantes** `(cidp-criteria-update)` — ✅ **[101 palabras]** _(📌 2 puntos clave)_
+- **ELA: de Awaji a Gold Coast y el papel del EDX** `(als-criteria-update)` — ✅ **[89 palabras]** _(💡 1 perlas, 📌 2 puntos clave)_
+- **Miastenia y síndromes miasténicos: RNS, SFEMG y anticuerpos** `(mg-updates)` — ✅ **[94 palabras]** _(📌 2 puntos clave)_
+- **Ultrasonido neuromuscular y fibras finas: qué cambia el EDX** `(imaging-and-small-fiber)` — ✅ **[101 palabras]** _(📌 2 puntos clave)_
+- **Cómo mantenerse actualizado sin perder el método** `(how-to-stay-current)` — ✅ **[89 palabras]** _(📌 2 puntos clave)_
 
 ---
 

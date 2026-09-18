@@ -1,5 +1,6 @@
 // scripts/generate-temario.ts
 import { allModules } from '../src/content/modules/index';
+import { applyLessonExpansions } from '../src/services/contentMerge';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -59,7 +60,9 @@ function calculateStats(topics: any[], moduleId: string, moduleTitle: string) {
   }
 }
 
-for (const mod of allModules) {
+const modulesForInventory = allModules.map((mod) => applyLessonExpansions(mod));
+
+for (const mod of modulesForInventory) {
   calculateStats(mod.topics, mod.id, mod.title);
 }
 
@@ -133,7 +136,7 @@ function renderTopic(topic: any, depth: number): string {
   return line;
 }
 
-for (const mod of allModules) {
+for (const mod of modulesForInventory) {
   mdContent += `## 📦 Módulo ${mod.number.toString().padStart(2, '0')}: ${mod.emoji} ${mod.title} \`(${mod.id})\`\n`;
   mdContent += `> ${mod.description}\n\n`;
 

@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, sb } from '../lib/supabase';
 import type {
   StudentLearningPlan,
   StudentAssignment,
@@ -14,12 +14,10 @@ import type {
 } from '../types/studentPlan';
 import type { AdminProfileRow } from '../types/admin';
 import type { QuizAttempt } from '../types/quiz';
-import type { ExamSession } from '../types/exam';
+import type { ExamConfig, ExamSession } from '../types/exam';
 import type { Profile } from '../types/database';
 import { getMyAttempts, getMyProgressByModule } from './quizService';
 import { calculateStudentMetrics, checkCertificationEligibility, fetchStudentCompletedTopics } from './studentService';
-import { LOCAL_PUBLISHED_QUIZZES } from './localQuizzesFallback';
-import { EMG_QUESTIONS_FALLBACK } from '../data/emgQuestionsFallback';
 
 // ─── LocalStorage Keys for Resilient Fallback ────────────────────────────────
 const KEY_LOCAL_PLANS = 'neurosafe_learning_plans_';
@@ -545,70 +543,184 @@ export async function startAssignedExam(
   return lock;
 }
 
+export function buildAssignedExamConfig(
+  assignment: StudentAssignment,
+  lock?: ActiveExamLock | null
+): ExamConfig {
+  const raw = assignment.target_exam_config || {};
+  const lockCfg =
+    lock?.config && typeof lock.config === 'object' && Object.keys(lock.config).length > 0
+      ? lock.config
+      : {};
+  const merged = { ...raw, ...lockCfg } as NonNullable<StudentAssignment['target_exam_config']> & ExamConfig;
+  const timeLimitMinutes = Number(merged.timeLimitMinutes || lock?.timeLimitMinutes || 20);
+  const selectedIds = merged.selectedQuestionIds || lock?.selectedQuestionIds;
+  const questionCount = merged.questionCount || selectedIds?.length || 10;
+
+  return {
+    mode:
+      merged.mode ||
+      (merged.topicNames?.length || merged.moduleId || assignment.target_module_id
+        ? 'TOPIC_SPECIFIC'
+        : 'FULL_SIMULATION'),
+    moduleId: merged.moduleId || assignment.target_module_id || lock?.moduleId || undefined,
+    topicNames: merged.topicNames,
+    questionCount,
+    timeLimitSeconds: timeLimitMinutes * 60,
+    feedbackMode: merged.feedbackMode || 'end',
+  };
+}
+
+export function assignedExamLocationState(assignment: StudentAssignment, lock?: ActiveExamLock | null) {
+  const config = buildAssignedExamConfig(assignment, lock);
+  const timeLimitMinutes =
+    assignment.target_exam_config?.timeLimitMinutes || lock?.timeLimitMinutes || 20;
+  const selectedQuestionIds =
+    assignment.target_exam_config?.selectedQuestionIds || lock?.selectedQuestionIds;
+
+  return {
+    assignmentId: assignment.id,
+    config: {
+      ...config,
+      timeLimitMinutes,
+      strictLock: true,
+      expiresAt: lock?.expiresAt,
+      selectedQuestionIds,
+    },
+    expiresAt: lock?.expiresAt,
+    strictLock: true as const,
+    selectedQuestionIds,
+    assignmentTitle: assignment.title || lock?.assignmentTitle || 'Examen Asignado',
+  };
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function rpcLooksUnavailable(error: { message?: string; code?: string } | null | undefined): boolean {
+  const code = error?.code || '';
+  const message = (error?.message || '').toLowerCase();
+  return (
+    code === 'PGRST202' ||
+    code === '42883' ||
+    message.includes('could not find the function') ||
+    message.includes('does not exist')
+  );
+}
+
+function patchLocalAssignment(studentId: string, assignmentId: string, patch: Partial<StudentAssignment>): void {
+  try {
+    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+    if (!raw) return;
+    const list: StudentAssignment[] = JSON.parse(raw);
+    const idx = list.findIndex((a) => a.id === assignmentId);
+    if (idx === -1) return;
+    list[idx] = { ...list[idx], ...patch, updated_at: patch.updated_at || new Date().toISOString() };
+    localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
+  } catch {}
+}
+
 export async function completeAssignedExam(
   assignmentId: string,
   studentId: string,
   score: number,
   durationSeconds: number,
+  examSessionId?: string | null,
   feedback?: string
 ): Promise<void> {
   clearActiveExamLock(studentId);
 
   const completedAt = new Date().toISOString();
-  let updatedConfig: any = null;
+  const notes =
+    feedback ||
+    `Evaluación completada. Calificación: ${score}/100 pts. Tiempo: ${Math.round(durationSeconds / 60)} min.`;
+  const sessionId = examSessionId && isUuid(examSessionId) ? examSessionId : null;
 
-  // Local
-  try {
-    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
-    if (raw) {
-      const list: StudentAssignment[] = JSON.parse(raw);
-      const idx = list.findIndex((a) => a.id === assignmentId);
-      if (idx !== -1) {
-        const prevCfg = list[idx].target_exam_config || {};
-        const newAttempts = (prevCfg.attemptsCount || 0) + 1;
-        updatedConfig = {
-          ...prevCfg,
-          attemptsCount: newAttempts,
-        };
+  const applyLocalCompletion = (row?: Partial<StudentAssignment>) => {
+    const passed = (row?.grade ?? score) >= (row?.min_score ?? 70);
+    patchLocalAssignment(studentId, assignmentId, {
+      ...(row || {}),
+      grade: row?.grade ?? score,
+      status: row?.status ?? (passed ? 'approved' : 'submitted'),
+      submitted_at: row?.submitted_at ?? completedAt,
+      reviewed_at: row?.reviewed_at ?? completedAt,
+      reviewed_by: row?.reviewed_by ?? null,
+      feedback: row?.feedback ?? notes,
+      student_notes: row?.student_notes ?? notes,
+      updated_at: row?.updated_at ?? completedAt,
+    });
+  };
 
-        const minPassing = list[idx].min_score || 70;
-        const passed = score >= minPassing;
-        list[idx] = {
-          ...list[idx],
-          target_exam_config: updatedConfig,
-          grade: score,
-          status: passed ? 'approved' : 'submitted',
-          submitted_at: completedAt,
-          reviewed_at: completedAt,
-          reviewed_by: 'Sistema Evaluador ElectoDX',
-          feedback: feedback || `Evaluación completada. Calificación obtenida: ${score}/100 pts. Tiempo: ${Math.round(durationSeconds / 60)} min.`,
-          updated_at: completedAt,
-        };
-        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(list));
-      }
+  applyLocalCompletion();
+
+  if (!isUuid(assignmentId)) {
+    return;
+  }
+
+  const { data: rpcRow, error: rpcError } = await sb.rpc('complete_my_assigned_exam', {
+    p_assignment_id: assignmentId,
+    p_exam_session_id: sessionId,
+    p_score: score,
+    p_duration_seconds: durationSeconds,
+  });
+
+  const completedRow = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+  if (!rpcError && completedRow) {
+    applyLocalCompletion(completedRow as StudentAssignment);
+    return;
+  }
+
+  if (rpcError && !rpcLooksUnavailable(rpcError)) {
+    const msg = (rpcError.message || '').toLowerCase();
+    if (msg.includes('no quedan intentos') || msg.includes('sesión de examen no válida')) {
+      console.warn('[completeAssignedExam] RPC rejected:', rpcError.message);
+    } else {
+      console.warn('[completeAssignedExam] RPC failed, using submission fallback:', rpcError.message);
     }
-  } catch {}
+  }
 
-  // Supabase
-  try {
-    const updatePayload: any = {
-      grade: score,
-      status: score >= 70 ? 'approved' : 'submitted',
+  const { data: submittedRow, error: submitError } = await sb.rpc('submit_my_assignment', {
+    p_assignment_id: assignmentId,
+    p_notes: notes,
+    p_submission_url: sessionId ? `exam_session:${sessionId}` : null,
+  });
+
+  if (!submitError) {
+    applyLocalCompletion((submittedRow as StudentAssignment) || { status: 'submitted', submitted_at: completedAt });
+    return;
+  }
+
+  const submitMsg = (submitError.message || '').toLowerCase();
+  if (submitMsg.includes('no disponible') || submitMsg.includes('no encontrada')) {
+    applyLocalCompletion({ status: 'submitted', submitted_at: completedAt });
+    return;
+  }
+
+  // Campos que el trigger de integridad sí permite al alumno.
+  const { data: updatedRow, error: updateError } = await sb
+    .from('student_assignments')
+    .update({
+      status: 'submitted',
       submitted_at: completedAt,
-      reviewed_at: completedAt,
-      reviewed_by: 'Sistema Evaluador ElectoDX',
-      feedback: feedback || `Evaluación completada. Calificación: ${score}/100 pts.`,
+      student_notes: notes,
+      submission_url: sessionId ? `exam_session:${sessionId}` : null,
       updated_at: completedAt,
-    };
-    if (updatedConfig) {
-      updatePayload.target_exam_config = updatedConfig;
-    }
+    })
+    .eq('id', assignmentId)
+    .eq('student_id', studentId)
+    .select('id, status, submitted_at')
+    .maybeSingle();
 
-    await supabase
-      .from('student_assignments')
-      .update(updatePayload)
-      .eq('id', assignmentId);
-  } catch {}
+  if (updateError || !updatedRow) {
+    console.error(
+      '[completeAssignedExam] No se pudo asentar la entrega en el servidor:',
+      updateError?.message || 'sin filas actualizadas'
+    );
+    return;
+  }
+
+  applyLocalCompletion({ status: 'submitted', submitted_at: completedAt });
 }
 
 /**
@@ -809,19 +921,12 @@ export async function submitAssignment(
     }
   } catch {}
 
-  // Supabase
-  try {
-    await supabase
-      .from('student_assignments')
-      .update({
-        status: 'submitted',
-        submitted_at: submittedAt,
-        student_notes: studentNotes,
-        submission_url: submissionUrl,
-        updated_at: submittedAt,
-      })
-      .eq('id', assignmentId);
-  } catch {}
+  const { error } = await sb.rpc('submit_my_assignment', {
+    p_assignment_id: assignmentId,
+    p_notes: studentNotes ?? null,
+    p_submission_url: submissionUrl ?? null,
+  });
+  if (error) throw error;
 }
 
 export async function gradeAssignment(
@@ -889,17 +994,10 @@ export async function deleteAssignment(assignmentId: string, studentId: string):
 // ─── Desglose Pregunta por Pregunta (Aciertos y Errores) ────────────────────
 
 export async function getDetailedExamBreakdown(attempt: QuizAttempt): Promise<StudentExamDetail> {
-  const localQuiz = LOCAL_PUBLISHED_QUIZZES[attempt.topic_id];
   const questionMap = new Map<string, any>();
-
-  if (localQuiz?.questions) {
-    localQuiz.questions.forEach((q) => questionMap.set(q.id, q));
+  for (const q of attempt.revealed_questions ?? []) {
+    questionMap.set(q.id, q);
   }
-
-  // Fallback adicional con el banco EMG
-  EMG_QUESTIONS_FALLBACK.forEach((q) => {
-    if (!questionMap.has(q.id)) questionMap.set(q.id, q);
-  });
 
   const questionBreakdowns: QuestionBreakdownItem[] = (attempt.answers || []).map((ans, idx) => {
     const qData = questionMap.get(ans.questionId);
@@ -1167,6 +1265,49 @@ export async function getStudentFullDossier(studentId: string): Promise<StudentF
   };
 }
 
+export async function getAllStudentAssignments(
+  knownProfiles?: AdminProfileRow[]
+): Promise<StudentAssignment[]> {
+  const allAssignmentsMap = new Map<string, StudentAssignment>();
+
+  try {
+    const { data } = await supabase
+      .from('student_assignments')
+      .select('*')
+      .order('due_date', { ascending: false });
+
+    if (data && Array.isArray(data)) {
+      (data as StudentAssignment[]).forEach((item) => allAssignmentsMap.set(item.id, item));
+    }
+  } catch (e) {
+    console.warn('[studentPlanService] Supabase error fetching cohort assignments:', e);
+  }
+
+  if (knownProfiles) {
+    for (const prof of knownProfiles) {
+      try {
+        const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${prof.id}`);
+        if (raw) {
+          const list: StudentAssignment[] = JSON.parse(raw);
+          list.forEach((item) => {
+            if (!allAssignmentsMap.has(item.id)) {
+              allAssignmentsMap.set(item.id, item);
+            }
+          });
+        }
+      } catch {
+        // ignore cache parse errors
+      }
+    }
+  }
+
+  return [...allAssignmentsMap.values()].sort((a, b) => {
+    const da = a.submitted_at || a.updated_at || a.due_date;
+    const db = b.submitted_at || b.updated_at || b.due_date;
+    return new Date(db).getTime() - new Date(da).getTime();
+  });
+}
+
 /**
  * Recupera todas las entregas de tareas/casos pendientes de calificación ('submitted')
  * y las solicitudes de reintento de examen activas ('requested') para el panel docente.
@@ -1182,43 +1323,12 @@ export async function getTeacherPendingReviewItems(
     knownProfiles.forEach((p) => profileMap.set(p.id, p));
   }
 
-  const allAssignmentsMap = new Map<string, StudentAssignment>();
-
-  // 1. Supabase: Traer asignaciones enviadas o con solicitud de reintento
-  try {
-    const { data } = await supabase
-      .from('student_assignments')
-      .select('*')
-      .order('submitted_at', { ascending: false });
-
-    if (data && Array.isArray(data)) {
-      data.forEach((item) => allAssignmentsMap.set(item.id, item as StudentAssignment));
-    }
-  } catch (e) {
-    console.warn('[studentPlanService] Supabase error fetching teacher inbox:', e);
-  }
-
-  // 2. LocalStorage: Buscar en perfiles conocidos para fallback local resiliente
-  if (knownProfiles) {
-    for (const prof of knownProfiles) {
-      try {
-        const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${prof.id}`);
-        if (raw) {
-          const list: StudentAssignment[] = JSON.parse(raw);
-          list.forEach((item) => {
-            if (!allAssignmentsMap.has(item.id)) {
-              allAssignmentsMap.set(item.id, item);
-            }
-          });
-        }
-      } catch {}
-    }
-  }
+  const allAssignments = await getAllStudentAssignments(knownProfiles);
 
   const pendingSubmissions: TeacherPendingReviewItem[] = [];
   const pendingRetakes: TeacherPendingReviewItem[] = [];
 
-  for (const asg of allAssignmentsMap.values()) {
+  for (const asg of allAssignments) {
     const studentProfile = profileMap.get(asg.student_id);
 
     // Entregas enviadas esperando calificación docente

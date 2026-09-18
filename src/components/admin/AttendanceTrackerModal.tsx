@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  Calendar,
   CheckCircle2,
   Clock,
   UserCheck,
@@ -17,7 +16,7 @@ import {
 } from '../../services/attendanceService';
 import { filterGradeableStudents } from '../../utils/adminUtils';
 import type { AdminProfileRow } from '../../types/admin';
-import type { AttendanceStatus, ClassAttendanceRecord } from '../../types/academicGradebook';
+import type { AttendanceStatus, ClassAttendanceRecord, SessionModality } from '../../types/academicGradebook';
 
 interface AttendanceTrackerModalProps {
   isOpen: boolean;
@@ -32,8 +31,9 @@ export default function AttendanceTrackerModal({
   profiles,
   onSaved,
 }: AttendanceTrackerModalProps) {
-  const [sessionTitle, setSessionTitle] = useState(DEFAULT_COURSE_SESSIONS[0].title);
-  const [sessionDate, setSessionDate] = useState(DEFAULT_COURSE_SESSIONS[0].date);
+  const [sessionTitle, setSessionTitle] = useState('');
+  const [sessionDate, setSessionDate] = useState('');
+  const [sessionModality, setSessionModality] = useState<SessionModality>('online');
   const [attendances, setAttendances] = useState<
     Record<string, { status: AttendanceStatus; notes: string }>
   >({});
@@ -46,6 +46,7 @@ export default function AttendanceTrackerModal({
   useEffect(() => {
     if (isOpen) {
       setSuccess(false);
+      setSessionModality('online');
       // Cargar asistencias existentes o inicializar en 'present'
       const initial: Record<string, { status: AttendanceStatus; notes: string }> = {};
       studentProfiles.forEach((p) => {
@@ -59,6 +60,9 @@ export default function AttendanceTrackerModal({
           const found = list.find((r) => r.session_title === sessionTitle && r.session_date === sessionDate);
           if (found) {
             initial[p.id] = { status: found.status, notes: found.notes || '' };
+            if (found.session_modality) {
+              setSessionModality(found.session_modality === 'in_person' ? 'in_person' : 'online');
+            }
           }
         })
       ).then(() => {
@@ -79,20 +83,10 @@ export default function AttendanceTrackerModal({
     }));
   };
 
-  const handleNotesChange = (studentId: string, notes: string) => {
-    setAttendances((prev) => ({
-      ...prev,
-      [studentId]: {
-        ...prev[studentId],
-        notes,
-      },
-    }));
-  };
-
   const handleSave = async () => {
     setSaving(true);
     try {
-      const records: ClassAttendanceRecord[] = profiles.map((p) => {
+      const records: ClassAttendanceRecord[] = studentProfiles.map((p) => {
         const item = attendances[p.id] || { status: 'present', notes: '' };
         return {
           id: `att_${p.id}_${Date.now()}`,
@@ -100,6 +94,7 @@ export default function AttendanceTrackerModal({
           session_date: sessionDate,
           student_id: p.id,
           status: item.status,
+          session_modality: sessionModality,
           notes: item.notes || null,
           created_at: new Date().toISOString(),
         };
@@ -146,7 +141,7 @@ export default function AttendanceTrackerModal({
         </div>
 
         {/* Session Selector */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
           <div>
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
               Seleccionar Clase o Taller en Vivo
@@ -175,6 +170,20 @@ export default function AttendanceTrackerModal({
               className="w-full p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold"
             />
           </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+              Modalidad
+            </label>
+            <select
+              value={sessionModality}
+              onChange={(e) => setSessionModality(e.target.value as SessionModality)}
+              className="w-full p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold"
+            >
+              <option value="online">En línea</option>
+              <option value="in_person">Presencial</option>
+            </select>
+          </div>
         </div>
 
         {/* Students Roll Call Table */}
@@ -186,7 +195,6 @@ export default function AttendanceTrackerModal({
           <div className="divide-y divide-slate-100 dark:divide-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden">
             {studentProfiles.map((student) => {
               const currentStatus = attendances[student.id]?.status || 'present';
-              const currentNotes = attendances[student.id]?.notes || '';
 
               return (
                 <div

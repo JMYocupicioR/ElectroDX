@@ -1,9 +1,17 @@
 import { getModuleById } from '../content/modules';
-import { findTopicPathInTree } from '../services/contentMerge';
+import { findTopicInTree, findTopicPathInTree } from '../services/contentMerge';
 
 export function getModuleLabel(moduleId: string): string {
   const mod = getModuleById(moduleId);
   return mod ? `Módulo ${mod.number}: ${mod.title}` : moduleId;
+}
+
+export function getTopicLabel(moduleId: string, topicId: string | null | undefined): string {
+  if (!topicId) return 'Tema no especificado';
+  const mod = getModuleById(moduleId);
+  if (!mod) return topicId;
+  const topic = findTopicInTree(mod.topics, topicId);
+  return topic?.title || topicId;
 }
 
 export function getTopicPublicUrl(

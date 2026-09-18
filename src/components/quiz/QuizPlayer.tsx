@@ -58,6 +58,7 @@ export function QuizPlayer({
     score: number;
     passed: boolean;
     answers: QuizAnswerRecord[];
+    revealedQuestions?: QuizWithQuestions['questions'];
   } | null>(null);
   const [attemptBlocked, setAttemptBlocked] = useState<string | null>(null);
 
@@ -181,6 +182,7 @@ export function QuizPlayer({
         score: attempt.score,
         passed: attempt.passed,
         answers: attempt.answers,
+        revealedQuestions: attempt.revealed_questions,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error al calificar la evaluación');
@@ -226,7 +228,7 @@ export function QuizPlayer({
     return (
       <QuizResults
         quiz={quiz}
-        displayQuestions={displayQuestions}
+        displayQuestions={submitted.revealedQuestions?.length ? submitted.revealedQuestions : displayQuestions}
         result={submitted}
         responses={responses}
         nextTopicUrl={nextTopicUrl}
@@ -321,7 +323,11 @@ export function QuizPlayer({
           )}
 
           {/* Opciones interactivas con letras A, B, C, D */}
-          <div className="space-y-2.5">
+          <div
+            className="space-y-2.5"
+            role={current.type === 'multiple' ? 'group' : 'radiogroup'}
+            aria-label={current.type === 'multiple' ? 'Seleccione todas las correctas' : 'Seleccione una opción'}
+          >
             {current.options.map((opt, optIndex) => {
               const selected = isSelected(opt.id);
               const letter = OPTION_LETTERS[optIndex] ?? String(optIndex + 1);
@@ -330,10 +336,12 @@ export function QuizPlayer({
                 <button
                   key={opt.id}
                   type="button"
+                  role={current.type === 'multiple' ? 'checkbox' : 'radio'}
+                  aria-checked={selected}
                   onClick={() =>
                     selectOption(current.id, opt.id, current.type === 'multiple')
                   }
-                  className={`w-full flex items-start gap-3.5 p-4 rounded-xl border text-left transition-all active:scale-[0.99] touch-manipulation ${
+                  className={`w-full min-h-[44px] flex items-start gap-3.5 p-4 rounded-xl border text-left transition-all active:scale-[0.99] touch-manipulation ${
                     selected
                       ? 'border-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/15 text-slate-900 dark:text-white shadow-md shadow-cyan-500/10 ring-1 ring-cyan-500/30'
                       : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800/70'

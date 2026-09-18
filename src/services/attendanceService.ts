@@ -1,37 +1,30 @@
 import { supabase } from '../lib/supabase';
 import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
-import type { ClassAttendanceRecord, AttendanceStatus } from '../types/academicGradebook';
+import type { ClassAttendanceRecord, SessionModality } from '../types/academicGradebook';
 
 const KEY_LOCAL_ATTENDANCE = 'neurosafe_class_attendances_';
 
+export function normalizeSessionModality(value: unknown): SessionModality {
+  return value === 'in_person' ? 'in_person' : 'online';
+}
+
+function attendanceKey(record: Pick<ClassAttendanceRecord, 'student_id' | 'session_title' | 'session_date'>): string {
+  return `${record.student_id}|${record.session_title}|${record.session_date}`;
+}
+
+function normalizeAttendanceRecord(row: ClassAttendanceRecord): ClassAttendanceRecord {
+  return {
+    ...row,
+    session_modality: normalizeSessionModality(row.session_modality),
+  };
+}
+
 // Talleres y sesiones base de ejemplo para el curso si no hay registros
-export const DEFAULT_COURSE_SESSIONS = [
-  {
-    title: 'Taller 1: Fundamentos de Neuroconducción y Filtros',
-    date: '2026-08-15',
-  },
-  {
-    title: 'Taller 2: Diagnóstico Electrofisiológico del Túnel Carpiano',
-    date: '2026-08-29',
-  },
-  {
-    title: 'Taller 3: Polineuropatías Axonales vs Desmielinizantes',
-    date: '2026-09-05',
-  },
-  {
-    title: 'Taller 4: Radiculopatías Cervicales y Lumbosacras',
-    date: '2026-09-19',
-  },
-  {
-    title: 'Taller 5: Miopatías Inflamatorias y EMG Cuantitativo',
-    date: '2026-10-03',
-  },
-];
+export const DEFAULT_COURSE_SESSIONS: { title: string; date: string }[] = [];
 
 export async function getStudentAttendance(studentId: string): Promise<ClassAttendanceRecord[]> {
   if (!studentId) return [];
 
-  // 1. Supabase (solo si la tabla no está marcada como ausente)
   if (!isTableMissingInSupabase('class_attendances')) {
     try {
       const { data, error, status } = await (supabase.from as any)('class_attendances')
@@ -41,39 +34,24 @@ export async function getStudentAttendance(studentId: string): Promise<ClassAtte
 
       if (status === 404 || error) {
         markTableAsMissingInSupabase('class_attendances');
-      } else if (data && data.length > 0) {
-        return data as ClassAttendanceRecord[];
+      } else if (data) {
+        return (data as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
       }
     } catch {
       markTableAsMissingInSupabase('class_attendances');
     }
   }
 
-  // 2. LocalStorage Fallback
   try {
     const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`);
     if (raw) {
-      const records: ClassAttendanceRecord[] = JSON.parse(raw);
-      if (records.length > 0) return records;
+      return (JSON.parse(raw) as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
     }
-  } catch {}
+  } catch {
+    // ignore cache parse errors
+  }
 
-  // 3. Generar asistencia inicial por defecto para el alumno
-  const initialRecords: ClassAttendanceRecord[] = DEFAULT_COURSE_SESSIONS.map((s, idx) => ({
-    id: `att_${studentId}_${idx}`,
-    session_title: s.title,
-    session_date: s.date,
-    student_id: studentId,
-    status: idx === 2 ? 'late' : 'present', // Ejemplo realista
-    notes: idx === 2 ? 'Ingreso con 15 minutos de retraso justificado por guardia' : 'Asistencia puntual',
-    created_at: new Date(s.date).toISOString(),
-  }));
-
-  try {
-    localStorage.setItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`, JSON.stringify(initialRecords));
-  } catch {}
-
-  return initialRecords;
+  return [];
 }
 
 export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord): Promise<void> {
@@ -98,27 +76,82 @@ export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord)
 
   // 2. Supabase
   if (!isTableMissingInSupabase('class_attendances')) {
+    const payload = {
+      session_title: record.session_title,
+      session_date: record.session_date,
+      workshop_id: record.workshop_id ?? null,
+      student_id: record.student_id,
+      status: record.status,
+      session_modality: normalizeSessionModality(record.session_modality),
+      minutes_attended: record.minutes_attended ?? null,
+      notes: record.notes ?? null,
+      updated_at: new Date().toISOString(),
+    };
+
     try {
-      const { error, status } = await (supabase.from as any)('class_attendances').upsert(
-        {
-          session_title: record.session_title,
-          session_date: record.session_date,
-          workshop_id: record.workshop_id ?? null,
-          student_id: record.student_id,
-          status: record.status,
-          minutes_attended: record.minutes_attended ?? null,
-          notes: record.notes ?? null,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'student_id,session_title,session_date' }
-      );
-      if (status === 404 || error) {
+      const { error, status } = await (supabase.from as any)('class_attendances').upsert(payload, {
+        onConflict: 'student_id,session_title,session_date',
+      });
+      if (status === 404) {
+        markTableAsMissingInSupabase('class_attendances');
+      } else if (error && /session_modality/i.test(error.message || '')) {
+        const { session_modality: _ignored, ...legacyPayload } = payload;
+        const retry = await (supabase.from as any)('class_attendances').upsert(legacyPayload, {
+          onConflict: 'student_id,session_title,session_date',
+        });
+        if (retry.status === 404 || retry.error) {
+          markTableAsMissingInSupabase('class_attendances');
+        }
+      } else if (error) {
         markTableAsMissingInSupabase('class_attendances');
       }
     } catch {
       markTableAsMissingInSupabase('class_attendances');
     }
   }
+}
+
+export async function getCohortAttendance(studentIds: string[] = []): Promise<ClassAttendanceRecord[]> {
+  const byKey = new Map<string, ClassAttendanceRecord>();
+
+  if (!isTableMissingInSupabase('class_attendances')) {
+    try {
+      const { data, error, status } = await (supabase.from as any)('class_attendances')
+        .select('*')
+        .order('session_date', { ascending: false });
+
+      if (status === 404 || error) {
+        markTableAsMissingInSupabase('class_attendances');
+      } else if (data) {
+        for (const row of data as ClassAttendanceRecord[]) {
+          const normalized = normalizeAttendanceRecord(row);
+          byKey.set(attendanceKey(normalized), normalized);
+        }
+      }
+    } catch {
+      markTableAsMissingInSupabase('class_attendances');
+    }
+  }
+
+  for (const studentId of studentIds) {
+    try {
+      const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`);
+      if (!raw) continue;
+      const list = (JSON.parse(raw) as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
+      for (const row of list) {
+        const key = attendanceKey(row);
+        if (!byKey.has(key)) byKey.set(key, row);
+      }
+    } catch {
+      // ignore cache parse errors
+    }
+  }
+
+  return [...byKey.values()].sort((a, b) => {
+    const dateCmp = (b.session_date || '').localeCompare(a.session_date || '');
+    if (dateCmp !== 0) return dateCmp;
+    return (a.session_title || '').localeCompare(b.session_title || '', 'es');
+  });
 }
 
 export async function saveCohortAttendanceBatch(records: ClassAttendanceRecord[]): Promise<void> {

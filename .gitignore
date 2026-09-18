@@ -15,6 +15,12 @@ dist-ssr
 .env.*
 !.env.example
 
+# Generated from topic_quizzes_pending_validation.json
+supabase/seeds/import_pending_quizzes.sql
+
+# Office lock files
+~$*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

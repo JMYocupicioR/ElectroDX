@@ -18,6 +18,7 @@ import {
 import { useExamRunner } from '../../hooks/useExamRunner';
 import { ExamQuestionCard } from './ExamQuestionCard';
 import { ExamPaletteNav } from './ExamPaletteNav';
+import { setExamSessionLock } from '../../utils/pwaUpdate';
 
 type LocationState = {
   config?: ExamConfig;
@@ -59,6 +60,11 @@ export default function ExamSessionPage() {
   const [expiresAt, setExpiresAt] = useState<string | null>(state?.expiresAt || null);
   const [assignmentTitle, setAssignmentTitle] = useState<string>(state?.assignmentTitle || 'Examen Asignado');
 
+  useEffect(() => {
+    setExamSessionLock(true);
+    return () => setExamSessionLock(false);
+  }, []);
+
   // Cargar preguntas al montar
   useEffect(() => {
     async function init() {
@@ -93,7 +99,19 @@ export default function ExamSessionPage() {
       }
 
       // Caso 2: examen asignado o nuevo examen
-      const cfg = state?.config || (savedLock?.config as ExamConfig);
+      const cfgRaw = state?.config || (savedLock?.config as ExamConfig | undefined);
+      const cfg =
+        cfgRaw && typeof cfgRaw === 'object' && (cfgRaw.mode || cfgRaw.moduleId || cfgRaw.topicNames?.length)
+          ? cfgRaw
+          : savedLock
+            ? {
+                mode: 'TOPIC_SPECIFIC' as const,
+                moduleId: savedLock.moduleId,
+                questionCount: savedLock.selectedQuestionIds?.length || 10,
+                timeLimitSeconds: savedLock.timeLimitMinutes * 60,
+                feedbackMode: 'end' as const,
+              }
+            : null;
       if (!cfg) {
         navigate('/examenes', { replace: true });
         return;
@@ -199,7 +217,11 @@ export default function ExamSessionPage() {
         }
       });
       const score = questions.length > 0 ? Math.round((correct / questions.length) * 100) : 0;
-      await completeAssignedExam(activeAssignmentId, user.id, score, durationSeconds);
+      try {
+        await completeAssignedExam(activeAssignmentId, user.id, score, durationSeconds, sessionId);
+      } catch (err) {
+        console.error('[ExamSessionPage] No se pudo asentar el examen asignado:', err);
+      }
 
       try {
         localStorage.removeItem(`neurosafe_exam_qs_asg_${activeAssignmentId}`);
@@ -248,6 +270,26 @@ export default function ExamSessionPage() {
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-10 h-10 animate-spin text-cyan-400" />
           <p className="text-slate-300 text-sm">Preparando el examen…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-6">
+        <div className="max-w-md text-center space-y-3">
+          <p className="text-white font-semibold">No hay reactivos para este examen</p>
+          <p className="text-slate-400 text-sm">
+            El banco de preguntas no devolvió ítems para el módulo o temas asignados. Avisa a tu profesor o intenta de nuevo.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/portal')}
+            className="mt-2 px-4 py-2 rounded-xl bg-white/10 text-white text-sm"
+          >
+            Volver al portal
+          </button>
         </div>
       </div>
     );

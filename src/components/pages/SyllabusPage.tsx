@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,13 +23,15 @@ import {
   Users,
   Compass,
 } from 'lucide-react';
-import { allModules } from '../../content/modules';
 import { Topic } from '../../types/content';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useQuizTopicFlags } from '../../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { BRAND } from '../../config/brand';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { getCourseIdForModule } from '../../content/courseCatalog';
+import type { CourseId } from '../../types/database';
 
 /* ── Flatten topics for search ── */
 function flattenTopics(
@@ -199,23 +201,30 @@ const SIMPLIFIED_PILLARS = [
 ];
 
 export default function SyllabusPage() {
-  const { isEnrolledPhysician, user } = useAuth();
+  const { isEnrolledPhysician, user, hasCourseAccess, hasPremiumAccess } = useAuth();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const { isCompleted, getParentTopicStats, getModuleStats } = useTopicProgress();
+  const { grouped, modulesWithOverrides, assignments } = useSyllabusCatalog();
   const [activeTab, setActiveTab] = useState<'temario' | 'resumen' | 'inscripcion'>('temario');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set(allModules.map((m) => m.id)));
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
+  const [didExpand, setDidExpand] = useState(false);
 
-  // Total stats
-  const totalModulesCount = allModules.length;
+  useEffect(() => {
+    if (!didExpand && modulesWithOverrides.length) {
+      setExpandedModules(new Set(modulesWithOverrides.map((m) => m.id)));
+      setDidExpand(true);
+    }
+  }, [modulesWithOverrides, didExpand]);
+
+  const totalModulesCount = modulesWithOverrides.length;
   const totalTopicsCount = useMemo(() => {
-    return allModules.reduce((acc, mod) => acc + countTotalTopics(mod.topics), 0);
-  }, []);
+    return modulesWithOverrides.reduce((acc, mod) => acc + countTotalTopics(mod.topics), 0);
+  }, [modulesWithOverrides]);
 
-  // Search indexing
   const searchableTopics = useMemo(() => {
-    return allModules.flatMap((mod) => flattenTopics(mod.topics, mod.id, mod.title));
-  }, []);
+    return modulesWithOverrides.flatMap((mod) => flattenTopics(mod.topics, mod.id, mod.title));
+  }, [modulesWithOverrides]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim() || searchQuery.length < 2) return null;
@@ -237,7 +246,7 @@ export default function SyllabusPage() {
     });
   };
 
-  const expandAll = () => setExpandedModules(new Set(allModules.map((m) => m.id)));
+  const expandAll = () => setExpandedModules(new Set(modulesWithOverrides.map((m) => m.id)));
   const collapseAll = () => setExpandedModules(new Set());
 
   return (
@@ -461,13 +470,31 @@ export default function SyllabusPage() {
             </div>
           ) : (
             /* Module Accordions */
-            <div className="space-y-4">
-              {allModules.map((mod) => {
+            <div className="space-y-8">
+              {grouped.map(({ course, modules }) => {
+                if (!modules.length) return null;
+                return (
+                  <section key={course.id} className="space-y-3">
+                    <div className="flex items-start justify-between gap-3 px-1">
+                      <div>
+                        <h2 className="text-lg font-extrabold text-slate-900 dark:text-white">{course.title}</h2>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">{course.description}</p>
+                      </div>
+                      {!hasCourseAccess(course.id) && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-full border border-amber-200/80">
+                          <Lock className="w-3 h-3" /> Bloqueado
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+              {modules.map((mod) => {
                 const isExpanded = expandedModules.has(mod.id);
                 const topicCount = countTotalTopics(mod.topics);
                 const quizCount = moduleQuizCount(mod.id);
                 const modStats = getModuleStats(mod.topics);
                 const isModDone = modStats.isFullyCompleted;
+                const assignedCourse = getCourseIdForModule(assignments, mod.id);
+                const isLocked = assignedCourse ? !hasCourseAccess(assignedCourse as CourseId) : !hasPremiumAccess;
 
                 return (
                   <div
@@ -513,6 +540,7 @@ export default function SyllabusPage() {
                           </div>
                           <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-tight">
                             {mod.title}
+                            {isLocked && <Lock className="inline w-4 h-4 ml-2 text-amber-500 align-text-top" />}
                           </h3>
                           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">
                             {mod.description}
@@ -661,6 +689,10 @@ export default function SyllabusPage() {
                       )}
                     </AnimatePresence>
                   </div>
+                );
+              })}
+                    </div>
+                  </section>
                 );
               })}
             </div>

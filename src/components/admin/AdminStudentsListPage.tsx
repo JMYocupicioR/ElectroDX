@@ -1,25 +1,17 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Award,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
-  Flame,
   Activity,
   ChevronRight,
-  GraduationCap,
-  Building2,
-  Stethoscope,
-  Users,
   Sliders,
   Calendar,
   FileText,
   UserCheck,
   AlertTriangle,
   BookOpen,
-  Sparkles,
   FileQuestion,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
@@ -466,42 +458,68 @@ export default function AdminStudentsListPage() {
                       {/* Mini-Kardex (5 columnas con borde divisorio) */}
                       <div className="md:col-span-5 border-t md:border-t-0 md:border-l border-slate-200/80 dark:border-slate-700/80 pt-3 md:pt-0 md:pl-4">
                         {sSummary ? (
+                          <div>
                           <div className="grid grid-cols-4 gap-1.5 sm:gap-2 text-center">
-                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                            <Link
+                              to={`/admin/alumnos/examenes?alumno=${student.id}`}
+                              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs hover:border-indigo-400 hover:bg-indigo-50/70 dark:hover:bg-indigo-950/40 transition cursor-pointer"
+                              aria-label={`Analizar exámenes de ${student.display_name}`}
+                              title="Análisis de exámenes del alumno"
+                            >
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
                                 Exámenes
                               </span>
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100">
                                 {sSummary.examAverage}%
                               </span>
-                            </div>
+                            </Link>
 
-                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                            <Link
+                              to={`/admin/alumnos/tareas?alumno=${student.id}`}
+                              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs hover:border-violet-400 hover:bg-violet-50/70 dark:hover:bg-violet-950/40 transition cursor-pointer"
+                              aria-label={`Ver tareas enviadas de ${student.display_name}`}
+                              title="Tareas enviadas por el alumno"
+                            >
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
                                 Tareas
                               </span>
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100">
                                 {sSummary.assignmentsSubmitted}/{sSummary.assignmentsTotal}
                               </span>
-                            </div>
+                            </Link>
 
-                            <div className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                            <Link
+                              to={`/admin/alumnos/asistencias?alumno=${student.id}`}
+                              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs hover:border-emerald-400 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 transition cursor-pointer"
+                              aria-label={`Ver asistencias de ${student.display_name}`}
+                              title="Asistencias a cursos del alumno"
+                            >
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">
                                 Asist.
                               </span>
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100">
                                 {sSummary.attendancePct}%
                               </span>
-                            </div>
+                            </Link>
 
-                            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                            <button
+                              type="button"
+                              onClick={() => setKardexStudent(student)}
+                              className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 shadow-2xs hover:bg-indigo-100 dark:hover:bg-indigo-900/70 transition cursor-pointer"
+                              aria-label={`Abrir kárdex y nota final de ${student.display_name}`}
+                              title="Kárdex y ponderación de la calificación final"
+                            >
                               <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider block">
                                 Nota Final
                               </span>
                               <span className="text-xs font-black text-indigo-700 dark:text-indigo-300">
                                 {sSummary.finalWeightedGrade}
                               </span>
-                            </div>
+                            </button>
+                          </div>
+                          <p className="mt-2 text-[10px] text-slate-400 text-center md:text-right">
+                            Clic en cada rubro para analizar datos o abrir el kárdex.
+                          </p>
                           </div>
                         ) : (
                           <div className="text-xs text-slate-400 text-center py-2">Calculando métricas...</div>

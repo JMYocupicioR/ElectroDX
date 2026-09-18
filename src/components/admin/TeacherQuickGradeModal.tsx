@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   X,
   Award,
-  CheckCircle2,
   Stethoscope,
   Building2,
   GraduationCap,
@@ -16,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { TeacherPendingReviewItem } from '../../types/studentPlan';
 import { gradeAssignment } from '../../services/studentPlanService';
+import { getEmgReportForAssignment, gradeEmgReport } from '../../services/studentToolsService';
 import { useAuth } from '../../contexts/AuthProvider';
 
 interface TeacherQuickGradeModalProps {
@@ -35,6 +35,13 @@ const QUICK_COMMENTS = [
 
 const QUICK_SCORES = [100, 95, 90, 85, 80, 75, 70];
 
+const EMG_RUBRIC = [
+  { id: 'hallazgos', label: 'Hallazgos técnicos' },
+  { id: 'impresion', label: 'Impresión diagnóstica' },
+  { id: 'correlacion', label: 'Correlación clínica' },
+  { id: 'limitaciones', label: 'Limitaciones del estudio' },
+] as const;
+
 export default function TeacherQuickGradeModal({
   isOpen,
   onClose,
@@ -46,6 +53,13 @@ export default function TeacherQuickGradeModal({
   const [feedback, setFeedback] = useState<string>(item?.assignment.feedback ?? '');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emgReportId, setEmgReportId] = useState<string | null>(null);
+  const [rubric, setRubric] = useState<Record<string, number>>({
+    hallazgos: 20,
+    impresion: 20,
+    correlacion: 20,
+    limitaciones: 20,
+  });
 
   // Sync state when item changes
   React.useEffect(() => {
@@ -53,6 +67,19 @@ export default function TeacherQuickGradeModal({
       setGrade(item.assignment.grade ?? 85);
       setFeedback(item.assignment.feedback ?? '');
       setError(null);
+      setEmgReportId(null);
+      if (item.assignment.type === 'emg_report') {
+        getEmgReportForAssignment(item.assignment.id)
+          .then((report) => {
+            if (!report) return;
+            setEmgReportId(report.id);
+            if (report.rubric && typeof report.rubric === 'object') {
+              setRubric((prev) => ({ ...prev, ...(report.rubric as Record<string, number>) }));
+            }
+            if (typeof report.rubric_score === 'number') setGrade(report.rubric_score);
+          })
+          .catch(() => undefined);
+      }
     }
   }, [item]);
 
@@ -71,10 +98,20 @@ export default function TeacherQuickGradeModal({
     setError(null);
     try {
       const reviewerName = profile?.display_name || user?.email || 'Profesor Titular';
+      const rubricTotal = EMG_RUBRIC.reduce((sum, row) => sum + Number(rubric[row.id] ?? 0), 0);
+      const finalGrade = assignment.type === 'emg_report' ? Math.min(100, rubricTotal) : Number(grade);
+      if (assignment.type === 'emg_report' && emgReportId) {
+        await gradeEmgReport({
+          reportId: emgReportId,
+          rubric,
+          score: finalGrade,
+          feedback: feedback.trim() || 'Evaluado por el Profesor Titular.',
+        });
+      }
       await gradeAssignment(
         assignment.id,
         assignment.student_id,
-        Number(grade),
+        finalGrade,
         feedback.trim() || 'Evaluado por el Profesor Titular.',
         reviewerName
       );
@@ -236,6 +273,29 @@ export default function TeacherQuickGradeModal({
 
           {/* Grading Form */}
           <form onSubmit={handleSave} className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            {assignment.type === 'emg_report' && (
+              <div className="space-y-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Rúbrica EMG (25 pts c/u)</p>
+                {EMG_RUBRIC.map((row) => (
+                  <label key={row.id} className="flex items-center justify-between gap-3 text-xs">
+                    <span>{row.label}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={25}
+                      value={rubric[row.id] ?? 0}
+                      onChange={(e) => {
+                        const value = Number(e.target.value);
+                        setRubric((prev) => ({ ...prev, [row.id]: value }));
+                        const next = { ...rubric, [row.id]: value };
+                        setGrade(EMG_RUBRIC.reduce((sum, item) => sum + Number(next[item.id] ?? 0), 0));
+                      }}
+                      className="w-20 px-2 py-1 rounded-lg border text-right"
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
             {error && (
               <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0" />

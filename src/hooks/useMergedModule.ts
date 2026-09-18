@@ -3,13 +3,17 @@ import type { Module } from '../types/content';
 import type { PublishedModule, PublishedTopic } from '../types/database';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { getPublishedModules, getPublishedTopicsByModule } from '../services/editorialService';
-import { mergeModuleTopics } from '../services/contentMerge';
+import { mergeModuleTopics, applyLessonExpansions } from '../services/contentMerge';
+import { applySyllabusTopicOverrides } from '../content/courseCatalog';
 import { getMergedModuleById, resolveModuleId } from '../services/moduleMerge';
+import { getSyllabusTopicOverrides } from '../services/courseService';
+import type { SyllabusTopicOverride } from '../types/database';
 
 export function useMergedModule(moduleId: string | undefined) {
   const canonicalId = useMemo(() => resolveModuleId(moduleId) ?? moduleId, [moduleId]);
   const [publishedModules, setPublishedModules] = useState<PublishedModule[]>([]);
   const [publishedTopics, setPublishedTopics] = useState<PublishedTopic[]>([]);
+  const [topicOverrides, setTopicOverrides] = useState<SyllabusTopicOverride[]>([]);
   const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
@@ -23,17 +27,23 @@ export function useMergedModule(moduleId: string | undefined) {
     let cancelled = false;
     setLoading(true);
 
-    Promise.all([getPublishedModules(), getPublishedTopicsByModule(canonicalId)])
-      .then(([mods, topics]) => {
+    Promise.all([
+      getPublishedModules(),
+      getPublishedTopicsByModule(canonicalId),
+      getSyllabusTopicOverrides(),
+    ])
+      .then(([mods, topics, overrides]) => {
         if (!cancelled) {
           setPublishedModules(mods);
           setPublishedTopics(topics);
+          setTopicOverrides(overrides.filter((o) => o.module_id === canonicalId));
         }
       })
       .catch(() => {
         if (!cancelled) {
           setPublishedModules([]);
           setPublishedTopics([]);
+          setTopicOverrides([]);
         }
       })
       .finally(() => {
@@ -52,9 +62,11 @@ export function useMergedModule(moduleId: string | undefined) {
 
   const module: Module | undefined = useMemo(() => {
     if (!staticModule) return undefined;
-    if (!publishedTopics.length) return staticModule;
-    return mergeModuleTopics(staticModule, publishedTopics);
-  }, [staticModule, publishedTopics]);
+    const merged = publishedTopics.length
+      ? mergeModuleTopics(staticModule, publishedTopics)
+      : applyLessonExpansions(staticModule);
+    return applySyllabusTopicOverrides(merged, topicOverrides);
+  }, [staticModule, publishedTopics, topicOverrides]);
 
   return {
     module,
