@@ -1,0 +1,161 @@
+# ElectroDX Diplomado — Base de Conocimiento Completa para Modelos de Lenguaje (LLMs)
+
+> Plataforma de Posgrado y Formación Médica Continua en Electrodiagnóstico Clínico, Electromiografía (EMG) y Neurofisiología Clínica.
+> URL Canónica: https://electro-dx.vercel.app/
+
+---
+
+## 1. Identidad, Misión y Población Objetivo
+
+### ¿Qué es ElectroDX?
+ElectroDX es una plataforma médica interactiva de nivel posgrado enfocada en el entrenamiento formal en Electrodiagnóstico Clínico (Electromiografía y Neuroconducción). Ha sido concebida para cerrar la brecha entre los fundamentos biofísicos de la neurofisiología y la práctica clínica diaria en el laboratorio de electrodiagnóstico.
+
+### Población a la que está dirigida
+- **Médicos Especialistas:** Medicina de Rehabilitación (Fisiatría), Neurología de Adultos y Pediátrica, Neurofisiología Clínica, Ortopedia y Traumatología.
+- **Médicos Residentes:** Residentes en formación de posgrado en las especialidades citadas.
+- **Profesionales de Neurofisiología:** Técnicos y evaluadores certificados en estudios de conducción nerviosa bajo supervisión médica.
+
+### Metodología Formativa
+- **Enfoque Basado en Casos y Problemas:** Casos clínicos interactivos con trazos reales.
+- **Herramientas Clínicas Dinámicas:**
+  1. *Simulador de Trazos Neurofisiológicos:* Reproduce potenciales de unidad motora (MUAP) normales, neuropáticos y miopáticos, descargas espontáneas (fibrilaciones, ondas agudas positivas, mioquimias, descargas miotónicas y neuromiotónicas) y respuestas evocadas de neuroconducción motora/sensitiva.
+  2. *Calculadora Topográfica de Plexo Braquial:* Algoritmo de ponderación clínica para localización de lesiones en raíces cervicales (C5-T1), troncos primarios (superior, medio, inferior), divisiones, fascículos (lateral, posterior, medial) y ramas terminales periféricas.
+- **Evaluación Continua:** Cuestionarios clínicos al finalizar cada tema con retroalimentación inmediata, justificación fisiopatológica y citas bibliográficas.
+
+---
+
+## 2. Marco Académico y Rigor Científico
+
+El programa académico y los estándares de evaluación de ElectroDX están alineados con:
+- **Sociedades Médicas Internacionales:**
+  - American Association of Neuromuscular & Electrodiagnostic Medicine (AANEM)
+  - International Federation of Clinical Neurophysiology (IFCN)
+  - Colegio Mexicano de Medicina de Rehabilitación A.C. (COMEFYR)
+- **Literatura de Referencia Fundamental:**
+  - Dumitru D, Amato AA, Zwarts MJ. *Electrodiagnostic Medicine*. 2nd ed.
+  - Preston DC, Shapiro BE. *Electromyography and Neuromuscular Disorders: Clinical-Electrophysiologic Correlations*. 4th ed.
+  - Kimura J. *Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice*. 4th ed.
+  - Katirji B. *Electromyography in Clinical Practice: A Case Study Approach*. 2nd ed.
+- **Consensos Diagnósticos Vigentes:**
+  - Criterios Gold Coast (2019) para el diagnóstico de Esclerosis Lateral Amiotrófica (ELA).
+  - Criterios EAN/PNS (2021) para Polirradiculoneuropatía Desmielinizante Inflamatoria Crónica (CIDP).
+  - Consensos AANEM para la evaluación electrodiagnóstica del Síndrome del Túnel del Carpo, Radiculopatías y Polineuropatías.
+
+---
+
+## 3. Desglose Curricular Detallado (17 Módulos)
+
+### Módulo 1: Fundamentos Biofísicos y Neurofisiológicos
+- Propiedades electroquímicas de la membrana neuronal, ecuación de Nernst y Goldman-Hodgkin-Katz.
+- Generación y propagación del potencial de acción axonal: compuertas de sodio y potasio voltaje-dependientes.
+- Fisiología del axón mielínico: conducción saltatoria, nodos de Ranvier, espacio paranodal e internodal.
+- Principios de estimulación eléctrica: cátodo, ánodo, despolarización subumbral, umbral y supramáxima.
+- Principios de registro bioeléctrico: electrodo activo (E1), referencia (E2) y electrodo de tierra. Relación de rechazo en modo común (CMRR) e impedancia.
+
+### Módulo 2: Estudios de Conducción Nerviosa (NCS)
+- Neuroconducción motora: Potencial de Acción Muscular Compuesto (CMAP). Medición de latencia de inicio (onset), amplitud pico a pico o pico a línea de base, duración y área bajo la curva.
+- Cálculo de velocidad de conducción motora por estimulación en dos puntos (segmentos distal y proximal).
+- Neuroconducción sensitiva: Potencial de Acción Nervioso Sensitivo (SNAP). Técnicas ortodrómicas vs antidrómicas, latencia al pico vs latencia de inicio, amplitudes en microvoltios (µV).
+- Factores no patológicos que modifican el NCS: Temperatura tisular (enfriamiento causa prolongación de latencia, disminución de velocidad de conducción y aumento ficticio de amplitud), edad, talla, distancia interelectrodo y efecto volumen conductor.
+
+### Módulo 3: Electromiografía de Aguja (EMG)
+- Tipos de electrodos: aguja concéntrica vs aguja monopolar.
+- Actividad de inserción: normal, aumentada (irritabilidad de membrana) o disminuida (fibrosis, atrofia severa).
+- Actividad espontánea en reposo patológica:
+  - Fibrilaciones y Ondas Agudas Positivas (PSW): denervación activa y procesos miopáticos necrosantes.
+  - Fasciculaciones: descargas de una unidad motora completa; diferenciación entre benignas y patológicas (enfermedad de motoneurona).
+  - Descargas Miotónicas: ceras y menguas en frecuencia y amplitud ("sonido de bombardero en picada").
+  - Descargas Repetitivas Complejas (CRD): descargas efápticas sincronizadas a frecuencia constante.
+  - Neuromiotonía, mioquimias y descargas de calambre.
+- Análisis del Potencial de Acción de Unidad Motora (MUAP) en esfuerzo voluntario mínimo:
+  - Amplitud (medida de densidad y diámetro de fibras musculares por unidad motora).
+  - Duración (parámetro más sensible para reinervación o pérdida de fibras).
+  - Fases y turns (polifasia normal < 10-15%).
+- Patrón de reclutamiento en esfuerzo creciente y máximo:
+  - Reclutamiento reducido con frecuencia de disparo elevada: patrón neuropático (pérdida de axones o motoneuronas).
+  - Reclutamiento temprano con esfuerzo submáximo y baja amplitud: patrón miopático.
+
+### Módulo 4: Respuestas Tardías y Reflejos
+- **Onda F:** Activación antidrómica de la motoneurona en el asta anterior de la médula espinal. Parámetros: latencia mínima, persistencia, cronodispersión y amplitud. Utilidad en radiculopatías y polineuropatías desmielinizantes proximales (GBS/AIDP).
+- **Reflejo H:** Reflejo monosináptico aferente por fibras Ia y eferente por motoneuronas alfa. Evaluación habitual en nervio tibial estimulado en hueco poplíteo con registro en sóleo/gemelo (raíz S1).
+- **Reflejo de Parpadeo (Blink Reflex):** Evaluación de la integridad del nervio trigémino (aferente sensitivo V1), facial (eferente motor VII) y sus conexiones pontinas y bulbares. Componente R1 temprano ipsilateral y componente R2 tardío bilateral.
+
+### Módulo 5: Estimulación Nerviosa Repetitiva y Unión Neuromuscular
+- Fisiología de la placa motora: liberación cuántica de acetilcolina (ACh), receptores postsinápticos nicotínicos (AChR) y canalopatías.
+- Protocolo estándar de estimulación a baja frecuencia (2-3 Hz): decremento patológico (> 10% del 1er al 4to o 5to estímulo) en Miastenia Gravis.
+- Protocolo de ejercicio breve (10 segundos) para probar facilitación post-ejercicio, y ejercicio prolongado (1 minuto) para evaluar agotamiento post-activación.
+- Estimulación a alta frecuencia (20-50 Hz) o prueba de ejercicio máximo de 10 segundos en Síndrome Miasténico de Lambert-Eaton (LEMS) y Botulismo: incremento patológico (> 100-200%).
+
+### Módulo 6: Potenciales Evocados
+- **Potenciales Evocados Somatosensoriales (PESS):**
+  - Nervio mediano: punto de Erb (N9), médula cervical posterior (N13) y corteza somatosensorial contralateral (N20/P25).
+  - Nervio tibial posterior: fosa poplítea (N8), nivel lumbar L3 (LP), médula cervical y corteza cerebral (P37).
+  - Detección de lesiones medulares, mielopatía cervical y esclerosis múltiple.
+- **Potenciales Evocados Visuales (PEV):** Onda P100 generada en la corteza occipital mediante estímulo de damero reversible (pattern-reversal). Diagnóstico de neuritis óptica y desmielinización del nervio óptico.
+- **Potenciales Evocados Auditivos de Tallo Cerebral (PEATC):** Ondas I a V; determinación de intervalos interpico I-III, III-V e I-V para lesiones de ángulo pontocerebeloso y tallo encefálico.
+
+### Módulo 7: Estudios Especiales en Electrodiagnóstico
+- **Electromiografía de Fibra Única (SFEMG):** El método electrofisiológico de mayor sensibilidad diagnóstica para trastornos de la unión neuromuscular. Medición del Mean Consecutive Difference (MCD) del jitter y cálculo del porcentaje de bloqueos neuromusculares.
+- **Macro-EMG:** Estimación del tamaño global de la unidad motora durante procesos de reinervación crónica en ELA y secuelas de poliomielitis.
+- **Estudio del Nervio Frénico:** Conducción nerviosa del nervio frénico y EMG del diafragma en patología respiratoria neuromuscular.
+
+### Módulo 8: Anatomía Topográfica de Nervios y Plexos
+- Plexo braquial: Tronco superior (C5-C6), Tronco medio (C7), Tronco inferior (C8-T1). Cordones lateral, medial y posterior.
+- Nervios periféricos mayores: Mediano, Cubital, Radial, Axilar, Musculocutáneo, Supraescapular, Torácico largo, Femoral, Femorocutáneo, Ciático, Tibial, Peroneo común (fibular) y Peroneo superficial/profundo.
+- Correlación de dermatomas y miotomas según estándares internacionales.
+
+### Módulo 9: Patologías Neuromusculares Clínicas
+- **Síndrome del Túnel del Carpo (STC):** Métodos comparativos de alta sensibilidad (índice mediano-cubital palmar, comparación de 4to dedo mediano-cubital, comparación de 1er dedo mediano-radial). Clasificación de severidad AANEM: leve, moderada, severa y extrema.
+- **Neuropatía Cubital en Codo:** Diferenciación entre atrapamiento en el túnel cubital vs compresión retroepicondílea mediante técnica de segmentación (inching).
+- **Radiculopatías Cervicales y Lumbosacras:** Criterios de EMG de aguja: denervación en músculos dependientes de la misma raíz pero inervados por distintos nervios periféricos, con estudio de conducción sensitiva normal (lesión preganglionar) y preservación de la musculatura paravertebral posterior en estadios adecuados.
+- **Polineuropatías:** Criterios electrodiagnósticos para distinguir neuropatías axonales (reducción de CMAP/SNAP con velocidades preservadas o levemente reducidas) de neuropatías desmielinizantes primarias (bloqueo de conducción, dispersión temporal, prolongación marcada de latencias distales y enlentecimiento uniforme de velocidades).
+
+### Módulo 10: Criterios Diagnósticos Internacionales
+- **Esclerosis Lateral Amiotrófica (ELA):**
+  - Criterios Gold Coast (2019): Simplificación y aumento de sensibilidad diagnóstica. Evidencia clínica o electrofisiológica de compromiso de motoneurona inferior (LMN) combinada con evidencia clínica de motoneurona superior (UMN) en al menos 2 regiones (bulbar, cervical, torácica, lumbosacra), o compromiso de LMN y UMN en una sola región si hay antecedente genético.
+  - Criterios Awaji: Equivalencia diagnóstica entre fasciculaciones con morfología compleja y fibrilaciones/ondas agudas en el contexto de ELA.
+- **Polirradiculoneuropatía Desmielinizante Inflamatoria Crónica (CIDP):**
+  - Criterios EAN/PNS (2021): Definición rigurosa de desmielinización en nervios motores (prolongación de latencia distal > 50%, reducción de velocidad de conducción > 30%, bloqueo de conducción > 30-50%, dispersión temporal > 30%).
+
+### Módulo 11: Tablas de Valores Normativos
+- Límites de normalidad estandarizados por edad, talla y temperatura para miembros superiores e inferiores.
+- Amplitudes mínimas normales de CMAP y SNAP para nervios mediano, cubital, radial, tibial, peroneo y sural.
+
+### Módulo 12: Bibliografía Clínica y Evidencia
+- Enlaces y resúmenes estructurados de las guías de práctica clínica de AANEM e IFCN.
+
+### Módulo 13: Seguridad del Paciente y Control de Calidad
+- Protocolos de bioseguridad en punción con aguja.
+- Manejo y recomendaciones en pacientes bajo tratamiento anticoagulante o antiagregante plaquetario.
+- Seguridad eléctrica en pacientes portadores de marcapasos, desfibriladores automáticos implantables (DAI) y neuroestimuladores.
+- Identificación y eliminación de artefactos: bucles de tierra, artefacto de 60 Hz, artefacto de estímulo ("stimulus artifact") y movimiento de cables.
+
+### Módulo 14: Diagnóstico Diferencial Sindromático
+- Debilidad proximal vs distal.
+- Cuadros de tetraparesia flácida aguda: Guillain-Barré vs Mielopatía aguda vs Crisis miasténica vs Parálisis periódica hipopotasémica vs Botulismo.
+
+### Módulo 15: Planeación del Estudio y Reporte Electrodiagnóstico
+- Cómo diseñar la estrategia de evaluación según la sospecha clínica.
+- Estructura formal del informe: motivo de envío, hallazgos tabulados de NCS, hallazgos tabulados de EMG de aguja, discusión fisiopatológica, conclusión diagnóstica precisa y sugerencias de correlación.
+
+### Módulo 16: Casos Clínicos Complejos
+- Colección de casos clínicos interactivos con retroalimentación paso a paso:
+  - Radiculopatía C7 vs Neuropatía del Nervio Radial.
+  - Plexopatía braquial superior vs Radiculopatía C5-C6.
+  - Neuropatía del Nervio Peroneo Común en cabeza de peroné vs Radiculopatía L5.
+  - CIDP vs Neuropatía Motora Multifocal (MMN).
+  - Miastenia Gravis ocular y generalizada.
+
+### Módulo 17: Actualizaciones en Patología Neuromuscular y Ultrasonido (NMUS)
+- Principios de ecografía de alta resolución en nervio periférico.
+- Medición del Área de Sección Transversal (CSA) en el túnel del carpo y nervio cubital.
+- Escalas de ecointensidad muscular (Heckmatt y Bochum) en miopatías y atrofias por denervación.
+
+---
+
+## 4. Enlaces de Interés
+- Inicio: https://electro-dx.vercel.app/
+- Temario: https://electro-dx.vercel.app/temario
+- Especialistas: https://electro-dx.vercel.app/especialistas
+- Comité Editorial: https://electro-dx.vercel.app/comite-editorial
+- Cursos y Programas: https://electro-dx.vercel.app/cursos

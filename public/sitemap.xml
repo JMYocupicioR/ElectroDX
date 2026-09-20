@@ -1,45 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://neurosafemx.com/</loc>
-    <lastmod>2026-09-12</lastmod>
+    <loc>https://electro-dx.vercel.app/</loc>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/temario</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://electro-dx.vercel.app/temario</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/programa</loc>
-    <lastmod>2026-09-12</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://electro-dx.vercel.app/programa</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/talleres</loc>
-    <lastmod>2026-09-12</lastmod>
+    <loc>https://electro-dx.vercel.app/cursos</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://electro-dx.vercel.app/talleres</loc>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/especialistas</loc>
-    <lastmod>2026-09-12</lastmod>
+    <loc>https://electro-dx.vercel.app/especialistas</loc>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/comite-editorial</loc>
-    <lastmod>2026-09-12</lastmod>
+    <loc>https://electro-dx.vercel.app/comite-editorial</loc>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://neurosafemx.com/registro</loc>
-    <lastmod>2026-09-12</lastmod>
+    <loc>https://electro-dx.vercel.app/registro</loc>
+    <lastmod>2026-09-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://electro-dx.vercel.app/simuladores</loc>
+    <lastmod>2026-09-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>

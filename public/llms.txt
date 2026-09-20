@@ -1,0 +1,51 @@
+# ElectroDX Diplomado
+
+> Formación de Posgrado y Diplomado en Electrodiagnóstico Clínico, Electromiografía (EMG), Estudios de Conducción Nerviosa (NCS), Potenciales Evocados y Ultrasonido Neuromuscular para Médicos Especialistas y Residentes.
+
+ElectroDX es una plataforma interactiva de posgrado y educación médica especializada en neurofisiología clínica y electrodiagnóstico. Diseñada para Médicos Especialistas y Residentes en Medicina de Rehabilitación, Neurología y Neurofisiología Clínica, integra un currículo de 17 módulos académicos, simuladores de trazos con osciloscopio virtual, calculadora topográfica de lesiones de plexo braquial, banco de casos clínicos interactivos con retroalimentación argumentada y evaluaciones formativas por lección.
+
+## Información Académica y Clínica
+- **Nivel Académico:** Posgrado Médico / Formación Médica Continua
+- **Población Objetivo:** Médicos Especialistas en Medicina de Rehabilitación, Neurología, Neurofisiología Clínica, Residentes médicos y profesionales afines al sistema neuromuscular.
+- **Rigor Científico y Guías:** Basado en la literatura de referencia internacional (Daniel Dumitru, David C. Preston & Barbara E. Shapiro, Jun Kimura), guías de la American Association of Neuromuscular & Electrodiagnostic Medicine (AANEM) y la International Federation of Clinical Neurophysiology (IFCN).
+- **Criterios Diagnósticos Actualizados:** Incorpora los Criterios Gold Coast (2019) para Esclerosis Lateral Amiotrófica (ELA) y las Guías EAN/PNS (2021) para Polineuropatía Desmielinizante Inflamatoria Crónica (CIDP).
+- **Herramientas Clínicas Interactivas:**
+  - *Simulador de Trazos Neurofisiológicos:* Visualización y análisis de potenciales de acción de unidad motora (MUAP), fibrilaciones, ondas agudas positivas, descargas miotónicas y respuestas de conducción nerviosa con control de ganancia y base de tiempo.
+  - *Calculadora Topográfica de Plexo Braquial:* Motor de diagnóstico diferencial para lesiones preganglionares vs posganglionares, troncos, fascículos y nervios terminales.
+  - *Modo Ejercicios y Casos Clínicos:* Resolución de casos simulados de radiculopatías, plexopatías, neuropatías por atrapamiento y miopatías con correlación electrodiagnóstica.
+
+## Enlaces Principales
+- [Portal Oficial ElectroDX](https://electro-dx.vercel.app/): Página principal, resumen de la plataforma y simulador de trazos.
+- [Temario y Programa Analítico](https://electro-dx.vercel.app/temario): Desglose curricular de los 17 módulos y lecciones.
+- [Comité Editorial](https://electro-dx.vercel.app/comite-editorial): Consejo editorial, marco deontológico y autores clínicos.
+- [Talleres y Educación Continua](https://electro-dx.vercel.app/talleres): Agenda de talleres prácticos de electrodiagnóstico.
+- [Directorio de Especialistas](https://electro-dx.vercel.app/especialistas): Red académica y docentes colaboradores.
+- [Catálogo de Cursos](https://electro-dx.vercel.app/cursos): Programas y modalidades formativas.
+
+## Estructura Curricular (17 Módulos de Formación)
+1. **Fundamentos Biofísicos y Neurofisiológicos:** Potencial de reposo, potencial de acción, propagación del impulso nervioso, propiedades del axón mielínico y no mielínico, principios de registro y estimulación eléctrica.
+2. **Estudios de Conducción Nerviosa (NCS):** Neuroconducción motora (CMAP, latencia distal, velocidad de conducción, área y amplitud), neuroconducción sensitiva (SNAP), técnicas ortodrómicas y antidrómicas, factores técnicos y temperatura.
+3. **Electromiografía de Aguja (EMG):** Actividad de inserción, actividad espontánea anormal (fibrilaciones, ondas agudas positivas, fasciculaciones, descargas miotónicas, CRD), morfología del MUAP (amplitud, duración, polifasia), reclutamiento y patrón de interferencia.
+4. **Respuestas Tardías y Reflejos:** Onda F (fisiología, persistencia, cronodispersión), Reflejo H (arco monosináptico tibial/S1) y Reflejo de Parpadeo (Blink Reflex, componentes R1 y R2 para parálisis facial y troncoencéfalo).
+5. **Estimulación Nerviosa Repetitiva:** Fisiología de la unión neuromuscular, decremento e incremento presináptico y postsináptico, protocolo de estimulación a baja (2-3 Hz) y alta frecuencia (20-50 Hz), prueba de ejercicio breve y prolongado en Miastenia Gravis y Síndrome de Lambert-Eaton.
+6. **Potenciales Evocados:** Potenciales evocados somatosensoriales (PESS de nervio mediano y tibial posterior), potenciales evocados visuales (PEV por patrón reversible) y potenciales evocados auditivos de tallo cerebral (PEATC).
+7. **Estudios Especiales en Electrodiagnóstico:** Electromiografía de fibra única (SFEMG, medición de jitter y bloqueo neuromuscular), Macro-EMG y estimulación de nervio frénico.
+8. **Anatomía Topográfica de Nervios Periféricos:** Inervación segmentaria y radicular, miotomas, dermatomas, anatomía del plexo braquial y lumbosacro, sitios de atrapamiento anatómico frecuente (túnel del carpo, canal de Guyon, canal cubital, túnel del tarso, cabeza del peroné).
+9. **Patologías Neuromusculares Clínicas:**
+   - Radiculopatías cervicales y lumbosacras (diagnóstico topográfico y diferencial).
+   - Plexopatías braquiales y lumbosacras (traumáticas, plexitis braquial / Parsonage-Turner, neoplásicas y por radiación).
+   - Mononeuropatías por atrapamiento (mediano, cubital, radial, peroneo común, tibial, femorocutáneo).
+   - Polineuropatías periféricas: axónicas vs desmielinizantes, simétricas distales, metabólicas, nutricionales y tóxicas.
+   - Enfermedad de Motoneurona: Esclerosis Lateral Amiotrófica (ELA), atrofias musculares espinales.
+   - Miopatías y distrofias musculares: patrones electrofisiológicos miopáticos vs neuropáticos.
+10. **Criterios Diagnósticos Internacionales:**
+    - Criterios Gold Coast (2019) y Awaji-Shimane para ELA.
+    - Criterios EAN/PNS (2021) para Polineuropatía Desmielinizante Inflamatoria Crónica (CIDP).
+    - Criterios de Asbury y Cornblath para Síndrome de Guillain-Barré (variantes AIDP, AMAN, AMSAN, Miller Fisher).
+11. **Tablas de Referencia y Valores Normativos:** Parámetros de latencia, velocidad de conducción, amplitud y límites de normalidad por segmento anatómico y rango etario.
+12. **Bibliografía Clínica y Evidencia:** Compendio bibliográfico clasificado con nivel de evidencia científica, guías de práctica clínica de la AANEM e IFCN.
+13. **Seguridad del Paciente y Control de Calidad:** Prevención de artefactos de registro (tierra, interferencia de 60 Hz, puentes de pasta), precauciones en pacientes con marcapasos y desfibriladores (DAI), anticoagulación en EMG de aguja, esterilización y bioseguridad.
+14. **Diagnóstico Diferencial Sindromático:** Algoritmos clínicos para debilidad proximal vs distal, paresias agudas flácidas, calambres y fasciculaciones benignas vs patológicas.
+15. **Planeación del Estudio y Reporte Electrodiagnóstico:** Metodología sistemática para diseñar la batería de nervios y músculos a explorar, redacción formal de la conclusión electrofisiológica, correlación clínica y recomendaciones al médico tratante.
+16. **Casos Clínicos Complejos:** Casos interactivos con datos de historia clínica, neuroconducción, electromiografía de aguja y discusión paso a paso orientada al razonamiento clínico.
+17. **Actualizaciones en Patología Neuromuscular y Ultrasonido (NMUS):** Correlación ecográfica con electrodiagnóstico, escalas de Heckmatt y Bochum, medición de área de sección transversal (CSA) del nervio y ecointensidad muscular.

@@ -2,12 +2,49 @@ User-agent: *
 Allow: /
 Allow: /temario
 Allow: /programa
+Allow: /cursos
 Allow: /talleres
 Allow: /especialistas
 Allow: /comite-editorial
 Allow: /registro
+Allow: /simuladores
+Allow: /llms.txt
+Allow: /llms-full.txt
 
-# Rutas protegidas (requieren login)
+# Rastreadores de Inteligencia Artificial (Permitir lectura para búsqueda y recomendaciones)
+User-agent: GPTBot
+Allow: /
+Allow: /temario
+Allow: /programa
+Allow: /cursos
+Allow: /talleres
+Allow: /especialistas
+Allow: /comite-editorial
+Allow: /llms.txt
+Allow: /llms-full.txt
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Rutas protegidas (requieren login y sesión de alumno o docente)
 Disallow: /modulo/
 Disallow: /ejercicios
 Disallow: /examenes
@@ -22,4 +59,4 @@ Disallow: /admin
 Disallow: /cuenta
 Disallow: /auth/
 
-Sitemap: https://neurosafemx.com/sitemap.xml
+Sitemap: https://electro-dx.vercel.app/sitemap.xml

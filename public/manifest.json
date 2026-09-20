@@ -1,7 +1,7 @@
 {
-  "name": "ElectoDX Diplomado — Formación en Electrodiagnóstico y Neurofisiología Clínica",
-  "short_name": "ElectoDX",
-  "description": "Plataforma de posgrado y recursos de electrodiagnóstico clínico y electromiografía avalada por COMEFYR",
+  "name": "ElectroDX Diplomado — Formación en Electrodiagnóstico y Neurofisiología Clínica",
+  "short_name": "ElectroDX",
+  "description": "Plataforma interactiva de posgrado y recursos de electrodiagnóstico clínico y electromiografía",
   "start_url": "/",
   "scope": "/",
   "id": "/",
