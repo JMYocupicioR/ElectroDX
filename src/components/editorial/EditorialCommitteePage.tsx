@@ -29,8 +29,8 @@ export default function EditorialCommitteePage() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             {BRAND.enableAccreditation
-              ? 'ElectoDX Diplomado · Aval COMEFYR'
-              : 'ElectoDX Diplomado · Dirección Académica de Posgrado'}
+              ? 'ElectroDx Diplomado · Aval COMEFYR'
+              : 'ElectroDx Diplomado · Dirección Académica de Posgrado'}
           </p>
         </div>
       </div>

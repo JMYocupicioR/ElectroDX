@@ -14,6 +14,8 @@ WITH expected_functions AS (
       ('submit_my_assignment', 'uuid, text, text'),
       ('complete_my_assigned_exam', 'uuid, uuid, numeric, integer'),
       ('issue_my_certificate', ''),
+      ('issue_my_certificate', 'text'),
+      ('compute_kardex_scores', 'uuid, text'),
       ('verify_certificate', 'text'),
       ('get_exam_questions_for_attempt', 'text[], text, uuid[], boolean, boolean'),
       ('get_exam_topic_stats', ''),

@@ -14,6 +14,7 @@ import {
   Layers,
   ArrowRight,
   Sparkles,
+  Calendar,
 } from 'lucide-react';
 import { useCommandPaletteStore } from '../../stores/commandPaletteStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -34,7 +35,7 @@ interface CommandItem {
 export function GlobalCommandPalette() {
   const { isOpen, close, toggle } = useCommandPaletteStore();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
-  const { isAdmin } = useAuth();
+  const { isAdmin, isEditor } = useAuth();
   const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
@@ -168,6 +169,18 @@ export function GlobalCommandPalette() {
       });
     });
 
+    if (isAdmin || isEditor) {
+      items.push({
+        id: 'admin-calendario',
+        title: 'Calendario académico',
+        subtitle: 'Clases, exámenes, casos EMG y cortes en un tablero',
+        category: 'Admin',
+        icon: Calendar,
+        to: '/admin/calendario',
+        badge: 'Docencia',
+      });
+    }
+
     // Vistas de administración
     if (isAdmin) {
       items.push(
@@ -220,7 +233,7 @@ export function GlobalCommandPalette() {
     }
 
     return items;
-  }, [allModules, isDarkMode, toggleDarkMode, isAdmin]);
+  }, [allModules, isDarkMode, toggleDarkMode, isAdmin, isEditor]);
 
   // Filtered items based on query
   const filteredItems = useMemo(() => {
@@ -419,7 +432,7 @@ export function GlobalCommandPalette() {
               <span>Abrir</span>
             </span>
           </div>
-          <span className="text-[10px] text-slate-400">Búsqueda rápida en ElectoDX</span>
+          <span className="text-[10px] text-slate-400">Búsqueda rápida en ElectroDx</span>
         </div>
       </div>
     </div>

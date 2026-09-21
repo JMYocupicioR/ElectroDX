@@ -320,7 +320,7 @@ export function ClinicalTraceSimulator() {
               <Activity className="w-3.5 h-3.5 text-blue-400" />
               Trazo bioeléctrico calibrado para correlación clínica
             </span>
-            <span className="font-mono text-slate-500">ElectoDX Engine v2</span>
+            <span className="font-mono text-slate-500">ElectroDx Engine v2</span>
           </div>
         </div>
 

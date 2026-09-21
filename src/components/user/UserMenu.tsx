@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
-import { SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { courseDisplayTitle, sellableCourses } from '../../content/courseCatalog';
 import {
   ENROLLMENT_META,
   getPermissionSummary,
@@ -28,6 +29,7 @@ export function UserMenu() {
     profile,
     roles,
     isAdmin,
+    isEditor,
     canProposeContent,
     isEnrolledPhysician,
     hasCourseAccess,
@@ -37,6 +39,8 @@ export function UserMenu() {
     signOut,
   } = useAuth();
   const { totalPending } = useAdminPendingCounts();
+  const { courses } = useSyllabusCatalog();
+  const activeSellable = sellableCourses(courses).filter((course) => hasCourseAccess(course.id));
   const [open, setOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);
@@ -236,14 +240,14 @@ export function UserMenu() {
                 Cursos activos cursando
               </p>
               <div className="flex flex-wrap gap-1">
-                {SELLABLE_COURSE_IDS.filter((cId) => hasCourseAccess(cId)).length > 0 ? (
-                  SELLABLE_COURSE_IDS.filter((cId) => hasCourseAccess(cId)).map((cId) => (
+                {activeSellable.length > 0 ? (
+                  activeSellable.map((course) => (
                     <span
-                      key={cId}
+                      key={course.id}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/50"
                     >
                       <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>{cId.charAt(0).toUpperCase() + cId.slice(1)}</span>
+                      <span>{courseDisplayTitle(course.id, courses)}</span>
                     </span>
                   ))
                 ) : (
@@ -291,14 +295,14 @@ export function UserMenu() {
                 Cuestionarios
               </MenuLink>
             )}
-            {isAdmin && (
+            {(isAdmin || isEditor) && (
               <MenuLink
                 to="/admin"
                 icon={Shield}
                 onClick={() => setOpen(false)}
                 badge={totalPending > 0 ? (totalPending > 9 ? '9+' : String(totalPending)) : undefined}
               >
-                Administración
+                {isAdmin ? 'Administración' : 'Panel del profesor'}
               </MenuLink>
             )}
             <MenuLink to="/cuenta/ajustes" icon={Settings} onClick={() => setOpen(false)}>

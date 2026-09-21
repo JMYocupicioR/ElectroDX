@@ -128,7 +128,7 @@ export async function sendDeviceNotification({
  */
 export async function sendTestNotification(): Promise<boolean> {
   return sendDeviceNotification({
-    title: 'ElectoDX Diplomado 🎓',
+    title: 'ElectroDx Diplomado 🎓',
     body: '¡Alertas activadas! Recibirás notificaciones de tus tareas, exámenes y avisos de tus profesores en este dispositivo.',
     url: '/dashboard?tab=assignments',
     tag: 'test-welcome-alert',

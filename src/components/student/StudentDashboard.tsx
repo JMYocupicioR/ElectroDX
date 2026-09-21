@@ -83,7 +83,10 @@ import {
 } from '../../services/studentPlanService';
 import { StudentStudyHub } from './StudentStudyHub';
 import { StudentCertificatePanel } from './StudentCertificatePanel';
+import { StudentPerformancePanel } from './StudentPerformancePanel';
 import { StudentPortalTabBar, type StudentPortalTab } from './StudentPortalTabBar';
+import { calculateStudentKardex } from '../../services/gradebookService';
+import type { StudentKardexData } from '../../types/academicGradebook';
 import { savePushSubscription } from '../../services/studentToolsService';
 import {
   getClinicalCaseExerciseLocation,
@@ -98,7 +101,7 @@ import type { LiveWorkshop, Course } from '../../types/database';
 import StudentKardexModal from '../admin/StudentKardexModal';
 import CourseEnrollmentRequestModal from '../course/CourseEnrollmentRequestModal';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
-import { moduleIdsForCourse, recommendedNextCourse, SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
+import { moduleIdsForCourse, recommendedNextCourse, sellableCourses } from '../../content/courseCatalog';
 
 function formatRemainingExamTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -123,8 +126,9 @@ export default function StudentDashboard() {
   } = useAuth();
   const isPremiumUser = hasPremiumAccess || isAdmin || isEditor;
   const { quizGate } = useQuizTopicFlags();
-  const { grouped, assignments: courseAssignments } = useSyllabusCatalog();
-  const nextSuggested = recommendedNextCourse(courseIds);
+  const { grouped, assignments: courseAssignments, courses } = useSyllabusCatalog();
+  const sellable = useMemo(() => sellableCourses(courses), [courses]);
+  const nextSuggested = recommendedNextCourse(courseIds, courses);
 
   const openAssignedCase = (asg: StudentAssignment) => {
     navigate(getClinicalCaseExerciseLocation(asg.id), {
@@ -148,6 +152,7 @@ export default function StudentDashboard() {
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [notifications, setNotifications] = useState<StudentNotification[]>([]);
   const [assignments, setAssignments] = useState<StudentAssignment[]>([]);
+  const [kardex, setKardex] = useState<StudentKardexData | null>(null);
   const [streak, setStreak] = useState<StudentStreakInfo | null>(null);
   const [submittingAsg, setSubmittingAsg] = useState<StudentAssignment | null>(null);
   const [submitNotes, setSubmitNotes] = useState('');
@@ -162,7 +167,7 @@ export default function StudentDashboard() {
   // Sync tab with URL search param ?tab=...
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['summary', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
+    if (tabParam && ['summary', 'performance', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
       setActiveTab(tabParam as typeof activeTab);
     }
   }, [searchParams]);
@@ -221,13 +226,20 @@ export default function StudentDashboard() {
     Promise.all([
       getMyAttempts(user.id),
       getMyProgressByModule(user.id),
-      getUpcomingWorkshops(5),
+      getUpcomingWorkshops(5).catch((error) => {
+        console.error('[StudentDashboard] workshops:', error);
+        return [] as LiveWorkshop[];
+      }),
       getStudentAssignments(user.id),
       getStudentActivityAndStreak(user.id),
       fetchStudentCompletedTopics(user.id),
       getStudentLearningPlans(user.id).catch(() => []),
+      calculateStudentKardex(user.id, profile).catch((error) => {
+        console.error('[StudentDashboard] kardex:', error);
+        return null;
+      }),
     ])
-      .then(([att, modProg, ws, asgs, stk, syncedTopics, plans]) => {
+      .then(([att, modProg, ws, asgs, stk, syncedTopics, plans, nextKardex]) => {
         setAttempts(att);
         setModuleProgress(modProg);
         setWorkshops(ws);
@@ -235,6 +247,7 @@ export default function StudentDashboard() {
         setStreak(stk);
         setPlanCount(Array.isArray(plans) ? plans.length : 0);
         setLearningPlans(Array.isArray(plans) ? plans : []);
+        setKardex(nextKardex);
         if (syncedTopics) {
           setCompletedTopicsSet(syncedTopics);
         }
@@ -305,8 +318,8 @@ export default function StudentDashboard() {
 
   const certRequirements = useMemo(() => {
     if (!metrics) return null;
-    return checkCertificationEligibility(profile, metrics.overallProgressPct, moduleProgress);
-  }, [profile, metrics, moduleProgress]);
+    return checkCertificationEligibility(profile, metrics.overallProgressPct, moduleProgress, kardex);
+  }, [profile, metrics, moduleProgress, kardex]);
 
   // Quizzes list with status
   const quizzesList = useMemo(() => {
@@ -540,10 +553,10 @@ export default function StudentDashboard() {
             {/* Cursos Activos / Cursando Actualmente */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs font-semibold text-slate-300">Cursos activos:</span>
-              {SELLABLE_COURSE_IDS.filter((id) => hasCourseAccess(id)).length > 0 ? (
-                SELLABLE_COURSE_IDS.filter((id) => hasCourseAccess(id)).map((cId) => {
-                  const courseObj = grouped.find((g) => g.course.id === cId)?.course;
-                  const title = courseObj?.title ?? (cId === 'principiante' ? 'Principiante' : cId === 'intermedio' ? 'Intermedio' : 'Avanzado');
+              {sellable.filter((course) => hasCourseAccess(course.id)).length > 0 ? (
+                sellable.filter((course) => hasCourseAccess(course.id)).map((course) => {
+                  const cId = course.id;
+                  const title = course.title;
                   return (
                     <span
                       key={cId}
@@ -822,47 +835,37 @@ export default function StudentDashboard() {
           </p>
         </div>
 
-        {/* 4. Estado de Certificación */}
-        <div className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm hover:shadow-md transition">
+        {/* 4. Desempeño Capa A */}
+        <button
+          type="button"
+          onClick={() => selectTab('performance')}
+          className="p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm hover:shadow-md transition text-left"
+        >
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Certificación COMEFYR
+              Desempeño Capa A
             </span>
-            <div className={`p-2 rounded-xl ${certRequirements?.isEligible ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600' : 'bg-amber-50 dark:bg-amber-950/60 text-amber-600'}`}>
+            <div className={`p-2 rounded-xl ${kardex?.isPassing ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600' : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600'}`}>
               <FileCheck className="w-5 h-5" />
             </div>
           </div>
           <div className="flex items-baseline gap-2 mb-1.5">
-            <span className={`text-xl font-bold ${certRequirements?.isEligible ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-              {certRequirements?.isEligible ? 'Listo para Emisión' : 'En Formación'}
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
+              {kardex?.finalGrade ?? '—'}
             </span>
+            <span className="text-xs text-slate-500">/ 100</span>
           </div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Cursos activos:</span>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-              {SELLABLE_COURSE_IDS.filter((id) => hasCourseAccess(id)).length} de {SELLABLE_COURSE_IDS.length} cursando
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-            {profile?.cedula_verified
-              ? 'Cédula profesional validada'
-              : 'Requiere validación de cédula'}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+            {kardex?.isOfficial
+              ? kardex.isPassing
+                ? 'Dictamen oficial: acreditado'
+                : 'Dictamen oficial: aún no acredita'
+              : 'Promedio en curso · 30+30+20+20'}
           </p>
-          <div className="flex items-center gap-3 pt-1">
-            <button
-              onClick={() => selectTab('certificate')}
-              className="text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              Requisitos y Diploma <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => setShowKardexModal(true)}
-              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
-            >
-              <FileCheck className="w-3.5 h-3.5" /> Mi Kardex Oficial
-            </button>
-          </div>
-        </div>
+          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 inline-flex items-center gap-1">
+            Cómo me evalúan <ChevronRight className="w-3.5 h-3.5" />
+          </span>
+        </button>
       </div>
 
       {/* ─── Top Urgent Alert Banner (Teacher Assigned Activities) ─── */}
@@ -961,7 +964,7 @@ export default function StudentDashboard() {
                       Cursos en los que estás Activo y Cursando
                     </h2>
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300/60">
-                      {SELLABLE_COURSE_IDS.filter((id) => hasCourseAccess(id)).length} de {SELLABLE_COURSE_IDS.length} activos
+                      {sellable.filter((course) => hasCourseAccess(course.id)).length} de {sellable.length} activos
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -978,8 +981,9 @@ export default function StudentDashboard() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {SELLABLE_COURSE_IDS.map((courseId) => {
+            <div className={`grid grid-cols-1 gap-4 ${sellable.length >= 3 ? 'md:grid-cols-3' : sellable.length === 2 ? 'md:grid-cols-2' : ''}`}>
+              {sellable.map((course) => {
+                const courseId = course.id;
                 const ids = moduleIdsForCourse(courseAssignments, courseId);
                 const courseStats = (metrics?.moduleStats ?? []).filter((m) => ids.includes(m.moduleId));
                 const coursePct =
@@ -990,8 +994,7 @@ export default function StudentDashboard() {
                 const total = courseStats.reduce((acc, m) => acc + m.totalTopics, 0);
                 const unlocked = hasCourseAccess(courseId);
                 const isPending = isCoursePending(courseId);
-                const courseObj = grouped.find((g) => g.course.id === courseId)?.course;
-                const title = courseObj?.title ?? (courseId === 'principiante' ? 'Curso Principiante' : courseId === 'intermedio' ? 'Curso Intermedio' : 'Curso Avanzado');
+                const title = course.title;
 
                 return (
                   <div
@@ -1028,7 +1031,7 @@ export default function StudentDashboard() {
                         {title}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">
-                        {courseObj?.description || 'Programa de especialización clínica.'}
+                        {course.description || 'Programa de especialización clínica.'}
                       </p>
 
                       {unlocked ? (
@@ -1055,7 +1058,7 @@ export default function StudentDashboard() {
                         <div className="p-2.5 mb-4 rounded-xl bg-slate-100 dark:bg-slate-800/60 flex items-center justify-between text-xs">
                           <span className="text-slate-500">Inversión:</span>
                           <span className="font-extrabold text-slate-900 dark:text-cyan-300">
-                            {courseObj?.price_display || 'Consultar'}
+                            {course.price_display || 'Consultar'}
                           </span>
                         </div>
                       )}
@@ -1074,7 +1077,7 @@ export default function StudentDashboard() {
                       ) : isPending ? (
                         <button
                           type="button"
-                          onClick={() => courseObj && setCourseForModal(courseObj)}
+                          onClick={() => setCourseForModal(course)}
                           className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-sm cursor-pointer"
                         >
                           <Clock className="w-3.5 h-3.5" />
@@ -1083,7 +1086,7 @@ export default function StudentDashboard() {
                       ) : (
                         <button
                           type="button"
-                          onClick={() => courseObj && setCourseForModal(courseObj)}
+                          onClick={() => setCourseForModal(course)}
                           className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-blue-400/60 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-blue-600 dark:text-cyan-400 text-xs font-bold transition cursor-pointer"
                         >
                           <span>Solicitar admisión</span>
@@ -1668,8 +1671,9 @@ export default function StudentDashboard() {
             </Link>
           )}
 
-          <div className="grid sm:grid-cols-3 gap-3">
-            {SELLABLE_COURSE_IDS.map((courseId) => {
+          <div className={`grid gap-3 ${sellable.length >= 3 ? 'sm:grid-cols-3' : sellable.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-1'}`}>
+            {sellable.map((course) => {
+              const courseId = course.id;
               const ids = moduleIdsForCourse(courseAssignments, courseId);
               const stats = (metrics?.moduleStats ?? []).filter((m) => ids.includes(m.moduleId));
               const pct =
@@ -1678,8 +1682,7 @@ export default function StudentDashboard() {
                   : 0;
               const unlocked = hasCourseAccess(courseId);
               const isPending = isCoursePending(courseId);
-              const courseObj = grouped.find((g) => g.course.id === courseId)?.course;
-              const title = courseObj?.title ?? courseId;
+              const title = course.title;
 
               return (
                 <div key={courseId} className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 shadow-2xs">
@@ -1711,31 +1714,27 @@ export default function StudentDashboard() {
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300">
                             <Clock className="w-3.5 h-3.5 text-amber-500" /> En lista de espera
                           </span>
-                          {courseObj && (
-                            <button
-                              type="button"
-                              onClick={() => setCourseForModal(courseObj)}
-                              className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
-                            >
-                              Ver estado
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => setCourseForModal(course)}
+                            className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                          >
+                            Ver estado
+                          </button>
                         </>
                       ) : (
                         <>
                           <span className="text-[11px] text-slate-500 font-medium">
-                            {courseObj?.price_display ? courseObj.price_display : 'Requiere admisión'}
+                            {course.price_display ? course.price_display : 'Requiere admisión'}
                           </span>
-                          {courseObj && (
-                            <button
-                              type="button"
-                              onClick={() => setCourseForModal(courseObj)}
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
-                            >
-                              <span>Solicitar</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => setCourseForModal(course)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                          >
+                            <span>Solicitar</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
                         </>
                       )}
                     </div>
@@ -2934,6 +2933,15 @@ export default function StudentDashboard() {
         </div>
       )}
 
+      {activeTab === 'performance' && (
+        <StudentPerformancePanel
+          kardex={kardex}
+          minPassingGrade={80}
+          onOpenKardex={() => setShowKardexModal(true)}
+          onSelectTab={(tab) => selectTab(tab)}
+        />
+      )}
+
       {/* ─── TAB 5: Constancia y Certificación COMEFYR ─── */}
       {activeTab === 'certificate' && (
         <div className="space-y-8">
@@ -2941,6 +2949,7 @@ export default function StudentDashboard() {
             requirements={certRequirements}
             moduleProgress={moduleProgress}
             completedTopics={completedTopicsSet}
+            standing={kardex}
           />
           <div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -2987,63 +2996,52 @@ export default function StudentDashboard() {
                 )}
               </div>
 
-              {/* Req 2: Avance Curricular */}
+              {/* Req 2: Dictamen Capa A */}
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
                 <div className="flex items-center gap-3">
-                  {certRequirements && certRequirements.modulesCompletedPct >= 95 ? (
+                  {certRequirements?.isOfficialPassing ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-500 text-white" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                   <div>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      2. Revisión de los 13 Módulos Curriculares
+                      2. Dictamen académico Capa A (un solo número)
                     </p>
                     <p className="text-xs text-slate-500">
-                      Avance actual: {certRequirements?.modulesCompletedPct}% (Requerido: ≥ 95%)
+                      {certRequirements?.isOfficialPassing
+                        ? `Acreditado con ${certRequirements.kardexGrade} / 100`
+                        : certRequirements?.kardexOfficial
+                          ? `Promedio oficial ${certRequirements.kardexGrade} / 100 (mínimo 80)`
+                          : 'Aún faltan cubetas por calificar. El temario ya cuenta como el 20%.'}
                     </p>
                   </div>
                 </div>
-                {resumeLesson ? (
-                  <Link
-                    to={resumeLesson.url}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                  >
-                    Continuar temario
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => selectTab('modules')}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                  >
-                    Continuar temario
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => selectTab('performance')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  Ver desempeño
+                </button>
               </div>
 
-              {/* Req 3: Calificación Aprobatoria */}
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
                 <div className="flex items-center gap-3">
-                  {certRequirements && certRequirements.averageScore >= 80 ? (
+                  {certRequirements?.cedulaVerified && certRequirements.isOfficialPassing ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-500 text-white" />
                   ) : (
                     <AlertCircle className="w-5 h-5 text-slate-400" />
                   )}
                   <div>
                     <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                      3. Promedio Aprobatorio en Evaluaciones Médicas
+                      3. Emisión: acreditado + cédula
                     </p>
                     <p className="text-xs text-slate-500">
-                      Promedio actual: {certRequirements?.averageScore}% (Mínimo exigido por COMEFYR: 80%)
+                      No hay umbral extra de 95% de temario ni de cobertura de quizzes. Eso ya está dentro del kárdex.
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => selectTab('quizzes')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  Ver evaluaciones
-                </button>
               </div>
             </div>
           </div>
@@ -3076,7 +3074,7 @@ export default function StudentDashboard() {
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                 Por haber completado satisfactoriamente el programa académico de{' '}
                 <strong className="text-slate-900 dark:text-white">
-                  Electrodiagnóstico Integral y Electromiografía Clínica (ElectoDX Diplomado)
+                  Electrodiagnóstico Integral y Electromiografía Clínica (ElectroDx Diplomado)
                 </strong>
                 , con un total de <strong>80 horas curriculares</strong> y{' '}
                 <strong>40 créditos de Educación Médica Continua (CME)</strong>.

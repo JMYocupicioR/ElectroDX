@@ -32,6 +32,7 @@ import { useAuth } from './contexts/AuthProvider';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
+import { flushProgressOutbox } from './services/studentService';
 
 function navClass(active: boolean) {
   return `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -76,7 +77,7 @@ export function Header() {
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const openCommandPalette = useCommandPaletteStore((s) => s.open);
   const initializeOffline = useOfflineStore((s) => s.initialize);
-  const { user, isAdmin, isPendingApproval } = useAuth();
+  const { user, isAdmin, isEditor, isPendingApproval } = useAuth();
   const { totalPending } = useAdminPendingCounts();
   const { pendingCount } = useStudentPendingAssignments();
   const location = useLocation();
@@ -86,7 +87,7 @@ export function Header() {
 
   const isLoggedIn = Boolean(user);
   const showPublicNav = !isLoggedIn;
-  const homeHref = isLoggedIn ? (isAdmin ? '/admin' : '/portal') : '/';
+  const homeHref = isLoggedIn ? (isAdmin || isEditor ? '/admin' : '/portal') : '/';
   const portalActive = location.pathname === '/portal' || location.pathname === '/dashboard' || location.pathname === '/estudiante';
   const courseActive = location.pathname.startsWith('/modulo');
   const simulatorsActive =
@@ -109,6 +110,16 @@ export function Header() {
   useEffect(() => {
     initializeOffline();
   }, [initializeOffline]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const flush = () => {
+      void flushProgressOutbox(user.id);
+    };
+    flush();
+    window.addEventListener('online', flush);
+    return () => window.removeEventListener('online', flush);
+  }, [user?.id]);
 
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -180,15 +191,19 @@ export function Header() {
               </Link>
             )}
 
-            <Link to="/talleres" className={navClass(location.pathname.startsWith('/talleres') || location.pathname.startsWith('/taller'))}>
-              <Video className="w-4 h-4" />
-              <span>Clases en Vivo</span>
-            </Link>
+            {isLoggedIn && (
+              <Link to="/talleres" className={navClass(location.pathname.startsWith('/talleres') || location.pathname.startsWith('/taller'))}>
+                <Video className="w-4 h-4" />
+                <span>Clases en Vivo</span>
+              </Link>
+            )}
 
-            <Link to="/biblioteca" className={navClass(location.pathname.startsWith('/biblioteca') || location.pathname.startsWith('/especialistas/contenido'))}>
-              <Sparkles className="w-4 h-4" />
-              <span>Biblioteca</span>
-            </Link>
+            {isLoggedIn && (
+              <Link to="/biblioteca" className={navClass(location.pathname.startsWith('/biblioteca') || location.pathname.startsWith('/especialistas/contenido'))}>
+                <Sparkles className="w-4 h-4" />
+                <span>Biblioteca</span>
+              </Link>
+            )}
 
             {showPublicNav && isSupabaseConfigured && (
               <>
@@ -432,19 +447,23 @@ export function Header() {
                     />
                   )}
 
-                  <MobileNavRow
-                    to="/talleres"
-                    onClick={() => setMobileMenuOpen(false)}
-                    icon={<Video className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
-                    label="Clases en Vivo"
-                  />
+                  {isLoggedIn && (
+                    <MobileNavRow
+                      to="/talleres"
+                      onClick={() => setMobileMenuOpen(false)}
+                      icon={<Video className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
+                      label="Clases en Vivo"
+                    />
+                  )}
 
-                  <MobileNavRow
-                    to="/biblioteca"
-                    onClick={() => setMobileMenuOpen(false)}
-                    icon={<Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                    label="Biblioteca de Especialistas"
-                  />
+                  {isLoggedIn && (
+                    <MobileNavRow
+                      to="/biblioteca"
+                      onClick={() => setMobileMenuOpen(false)}
+                      icon={<Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                      label="Biblioteca de Especialistas"
+                    />
+                  )}
 
                   {showPublicNav && isSupabaseConfigured && (
                     <>

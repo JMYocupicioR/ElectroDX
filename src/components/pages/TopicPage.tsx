@@ -8,6 +8,7 @@ import { ContributionBanner, ContributorContentActions, ProposeQuizLink } from '
 import { QuizGate } from '../quiz/QuizGate';
 import { TopicStudyTools } from '../student/TopicStudyTools';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
+import { OfflineTopicBadge } from '../OfflineTopicBadge';
 import { getQuizFlagForTopic } from '../../services/quizService';
 import { CourseGate } from '../CourseGate';
 import type { QuizTopicFlag } from '../../types/quiz';
@@ -739,6 +740,7 @@ export default function TopicPage() {
             {quizFlag && quizFlag.question_count > 0 && (
               <QuizTopicBadge label={lang === 'en' ? 'Assessment' : 'Evaluación'} />
             )}
+            {mod?.id && <OfflineTopicBadge moduleId={mod.id} lang={lang} />}
           </div>
           {lang === 'es' && topic.titleEn && (
             <p className="text-sm text-slate-400 dark:text-slate-500 italic mb-4">{topic.titleEn}</p>

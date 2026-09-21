@@ -71,7 +71,7 @@ export const BioelectricLightningIcon: React.FC<{
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`shrink-0 ${className}`}
-      aria-label="Isotipo ElectoDX Rayo Bioeléctrico"
+      aria-label={`Isotipo ${BRAND.shortName} Rayo Bioeléctrico`}
     >
       <defs>
         {/* Gradiente bioeléctrico: cobalto a cian brillante */}
@@ -179,10 +179,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <div className="flex flex-col justify-center">
         <div className="flex items-baseline tracking-tight">
           <span className={`text-slate-900 dark:text-white ${config.titleClass}`}>
-            Electo
+            {BRAND.wordmarkPrefix}
           </span>
-          <span className={`bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent ml-0.5 ${config.titleClass}`}>
-            DX
+          <span className={`bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent ${config.titleClass}`}>
+            {BRAND.wordmarkAccent}
           </span>
           {variant !== 'compact' && (
             <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1.5 hidden sm:inline">

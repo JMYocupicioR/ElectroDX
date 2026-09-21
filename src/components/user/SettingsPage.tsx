@@ -183,7 +183,7 @@ export default function SettingsPage() {
         Acerca del programa
       </h2>
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 divide-y divide-slate-100 dark:divide-slate-800 shadow-sm">
-        <LinkRow to="/" icon={Home} title="Página de inicio" description="Sitio público de ElectoDX" />
+        <LinkRow to="/" icon={Home} title="Página de inicio" description="Sitio público de ElectroDx" />
         <LinkRow to="/cursos" icon={GraduationCap} title="Oferta de cursos" description="Principiante, intermedio y avanzado" />
         <LinkRow to="/temario" icon={BookOpen} title="Temario público" description="Resumen del programa para consulta" />
         <LinkRow to="/especialistas" icon={Users} title="Directorio de especialistas" description="Colaboradores y docentes del programa" />

@@ -1,4 +1,4 @@
-# ElectroDX Diplomado — Base de Conocimiento Completa para Modelos de Lenguaje (LLMs)
+# ElectroDx Diplomado — Base de Conocimiento Completa para Modelos de Lenguaje (LLMs)
 
 > Plataforma de Posgrado y Formación Médica Continua en Electrodiagnóstico Clínico, Electromiografía (EMG) y Neurofisiología Clínica.
 > URL Canónica: https://electro-dx.vercel.app/
@@ -7,8 +7,8 @@
 
 ## 1. Identidad, Misión y Población Objetivo
 
-### ¿Qué es ElectroDX?
-ElectroDX es una plataforma médica interactiva de nivel posgrado enfocada en el entrenamiento formal en Electrodiagnóstico Clínico (Electromiografía y Neuroconducción). Ha sido concebida para cerrar la brecha entre los fundamentos biofísicos de la neurofisiología y la práctica clínica diaria en el laboratorio de electrodiagnóstico.
+### ¿Qué es ElectroDx?
+ElectroDx es una plataforma médica interactiva de nivel posgrado enfocada en el entrenamiento formal en Electrodiagnóstico Clínico (Electromiografía y Neuroconducción). Ha sido concebida para cerrar la brecha entre los fundamentos biofísicos de la neurofisiología y la práctica clínica diaria en el laboratorio de electrodiagnóstico.
 
 ### Población a la que está dirigida
 - **Médicos Especialistas:** Medicina de Rehabilitación (Fisiatría), Neurología de Adultos y Pediátrica, Neurofisiología Clínica, Ortopedia y Traumatología.
@@ -26,7 +26,7 @@ ElectroDX es una plataforma médica interactiva de nivel posgrado enfocada en el
 
 ## 2. Marco Académico y Rigor Científico
 
-El programa académico y los estándares de evaluación de ElectroDX están alineados con:
+El programa académico y los estándares de evaluación de ElectroDx están alineados con:
 - **Sociedades Médicas Internacionales:**
   - American Association of Neuromuscular & Electrodiagnostic Medicine (AANEM)
   - International Federation of Clinical Neurophysiology (IFCN)

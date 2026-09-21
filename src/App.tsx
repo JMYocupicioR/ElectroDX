@@ -57,6 +57,7 @@ const AdminAttendanceAnalyticsPage = lazy(() => import('./components/admin/Admin
 const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerciseCasesPage'));
 const AdminSyllabusPage = lazy(() => import('./components/admin/AdminSyllabusPage'));
 const AdminCourseWaitlistPage = lazy(() => import('./components/admin/AdminCourseWaitlistPage'));
+const AdminAcademicCalendarPage = lazy(() => import('./components/admin/AdminAcademicCalendarPage'));
 const CoursesCatalogPage = lazy(() => import('./components/pages/CoursesCatalogPage'));
 
 function RedirectToPortal() {
@@ -146,7 +147,8 @@ function App() {
               <Route path="/cuenta/ajustes" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
               {/* Admin */}
-              <Route path="/admin" element={<ProtectedRoute mode="admin"><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute mode="editor"><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/calendario" element={<ProtectedRoute mode="editor"><AdminAcademicCalendarPage /></ProtectedRoute>} />
               <Route path="/admin/admisiones" element={<ProtectedRoute mode="admin"><AdminCourseWaitlistPage /></ProtectedRoute>} />
               <Route path="/admin/revisiones" element={<ProtectedRoute mode="editor"><AdminReviewQueue /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
@@ -164,7 +166,7 @@ function App() {
               <Route path="/admin/quizzes/:topicId" element={<ProtectedRoute mode="editor"><AdminQuizzesPage /></ProtectedRoute>} />
               <Route path="/admin/evaluaciones" element={<ProtectedRoute mode="editor"><AdminQuizAttemptsPage /></ProtectedRoute>} />
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
-              <Route path="/admin/talleres" element={<ProtectedRoute mode="admin"><AdminWorkshopsPage /></ProtectedRoute>} />
+              <Route path="/admin/talleres" element={<ProtectedRoute mode="editor"><AdminWorkshopsPage /></ProtectedRoute>} />
               <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
               <Route path="/admin/temario" element={<ProtectedRoute mode="editor"><AdminSyllabusPage /></ProtectedRoute>} />
               <Route path="/admin/ejercicios" element={<ProtectedRoute mode="editor"><AdminExerciseCasesPage /></ProtectedRoute>} />

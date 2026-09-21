@@ -26,14 +26,9 @@ import {
   revokeCourseAccess,
 } from '../../services/courseService';
 import type { CourseWaitlistRow, CourseEnrollmentStatus, CourseId } from '../../types/database';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { sellableCourses } from '../../content/courseCatalog';
 import StudentKardexModal from './StudentKardexModal';
-
-const COURSE_TABS: { id: CourseId | 'all'; label: string }[] = [
-  { id: 'all', label: 'Todos los cursos' },
-  { id: 'principiante', label: 'Principiante' },
-  { id: 'intermedio', label: 'Intermedio' },
-  { id: 'avanzado', label: 'Avanzado' },
-];
 
 const STATUS_FILTERS: { id: CourseEnrollmentStatus | 'all'; label: string }[] = [
   { id: 'pending', label: 'En lista de espera' },
@@ -43,6 +38,14 @@ const STATUS_FILTERS: { id: CourseEnrollmentStatus | 'all'; label: string }[] = 
 ];
 
 export default function AdminCourseWaitlistPage() {
+  const { courses } = useSyllabusCatalog();
+  const courseTabs = useMemo(
+    () => [
+      { id: 'all' as const, label: 'Todos los cursos' },
+      ...sellableCourses(courses).map((course) => ({ id: course.id as CourseId, label: course.title })),
+    ],
+    [courses]
+  );
   const [waitlist, setWaitlist] = useState<CourseWaitlistRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -165,7 +168,7 @@ export default function AdminCourseWaitlistPage() {
   return (
     <AdminLayout
       title="Admisiones y Lista de Espera de Cursos"
-      subtitle="Control de aspirantes a los cursos de ElectroDX, cola de admisión cronológica y aprobación de suscripciones por el profesor."
+      subtitle="Control de aspirantes a los cursos de ElectroDx, cola de admisión cronológica y aprobación de suscripciones por el profesor."
     >
       {/* Toast Notification */}
       {toastMessage && (
@@ -203,7 +206,7 @@ export default function AdminCourseWaitlistPage() {
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Cursos disponibles</p>
             <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-1">
-              Principiante • Intermedio • Avanzado
+              {sellableCourses(courses).map((course) => course.title).join(' • ') || 'Sin cursos vendibles'}
             </p>
           </div>
           <button
@@ -220,7 +223,7 @@ export default function AdminCourseWaitlistPage() {
 
       {/* Course Filter Tabs */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        {COURSE_TABS.map((tab) => (
+        {courseTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"

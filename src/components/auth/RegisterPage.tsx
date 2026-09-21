@@ -26,6 +26,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { postLoginPath } from '../../utils/postLoginPath';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { verifyCedula, type CedulaVerificationResult } from '../../services/cedulaService';
 import { BrandLogo } from '../brand/BrandLogo';
@@ -84,7 +85,7 @@ const MEDICAL_CATEGORIES = [
 ];
 
 export default function RegisterPage() {
-  const { signUpStudent, user, isAdmin, isEnrolledPhysician } = useAuth();
+  const { signUpStudent, user, isAdmin, isEditor, roles } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get('next') ?? undefined;
@@ -180,7 +181,15 @@ export default function RegisterPage() {
     if (nextPath && nextPath.startsWith('/')) {
       navigate(nextPath, { replace: true });
     } else {
-      navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
+      navigate(
+        postLoginPath({
+          next: nextPath,
+          isAdmin,
+          isEditor,
+          isContributor: roles.includes('contributor'),
+        }),
+        { replace: true }
+      );
     }
   }
 

@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
       borderWidth: 1,
     });
 
-    page.drawText('ElectoDX Diplomado', {
+    page.drawText('ElectroDx Diplomado', {
       x: 60,
       y: height - 90,
       size: 14,

@@ -77,8 +77,10 @@ export interface RubricScoreDetail {
   rubricId: RubricKey;
   name: string;
   weight: number; // Ej. 30 (%)
-  rawScore: number; // 0 - 100
-  weightedScore: number; // Ej. 88 * 0.30 = 26.4
+  rawScore: number | null; // 0 - 100, o null si la cubeta aún no tiene evidencia
+  weightedScore: number; // Ej. 88 * 0.30 = 26.4; 0 si no hay evidencia
+  runningShare: number; // Aporte al promedio en curso (pesos renormalizados)
+  hasEvidence: boolean;
   itemCount: number;
   summary: string;
 }
@@ -95,9 +97,14 @@ export interface StudentKardexData {
   avatarUrl?: string | null;
   folio: string; // Folio de registro institucional oficial
   generationDate: string;
-  finalGrade: number; // 0 - 100
-  finalGradeScale10: number; // 0.0 - 10.0
+  finalGrade: number; // Número que ve el médico: oficial si ya hay dictamen, si no el promedio en curso
+  finalGradeScale10: number;
+  officialGrade: number | null;
+  runningGrade: number | null;
+  isOfficial: boolean;
   isPassing: boolean;
+  pointsToPass: number | null;
+  missingBuckets: RubricKey[];
   status: 'accredited_honors' | 'accredited' | 'not_accredited';
   statusLabel: string;
   cmeCreditsEarned: number;
@@ -158,15 +165,17 @@ export interface StudentCohortSummary {
   overallProgressPct: number;
   completedTopicsCount: number;
   totalTopicsCount: number;
-  examAverage: number;
+  examAverage: number | null;
   examCount: number;
   assignmentsSubmitted: number;
   assignmentsTotal: number;
-  assignmentsAvgGrade: number;
-  attendancePct: number;
+  assignmentsAvgGrade: number | null;
+  attendancePct: number | null;
   attendedSessions: number;
   totalSessions: number;
   finalWeightedGrade: number;
+  officialGrade: number | null;
+  isOfficial: boolean;
   complianceStatus: 'on_track' | 'at_risk' | 'lagging';
   complianceLabel: string;
 }

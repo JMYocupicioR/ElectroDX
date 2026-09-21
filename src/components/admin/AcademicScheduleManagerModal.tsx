@@ -62,14 +62,16 @@ export default function AcademicScheduleManagerModal({
     }
   }, [isOpen]);
 
-  // Lista aplanada de todos los temas de la plataforma disponibles para seleccionar
+  // Lista aplanada de hojas del temario. Algunos IDs se reutilizan entre módulos
+  // (p. ej. fiber-types), así que cada fila lleva una clave de lista única.
   const allPlatformTopics = useMemo(() => {
-    const list: { id: string; title: string; moduleId: string; moduleTitle: string }[] = [];
+    const list: { listKey: string; id: string; title: string; moduleId: string; moduleTitle: string }[] = [];
     for (const m of allModules) {
       const extractLeafs = (topics: Topic[]) => {
         for (const t of topics) {
           if (!t.children || t.children.length === 0) {
             list.push({
+              listKey: `${m.id}:${t.id}:${list.length}`,
               id: t.id,
               title: t.title,
               moduleId: m.id,
@@ -253,7 +255,11 @@ export default function AcademicScheduleManagerModal({
                           <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 pt-1">
                             <span className="flex items-center gap-1 font-semibold">
                               <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                              Fecha Límite: {m.due_date.slice(0, 10)}
+                              Inicio: {(m.start_date || m.due_date).slice(0, 10)}
+                            </span>
+                            <span>·</span>
+                            <span className="font-semibold">
+                              Límite: {m.due_date.slice(0, 10)}
                             </span>
                             <span>·</span>
                             <span className="font-semibold text-indigo-600 dark:text-indigo-400">
@@ -305,11 +311,11 @@ export default function AcademicScheduleManagerModal({
                             Checklist de Temas Requeridos para este Corte:
                           </label>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            {m.target_topic_ids?.map((tid) => {
+                            {m.target_topic_ids?.map((tid, topicIndex) => {
                               const tMeta = allPlatformTopics.find((t) => t.id === tid);
                               return (
                                 <div
-                                  key={tid}
+                                  key={`${m.id}:${tid}:${topicIndex}`}
                                   className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs"
                                 >
                                   <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
@@ -473,15 +479,32 @@ export default function AcademicScheduleManagerModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Fecha Límite de Corte
+                      Fecha de inicio
                     </label>
                     <input
                       type="date"
                       required
-                      value={editingMilestone.due_date.slice(0, 10)}
+                      value={(editingMilestone.start_date || '').slice(0, 10)}
+                      max={(editingMilestone.due_date || '').slice(0, 10) || undefined}
+                      onChange={(e) =>
+                        setEditingMilestone({ ...editingMilestone, start_date: e.target.value })
+                      }
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Fecha límite de corte
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={(editingMilestone.due_date || '').slice(0, 10)}
+                      min={(editingMilestone.start_date || '').slice(0, 10) || undefined}
                       onChange={(e) =>
                         setEditingMilestone({ ...editingMilestone, due_date: e.target.value })
                       }
@@ -491,7 +514,7 @@ export default function AcademicScheduleManagerModal({
 
                   <div>
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                      Nota Mínima Aprobatoria (%)
+                      Nota mínima aprobatoria (%)
                     </label>
                     <input
                       type="number"
@@ -525,7 +548,7 @@ export default function AcademicScheduleManagerModal({
                       const isSelected = editingMilestone.target_topic_ids?.includes(t.id);
                       return (
                         <button
-                          key={t.id}
+                          key={t.listKey}
                           type="button"
                           onClick={() => toggleTopicInEditing(t.id)}
                           className={`w-full flex items-center justify-between p-2 rounded-lg text-left text-xs transition cursor-pointer ${

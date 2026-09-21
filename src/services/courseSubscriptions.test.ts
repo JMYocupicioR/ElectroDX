@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CourseEnrollmentStatus, CourseWaitlistRow } from '../types/database';
-import { SELLABLE_COURSE_IDS, DEFAULT_COURSES } from '../content/courseCatalog';
+import { DEFAULT_COURSES, sellableCourseIds } from '../content/courseCatalog';
 
 describe('Course Subscriptions and Waitlist Logic', () => {
   it('validates allowed enrollment statuses', () => {
@@ -11,8 +11,9 @@ describe('Course Subscriptions and Waitlist Logic', () => {
   });
 
   it('validates sellable courses that require professor admission', () => {
-    expect(SELLABLE_COURSE_IDS).toEqual(['principiante', 'intermedio', 'avanzado']);
-    expect(SELLABLE_COURSE_IDS).not.toContain('referencia');
+    const ids = sellableCourseIds(DEFAULT_COURSES);
+    expect(ids).toEqual(['principiante', 'intermedio', 'avanzado']);
+    expect(ids).not.toContain('referencia');
   });
 
   it('verifies FIFO queue sorting for waitlist applicants', () => {

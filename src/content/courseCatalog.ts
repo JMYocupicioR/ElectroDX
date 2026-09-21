@@ -1,4 +1,4 @@
-import type { Module } from '../types/content';
+import type { Module, Topic } from '../types/content';
 import type { Course, CourseId, CourseModuleRow, SyllabusTopicOverride } from '../types/database';
 
 export const COURSE_IDS = ['principiante', 'intermedio', 'avanzado'] as const;
@@ -62,13 +62,65 @@ export const DEFAULT_COURSE_MODULES: CourseModuleRow[] = [
   { module_id: 'pathology-updates', course_id: 'avanzado', sort_order: 3, is_visible: true },
 ];
 
-export const NEXT_COURSE_RECOMMENDATION: Partial<Record<CourseId, CourseId>> = {
+export const NEXT_COURSE_RECOMMENDATION: Partial<Record<string, CourseId>> = {
   principiante: 'intermedio',
   intermedio: 'avanzado',
 };
 
+const COURSE_SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const RESERVED_COURSE_IDS = new Set(['all', 'new', 'none', 'admin', 'temario', 'cursos']);
+
 export function isCourseId(value: string | null | undefined): value is CourseId {
-  return !!value && (COURSE_IDS as readonly string[]).includes(value);
+  return typeof value === 'string' && value.length >= 2 && value.length <= 64 && COURSE_SLUG_RE.test(value);
+}
+
+export function normalizeCourseId(value: string): CourseId {
+  return value.trim().toLowerCase();
+}
+
+export function assertCreateableCourseId(rawId: string, existingIds: Iterable<string>): CourseId {
+  const id = normalizeCourseId(rawId);
+  if (!isCourseId(id)) {
+    throw new Error('El identificador debe tener 2–64 caracteres: minúsculas, números y guiones.');
+  }
+  if (RESERVED_COURSE_IDS.has(id)) {
+    throw new Error(`El identificador "${id}" está reservado. Elige otro slug.`);
+  }
+  const taken = new Set(existingIds);
+  if (taken.has(id)) {
+    throw new Error('Ya existe un curso con ese identificador.');
+  }
+  return id;
+}
+
+export function sellableCourses(courses: Course[]): Course[] {
+  return [...courses]
+    .filter((course) => course.is_sellable)
+    .sort((a, b) => a.sort_order - b.sort_order || a.title.localeCompare(b.title, 'es'));
+}
+
+export function sellableCourseIds(courses: Course[]): CourseId[] {
+  return sellableCourses(courses).map((course) => course.id);
+}
+
+export function previousSellableCourseId(courseId: CourseId, courses: Course[] = DEFAULT_COURSES): CourseId | null {
+  const ids = sellableCourseIds(courses);
+  const idx = ids.indexOf(courseId);
+  return idx > 0 ? ids[idx - 1] : null;
+}
+
+export function courseDisplayTitle(courseId: string, courses?: Course[]): string {
+  const found = courses?.find((course) => course.id === courseId);
+  if (found?.title) return found.title;
+  return courseId
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function nextCourseSortOrder(courses: Course[]): number {
+  return courses.reduce((max, course) => Math.max(max, course.sort_order), 0) + 1;
 }
 
 export function getCourseById(courses: Course[], courseId: string): Course | undefined {
@@ -94,10 +146,17 @@ export function moduleIdsForCourse(assignments: CourseModuleRow[], courseId: Cou
     .map((row) => row.module_id);
 }
 
+export interface GroupedSyllabusModuleRow {
+  module: Module;
+  isVisible: boolean;
+}
+
 export interface GroupedSyllabusCourse {
   course: Course;
   modules: Module[];
   hiddenModules: Module[];
+  /** Módulos del curso en sort_order, incluyendo ocultos. */
+  rows: GroupedSyllabusModuleRow[];
 }
 
 export function groupModulesByCourse(
@@ -118,44 +177,77 @@ export function groupModulesByCourse(
       .sort((a, b) => a.sort_order - b.sort_order);
     const visible: Module[] = [];
     const hidden: Module[] = [];
+    const orderedRows: GroupedSyllabusModuleRow[] = [];
     for (const row of rows) {
       const mod = byId.get(row.module_id);
       if (!mod) continue;
+      orderedRows.push({ module: mod, isVisible: row.is_visible });
       if (row.is_visible) visible.push(mod);
       else hidden.push(mod);
     }
-    return { course, modules: visible, hiddenModules: hidden };
+    return { course, modules: visible, hiddenModules: hidden, rows: orderedRows };
   });
 
   const unassigned = modules.filter((m) => !assignedIds.has(m.id));
   return { grouped, unassigned };
 }
 
-export function applySyllabusTopicOverrides(mod: Module, overrides: SyllabusTopicOverride[]): Module {
+export interface SyllabusOverrideOptions {
+  /** Si es true, reordena pero no elimina temas ocultos (vista staff). */
+  includeHidden?: boolean;
+}
+
+function applyTopicListOverrides(
+  topics: Topic[],
+  byId: Map<string, SyllabusTopicOverride>,
+  includeHidden: boolean
+): Topic[] {
+  return topics
+    .map((topic, index) => {
+      const ov = byId.get(topic.id);
+      const children = topic.children?.length
+        ? applyTopicListOverrides(topic.children, byId, includeHidden)
+        : topic.children;
+      return {
+        topic: children === topic.children ? topic : { ...topic, children },
+        index,
+        order: ov?.sort_order ?? index,
+        visible: ov?.is_visible ?? true,
+      };
+    })
+    .filter((entry) => includeHidden || entry.visible)
+    .sort((a, b) => a.order - b.order || a.index - b.index)
+    .map((entry) => entry.topic);
+}
+
+export function applySyllabusTopicOverrides(
+  mod: Module,
+  overrides: SyllabusTopicOverride[],
+  options?: SyllabusOverrideOptions
+): Module {
   const forMod = overrides.filter((o) => o.module_id === mod.id);
   if (forMod.length === 0) return mod;
 
-  const hidden = new Set(forMod.filter((o) => !o.is_visible).map((o) => o.topic_id));
-  const order = new Map(forMod.map((o) => [o.topic_id, o.sort_order]));
-
-  const remaining = mod.topics
-    .map((topic, index) => ({ topic, index, order: order.get(topic.id) ?? index }))
-    .filter((entry) => !hidden.has(entry.topic.id))
-    .sort((a, b) => a.order - b.order || a.index - b.index)
-    .map((entry) => entry.topic);
-
-  return { ...mod, topics: remaining };
+  const byId = new Map(forMod.map((o) => [o.topic_id, o]));
+  return {
+    ...mod,
+    topics: applyTopicListOverrides(mod.topics, byId, options?.includeHidden ?? false),
+  };
 }
 
-export function applyOverridesToModules(modules: Module[], overrides: SyllabusTopicOverride[]): Module[] {
+export function applyOverridesToModules(
+  modules: Module[],
+  overrides: SyllabusTopicOverride[],
+  options?: SyllabusOverrideOptions
+): Module[] {
   if (!overrides.length) return modules;
-  return modules.map((mod) => applySyllabusTopicOverrides(mod, overrides));
+  return modules.map((mod) => applySyllabusTopicOverrides(mod, overrides, options));
 }
 
-export function recommendedNextCourse(owned: CourseId[]): CourseId | null {
+export function recommendedNextCourse(owned: CourseId[], courses: Course[] = DEFAULT_COURSES): CourseId | null {
   const ownedSet = new Set(owned);
-  for (const id of SELLABLE_COURSE_IDS) {
-    if (!ownedSet.has(id)) return id;
+  for (const course of sellableCourses(courses)) {
+    if (!ownedSet.has(course.id)) return course.id;
   }
   return null;
 }

@@ -27,9 +27,10 @@ import type { AssignmentPriority } from '../../types/studentPlan';
 interface AssignExamModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAssigned?: () => void;
+  onAssigned?: () => void | boolean | Promise<void | boolean>;
   initialStudentId?: string;
   initialStudentName?: string;
+  initialDueDate?: string;
   profiles?: AdminProfileRow[];
 }
 
@@ -39,6 +40,7 @@ export default function AssignExamModal({
   onAssigned,
   initialStudentId,
   initialStudentName,
+  initialDueDate,
   profiles: initialProfiles,
 }: AssignExamModalProps) {
   // ─── Estado de Alumnos ───────────────────────────────────────────────────────
@@ -102,8 +104,11 @@ export default function AssignExamModal({
         setSelectedStudentIds(new Set([initialStudentId]));
         setTargetScope('single');
       }
+      if (initialDueDate) {
+        setDueDate(initialDueDate);
+      }
     }
-  }, [isOpen, initialProfiles, initialStudentId]);
+  }, [isOpen, initialProfiles, initialStudentId, initialDueDate]);
 
   // Cargar banco de preguntas de examen
   useEffect(() => {
@@ -306,7 +311,7 @@ export default function AssignExamModal({
         type: 'exam',
         description:
           description.trim() ||
-          `Evaluación asignada de ElectoDX Diplomado. ${
+          `Evaluación asignada de ElectroDx Diplomado. ${
             currentTopic ? `Tema: ${currentTopic.title}.` : ''
           } ${currentSubtopic ? `Subtema: ${currentSubtopic.title}.` : ''} Límite: ${effectiveTimeLimit} min.`,
         target_module_id: selectedModuleId || null,
@@ -335,11 +340,16 @@ export default function AssignExamModal({
         min_score: minScore,
       });
 
-      onAssigned?.();
+      const reloaded = await onAssigned?.();
+      if (reloaded === false) {
+        alert('El examen se asignó, pero el calendario no pudo recargar las tareas. Usa Reintentar.');
+        return;
+      }
       onClose();
     } catch (err) {
       console.error(err);
-      alert('Error al crear y enviar el examen a los alumnos.');
+      const message = err instanceof Error && err.message ? err.message : 'Error al crear y enviar el examen a los alumnos.';
+      alert(message);
     } finally {
       setSubmitting(false);
     }

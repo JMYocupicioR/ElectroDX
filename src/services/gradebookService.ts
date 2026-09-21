@@ -7,11 +7,16 @@ import { calculateStudentAttendanceMetrics } from './attendanceService';
 import { getWorkshops } from './courseService';
 import { getStudentMilestoneAudits, getAcademicMilestones } from './academicScheduleService';
 import { isTableMissingInSupabase, markTableAsMissingInSupabase } from './tableAvailability';
+import {
+  computeKardexMath,
+  kardexStatusFromMath,
+  meanScore,
+  type KardexBucketInput,
+} from '../utils/academicKardex';
 import type {
   GradebookRubricConfig,
   StudentKardexData,
   StudentCohortSummary,
-  RubricScoreDetail,
   AcademicMilestone,
 } from '../types/academicGradebook';
 import type { AdminProfileRow } from '../types/admin';
@@ -177,10 +182,7 @@ export async function calculateStudentKardex(
     moduleId: att.module_id,
   }));
 
-  const examAverage =
-    examDetails.length > 0
-      ? Math.round(examDetails.reduce((sum, e) => sum + e.score, 0) / examDetails.length)
-      : 85; // Calificación base estimada si aún no completa quizzes para la cohorte
+  const examAverage = meanScore(examDetails.map((exam) => exam.score));
 
   // 4. Tareas y Casos Prácticos
   const rawAssignments = await getStudentAssignments(studentId).catch(() => []);
@@ -197,14 +199,10 @@ export async function calculateStudentKardex(
     status: a.status,
   }));
 
-  let assignmentAverage = 90;
-  if (gradedAssignments.length > 0) {
-    const sumGrades = gradedAssignments.reduce((acc, a) => acc + (a.grade || 0), 0);
-    assignmentAverage = Math.round(sumGrades / gradedAssignments.length);
-  } else if (rawAssignments.length > 0) {
-    const submittedCount = rawAssignments.filter((a) => a.status === 'submitted' || a.status === 'approved').length;
-    assignmentAverage = Math.round((submittedCount / rawAssignments.length) * 100);
-  }
+  const assignmentAverage = meanScore(gradedAssignments.map((assignment) => assignment.grade as number));
+  const pendingUngradedCount = rawAssignments.filter(
+    (assignment) => assignment.status === 'submitted' || assignment.status === 'needs_revision'
+  ).length;
 
   // 5. Asistencias a Clases y Talleres
   let eligibleSessionsCount = 0;
@@ -226,85 +224,68 @@ export async function calculateStudentKardex(
   // 6. Auditoría de Hitos de Calendarización
   const milestoneAudits = await getStudentMilestoneAudits(studentId, completedTopicsSet, providedMilestones);
 
-  // 7. Cálculo Ponderado de Rubros según Configuración
   const rubricsMap = new Map(rubricConfig.rubrics.map((r) => [r.id, r]));
-
-  // Raw scores por rubro (0 - 100)
   const examsRubric = rubricsMap.get('exams') || { weight: 30, name: 'Exámenes', enabled: true };
   const assignmentsRubric = rubricsMap.get('assignments') || { weight: 30, name: 'Tareas', enabled: true };
   const attendanceRubric = rubricsMap.get('attendance') || { weight: 20, name: 'Asistencia', enabled: true };
   const curriculumRubric = rubricsMap.get('curriculum') || { weight: 20, name: 'Avance Temario', enabled: true };
 
-  const rawExamsScore = examAverage;
-  const rawAssignmentsScore = assignmentAverage;
-  const rawAttendanceScore = attendanceMetrics.attendancePct;
-  const rawCurriculumScore = metrics.overallProgressPct;
-
-  const weightedExams = Math.round(((rawExamsScore * examsRubric.weight) / 100) * 10) / 10;
-  const weightedAssignments = Math.round(((rawAssignmentsScore * assignmentsRubric.weight) / 100) * 10) / 10;
-  const weightedAttendance = Math.round(((rawAttendanceScore * attendanceRubric.weight) / 100) * 10) / 10;
-  const weightedCurriculum = Math.round(((rawCurriculumScore * curriculumRubric.weight) / 100) * 10) / 10;
-
-  const finalGrade = Math.min(
-    100,
-    Math.round((weightedExams + weightedAssignments + weightedAttendance + weightedCurriculum) * 10) / 10
-  );
-  const finalGradeScale10 = Math.round((finalGrade / 10) * 10) / 10;
-  const isPassing = finalGrade >= rubricConfig.minPassingGrade;
-
-  let status: 'accredited_honors' | 'accredited' | 'not_accredited' = 'not_accredited';
-  let statusLabel = 'NO ACREDITADO (EN REGULARIZACIÓN)';
-
-  if (isPassing) {
-    if (finalGrade >= 95) {
-      status = 'accredited_honors';
-      statusLabel = 'ACREDITADO CON MENCIÓN HONORÍFICA';
-    } else {
-      status = 'accredited';
-      statusLabel = 'ACREDITADO SATISFACTORIAMENTE';
-    }
-  }
-
-  const rubricBreakdown: RubricScoreDetail[] = [
+  const attendanceRaw = attendanceMetrics.hasAuditedSessions ? attendanceMetrics.attendancePct : null;
+  const bucketInputs: KardexBucketInput[] = [
     {
-      rubricId: 'exams',
+      key: 'exams',
       name: examsRubric.name,
       weight: examsRubric.weight,
-      rawScore: rawExamsScore,
-      weightedScore: weightedExams,
+      enabled: examsRubric.enabled !== false,
+      rawScore: examAverage,
       itemCount: examDetails.length,
-      summary: `${examDetails.length} evaluaciones realizadas (Promedio: ${rawExamsScore}%)`,
+      summary:
+        examAverage == null
+          ? 'Sin calificar: aún no hay quizzes ni exámenes.'
+          : `${examDetails.length} evaluaciones realizadas (promedio ${examAverage}%)`,
     },
     {
-      rubricId: 'assignments',
+      key: 'assignments',
       name: assignmentsRubric.name,
       weight: assignmentsRubric.weight,
-      rawScore: rawAssignmentsScore,
-      weightedScore: weightedAssignments,
+      enabled: assignmentsRubric.enabled !== false,
+      rawScore: assignmentAverage,
       itemCount: rawAssignments.length,
-      summary: `${rawAssignments.length} tareas asignadas (Promedio: ${rawAssignmentsScore}%)`,
+      summary:
+        assignmentAverage == null
+          ? pendingUngradedCount > 0
+            ? `${pendingUngradedCount} entrega(s) en revisión; aún no hay nota.`
+            : rawAssignments.length > 0
+              ? `${rawAssignments.length} tarea(s) asignada(s) sin calificar.`
+              : 'Sin calificar: el profesor aún no ha evaluado tareas o casos.'
+          : `${gradedAssignments.length} tarea(s) calificada(s) (promedio ${assignmentAverage}%)`,
     },
     {
-      rubricId: 'attendance',
+      key: 'attendance',
       name: attendanceRubric.name,
       weight: attendanceRubric.weight,
-      rawScore: rawAttendanceScore,
-      weightedScore: weightedAttendance,
+      enabled: attendanceRubric.enabled !== false,
+      rawScore: attendanceRaw,
       itemCount: attendanceMetrics.totalSessions,
       summary: attendanceMetrics.hasAuditedSessions
-        ? `${attendanceMetrics.attendedSessions}/${attendanceMetrics.totalSessions} asistencias (${rawAttendanceScore}%)`
-        : 'Sin sesiones auditadas a la fecha (100% neutro)',
+        ? `${attendanceMetrics.attendedSessions}/${attendanceMetrics.totalSessions} asistencias (${attendanceMetrics.attendancePct}%). Retardo = 80% de esa sesión.`
+        : 'Sin calificar: todavía no hay clases que cuenten para el kárdex.',
     },
     {
-      rubricId: 'curriculum',
+      key: 'curriculum',
       name: curriculumRubric.name,
       weight: curriculumRubric.weight,
-      rawScore: rawCurriculumScore,
-      weightedScore: weightedCurriculum,
+      enabled: curriculumRubric.enabled !== false,
+      rawScore: metrics.overallProgressPct,
       itemCount: metrics.totalCompletedCurriculumTopics,
-      summary: `${metrics.totalCompletedCurriculumTopics}/${metrics.totalCurriculumTopics} temas completados (${rawCurriculumScore}%)`,
+      summary: `${metrics.totalCompletedCurriculumTopics}/${metrics.totalCurriculumTopics} temas completados (${metrics.overallProgressPct}%)`,
     },
   ];
+
+  const math = computeKardexMath(bucketInputs, rubricConfig.minPassingGrade ?? 80);
+  const finalGrade = math.displayedGrade ?? 0;
+  const finalGradeScale10 = math.displayedGradeScale10 ?? 0;
+  const status = kardexStatusFromMath(math);
 
   const folio = `KDX-COMEFYR-2026-${studentId.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
 
@@ -326,14 +307,19 @@ export async function calculateStudentKardex(
     }),
     finalGrade,
     finalGradeScale10,
-    isPassing,
+    officialGrade: math.officialGrade,
+    runningGrade: math.runningGrade,
+    isOfficial: math.isOfficial,
+    isPassing: math.isPassing,
+    pointsToPass: math.pointsToPass,
+    missingBuckets: math.missingBuckets,
     status,
-    statusLabel,
+    statusLabel: math.statusLabel,
     cmeCreditsEarned: metrics.cmeCreditsEarned,
     maxCmeCredits: metrics.maxCmeCredits,
     academicHoursEarned: metrics.academicHoursEarned,
     maxAcademicHours: metrics.maxAcademicHours,
-    rubricBreakdown,
+    rubricBreakdown: math.rubricBreakdown,
     examDetails,
     assignmentDetails,
     attendanceSummary: {
@@ -399,15 +385,17 @@ export async function getCohortAcademicSummaries(
           overallProgressPct: kardex.curriculumSummary.progressPct,
           completedTopicsCount: kardex.curriculumSummary.completedTopics,
           totalTopicsCount: kardex.curriculumSummary.totalTopics,
-          examAverage: kardex.rubricBreakdown.find((r) => r.rubricId === 'exams')?.rawScore ?? 0,
+          examAverage: kardex.rubricBreakdown.find((r) => r.rubricId === 'exams')?.rawScore ?? null,
           examCount: kardex.examDetails.length,
           assignmentsSubmitted: kardex.assignmentDetails.filter((a) => a.status === 'submitted' || a.status === 'approved').length,
           assignmentsTotal: kardex.assignmentDetails.length,
-          assignmentsAvgGrade: kardex.rubricBreakdown.find((r) => r.rubricId === 'assignments')?.rawScore ?? 0,
-          attendancePct: kardex.attendanceSummary.attendancePct,
+          assignmentsAvgGrade: kardex.rubricBreakdown.find((r) => r.rubricId === 'assignments')?.rawScore ?? null,
+          attendancePct: kardex.rubricBreakdown.find((r) => r.rubricId === 'attendance')?.rawScore ?? null,
           attendedSessions: kardex.attendanceSummary.attendedSessions,
           totalSessions: kardex.attendanceSummary.totalSessions,
           finalWeightedGrade: kardex.finalGrade,
+          officialGrade: kardex.officialGrade,
+          isOfficial: kardex.isOfficial,
           complianceStatus,
           complianceLabel,
         };

@@ -1083,7 +1083,7 @@ export default function ProfileSetupPage() {
                 onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
                 className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300 dark:border-slate-700"
               />
-              <span>Mostrar mi perfil públicamente en la lista de especialistas de ElectoDX Diplomado</span>
+              <span>Mostrar mi perfil públicamente en la lista de especialistas de ElectroDx Diplomado</span>
             </label>
 
             <label className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">

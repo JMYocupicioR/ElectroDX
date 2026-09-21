@@ -65,8 +65,8 @@ export default function SpecialistsPage() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
             {BRAND.enableAccreditation
-              ? 'ElectoDX Diplomado · Aval COMEFYR · Red Nacional de Electrodiagnóstico'
-              : 'ElectoDX Diplomado · Red Nacional de Médicos en Electrodiagnóstico'}
+              ? 'ElectroDx Diplomado · Aval COMEFYR · Red Nacional de Electrodiagnóstico'
+              : 'ElectroDx Diplomado · Red Nacional de Médicos en Electrodiagnóstico'}
           </p>
         </div>
       </div>

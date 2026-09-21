@@ -20,7 +20,6 @@ import { getCohortAcademicSummaries } from '../../services/gradebookService';
 import { filterGradeableStudents } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
 import GradebookConfigModal from './GradebookConfigModal';
-import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
 import AttendanceTrackerModal from './AttendanceTrackerModal';
 import StudentKardexModal from './StudentKardexModal';
 import AssignExamModal from './AssignExamModal';
@@ -40,7 +39,6 @@ export default function AdminStudentsListPage() {
 
   // Modals state
   const [showRubricsModal, setShowRubricsModal] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [showAssignExamModal, setShowAssignExamModal] = useState(false);
   const [showAssignCaseModal, setShowAssignCaseModal] = useState(false);
@@ -110,7 +108,7 @@ export default function AdminStudentsListPage() {
       if (s) {
         sumProg += s.overallProgressPct;
         sumGrade += s.finalWeightedGrade;
-        sumAtt += s.attendancePct;
+        sumAtt += s.attendancePct ?? 0;
         if (s.complianceStatus === 'at_risk' || s.complianceStatus === 'lagging') {
           atRisk++;
         }
@@ -148,14 +146,13 @@ export default function AdminStudentsListPage() {
               <span>Configurar Rúbricas</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setShowScheduleModal(true)}
+            <Link
+              to="/admin/calendario"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/80 border border-violet-200 dark:border-violet-800 text-xs font-bold transition shadow-2xs cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
               <span>Calendarización & Checklist</span>
-            </button>
+            </Link>
 
             <button
               type="button"
@@ -470,7 +467,7 @@ export default function AdminStudentsListPage() {
                                 Exámenes
                               </span>
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100">
-                                {sSummary.examAverage}%
+                                {sSummary.examAverage == null ? '—' : `${sSummary.examAverage}%`}
                               </span>
                             </Link>
 
@@ -498,7 +495,7 @@ export default function AdminStudentsListPage() {
                                 Asist.
                               </span>
                               <span className="text-xs font-black text-slate-800 dark:text-slate-100">
-                                {sSummary.attendancePct}%
+                                {sSummary.attendancePct == null ? '—' : `${sSummary.attendancePct}%`}
                               </span>
                             </Link>
 
@@ -513,7 +510,7 @@ export default function AdminStudentsListPage() {
                                 Nota Final
                               </span>
                               <span className="text-xs font-black text-indigo-700 dark:text-indigo-300">
-                                {sSummary.finalWeightedGrade}
+                                {sSummary.isOfficial ? sSummary.officialGrade : sSummary.finalWeightedGrade}
                               </span>
                             </button>
                           </div>
@@ -539,13 +536,6 @@ export default function AdminStudentsListPage() {
         isOpen={showRubricsModal}
         onClose={() => setShowRubricsModal(false)}
         onSaved={loadData}
-      />
-
-      <AcademicScheduleManagerModal
-        isOpen={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        profiles={profiles}
-        onUpdated={loadData}
       />
 
       <AttendanceTrackerModal

@@ -3,14 +3,15 @@ import { Link } from 'react-router-dom';
 import { GraduationCap, Lock, Check, ArrowRight, BookOpen, Clock, AlertCircle, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
-import { SELLABLE_COURSE_IDS, NEXT_COURSE_RECOMMENDATION, recommendedNextCourse } from '../../content/courseCatalog';
+import { previousSellableCourseId, recommendedNextCourse, sellableCourses } from '../../content/courseCatalog';
 import CourseEnrollmentRequestModal from '../course/CourseEnrollmentRequestModal';
-import type { Course, CourseId } from '../../types/database';
+import type { Course } from '../../types/database';
 
 export default function CoursesCatalogPage() {
   const { hasCourseAccess, isCoursePending, courseIds, user } = useAuth();
-  const { grouped, reload } = useSyllabusCatalog();
-  const nextSuggested = recommendedNextCourse(courseIds);
+  const { grouped, courses, reload } = useSyllabusCatalog();
+  const sellable = sellableCourses(courses);
+  const nextSuggested = recommendedNextCourse(courseIds, courses);
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Course | null>(null);
 
   return (
@@ -20,7 +21,7 @@ export default function CoursesCatalogPage() {
           Oferta académica
         </p>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-3">
-          Tres cursos independientes
+          {sellable.length === 1 ? 'Un curso independiente' : `${sellable.length} cursos independientes`}
         </h1>
         <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
           Cada curso opera como una suscripción individual sujeta a revisión y admisión por el profesor titular.
@@ -38,14 +39,13 @@ export default function CoursesCatalogPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
+      <div className={`grid gap-6 mb-12 ${sellable.length >= 3 ? 'md:grid-cols-3' : sellable.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-1 max-w-xl mx-auto'}`}>
         {grouped
-          .filter((g) => SELLABLE_COURSE_IDS.includes(g.course.id))
+          .filter((g) => g.course.is_sellable && g.course.is_active)
           .map(({ course, modules }) => {
             const owned = hasCourseAccess(course.id);
             const isPending = isCoursePending(course.id);
-            const recommended = NEXT_COURSE_RECOMMENDATION;
-            const prevId = (Object.entries(recommended).find(([, next]) => next === course.id)?.[0] ?? null) as CourseId | null;
+            const prevId = previousSellableCourseId(course.id, courses);
 
             return (
               <article

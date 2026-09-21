@@ -1,5 +1,5 @@
 -- ==============================================================================
--- ElectoDX — Cursos por nivel (Principiante / Intermedio / Avanzado)
+-- ElectroDx — Cursos por nivel (Principiante / Intermedio / Avanzado)
 -- + organizador de temario + constancias por curso + overrides de temas
 -- ==============================================================================
 

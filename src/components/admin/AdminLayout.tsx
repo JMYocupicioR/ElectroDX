@@ -13,9 +13,11 @@ import {
   GraduationCap,
   Activity,
   Stethoscope,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
+import { BRAND } from '../../config/brand';
 
 function NavBadge({ count }: { count: number }) {
   if (count <= 0) return null;
@@ -26,24 +28,45 @@ function NavBadge({ count }: { count: number }) {
   );
 }
 
+type AdminNavTab = {
+  to: string;
+  label: string;
+  shortLabel?: string;
+  icon: typeof LayoutDashboard;
+  exact: boolean;
+  badge: number;
+  adminOnly?: boolean;
+};
+
 export function AdminLayout({
   title,
   subtitle,
   children,
+  fullBleed = false,
 }: {
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
+  fullBleed?: boolean;
 }) {
   const location = useLocation();
   const { isAdmin, user } = useAuth();
   const { pendingUsers, pendingCourseEnrollments, pendingRevisions } = useAdminPendingCounts();
 
-  const tabs = [
+  const tabs: AdminNavTab[] = [
     { to: '/admin', label: 'Inicio', icon: LayoutDashboard, exact: true, badge: 0 },
+    {
+      to: '/admin/calendario',
+      label: 'Calendario académico',
+      shortLabel: 'Calendario',
+      icon: Calendar,
+      exact: false,
+      badge: 0,
+    },
     {
       to: '/admin/admisiones',
       label: 'Admisiones / Lista de Espera',
+      shortLabel: 'Admisiones',
       icon: GraduationCap,
       exact: false,
       badge: pendingCourseEnrollments,
@@ -92,7 +115,7 @@ export function AdminLayout({
       icon: Video,
       exact: false,
       badge: 0,
-      adminOnly: true,
+      adminOnly: false,
     },
     {
       to: '/admin/acceso',
@@ -105,6 +128,7 @@ export function AdminLayout({
     {
       to: '/admin/temario',
       label: 'Cursos, Precios y Temario',
+      shortLabel: 'Cursos y temario',
       icon: ClipboardList,
       exact: false,
       badge: 0,
@@ -125,11 +149,11 @@ export function AdminLayout({
   const currentTab = tabs.find((t) => isActive(t.to, t.exact)) ?? tabs[0];
 
   return (
-    <div className="pt-18 sm:pt-22 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
+    <div className={`pt-18 sm:pt-22 pb-20 lg:pb-10 px-4 sm:px-6 mx-auto ${fullBleed ? 'max-w-screen-2xl' : 'max-w-7xl'}`}>
       {/* Top Breadcrumb & Status Bar */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500">
-          <Link to="/" className="hover:text-blue-600 transition">ElectoDX</Link>
+          <Link to="/" className="hover:text-blue-600 transition">{BRAND.shortName}</Link>
           <span>/</span>
           <Link to="/admin" className="hover:text-indigo-600 font-medium">Administración</Link>
           {location.pathname !== '/admin' && (
@@ -143,7 +167,7 @@ export function AdminLayout({
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-            <span>SuperAdmin Activo</span>
+            <span>{isAdmin ? 'Administrador' : 'Profesor'}</span>
           </span>
           <Link
             to="/temario"
@@ -165,35 +189,37 @@ export function AdminLayout({
               </div>
               <div className="min-w-0">
                 <p className="font-bold text-slate-900 dark:text-white text-sm truncate">Panel de Control</p>
-                <p className="text-[11px] text-slate-400 truncate">Dirección ElectoDX</p>
+                <p className="text-[11px] text-slate-400 truncate">Dirección {BRAND.shortName}</p>
               </div>
             </div>
 
             <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
-              {tabs.map(({ to, label, icon: Icon, exact, badge }) => {
+              {tabs.map(({ to, label, shortLabel, icon: Icon, exact, badge }) => {
                 const active = isActive(to, exact);
+                const visibleLabel = shortLabel ?? label;
                 return (
                   <Link
                     key={to}
                     to={to}
-                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
+                    title={label}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap lg:whitespace-normal ${
                       active
                         ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-500/25 font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
-                    <span className="flex-1 truncate">{label}</span>
+                    <span className="flex-1 min-w-0 max-lg:truncate lg:leading-snug">{visibleLabel}</span>
                     <NavBadge count={badge} />
                   </Link>
                 );
               })}
             </nav>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 hidden lg:block text-[11px] text-slate-400">
-              <p className="font-medium text-slate-600 dark:text-slate-300">Sesión Directiva</p>
-              <p className="truncate text-slate-500 mt-0.5">{user?.email}</p>
-              <div className="mt-2 text-[10px] text-slate-400">
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 hidden lg:block text-xs">
+              <p className="font-semibold text-slate-700 dark:text-slate-200">Sesión Directiva</p>
+              <p className="truncate text-slate-600 dark:text-slate-300 mt-0.5">{user?.email}</p>
+              <div className="mt-2 text-xs text-slate-600 dark:text-slate-400">
                 COMEFYR Ed. Médica Continua v2.4
               </div>
             </div>
@@ -203,7 +229,7 @@ export function AdminLayout({
         {/* Main Content Area */}
         <main className="flex-1 min-w-0">
           {title && (
-            <div className="mb-6">
+            <div className={subtitle ? 'mb-6' : 'mb-4'}>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 {title}
               </h1>

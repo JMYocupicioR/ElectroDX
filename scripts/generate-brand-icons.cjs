@@ -30,7 +30,7 @@ async function generateIcons() {
     { name: 'icon-512x512.png', size: 512 },
   ];
 
-  console.log('Generando iconos de marca ElectoDX...');
+  console.log('Generando iconos de marca ElectroDx...');
   for (const item of sizes) {
     const targetFile = path.join(outDir, item.name);
     await sharp(svgBuffer)

@@ -21,8 +21,11 @@ import type { LiveWorkshop } from '../../types/database';
 interface CreateLiveClassModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: () => void | boolean | Promise<void | boolean>;
   initialWorkshop?: LiveWorkshop | null;
+  initialScheduledAt?: string;
+  initialModuleId?: string;
+  initialTopicId?: string | null;
 }
 
 export function CreateLiveClassModal({
@@ -30,6 +33,9 @@ export function CreateLiveClassModal({
   onClose,
   onSuccess,
   initialWorkshop,
+  initialScheduledAt,
+  initialModuleId,
+  initialTopicId,
 }: CreateLiveClassModalProps) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<'create' | 'update_recording'>(
@@ -39,6 +45,7 @@ export function CreateLiveClassModal({
   // Form state for creating a live class
   const [title, setTitle] = useState('');
   const [moduleId, setModuleId] = useState(allModules[0]?.id || 'module-01');
+  const [topicId, setTopicId] = useState<string | null>(null);
   const [scheduledAt, setScheduledAt] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(90);
   const [sessionModality, setSessionModality] = useState<'online' | 'in_person'>('online');
@@ -62,15 +69,22 @@ export function CreateLiveClassModal({
       setError(null);
       setSuccess(null);
 
-      // Default date: tomorrow at 19:00 local time
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(19, 0, 0, 0);
-      const tzOffset = tomorrow.getTimezoneOffset() * 60000;
-      const localISOTime = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
-      setScheduledAt(localISOTime);
+      if (initialModuleId) {
+        setModuleId(initialModuleId);
+      }
+      setTopicId(initialTopicId ?? null);
 
-      // Load existing workshops for the recording updater tab
+      if (initialScheduledAt) {
+        setScheduledAt(initialScheduledAt);
+      } else {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(19, 0, 0, 0);
+        const tzOffset = tomorrow.getTimezoneOffset() * 60000;
+        const localISOTime = new Date(tomorrow.getTime() - tzOffset).toISOString().slice(0, 16);
+        setScheduledAt(localISOTime);
+      }
+
       getWorkshops()
         .then((ws) => {
           setExistingWorkshops(ws);
@@ -83,9 +97,12 @@ export function CreateLiveClassModal({
             setTargetRecordingUrl(ws[0].recording_url || '');
           }
         })
-        .catch(console.error);
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : 'No se pudieron cargar los talleres.';
+          setError(message);
+        });
     }
-  }, [isOpen, initialWorkshop]);
+  }, [isOpen, initialWorkshop, initialScheduledAt, initialModuleId, initialTopicId]);
 
   // When selected workshop changes in update tab
   const handleSelectExisting = (wId: string) => {
@@ -103,13 +120,18 @@ export function CreateLiveClassModal({
       return;
     }
 
+    if (!user?.id) {
+      setError('Debes iniciar sesión para programar una clase.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       await createWorkshop({
         title: title.trim(),
         module_id: moduleId,
-        topic_id: null,
+        topic_id: topicId,
         description: description.trim() || null,
         scheduled_at: new Date(scheduledAt).toISOString(),
         duration_minutes: durationMinutes,
@@ -122,12 +144,16 @@ export function CreateLiveClassModal({
         session_modality: sessionModality,
         session_type: sessionModality === 'online' ? 'masterclass' : 'hands_on_presencial',
         counts_for_kardex: countsForKardex,
-        created_by: user?.id || 'admin',
+        created_by: user.id,
       });
 
       setSuccess('¡Clase programada exitosamente con enlaces asignados!');
+      const reloaded = await onSuccess?.();
+      if (reloaded === false) {
+        setSuccess('La clase se guardó, pero el calendario no pudo recargar los talleres. Usa Reintentar.');
+        return;
+      }
       setTimeout(() => {
-        onSuccess?.();
         onClose();
       }, 1200);
     } catch (err: any) {
@@ -153,8 +179,12 @@ export function CreateLiveClassModal({
       });
 
       setSuccess('¡Enlace de grabación guardado y disponible para los alumnos!');
+      const reloaded = await onSuccess?.();
+      if (reloaded === false) {
+        setSuccess('La grabación se guardó, pero el calendario no pudo recargar los talleres. Usa Reintentar.');
+        return;
+      }
       setTimeout(() => {
-        onSuccess?.();
         onClose();
       }, 1200);
     } catch (err: any) {
@@ -167,7 +197,7 @@ export function CreateLiveClassModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"

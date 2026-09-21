@@ -5,6 +5,12 @@ import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
 import type { StudentAssignment } from '../types/studentPlan';
 import { TOPIC_PROGRESS_EVENT } from './quizCompletionGate';
+import {
+  applyOutboxToCompletedSet,
+  enqueueProgressOutbox,
+  readProgressOutbox,
+  removeProgressOutboxItems,
+} from '../utils/progressOutbox';
 
 export { TOPIC_PROGRESS_EVENT };
 
@@ -41,6 +47,12 @@ export interface StudentModuleStats {
   quizScore?: number;
 }
 
+export interface KardexStanding {
+  isOfficial: boolean;
+  isPassing: boolean;
+  officialGrade: number | null;
+}
+
 export interface CertificationRequirements {
   cedulaVerified: boolean;
   modulesCompletedPct: number;
@@ -49,6 +61,9 @@ export interface CertificationRequirements {
   averageScore: number;
   isEligible: boolean;
   certificateFolio?: string;
+  kardexOfficial: boolean;
+  kardexGrade: number | null;
+  isOfficialPassing: boolean;
 }
 
 // ─── LocalStorage Keys ───────────────────────────────────────────────────────
@@ -141,7 +156,14 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
     }
   } catch {}
 
-  // 4. Normalize and propagate bidirectional completion between parents and children
+  // 4. Apply queued offline writes (LWW), then flush what the network can take.
+  const queuedOutbox = readProgressOutbox(userId);
+  const withOutbox = applyOutboxToCompletedSet(merged, queuedOutbox);
+  merged.clear();
+  withOutbox.forEach((id) => merged.add(id));
+  await flushProgressOutbox(userId);
+
+  // 5. Normalize and propagate bidirectional completion between parents and children
   for (const m of allModules) {
     for (const t of m.topics) {
       if (t.children && t.children.length > 0) {
@@ -160,8 +182,15 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
     }
   }
 
-  // 5. Reconciliar caché local hacia student_completed_topics (no profiles)
-  const missingInDb = cloudReached ? Array.from(merged).filter((id) => !dbTopics.includes(id)) : [];
+  const pendingDeletes = new Set(
+    queuedOutbox.filter((item) => !item.completed).map((item) => item.topicId)
+  );
+  pendingDeletes.forEach((id) => merged.delete(id));
+
+  // 6. Reconciliar caché local hacia student_completed_topics (no profiles)
+  const missingInDb = cloudReached
+    ? Array.from(merged).filter((id) => !dbTopics.includes(id) && !pendingDeletes.has(id))
+    : [];
   if (missingInDb.length > 0) {
     try {
       const rows = missingInDb.map((tid) => ({
@@ -175,7 +204,7 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
     }
   }
 
-  // 6. Cache merged truth back into localStorage
+  // 7. Cache merged truth back into localStorage
   try {
     localStorage.setItem(
       `${KEY_COMPLETED_TOPICS}${userId}`,
@@ -188,6 +217,7 @@ export async function fetchStudentCompletedTopics(userId: string): Promise<Set<s
 
 /**
  * Background helper to persist topic completions/deletions to Supabase.
+ * Writes to a local outbox first so offline / failed upserts are not lost.
  */
 async function syncTopicCompletionToSupabase(
   userId: string,
@@ -198,34 +228,66 @@ async function syncTopicCompletionToSupabase(
   void fullCurrentSet;
   if (!userId || userId === 'anonymous_student') return;
 
+  enqueueProgressOutbox(userId, topicIds, isCompleted);
+  await flushProgressOutbox(userId);
+}
+
+/** Push queued topic completions/uncompletions when the device is online. */
+export async function flushProgressOutbox(userId: string): Promise<void> {
+  if (!userId || userId === 'anonymous_student') return;
+  if (typeof navigator !== 'undefined' && !navigator.onLine) return;
+
+  const items = readProgressOutbox(userId);
+  if (items.length === 0) return;
+
+  const completedIds = items.filter((item) => item.completed).map((item) => item.topicId);
+  const pendingIds = items.filter((item) => !item.completed).map((item) => item.topicId);
+  const succeeded: string[] = [];
+
   try {
-    if (isCompleted) {
-      const rows = topicIds.map((tid) => ({
+    if (completedIds.length > 0) {
+      const completedAt = new Map(items.map((item) => [item.topicId, item.at]));
+      const rows = completedIds.map((tid) => ({
         user_id: userId,
         topic_id: tid,
-        completed_at: new Date().toISOString(),
+        completed_at: completedAt.get(tid) ?? new Date().toISOString(),
       }));
-      await sb.from('student_completed_topics').upsert(rows, { onConflict: 'user_id, topic_id' });
-    } else {
-      for (const tid of topicIds) {
-        await supabase
+      const { error } = await sb
+        .from('student_completed_topics')
+        .upsert(rows, { onConflict: 'user_id, topic_id' });
+      if (error) throw error;
+      succeeded.push(...completedIds);
+    }
+
+    if (pendingIds.length > 0) {
+      for (const tid of pendingIds) {
+        const { error } = await supabase
           .from('student_completed_topics')
           .delete()
           .eq('user_id', userId)
           .eq('topic_id', tid);
+        if (error) throw error;
+        succeeded.push(tid);
       }
     }
+
+    removeProgressOutboxItems(userId, succeeded);
+
+    try {
+      await sb.from('student_activity_logs').insert({
+        user_id: userId,
+        action: 'topic_progress_sync',
+        details: { completedIds, pendingIds, count: items.length },
+      });
+    } catch {
+      // Activity log is best-effort
+    }
   } catch (e) {
+    if (succeeded.length > 0) {
+      removeProgressOutboxItems(userId, succeeded);
+    }
     console.warn('[StudentService] Error syncing student_completed_topics:', e);
   }
-
-  try {
-    await sb.from('student_activity_logs').insert({
-      user_id: userId,
-      action: isCompleted ? 'topic_completed' : 'topic_uncompleted',
-      details: { topicIds, count: topicIds.length },
-    });
-  } catch {}
 }
 
 export function getCompletedTopics(userId: string): Set<string> {
@@ -664,7 +726,8 @@ export function markAllNotificationsAsRead(userId: string, notifIds: string[]): 
 export function checkCertificationEligibility(
   profile: Profile | null,
   overallProgressPct: number,
-  moduleProgressList: ModuleQuizProgress[] = []
+  moduleProgressList: ModuleQuizProgress[] = [],
+  standing?: KardexStanding | null
 ): CertificationRequirements {
   const cedulaVerified = Boolean(profile?.cedula_verified);
   const totalQuizzesAvailable = moduleProgressList.reduce(
@@ -683,11 +746,8 @@ export function checkCertificationEligibility(
   const averageScore =
     scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
-  const isEligible =
-    cedulaVerified &&
-    overallProgressPct >= 95 &&
-    quizzesPassedCount >= Math.max(1, totalQuizzesAvailable * 0.8) &&
-    averageScore >= 80;
+  const isOfficialPassing = Boolean(standing?.isOfficial && standing.isPassing);
+  const isEligible = cedulaVerified && isOfficialPassing;
 
   const userSeed = (profile?.id || 'COMEFYR').substring(0, 6).toUpperCase();
   const certificateFolio = `COMEFYR-EMG-2026-${userSeed}`;
@@ -700,6 +760,9 @@ export function checkCertificationEligibility(
     averageScore,
     isEligible,
     certificateFolio,
+    kardexOfficial: Boolean(standing?.isOfficial),
+    kardexGrade: standing?.officialGrade ?? null,
+    isOfficialPassing,
   };
 }
 
@@ -707,12 +770,13 @@ export function checkCourseCertificationEligibility(
   profile: Profile | null,
   completedTopics: Set<string>,
   moduleProgressList: ModuleQuizProgress[],
-  courseModuleIds: string[]
+  courseModuleIds: string[],
+  standing?: KardexStanding | null
 ): CertificationRequirements {
   const modules = allModules.filter((m) => courseModuleIds.includes(m.id));
   const topicIds = modules.flatMap((m) => getAllTopicIds(m.topics));
   const completedCount = topicIds.filter((id) => completedTopics.has(id)).length;
   const overallProgressPct = topicIds.length > 0 ? Math.round((completedCount / topicIds.length) * 100) : 0;
   const filteredProgress = moduleProgressList.filter((m) => courseModuleIds.includes(m.moduleId));
-  return checkCertificationEligibility(profile, overallProgressPct, filteredProgress);
+  return checkCertificationEligibility(profile, overallProgressPct, filteredProgress, standing);
 }

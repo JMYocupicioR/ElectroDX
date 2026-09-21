@@ -55,7 +55,8 @@ import {
   revokeCourseAccess,
   adminAdmitStudentToCourse,
 } from '../../services/courseService';
-import { SELLABLE_COURSE_IDS } from '../../content/courseCatalog';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { courseDisplayTitle, sellableCourses } from '../../content/courseCatalog';
 
 type Tab = 'enrollment_pending' | 'enrolled' | 'comite' | 'all' | 'premium';
 
@@ -69,6 +70,8 @@ const TAB_CONFIG: { id: Tab; label: string; icon: any }[] = [
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
+  const { courses } = useSyllabusCatalog();
+  const sellable = useMemo(() => sellableCourses(courses), [courses]);
 
   // Get initial tab from URL if present
   const searchParams = new URLSearchParams(window.location.search);
@@ -860,19 +863,15 @@ export default function AdminUsersPage() {
 
                         <div className="pt-1 space-y-1.5">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Cursos por nivel</p>
-                          {SELLABLE_COURSE_IDS.map((courseId) => {
+                          {sellable.map((course) => {
+                            const courseId = course.id;
                             const activeEnrollment = courseEnrollments.find(
                               (row) => row.user_id === u.id && row.course_id === courseId && row.status === 'active'
                             );
                             const pendingEnrollment = courseEnrollments.find(
                               (row) => row.user_id === u.id && row.course_id === courseId && row.status === 'pending'
                             );
-                            const label =
-                              courseId === 'principiante'
-                                ? 'Principiante'
-                                : courseId === 'intermedio'
-                                  ? 'Intermedio'
-                                  : 'Avanzado';
+                            const label = courseDisplayTitle(courseId, courses);
 
                             if (activeEnrollment) {
                               return (

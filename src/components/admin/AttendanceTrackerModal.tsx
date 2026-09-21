@@ -29,6 +29,7 @@ interface AttendanceTrackerModalProps {
   onClose: () => void;
   profiles: AdminProfileRow[];
   onSaved: () => void;
+  initialWorkshopId?: string;
 }
 
 export default function AttendanceTrackerModal({
@@ -36,6 +37,7 @@ export default function AttendanceTrackerModal({
   onClose,
   profiles,
   onSaved,
+  initialWorkshopId,
 }: AttendanceTrackerModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -59,16 +61,22 @@ export default function AttendanceTrackerModal({
     if (isOpen) {
       getWorkshops().then((ws) => {
         setWorkshops(ws);
-        if (ws.length > 0 && !selectedWorkshopId) {
-          const first = ws.find((w) => w.status === 'live') || ws.find((w) => w.status === 'scheduled') || ws[0];
-          setSelectedWorkshopId(first.id);
-          setSessionTitle(first.title);
-          setSessionDate(first.scheduled_at ? first.scheduled_at.split('T')[0] : '');
-          setSessionModality(normalizeSessionModality(first.session_modality));
+        if (ws.length > 0) {
+          const first =
+            (initialWorkshopId ? ws.find((w) => w.id === initialWorkshopId) : undefined) ||
+            (!selectedWorkshopId
+              ? ws.find((w) => w.status === 'live') || ws.find((w) => w.status === 'scheduled') || ws[0]
+              : ws.find((w) => w.id === selectedWorkshopId));
+          if (first) {
+            setSelectedWorkshopId(first.id);
+            setSessionTitle(first.title);
+            setSessionDate(first.scheduled_at ? first.scheduled_at.split('T')[0] : '');
+            setSessionModality(normalizeSessionModality(first.session_modality));
+          }
         }
       });
     }
-  }, [isOpen]);
+  }, [isOpen, initialWorkshopId]);
 
   // Sincronizar datos del taller seleccionado
   useEffect(() => {

@@ -8,9 +8,13 @@ import {
   type AcademicCertificate,
 } from '../../services/studentToolsService';
 import { useAuth } from '../../contexts/AuthProvider';
-import { checkCourseCertificationEligibility, type CertificationRequirements } from '../../services/studentService';
+import {
+  checkCourseCertificationEligibility,
+  type CertificationRequirements,
+  type KardexStanding,
+} from '../../services/studentService';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
-import { SELLABLE_COURSE_IDS, moduleIdsForCourse } from '../../content/courseCatalog';
+import { moduleIdsForCourse, sellableCourses } from '../../content/courseCatalog';
 import type { ModuleQuizProgress } from '../../types/quiz';
 import type { CourseId } from '../../types/database';
 
@@ -18,10 +22,12 @@ export function StudentCertificatePanel({
   requirements,
   moduleProgress,
   completedTopics,
+  standing,
 }: {
   requirements: CertificationRequirements | null;
   moduleProgress: ModuleQuizProgress[];
   completedTopics: Set<string>;
+  standing?: KardexStanding | null;
 }) {
   const { profile, hasCourseAccess } = useAuth();
   const { assignments, courses } = useSyllabusCatalog();
@@ -34,14 +40,13 @@ export function StudentCertificatePanel({
   }, []);
 
   const perCourse = useMemo(() => {
-    return SELLABLE_COURSE_IDS.map((courseId) => {
-      const ids = moduleIdsForCourse(assignments, courseId);
-      const req = checkCourseCertificationEligibility(profile, completedTopics, moduleProgress, ids);
-      const course = courses.find((c) => c.id === courseId);
-      const cert = certs.find((c) => c.course_id === courseId) ?? null;
-      return { courseId, title: course?.title ?? courseId, req, cert, unlocked: hasCourseAccess(courseId) };
+    return sellableCourses(courses).map((course) => {
+      const ids = moduleIdsForCourse(assignments, course.id);
+      const req = checkCourseCertificationEligibility(profile, completedTopics, moduleProgress, ids, standing);
+      const cert = certs.find((c) => c.course_id === course.id) ?? null;
+      return { courseId: course.id, title: course.title, req, cert, unlocked: hasCourseAccess(course.id) };
     });
-  }, [assignments, courses, profile, completedTopics, moduleProgress, certs, hasCourseAccess]);
+  }, [assignments, courses, profile, completedTopics, moduleProgress, certs, hasCourseAccess, standing]);
 
   return (
     <div className="space-y-6">
@@ -114,9 +119,15 @@ function CourseCertCard({
       {!unlocked && <p className="text-sm text-amber-700">Necesitas acceso a este curso para emitir la constancia.</p>}
       <ul className="text-sm space-y-1">
         <li>Cédula verificada: {requirements.cedulaVerified ? 'sí' : 'no'}</li>
-        <li>Avance curricular: {requirements.modulesCompletedPct}%</li>
-        <li>Evaluaciones aprobadas: {requirements.quizzesPassedCount}/{requirements.totalQuizzesAvailable}</li>
-        <li>Promedio: {requirements.averageScore}%</li>
+        <li>
+          Dictamen Capa A:{' '}
+          {requirements.isOfficialPassing
+            ? `acreditado (${requirements.kardexGrade ?? '—'} / 100)`
+            : requirements.kardexOfficial
+              ? `aún no acredita (${requirements.kardexGrade ?? '—'} / 100)`
+              : 'pendiente: faltan cubetas por calificar'}
+        </li>
+        <li>Avance de temario (20% del kárdex): {requirements.modulesCompletedPct}%</li>
       </ul>
       {cert && (
         <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-sm">

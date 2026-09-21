@@ -23,10 +23,11 @@ import { useAuth } from '../../contexts/AuthProvider';
 interface AssignClinicalCaseModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAssigned?: () => void;
+  onAssigned?: () => void | boolean | Promise<void | boolean>;
   initialCasePatternId?: string;
   initialStudentId?: string;
   initialStudentName?: string;
+  initialDueDate?: string;
   profiles?: AdminProfileRow[];
 }
 
@@ -37,6 +38,7 @@ export const AssignClinicalCaseModal: React.FC<AssignClinicalCaseModalProps> = (
   initialCasePatternId,
   initialStudentId,
   initialStudentName,
+  initialDueDate,
   profiles: initialProfiles,
 }) => {
   const { user } = useAuth();
@@ -84,6 +86,10 @@ export const AssignClinicalCaseModal: React.FC<AssignClinicalCaseModalProps> = (
   useEffect(() => {
     if (!isOpen) return;
 
+    if (initialDueDate) {
+      setDueDate(initialDueDate);
+    }
+
     if (initialProfiles && initialProfiles.length > 0) {
       setProfiles(filterGradeableStudents(initialProfiles, user?.id));
     } else {
@@ -109,7 +115,7 @@ export const AssignClinicalCaseModal: React.FC<AssignClinicalCaseModalProps> = (
       })
       .catch(e => console.error(e))
       .finally(() => setLoadingCases(false));
-  }, [isOpen, initialCasePatternId, initialProfiles]);
+  }, [isOpen, initialCasePatternId, initialProfiles, initialDueDate]);
 
   // Actualizar título al cambiar de caso
   useEffect(() => {
@@ -196,7 +202,11 @@ export const AssignClinicalCaseModal: React.FC<AssignClinicalCaseModalProps> = (
       });
 
       if (res.success) {
-        if (onAssigned) onAssigned();
+        const reloaded = await onAssigned?.();
+        if (reloaded === false) {
+          setErrorMsg('El caso se asignó, pero el calendario no pudo recargar las tareas. Usa Reintentar.');
+          return;
+        }
         onClose();
       } else {
         setErrorMsg(res.error || 'No se pudo crear la asignación');

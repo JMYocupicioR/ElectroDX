@@ -1,17 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { postLoginPathFromRoles } from '../../utils/postLoginPath';
 import { LoadingSpinner } from '../LoadingSpinner';
 
 async function getPostLoginPath(userId: string, next?: string | null): Promise<string> {
-  if (next && next.startsWith('/') && !next.startsWith('//')) return next;
-
   const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId);
   const roles = data?.map((r) => r.role) ?? [];
-  if (roles.includes('admin')) return '/admin';
-  if (roles.includes('editor')) return '/admin/revisiones';
-  if (roles.includes('contributor')) return '/colaborador';
-  return '/dashboard';
+  return postLoginPathFromRoles(roles, next);
 }
 
 export default function AuthCallbackPage() {

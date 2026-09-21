@@ -32,6 +32,7 @@ import { BRAND } from '../../config/brand';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { getCourseIdForModule } from '../../content/courseCatalog';
 import type { CourseId } from '../../types/database';
+import { DownloadSyllabusBrochureButton } from './DownloadSyllabusBrochureButton';
 
 /* ── Flatten topics for search ── */
 function flattenTopics(
@@ -204,7 +205,7 @@ export default function SyllabusPage() {
   const { isEnrolledPhysician, user, hasCourseAccess, hasPremiumAccess } = useAuth();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const { isCompleted, getParentTopicStats, getModuleStats } = useTopicProgress();
-  const { grouped, modulesWithOverrides, assignments } = useSyllabusCatalog();
+  const { grouped, unassigned, modulesWithOverrides, assignments, loading } = useSyllabusCatalog();
   const [activeTab, setActiveTab] = useState<'temario' | 'resumen' | 'inscripcion'>('temario');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
@@ -362,6 +363,7 @@ export default function SyllabusPage() {
                 Ya tengo cuenta · Iniciar sesión
               </Link>
             )}
+            <DownloadSyllabusBrochureButton grouped={grouped} unassigned={unassigned} disabled={loading} />
           </motion.div>
         </div>
       </section>
@@ -370,7 +372,7 @@ export default function SyllabusPage() {
       <section className="px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto mb-10">
         <div className="flex flex-wrap items-center justify-center p-1.5 rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 max-w-xl mx-auto">
           {[
-            { id: 'temario', label: 'Temario Completo (13 Módulos)' },
+            { id: 'temario', label: `Temario Completo (${totalModulesCount} Módulos)` },
             { id: 'resumen', label: 'Resumen Rápido y Simplificado' },
             { id: 'inscripcion', label: BRAND.enableAccreditation ? 'Beneficios y Aval' : 'Beneficios y Acreditación' },
           ].map((tab) => (
@@ -414,6 +416,12 @@ export default function SyllabusPage() {
             </div>
 
             <div className="flex items-center gap-2 text-xs">
+              <DownloadSyllabusBrochureButton
+                grouped={grouped}
+                unassigned={unassigned}
+                disabled={loading}
+                variant="compact"
+              />
               <button
                 onClick={expandAll}
                 className="px-3 py-2 rounded-lg bg-white/60 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium transition"
@@ -853,7 +861,7 @@ export default function SyllabusPage() {
                 {
                   step: '03',
                   title: 'Acceso Total al Curso',
-                  desc: 'Desbloquea los 13 módulos, evaluaciones por tema, simuladores diagnósticos y registro de progreso.',
+                  desc: `Desbloquea los ${totalModulesCount} módulos, evaluaciones por tema, simuladores diagnósticos y registro de progreso.`,
                 },
               ].map((s) => (
                 <div key={s.step} className="text-center p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50">

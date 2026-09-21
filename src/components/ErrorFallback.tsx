@@ -64,7 +64,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps)
         </h2>
         <p className="text-sm text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
           {isChunkOrVersionError
-            ? 'Se ha detectado una versión actualizada de ElectoDX Diplomado. Por favor, pulsa el botón para recargar y sincronizar con los últimos módulos.'
+            ? 'Se ha detectado una versión actualizada de ElectroDx Diplomado. Por favor, pulsa el botón para recargar y sincronizar con los últimos módulos.'
             : error.message}
         </p>
         <Button

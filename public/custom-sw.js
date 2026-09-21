@@ -1,5 +1,5 @@
 // ============================================================================
-// ElectoDX Diplomado - Service Worker Custom Listeners (PWA Notifications)
+// ElectroDx Diplomado - Service Worker Custom Listeners (PWA Notifications)
 // Handles notification clicks and background push events
 // ============================================================================
 
@@ -34,7 +34,7 @@ self.addEventListener('push', (event) => {
 
   try {
     const data = event.data.json();
-    const title = data.title || 'ElectoDX Diplomado';
+    const title = data.title || 'ElectroDx Diplomado';
     const options = {
       body: data.body || 'Tienes una nueva tarea o evaluación asignada por tu profesor.',
       icon: data.icon || '/icons/icon-192x192.png',
@@ -49,7 +49,7 @@ self.addEventListener('push', (event) => {
   } catch {
     const text = event.data.text();
     event.waitUntil(
-      self.registration.showNotification('ElectoDX Diplomado', {
+      self.registration.showNotification('ElectroDx Diplomado', {
         body: text,
         icon: '/icons/icon-192x192.png',
         badge: '/icons/icon-72x72.png',

@@ -1,14 +1,20 @@
 /**
  * Configuración central de marca e identidad institucional
- * ElectoDX Diplomado - Plataforma de Posgrado en Electrodiagnóstico y Neurofisiología Clínica
+ * ElectroDx Diplomado - Plataforma de Posgrado en Electrodiagnóstico y Neurofisiología Clínica
  */
 
 export const BRAND = {
   /** Nombre completo de la plataforma y diplomado */
-  name: 'ElectoDX Diplomado',
+  name: 'ElectroDx Diplomado',
 
   /** Nombre corto para insignias, favicons y menús reducidos */
-  shortName: 'ElectoDX',
+  shortName: 'ElectroDx',
+
+  /** Prefijo del logotipo tipográfico (ElectroDx = prefix + accent) */
+  wordmarkPrefix: 'Electro',
+
+  /** Acento cromático del logotipo (Dx) */
+  wordmarkAccent: 'Dx',
 
   /** Letras para monogramas y logotipos simplificados */
   monogram: 'EDX',
@@ -39,7 +45,7 @@ export const BRAND = {
   tagline: 'Plataforma Integral de Formación en Electrodiagnóstico y Neurofisiología Clínica',
 
   /** Versión del motor clínico */
-  engineName: 'ElectoDX Engine v2',
+  engineName: 'ElectroDx Engine v2',
 
   /** Paleta de colores oficial de la identidad */
   colors: {

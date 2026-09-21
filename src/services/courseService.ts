@@ -1,5 +1,5 @@
 import { supabase, sb } from '../lib/supabase';
-import { DEFAULT_COURSES, DEFAULT_COURSE_MODULES } from '../content/courseCatalog';
+import { DEFAULT_COURSES, DEFAULT_COURSE_MODULES, isCourseId } from '../content/courseCatalog';
 import type {
   ModuleAccess,
   LiveWorkshop,
@@ -98,12 +98,15 @@ export async function getWorkshopById(id: string): Promise<LiveWorkshop | null> 
 export async function createWorkshop(
   workshop: Omit<LiveWorkshop, 'id' | 'created_at' | 'updated_at'>
 ): Promise<LiveWorkshop> {
+  if (!workshop.created_by) {
+    throw new Error('Debes iniciar sesión para programar una clase.');
+  }
   const { data, error } = await supabase
     .from('live_workshops')
     .insert(workshop as any)
     .select('*')
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || 'No se pudo programar la clase en vivo.');
   return data as LiveWorkshop;
 }
 
@@ -117,7 +120,7 @@ export async function updateWorkshop(
     .eq('id', id)
     .select('*')
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || 'No se pudo actualizar la clase.');
   return data as LiveWorkshop;
 }
 
@@ -215,9 +218,43 @@ export async function getSyllabusCatalog(): Promise<{
   return { courses, assignments, overrides };
 }
 
+export async function createCourse(input: {
+  id: CourseId;
+  title: string;
+  description?: string;
+  price_display?: string | null;
+  is_active?: boolean;
+  is_sellable?: boolean;
+  sort_order?: number;
+}): Promise<Course> {
+  const id = input.id.trim().toLowerCase();
+  const title = input.title.trim();
+  if (!isCourseId(id)) {
+    throw new Error('El identificador debe tener 2–64 caracteres: minúsculas, números y guiones.');
+  }
+  if (!title) throw new Error('El título del curso es obligatorio.');
+
+  const row = {
+    id,
+    title,
+    description: input.description?.trim() ?? '',
+    price_display: input.is_sellable === false ? null : (input.price_display?.trim() || 'Consultar'),
+    is_active: input.is_active ?? true,
+    is_sellable: input.is_sellable ?? true,
+    sort_order: input.sort_order ?? 0,
+  };
+
+  const { data, error } = await sb.from('courses').insert(row as any).select('*').single();
+  if (error) {
+    if (error.code === '23505') throw new Error('Ya existe un curso con ese identificador.');
+    throw new Error(error.message || 'No se pudo crear el curso.');
+  }
+  return data as Course;
+}
+
 export async function updateCourseMetadata(
   courseId: CourseId,
-  updates: Partial<Pick<Course, 'title' | 'description' | 'price_display' | 'is_active' | 'sort_order'>>
+  updates: Partial<Pick<Course, 'title' | 'description' | 'price_display' | 'is_active' | 'sort_order' | 'is_sellable'>>
 ): Promise<void> {
   const { error } = await sb.from('courses').update(updates).eq('id', courseId);
   if (error) throw error;

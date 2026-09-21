@@ -12,7 +12,8 @@ import { useStudentPendingAssignments } from '../../hooks/useStudentPendingAssig
 
 export function MobileBottomNav() {
   const location = useLocation();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isEditor } = useAuth();
+  const isStaff = isAdmin || isEditor;
   const { pendingCount } = useStudentPendingAssignments();
 
   // Hide on exam session or full-screen immersive tools to prevent clutter
@@ -53,12 +54,12 @@ export function MobileBottomNav() {
       isActive: location.pathname.startsWith('/examenes'),
     },
     {
-      to: isAdmin ? '/admin' : user ? '/portal' : '/auth/login',
-      label: isAdmin ? 'Admin' : user ? 'Mi Portal' : 'Ingresar',
-      icon: isAdmin ? Shield : User,
+      to: isStaff ? '/admin' : user ? '/portal' : '/auth/login',
+      label: isStaff ? (isAdmin ? 'Admin' : 'Profesor') : user ? 'Mi Portal' : 'Ingresar',
+      icon: isStaff ? Shield : User,
       isActive:
-        (isAdmin && location.pathname.startsWith('/admin')) ||
-        (!isAdmin && location.pathname.startsWith('/portal')),
+        (isStaff && location.pathname.startsWith('/admin')) ||
+        (!isStaff && location.pathname.startsWith('/portal')),
     },
   ];
 

@@ -1144,10 +1144,15 @@ export async function getStudentFullDossier(studentId: string): Promise<StudentF
 
   // 4. Métricas globales
   const studentMetrics = calculateStudentMetrics(studentId, moduleProgress, completedTopicsSet);
+  const { calculateStudentKardex } = await import('./gradebookService');
+  const kardex = await calculateStudentKardex(studentId, profile).catch(() => null);
   const certRequirements = checkCertificationEligibility(
     profile,
     studentMetrics.overallProgressPct,
-    moduleProgress
+    moduleProgress,
+    kardex
+      ? { isOfficial: kardex.isOfficial, isPassing: kardex.isPassing, officialGrade: kardex.officialGrade }
+      : null
   );
 
   const scores = quizAttempts.map((a) => a.score);

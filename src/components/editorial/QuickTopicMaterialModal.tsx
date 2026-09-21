@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -10,7 +10,6 @@ import {
   AlertCircle,
   UploadCloud,
   Sparkles,
-  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import type { Topic } from '../../types/content';
@@ -18,15 +17,16 @@ import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
 
+type MaterialType = 'video' | 'pdf' | 'image' | 'pearl';
+
 interface QuickTopicMaterialModalProps {
   isOpen: boolean;
   onClose: () => void;
   moduleId: string;
   topic: Topic;
   onSuccess?: () => void;
+  initialTab?: MaterialType;
 }
-
-type MaterialType = 'video' | 'pdf' | 'image' | 'pearl';
 
 export function QuickTopicMaterialModal({
   isOpen,
@@ -34,9 +34,10 @@ export function QuickTopicMaterialModal({
   moduleId,
   topic,
   onSuccess,
+  initialTab = 'video',
 }: QuickTopicMaterialModalProps) {
   const { user, isAdmin, isEditor, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<MaterialType>('video');
+  const [activeTab, setActiveTab] = useState<MaterialType>(initialTab);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -57,6 +58,13 @@ export function QuickTopicMaterialModal({
 
   // Pearl
   const [pearlText, setPearlText] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setActiveTab(initialTab);
+    setError(null);
+    setSuccessMsg(null);
+  }, [isOpen, initialTab, topic.id]);
 
   if (!isOpen) return null;
 
@@ -170,7 +178,7 @@ export function QuickTopicMaterialModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}

@@ -9,7 +9,8 @@ export type RevisionAction = 'create' | 'update' | 'delete';
 export type EnrollmentStatus = 'none' | 'pending' | 'approved' | 'rejected';
 export type AccessTier = 'free' | 'premium';
 export type WorkshopStatus = 'draft' | 'scheduled' | 'live' | 'completed' | 'cancelled';
-export type CourseId = 'principiante' | 'intermedio' | 'avanzado' | 'referencia';
+/** Stable slug stored in `courses.id`. Built-in values: principiante, intermedio, avanzado, referencia. */
+export type CourseId = string;
 export type CourseEnrollmentStatus = 'active' | 'pending' | 'rejected' | 'revoked';
 
 export interface Course {

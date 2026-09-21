@@ -36,7 +36,7 @@ export default function AdminQuizzesPage() {
       subtitle={
         selectedTopicId
           ? 'Redacta viñetas clínicas, opciones de respuesta, perlas COMEFYR y publica en vivo para alumnos.'
-          : 'Supervisa y edita los cuestionarios de evaluación de los 13 módulos del temario de ElectoDX Diplomado.'
+          : 'Supervisa y edita los cuestionarios de evaluación de los 13 módulos del temario de ElectroDx Diplomado.'
       }
     >
       {selectedTopicId ? (

@@ -1,8 +1,8 @@
-# ElectroDX Diplomado
+# ElectroDx Diplomado
 
 > Formación de Posgrado y Diplomado en Electrodiagnóstico Clínico, Electromiografía (EMG), Estudios de Conducción Nerviosa (NCS), Potenciales Evocados y Ultrasonido Neuromuscular para Médicos Especialistas y Residentes.
 
-ElectroDX es una plataforma interactiva de posgrado y educación médica especializada en neurofisiología clínica y electrodiagnóstico. Diseñada para Médicos Especialistas y Residentes en Medicina de Rehabilitación, Neurología y Neurofisiología Clínica, integra un currículo de 17 módulos académicos, simuladores de trazos con osciloscopio virtual, calculadora topográfica de lesiones de plexo braquial, banco de casos clínicos interactivos con retroalimentación argumentada y evaluaciones formativas por lección.
+ElectroDx es una plataforma interactiva de posgrado y educación médica especializada en neurofisiología clínica y electrodiagnóstico. Diseñada para Médicos Especialistas y Residentes en Medicina de Rehabilitación, Neurología y Neurofisiología Clínica, integra un currículo de 17 módulos académicos, simuladores de trazos con osciloscopio virtual, calculadora topográfica de lesiones de plexo braquial, banco de casos clínicos interactivos con retroalimentación argumentada y evaluaciones formativas por lección.
 
 ## Información Académica y Clínica
 - **Nivel Académico:** Posgrado Médico / Formación Médica Continua
@@ -15,7 +15,7 @@ ElectroDX es una plataforma interactiva de posgrado y educación médica especia
   - *Modo Ejercicios y Casos Clínicos:* Resolución de casos simulados de radiculopatías, plexopatías, neuropatías por atrapamiento y miopatías con correlación electrodiagnóstica.
 
 ## Enlaces Principales
-- [Portal Oficial ElectroDX](https://electro-dx.vercel.app/): Página principal, resumen de la plataforma y simulador de trazos.
+- [Portal Oficial ElectroDx](https://electro-dx.vercel.app/): Página principal, resumen de la plataforma y simulador de trazos.
 - [Temario y Programa Analítico](https://electro-dx.vercel.app/temario): Desglose curricular de los 17 módulos y lecciones.
 - [Comité Editorial](https://electro-dx.vercel.app/comite-editorial): Consejo editorial, marco deontológico y autores clínicos.
 - [Talleres y Educación Continua](https://electro-dx.vercel.app/talleres): Agenda de talleres prácticos de electrodiagnóstico.

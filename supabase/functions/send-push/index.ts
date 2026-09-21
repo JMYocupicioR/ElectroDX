@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
   webpush.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
 
   const body = await req.json().catch(() => ({}));
-  const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'ElectoDX';
+  const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : 'ElectroDx';
   const message =
     typeof body.body === 'string' && body.body.trim()
       ? body.body.trim()

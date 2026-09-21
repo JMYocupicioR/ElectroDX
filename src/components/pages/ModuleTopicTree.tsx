@@ -6,6 +6,7 @@ import { Topic } from '../../types/content';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { ProposeSubtopicLink, ProposeQuizLink } from '../editorial/TopicContribution';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
+import { OfflineTopicBadge } from '../OfflineTopicBadge';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { areRequiredQuizzesPassed, topicHasEvaluation } from '../../services/quizCompletionGate';
 
@@ -240,7 +241,8 @@ function ModuleTopicRow({
                 </span>
               )}
 
-              {showQuizBadge && <QuizTopicBadge compact label={lang === 'en' ? 'Quiz' : 'Evaluación'} />}
+              {showQuizBadge && <QuizTopicBadge label={lang === 'en' ? 'Quiz' : 'Evaluación'} />}
+              <OfflineTopicBadge moduleId={moduleId} lang={lang} />
             </div>
 
             {preview && (

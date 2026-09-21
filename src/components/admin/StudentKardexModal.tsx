@@ -194,7 +194,7 @@ export default function StudentKardexModal({
               {/* ─── Final Grade Hero Banner ─── */}
               <div
                 className={`rounded-2xl p-5 sm:p-6 border flex flex-col sm:flex-row items-center justify-between gap-4 ${
-                  kardex.isPassing
+                  kardex.isOfficial && kardex.isPassing
                     ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-emerald-300 dark:border-emerald-800'
                     : 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border-amber-300 dark:border-amber-800'
                 }`}
@@ -222,15 +222,17 @@ export default function StudentKardexModal({
                     </h2>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-300 max-w-lg">
-                    {kardex.isPassing
-                      ? 'El alumno ha cubierto satisfactoriamente los estándares de competencia clínica y evaluaciones teóricas del curso avalado por COMEFYR.'
-                      : 'El alumno tiene temas o evaluaciones pendientes para alcanzar el puntaje mínimo de acreditación.'}
+                    {kardex.isOfficial
+                      ? kardex.isPassing
+                        ? 'Dictamen oficial Capa A: acreditado (30+30+20+20). La constancia exige este dictamen y cédula verificada.'
+                        : 'Dictamen oficial Capa A: aún no alcanza el mínimo de acreditación.'
+                      : 'Promedio en curso: solo cubetas con evidencia. Las vacías dicen “sin calificar”; no se inventan 85 ni 90.'}
                   </p>
                 </div>
 
                 <div className="text-center sm:text-right shrink-0 bg-white/90 dark:bg-slate-900/90 py-3 px-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    Promedio Ponderado Final
+                    {kardex.isOfficial ? 'Dictamen oficial' : 'Promedio en curso'}
                   </span>
                   <div className="flex items-baseline justify-center sm:justify-end gap-1">
                     <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
@@ -240,6 +242,9 @@ export default function StudentKardexModal({
                   </div>
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block">
                     Escala 10: {kardex.finalGradeScale10}
+                    {kardex.pointsToPass != null && kardex.pointsToPass > 0
+                      ? ` · faltan ${kardex.pointsToPass} pts`
+                      : ''}
                   </span>
                 </div>
               </div>
@@ -271,7 +276,7 @@ export default function StudentKardexModal({
                             {rubric.weight}%
                           </td>
                           <td className="py-3 px-3 text-center font-bold text-slate-800 dark:text-slate-200">
-                            {rubric.rawScore}%
+                            {rubric.hasEvidence && rubric.rawScore != null ? `${rubric.rawScore}%` : 'Sin calificar'}
                           </td>
                           <td className="py-3 px-3 text-right font-black text-slate-900 dark:text-white">
                             {rubric.weightedScore} pts

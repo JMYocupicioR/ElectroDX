@@ -155,7 +155,7 @@ export default function AttendanceCohortHeatmap({
     link.setAttribute('href', url);
     link.setAttribute(
       'download',
-      `Matriz_Asistencia_ElectroDX_${new Date().toISOString().split('T')[0]}.csv`
+      `Matriz_Asistencia_ElectroDx_${new Date().toISOString().split('T')[0]}.csv`
     );
     document.body.appendChild(link);
     link.click();

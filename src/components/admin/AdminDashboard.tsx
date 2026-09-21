@@ -57,6 +57,9 @@ import type { AdminStats, AuditLogEntry, AdminProfileRow } from '../../types/adm
 import type { ModuleAccess } from '../../types/database';
 import type { TeacherPendingReviewItem } from '../../types/studentPlan';
 import type { StudentCohortSummary } from '../../types/academicGradebook';
+import type { CalendarItem } from '../../types/academicCalendar';
+import { loadAcademicCalendarFeed } from '../../services/academicCalendarService';
+import { CalendarThisWeekStrip } from './calendar/CalendarThisWeekStrip';
 
 // Teacher Modals
 import TeacherQuickGradeModal from './TeacherQuickGradeModal';
@@ -68,7 +71,7 @@ import StudentKardexModal from './StudentKardexModal';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 
 export default function AdminDashboard() {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [audit, setAudit] = useState<AuditLogEntry[]>([]);
   const [actorNames, setActorNames] = useState<Map<string, string>>(new Map());
@@ -89,6 +92,8 @@ export default function AdminDashboard() {
   const [showRubricsModal, setShowRubricsModal] = useState(false);
   const [showCreateLiveClassModal, setShowCreateLiveClassModal] = useState(false);
   const [kardexStudent, setKardexStudent] = useState<AdminProfileRow | null>(null);
+  const [weekItems, setWeekItems] = useState<CalendarItem[]>([]);
+  const [calendarWarning, setCalendarWarning] = useState<string | null>(null);
 
   // Operation states
   const [activeTab, setActiveTab] = useState<'teacher' | 'operations'>('teacher');
@@ -98,7 +103,8 @@ export default function AdminDashboard() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = async (): Promise<{ calendarWarning: string | null }> => {
+    let nextCalendarWarning: string | null = null;
     try {
       const [statsData, accessMap, pendingUsers, allActiveProfiles] = await Promise.all([
         getAdminStats().catch(() => null),
@@ -113,6 +119,21 @@ export default function AdminDashboard() {
       // Filtrar únicamente médicos cursistas/alumnos (excluyendo profesores, comités y directores)
       const studentsOnly = filterGradeableStudents(allActiveProfiles, user?.id);
       setAllProfiles(studentsOnly);
+
+      const calendarFeed = await loadAcademicCalendarFeed(studentsOnly).catch((error) => ({
+        items: [] as CalendarItem[],
+        warnings: [
+          error instanceof Error && error.message
+            ? error.message
+            : 'No se pudieron cargar los talleres',
+        ],
+      }));
+      setWeekItems(calendarFeed.items);
+      nextCalendarWarning =
+        calendarFeed.warnings.find((warning) => warning.toLowerCase().includes('talleres')) ??
+        calendarFeed.warnings[0] ??
+        null;
+      setCalendarWarning(nextCalendarWarning);
 
       // Cargar bandeja docente de entregas y solicitudes de reintento de los alumnos
       const { pendingSubmissions: subs, pendingRetakes: rets } =
@@ -139,6 +160,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
+    return { calendarWarning: nextCalendarWarning };
   };
 
   useEffect(() => {
@@ -236,7 +258,7 @@ export default function AdminDashboard() {
 
     cohortSummaries.forEach((s) => {
       totalGrade += s.finalWeightedGrade;
-      totalExam += s.examAverage;
+      totalExam += s.examAverage ?? 0;
       totalCases += s.assignmentsSubmitted;
       count++;
     });
@@ -311,7 +333,7 @@ export default function AdminDashboard() {
                   {atRiskStudents.length}
                 </span>
               </div>
-              {(stats?.pending_course_enrollments ?? 0) > 0 && (
+              {isAdmin && (stats?.pending_course_enrollments ?? 0) > 0 && (
                 <>
                   <div className="h-8 w-px bg-white/15" />
                   <Link to="/admin/admisiones" className="hover:opacity-85 transition">
@@ -331,7 +353,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* ── Waitlist Alert Banner ── */}
-      {(stats?.pending_course_enrollments ?? 0) > 0 && (
+      {isAdmin && (stats?.pending_course_enrollments ?? 0) > 0 && (
         <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border border-amber-400/50 dark:border-amber-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-amber-500/20">
@@ -385,6 +407,7 @@ export default function AdminDashboard() {
             )}
           </button>
 
+          {isAdmin ? (
           <button
             type="button"
             onClick={() => setActiveTab('operations')}
@@ -402,6 +425,7 @@ export default function AdminDashboard() {
               </span>
             )}
           </button>
+          ) : null}
         </div>
 
         {/* Global Link to Full Gradebook */}
@@ -427,6 +451,8 @@ export default function AdminDashboard() {
           ══════════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'teacher' && (
         <div className="space-y-8">
+          <CalendarThisWeekStrip items={weekItems} warning={calendarWarning} />
+
           {/* Teacher Fast Action Bar */}
           <section className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -441,7 +467,16 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+              <Link
+                to="/admin/calendario"
+                className="flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl bg-violet-50 dark:bg-violet-950/40 border border-violet-200/80 dark:border-violet-900/60 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-violet-800 dark:text-violet-200 transition group text-center cursor-pointer shadow-xs"
+              >
+                <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Calendar className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold leading-tight">Calendario académico</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => setShowCreateLiveClassModal(true)}
@@ -793,7 +828,7 @@ export default function AdminDashboard() {
       {/* ══════════════════════════════════════════════════════════════════════════
           VISTA 2: GESTIÓN OPERATIVA DEL SISTEMA (MODO ADMINISTRADOR TÉCNICO)
           ══════════════════════════════════════════════════════════════════════════ */}
-      {activeTab === 'operations' && (
+      {isAdmin && activeTab === 'operations' && (
         <div className="space-y-8">
           {/* Primary Operational KPI Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1186,10 +1221,16 @@ export default function AdminDashboard() {
       <CreateLiveClassModal
         isOpen={showCreateLiveClassModal}
         onClose={() => setShowCreateLiveClassModal(false)}
-        onSuccess={() => {
+        onSuccess={async () => {
+          const result = await loadData();
+          if (result.calendarWarning) {
+            setSuccessMessage('La clase se guardó, pero Esta semana no pudo recargar los talleres.');
+            setTimeout(() => setSuccessMessage(null), 5000);
+            return false;
+          }
           setSuccessMessage('¡Clase programada / grabación actualizada correctamente!');
-          loadData();
           setTimeout(() => setSuccessMessage(null), 4000);
+          return true;
         }}
       />
     </AdminLayout>

@@ -101,7 +101,7 @@ export function StudentStudyHub({
   }, [moduleProgress]);
 
   const calendar = buildCalendarUrls({
-    title: 'Sesión ElectoDX / estudio EMG',
+    title: 'Sesión ElectroDx / estudio EMG',
     details: 'Bloque de estudio y laboratorio',
     startIso: new Date(Date.now() + 86400000).toISOString(),
     endIso: new Date(Date.now() + 86400000 + 3600000).toISOString(),

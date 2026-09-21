@@ -10,7 +10,6 @@ import {
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured, sb } from '../lib/supabase';
 import type { AppRole, CourseId, EnrollmentStatus, Profile, Subscription } from '../types/database';
-import { COURSE_IDS, SELLABLE_COURSE_IDS } from '../content/courseCatalog';
 import { recordUserActivity } from '../services/studentPlanService';
 
 export interface StudentRegistrationData {
@@ -79,7 +78,7 @@ async function fetchUserData(userId: string) {
 
   const parsedPendingCourseIds = ((pendingRes.data as { course_id: string }[] | null) ?? [])
     .map((row) => row.course_id)
-    .filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id));
+    .filter((id): id is CourseId => typeof id === 'string' && id.length > 0);
 
   const ctx = ctxRes.data;
   const ctxError = ctxRes.error;
@@ -94,7 +93,7 @@ async function fetchUserData(userId: string) {
       course_ids?: CourseId[] | null;
     };
     const parsedCourseIds = Array.isArray(payload.course_ids)
-      ? payload.course_ids.filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id))
+      ? payload.course_ids.filter((id): id is CourseId => typeof id === 'string' && id.length > 0)
       : [];
     return {
       profile: payload.profile ?? null,
@@ -139,7 +138,7 @@ async function fetchUserData(userId: string) {
 
   const fallbackCourseIds = ((coursesRes.data as { course_id: string }[] | null) ?? [])
     .map((row) => row.course_id)
-    .filter((id): id is CourseId => (COURSE_IDS as readonly string[]).includes(id));
+    .filter((id): id is CourseId => typeof id === 'string' && id.length > 0);
 
   return {
     profile: (profileRes.data as Profile | null) ?? null,
@@ -484,11 +483,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const effectivePremium = hasPremiumAccess;
     const staffOrPremium = isAdmin || isEditor || effectivePremium;
     const legacyUnlock = !courseSchemaReady && isEnrolledPhysician;
-    const ownedCourses: CourseId[] = staffOrPremium || legacyUnlock
-      ? [...COURSE_IDS]
-      : courseIds;
+    const ownedCourses: CourseId[] = courseIds;
     const hasAnySellableCourse =
-      staffOrPremium || legacyUnlock || SELLABLE_COURSE_IDS.some((id) => ownedCourses.includes(id));
+      staffOrPremium || legacyUnlock || ownedCourses.some((id) => id !== 'referencia');
     const hasCourseAccess = (courseId: CourseId) => {
       if (staffOrPremium || legacyUnlock) return true;
       if (courseId === 'referencia') return hasAnySellableCourse;

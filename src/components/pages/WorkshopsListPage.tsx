@@ -21,16 +21,19 @@ export default function WorkshopsListPage() {
   const { isEnrolledPhysician } = useAuth();
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'recordings'>('upcoming');
 
   useEffect(() => {
     async function fetchAllWorkshops() {
       try {
         setLoading(true);
+        setLoadError(null);
         const data = await getWorkshops();
         setWorkshops(data);
       } catch (err) {
         console.error('Error loading workshops:', err);
+        setLoadError(err instanceof Error && err.message ? err.message : 'No se pudieron cargar los talleres.');
       } finally {
         setLoading(false);
       }
@@ -98,6 +101,12 @@ export default function WorkshopsListPage() {
           </button>
         </div>
       </motion.div>
+
+      {loadError ? (
+        <div className="mb-8 p-4 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100 text-sm font-medium text-center">
+          No se pudieron cargar los talleres. {loadError}
+        </div>
+      ) : null}
 
       {loading ? (
         <div className="py-20 text-center">

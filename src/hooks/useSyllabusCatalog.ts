@@ -70,9 +70,19 @@ export function useSyllabusCatalog() {
     [mergedModules, overrides]
   );
 
+  const modulesForStaff: Module[] = useMemo(
+    () => applyOverridesToModules(mergedModules, overrides, { includeHidden: true }),
+    [mergedModules, overrides]
+  );
+
   const { grouped, unassigned } = useMemo(
     () => groupModulesByCourse(modulesWithOverrides, courses, assignments),
     [modulesWithOverrides, courses, assignments]
+  );
+
+  const { grouped: groupedForStaff } = useMemo(
+    () => groupModulesByCourse(modulesForStaff, courses, assignments),
+    [modulesForStaff, courses, assignments]
   );
 
   const visibleModules = useMemo(
@@ -85,8 +95,11 @@ export function useSyllabusCatalog() {
     assignments,
     overrides,
     grouped,
+    groupedForStaff,
     unassigned,
+    mergedModules,
     modulesWithOverrides,
+    modulesForStaff,
     visibleModules,
     loading,
     reload,

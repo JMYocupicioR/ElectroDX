@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { isSupabaseConfigured } from '../../lib/supabase';
+import { postLoginPath } from '../../utils/postLoginPath';
 import { BrandLogo } from '../brand/BrandLogo';
 
 interface LoginPageProps {
@@ -24,7 +25,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ initialMode = 'password' }: LoginPageProps) {
-  const { signInWithOtp, signInWithPassword, resetPassword, user, isAdmin, isEnrolledPhysician } = useAuth();
+  const { signInWithOtp, signInWithPassword, resetPassword, user, isAdmin, isEditor, roles } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get('next') ?? undefined;
@@ -65,8 +66,16 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
       navigate(nextPath, { replace: true });
       return;
     }
-    navigate(isAdmin ? '/admin' : '/dashboard', { replace: true });
-  }, [user, isAdmin, isEnrolledPhysician, nextPath, navigate]);
+    navigate(
+      postLoginPath({
+        next: nextPath,
+        isAdmin,
+        isEditor,
+        isContributor: roles.includes('contributor'),
+      }),
+      { replace: true }
+    );
+  }, [user, isAdmin, isEditor, roles, nextPath, navigate]);
 
   useEffect(() => {
     if (searchParams.get('verified') === '1') setSent(true);

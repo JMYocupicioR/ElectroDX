@@ -55,7 +55,7 @@ export default function AdminWorkshopsPage() {
   const [editingWorkshop, setEditingWorkshop] = useState<LiveWorkshop | null>(null);
   const [sessionModality, setSessionModality] = useState<SessionModality>('online');
   const [countsForKardex, setCountsForKardex] = useState(true);
-  const [pushTitle, setPushTitle] = useState('Aviso académico ElectoDX');
+  const [pushTitle, setPushTitle] = useState('Aviso académico ElectroDx');
   const [pushBody, setPushBody] = useState('');
   const [pushStatus, setPushStatus] = useState<string | null>(null);
 
@@ -96,19 +96,28 @@ export default function AdminWorkshopsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !scheduledAt || !moduleId) return;
+    if (!user?.id) {
+      alert('Debes iniciar sesión para programar una clase.');
+      return;
+    }
 
     try {
       await createWorkshop({
         title,
         description,
         module_id: moduleId,
+        topic_id: null,
         scheduled_at: new Date(scheduledAt).toISOString(),
+        duration_minutes: 90,
         stream_url: streamUrl || null,
         recording_url: recordingUrl || null,
+        clinical_case_revision_id: null,
+        clinical_case_json: null,
         status: 'draft',
         max_capacity: 100,
         session_modality: sessionModality,
         counts_for_kardex: countsForKardex,
+        created_by: user.id,
       } as any);
       setIsCreating(false);
       setTitle('');

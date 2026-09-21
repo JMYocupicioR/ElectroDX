@@ -32,7 +32,7 @@ export interface CustomCaseTemplateRecord extends CaseTemplate {
 
 /**
  * Carga todas las plantillas de casos clínicos EMG.
- * Combina las 33 plantillas nativas de ElectoDX con los casos creados en Supabase.
+ * Combina las 33 plantillas nativas de ElectroDx con los casos creados en Supabase.
  */
 export async function loadAllCaseTemplates(
   filter?: { category?: string; includeDrafts?: boolean; usageMode?: CaseUsageMode }

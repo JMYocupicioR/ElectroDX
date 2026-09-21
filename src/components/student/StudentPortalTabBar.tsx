@@ -6,10 +6,12 @@ import {
   CheckCircle2,
   ClipboardList,
   FileText,
+  GraduationCap,
 } from 'lucide-react';
 
 export type StudentPortalTab =
   | 'summary'
+  | 'performance'
   | 'modules'
   | 'quizzes'
   | 'assignments'
@@ -25,6 +27,7 @@ interface TabSpec {
 
 const TABS: TabSpec[] = [
   { id: 'summary', label: 'Resumen', icon: Activity },
+  { id: 'performance', label: 'Desempeño', icon: GraduationCap },
   { id: 'modules', label: 'Clases', icon: BookOpen },
   { id: 'quizzes', label: 'Quizzes', icon: CheckCircle2 },
   { id: 'assignments', label: 'Tareas', icon: ClipboardList },

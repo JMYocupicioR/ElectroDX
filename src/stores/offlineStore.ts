@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { requestPersistentStorage, reCacheAppShell } from '../utils/pwaUtils';
+import { getDocumentAssetUrls, getModuleCacheUrls, putCacheUrls } from '../utils/offlineContent';
 
 export interface ModuleCacheStatus {
   cached: boolean;
@@ -29,20 +30,8 @@ interface OfflineStore {
   initialize: () => void;
 }
 
-const CACHE_NAME = 'emg-modules-v1';
-
-/**
- * Get all cacheable URLs for a given module.
- * Since our content is statically bundled into JS chunks (via Vite lazy loading),
- * we cache the module page route as an HTML navigation request + 
- * any JS chunk that gets loaded when visiting that module.
- */
-function getModuleUrls(moduleId: string): string[] {
-  return [
-    `/modulo/${moduleId}`,
-    `/modulo/${moduleId}/`, // trailing slash variant
-  ];
-}
+const CACHE_NAME = 'emg-modules-v2';
+let offlineListenersBound = false;
 
 export const useOfflineStore = create<OfflineStore>()(
   persist(
@@ -54,50 +43,37 @@ export const useOfflineStore = create<OfflineStore>()(
 
       initialize: () => {
         const isSupported = typeof navigator !== 'undefined' && 'serviceWorker' in navigator;
-        set({ isSupported, isOnline: navigator.onLine });
+        set({ isSupported, isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true });
 
-        // Listen for online/offline events
-        window.addEventListener('online', () => set({ isOnline: true }));
-        window.addEventListener('offline', () => set({ isOnline: false }));
+        if (typeof window !== 'undefined' && !offlineListenersBound) {
+          offlineListenersBound = true;
+          window.addEventListener('online', () => set({ isOnline: true }));
+          window.addEventListener('offline', () => set({ isOnline: false }));
+        }
 
         // iOS 7-day eviction protection (production only — avoid SW/cache conflicts in dev)
         if (isSupported && import.meta.env.PROD) {
-          requestPersistentStorage();
-          reCacheAppShell();
+          void requestPersistentStorage();
+          void reCacheAppShell();
         }
+
+        void reconcileCachedModules();
       },
 
       cacheModule: async (moduleId: string) => {
-        if (!get().isSupported) return;
+        if (typeof caches === 'undefined') return;
 
         set({ isCaching: moduleId });
 
         try {
+          void requestPersistentStorage();
           const cache = await caches.open(CACHE_NAME);
-          const urls = getModuleUrls(moduleId);
+          const urls = [...getModuleCacheUrls(moduleId), ...getDocumentAssetUrls(), '/'];
+          const stored = await putCacheUrls(cache, urls);
 
-          // Cache the module page routes
-          // We use fetch + cache.put to handle SPA routing
-          for (const url of urls) {
-            try {
-              const response = await fetch(url);
-              if (response.ok) {
-                await cache.put(url, response);
-              }
-            } catch {
-              // If fetch fails for a specific URL, continue with others
-              console.warn(`[Offline] Could not cache: ${url}`);
-            }
-          }
-
-          // Also cache the root index.html (needed for SPA navigation offline)
-          try {
-            const rootResponse = await fetch('/');
-            if (rootResponse.ok) {
-              await cache.put('/', rootResponse);
-            }
-          } catch {
-            // Root already cached by SW precache
+          if (stored === 0) {
+            set({ isCaching: null });
+            return;
           }
 
           set((state) => ({
@@ -119,7 +95,7 @@ export const useOfflineStore = create<OfflineStore>()(
       removeModule: async (moduleId: string) => {
         try {
           const cache = await caches.open(CACHE_NAME);
-          const urls = getModuleUrls(moduleId);
+          const urls = getModuleCacheUrls(moduleId);
 
           for (const url of urls) {
             await cache.delete(url);
@@ -153,3 +129,26 @@ export const useOfflineStore = create<OfflineStore>()(
     }
   )
 );
+
+async function reconcileCachedModules(): Promise<void> {
+  if (typeof caches === 'undefined') return;
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const status = useOfflineStore.getState().moduleStatus;
+    let changed = false;
+    const next = { ...status };
+
+    for (const [moduleId, entry] of Object.entries(status)) {
+      if (!entry.cached) continue;
+      const hit = await cache.match(`/modulo/${moduleId}`);
+      if (!hit) {
+        next[moduleId] = { cached: false, cachedAt: null };
+        changed = true;
+      }
+    }
+
+    if (changed) useOfflineStore.setState({ moduleStatus: next });
+  } catch {
+    // Cache API unavailable or blocked — keep persisted flags
+  }
+}
