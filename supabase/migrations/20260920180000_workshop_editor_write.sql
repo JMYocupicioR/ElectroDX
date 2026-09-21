@@ -11,6 +11,7 @@ CREATE POLICY "workshops_public_read" ON public.live_workshops
   );
 
 DROP POLICY IF EXISTS "workshops_admin_write" ON public.live_workshops;
+DROP POLICY IF EXISTS "workshops_staff_write" ON public.live_workshops;
 CREATE POLICY "workshops_staff_write" ON public.live_workshops
   FOR ALL
   USING (public.is_admin() OR public.is_editor())

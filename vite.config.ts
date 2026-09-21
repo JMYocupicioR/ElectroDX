@@ -2,40 +2,9 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
+import { lookupSepCedula, normalizeCedula } from './server/sepCedulaLookup';
 
 function sepCedulaProxyPlugin(): Plugin {
-  let cachedToken: string | null = null;
-  let tokenExpiresAt = 0;
-
-  async function getSepToken() {
-    if (cachedToken && Date.now() < tokenExpiresAt) {
-      return cachedToken;
-    }
-    const clientId = process.env.SEP_CLIENT_ID;
-    const apiKey = process.env.SEP_API_KEY;
-    if (!clientId || !apiKey) {
-      throw new Error('SEP_CLIENT_ID y SEP_API_KEY deben definirse en el entorno local. No incrustar secretos en el código.');
-    }
-    const tokenRes = await fetch('https://cedulaprofesional.sep.gob.mx/api/auth/token', {
-      method: 'GET',
-      headers: {
-        'X-Client-Id': clientId,
-        'X-API-Key': apiKey,
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-      },
-    });
-    if (!tokenRes.ok) {
-      throw new Error(`Error al autenticar con SEP: ${tokenRes.statusText}`);
-    }
-    const tokenData = (await tokenRes.json()) as { access_token?: string };
-    if (!tokenData.access_token) {
-      throw new Error('No se recibió access_token de la SEP');
-    }
-    cachedToken = tokenData.access_token;
-    tokenExpiresAt = Date.now() + 50 * 60 * 1000;
-    return cachedToken;
-  }
-
   return {
     name: 'sep-cedula-proxy',
     configureServer(server) {
@@ -77,7 +46,7 @@ function sepCedulaProxyPlugin(): Plugin {
             return;
           }
 
-          const cleanCedula = cedula.replace(/\D/g, '');
+          const cleanCedula = normalizeCedula(cedula);
           if (cleanCedula.length < 5 || cleanCedula.length > 10) {
             res.statusCode = 400;
             res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -85,33 +54,12 @@ function sepCedulaProxyPlugin(): Plugin {
             return;
           }
 
-          const token = await getSepToken();
-          const queryRes = await fetch(
-            'https://cedulaprofesional.sep.gob.mx/api/rnp/solr/profesionista/consultar/byDetalle',
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-              },
-              body: JSON.stringify({ numCedula: cleanCedula }),
-            }
-          );
-
-          if (!queryRes.ok) {
-            res.statusCode = queryRes.status;
-            res.setHeader('Content-Type', 'application/json; charset=utf-8');
-            res.end(JSON.stringify({ success: false, error: `Error en servicio SEP: ${queryRes.status}` }));
-            return;
-          }
-
-          const items = (await queryRes.json()) as any[];
+          const items = await lookupSepCedula(cleanCedula);
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(JSON.stringify({ success: true, items }));
         } catch (err: any) {
-          res.statusCode = 500;
+          res.statusCode = typeof err?.status === 'number' ? err.status : 500;
           res.setHeader('Content-Type', 'application/json; charset=utf-8');
           res.end(JSON.stringify({ success: false, error: err?.message || 'Error interno al consultar SEP' }));
         }

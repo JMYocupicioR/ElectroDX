@@ -10,6 +10,7 @@ import {
   buildSyllabusBrochureModel,
   countTopicNodes,
   formatBrochureDate,
+  mapCortesFromMilestones,
   toBrochureModule,
 } from './buildSyllabusBrochureModel';
 import { DEFAULT_ACADEMIC_MILESTONES } from '../../services/academicScheduleService';
@@ -95,6 +96,8 @@ describe('buildSyllabusBrochureModel', () => {
   it('formats admin corte dates from the calendar day, not the timezone', () => {
     expect(formatBrochureDate('2026-09-15T23:59:59Z')).toBe('15 de septiembre de 2026');
     expect(formatBrochureDate('2026-08-01T00:00:00Z')).toBe('1 de agosto de 2026');
+    expect(formatBrochureDate('2026-11-01')).toBe('1 de noviembre de 2026');
+    expect(formatBrochureDate('2026-11-30T00:00:00.000Z')).toBe('30 de noviembre de 2026');
     expect(formatBrochureDate('')).toBe('Fecha por confirmar');
   });
 
@@ -116,5 +119,21 @@ describe('buildSyllabusBrochureModel', () => {
     expect(model.corteRangeLabel).toContain('agosto');
     expect(model.corteRangeLabel).toContain('diciembre');
     expect(JSON.stringify(model.cortes)).not.toMatch(/"content":/);
+  });
+
+  it('reads the start and due dates admins type into the calendar date inputs', () => {
+    const edited = DEFAULT_ACADEMIC_MILESTONES.map((milestone, index) => ({
+      ...milestone,
+      start_date: ['2026-11-01', '2026-11-30', '2026-12-28', '2026-12-31'][index],
+      due_date: ['2026-11-30', '2027-01-31', '2027-02-28', '2027-03-31'][index],
+      updated_at: '2026-09-21T18:00:00.000Z',
+    }));
+    const cortes = mapCortesFromMilestones(edited);
+    expect(cortes[0].startKey).toBe('2026-11-01');
+    expect(cortes[0].dueKey).toBe('2026-11-30');
+    expect(cortes[0].startLabel).toBe('1 de noviembre de 2026');
+    expect(cortes[0].dueLabel).toBe('30 de noviembre de 2026');
+    expect(cortes[1].startLabel).toBe('30 de noviembre de 2026');
+    expect(cortes[1].dueLabel).toBe('31 de enero de 2027');
   });
 });

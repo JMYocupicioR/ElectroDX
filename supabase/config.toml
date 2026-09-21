@@ -399,3 +399,8 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # pg-delta requires Supabase CLI v2.117+. Disabled for CLI v2.75 compatibility.
 # [experimental.pgdelta]
 # enabled = true
+
+# Registro público en /auth/registro: OPTIONS no lleva JWT y el gateway
+# responde 401/404 sin CORS si verify_jwt queda activo.
+[functions.verify-cedula]
+verify_jwt = false

@@ -926,8 +926,8 @@ export default function AdminUsersPage() {
                                       run(u.id, () =>
                                         adminAdmitStudentToCourse(u.id, courseId, {
                                           notes: 'Admitido desde Gestión de Médicos',
-                                          payment_method: 'manual',
-                                          payment_reference: ref || undefined,
+                                          method: 'manual',
+                                          reference: ref || undefined,
                                         })
                                       );
                                     }}

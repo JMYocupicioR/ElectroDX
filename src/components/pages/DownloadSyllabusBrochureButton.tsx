@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import type { GroupedSyllabusCourse } from '../../content/courseCatalog';
+import type { AcademicMilestone } from '../../types/academicGradebook';
 import type { Module } from '../../types/content';
 
 interface DownloadSyllabusBrochureButtonProps {
   grouped: GroupedSyllabusCourse[];
   unassigned: Module[];
+  milestones?: AcademicMilestone[];
   disabled?: boolean;
   variant?: 'hero' | 'compact';
 }
@@ -13,6 +15,7 @@ interface DownloadSyllabusBrochureButtonProps {
 export function DownloadSyllabusBrochureButton({
   grouped,
   unassigned,
+  milestones,
   disabled = false,
   variant = 'hero',
 }: DownloadSyllabusBrochureButtonProps) {
@@ -24,7 +27,7 @@ export function DownloadSyllabusBrochureButton({
     setBusy(true);
     try {
       const { downloadSyllabusBrochure } = await import('../../pdf/syllabusBrochure/downloadSyllabusBrochure');
-      await downloadSyllabusBrochure({ grouped, unassigned });
+      await downloadSyllabusBrochure({ grouped, unassigned, milestones });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo generar el PDF del temario.');
     } finally {

@@ -21,6 +21,7 @@ function triggerDownload(blob: Blob, filename: string) {
 export async function downloadSyllabusBrochure(input: {
   grouped: GroupedSyllabusCourse[];
   unassigned: Module[];
+  milestones?: AcademicMilestone[];
 }): Promise<void> {
   const siteUrl = typeof window !== 'undefined' && window.location?.origin
     ? window.location.origin
@@ -39,12 +40,22 @@ export async function downloadSyllabusBrochure(input: {
     qrDataUrl = undefined;
   }
 
-  let milestones: AcademicMilestone[] = [];
+  const {
+    getAcademicMilestones,
+    pickAuthoritativeMilestones,
+    readStoredCustomMilestones,
+    usableAdminSchedule,
+  } = await import('../../services/academicScheduleService');
+
+  let milestones = usableAdminSchedule(input.milestones ?? []);
+  const stored = readStoredCustomMilestones();
+  milestones = pickAuthoritativeMilestones(milestones, stored);
+
   try {
-    const { getAcademicMilestones } = await import('../../services/academicScheduleService');
-    milestones = await getAcademicMilestones();
-  } catch {
-    milestones = [];
+    const fetched = usableAdminSchedule(await getAcademicMilestones());
+    milestones = pickAuthoritativeMilestones(fetched, milestones);
+  } catch (error) {
+    console.warn('[downloadSyllabusBrochure] No se pudieron leer los cortes del calendario:', error);
   }
 
   const model = buildSyllabusBrochureModel({

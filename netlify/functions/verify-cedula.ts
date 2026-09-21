@@ -8,9 +8,11 @@ async function getSepToken(): Promise<string> {
   const tokenRes = await fetch('https://cedulaprofesional.sep.gob.mx/api/auth/token', {
     method: 'GET',
     headers: {
-      'X-Client-Id': 'rnp-angular-app-prod',
-      'X-API-Key': '65da8s675f8s75fda675s8d76as87d5as675da',
+      'X-Client-Id': process.env.SEP_CLIENT_ID || 'rnp-angular-app-prod',
+      'X-API-Key': process.env.SEP_API_KEY || '65da8s675f8s75fda675s8d76as87d5as675da',
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+      Origin: 'https://cedulaprofesional.sep.gob.mx',
+      Referer: 'https://cedulaprofesional.sep.gob.mx/',
     },
   });
   if (!tokenRes.ok) {
@@ -72,6 +74,8 @@ export default async (req: Request) => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          Origin: 'https://cedulaprofesional.sep.gob.mx',
+          Referer: 'https://cedulaprofesional.sep.gob.mx/',
         },
         body: JSON.stringify({ numCedula: cleanCedula }),
       }

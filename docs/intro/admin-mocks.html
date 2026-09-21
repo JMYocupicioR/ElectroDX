@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>ElectroDx · Panel profesor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: Inter, system-ui, sans-serif; background: #f1f5f9; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <header class="bg-white border-b border-slate-200 px-6 h-14 flex items-center justify-between sticky top-0 z-20">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2 font-black">
+        <span class="w-7 h-7 rounded-lg bg-blue-600 text-white text-xs flex items-center justify-center">⚡</span>
+        Electro<span class="text-blue-600">Dx</span>
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 ml-1">Diplomado</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-1 text-sm">
+        <span class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 font-semibold">Administración</span>
+        <span class="px-3 py-1.5 rounded-xl text-slate-500">Temario</span>
+        <span class="px-3 py-1.5 rounded-xl text-slate-500">Simuladores</span>
+      </nav>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">Profesor</span>
+      <span class="w-8 h-8 rounded-full bg-slate-200"></span>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-6 py-5">
+    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-200 text-sm text-slate-500">
+      <div>ElectroDx / <span class="text-indigo-600 font-medium">Administración</span> / <b id="crumb" class="text-slate-900">Inicio</b></div>
+      <span class="text-xs font-semibold text-slate-400">Volver a vista Alumno</span>
+    </div>
+    <div class="flex gap-2 overflow-x-auto pb-4 mb-2 text-xs font-semibold">
+      <a class="tab px-3 py-1.5 rounded-full bg-indigo-600 text-white" data-p="admin">Inicio</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="cal">Calendario académico</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="alumnos">Progreso de Alumnos</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="ejercicios">Casos y Simulador</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="quizzes">Editor de Quizzes</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="talleres">Talleres en Vivo</a>
+      <a class="tab px-3 py-1.5 rounded-full bg-white border border-slate-200" data-p="temario">Cursos y temario</a>
+    </div>
+
+    <section id="p-admin" class="page">
+      <div class="rounded-3xl p-6 mb-5 text-white" style="background:linear-gradient(135deg,#312e81,#1d4ed8)">
+        <p class="text-[10px] uppercase tracking-widest text-indigo-200 font-bold">Panel de Dirección Académica</p>
+        <h1 class="text-2xl font-black mt-1">Bienvenido, Dr. Ramírez</h1>
+        <p class="text-sm text-indigo-100 mt-1">Panel unificado para el profesor titular: revisa tareas entregadas, autoriza reintentos de exámenes y asigna casos clínicos con un clic.</p>
+        <div class="mt-4 inline-flex gap-6 bg-white/10 rounded-2xl px-5 py-3 text-sm">
+          <div><div class="text-[10px] uppercase text-indigo-200 font-bold">Por Calificar</div><div class="text-2xl font-black text-amber-300">3</div></div>
+          <div><div class="text-[10px] uppercase text-indigo-200 font-bold">Reintentos</div><div class="text-2xl font-black text-cyan-300">1</div></div>
+          <div><div class="text-[10px] uppercase text-indigo-200 font-bold">En Riesgo</div><div class="text-2xl font-black text-rose-300">2</div></div>
+        </div>
+      </div>
+      <div class="inline-flex p-1 rounded-2xl bg-slate-100 mb-4 text-sm font-bold">
+        <span class="px-4 py-2 rounded-xl bg-indigo-600 text-white">Panel Docente & Calificación</span>
+        <span class="px-4 py-2 rounded-xl text-slate-500">Gestión Operativa del Sistema</span>
+      </div>
+      <div class="rounded-2xl bg-violet-50 border border-violet-200 p-3 mb-4 text-sm">
+        <span class="font-black text-violet-800">Esta semana</span>
+        <span class="ml-3 text-violet-700">Lun 19:00 Clase · Mediano motor</span>
+        <span class="ml-3 text-violet-700">Jue Examen M2</span>
+        <span class="ml-3 text-violet-700">Vie Caso STC</span>
+      </div>
+      <div class="rounded-3xl bg-white border border-slate-200 p-5">
+        <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-3">Acciones Rápidas del Profesor</h3>
+        <div class="grid grid-cols-7 gap-3 text-center text-[11px] font-bold">
+          <div class="p-3 rounded-2xl bg-violet-50 text-violet-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-violet-600 text-white flex items-center justify-center">📅</div>Calendario académico</div>
+          <div class="p-3 rounded-2xl bg-rose-50 text-rose-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-rose-600 text-white flex items-center justify-center">▶</div>Clase en Vivo / Grabación</div>
+          <div class="p-3 rounded-2xl bg-indigo-50 text-indigo-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-indigo-600 text-white flex items-center justify-center">?</div>Asignar Examen</div>
+          <div class="p-3 rounded-2xl bg-teal-50 text-teal-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-teal-600 text-white flex items-center justify-center">✚</div>Asignar Caso EMG</div>
+          <div class="p-3 rounded-2xl bg-blue-50 text-blue-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-blue-600 text-white flex items-center justify-center">✓</div>Pase de Asistencia</div>
+          <div class="p-3 rounded-2xl bg-purple-50 text-purple-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-purple-600 text-white flex items-center justify-center">☰</div>Rúbricas & Ponderación</div>
+          <div class="p-3 rounded-2xl bg-amber-50 text-amber-800"><div class="w-9 h-9 mx-auto mb-2 rounded-xl bg-amber-600 text-white flex items-center justify-center">👥</div>Libro de calificaciones</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-cal" class="page hidden">
+      <h1 class="text-xl font-black mb-1">Calendario académico</h1>
+      <p class="text-sm text-slate-500 mb-4">Clases, exámenes, casos EMG y cortes en un solo tablero. La rúbrica Capa A va a la izquierda.</p>
+      <div class="rounded-2xl bg-white border border-slate-200 p-3 mb-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">Rúbrica Capa A</p>
+            <p class="text-sm font-black">Cómo se evalúa el curso</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">100% · mín 80 pts</span>
+        </div>
+        <div class="grid grid-cols-4 gap-2 mt-3 text-xs">
+          <div class="p-2 rounded-xl border"><div class="flex justify-between font-bold text-indigo-600"><span>Exámenes</span><span>30%</span></div><div class="h-1.5 bg-slate-100 rounded-full mt-1.5"><div class="h-full w-[30%] bg-indigo-500 rounded-full"></div></div><p class="text-slate-500 mt-1">2 eventos</p></div>
+          <div class="p-2 rounded-xl border"><div class="flex justify-between font-bold text-teal-600"><span>Tareas</span><span>30%</span></div><div class="h-1.5 bg-slate-100 rounded-full mt-1.5"><div class="h-full w-[30%] bg-teal-500 rounded-full"></div></div><p class="text-slate-500 mt-1">1 evento</p></div>
+          <div class="p-2 rounded-xl border"><div class="flex justify-between font-bold text-blue-600"><span>Asistencia</span><span>20%</span></div><div class="h-1.5 bg-slate-100 rounded-full mt-1.5"><div class="h-full w-[20%] bg-blue-500 rounded-full"></div></div><p class="text-slate-500 mt-1">1 clase</p></div>
+          <div class="p-2 rounded-xl border"><div class="flex justify-between font-bold text-amber-600"><span>Temario</span><span>20%</span></div><div class="h-1.5 bg-slate-100 rounded-full mt-1.5"><div class="h-full w-[20%] bg-amber-500 rounded-full"></div></div><p class="text-slate-500 mt-1">1 corte</p></div>
+        </div>
+      </div>
+      <div class="rounded-3xl bg-white border border-slate-200 p-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="font-black">septiembre 2026</div>
+          <div class="flex gap-1 text-[11px] font-bold">
+            <span class="px-2 py-1 rounded-lg bg-indigo-600 text-white">Mes</span>
+            <span class="px-2 py-1 rounded-lg bg-slate-100">Semana</span>
+            <span class="px-2 py-1 rounded-lg bg-slate-100">Agenda</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-7 text-[11px] font-bold text-slate-400 mb-1">
+          <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-xs">
+          <div class="h-20 p-1 rounded-lg bg-slate-50 text-slate-300">31</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">1</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">2</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">3</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">4</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">5</div>
+          <div class="h-20 p-1 rounded-lg border border-slate-100">6</div>
+          <div class="h-20 p-1 rounded-lg border border-indigo-200 bg-indigo-50/40">21
+            <div class="mt-1 px-1 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-bold truncate">19:00 Clase · Mediano</div>
+          </div>
+          <div class="h-20 p-1 rounded-lg border">22</div>
+          <div class="h-20 p-1 rounded-lg border">23</div>
+          <div class="h-20 p-1 rounded-lg border">24
+            <div class="mt-1 px-1 py-0.5 rounded bg-indigo-100 text-indigo-800 text-[10px] font-bold truncate">Examen M2</div>
+          </div>
+          <div class="h-20 p-1 rounded-lg border">25
+            <div class="mt-1 px-1 py-0.5 rounded bg-teal-100 text-teal-800 text-[10px] font-bold truncate">Caso STC</div>
+          </div>
+          <div class="h-20 p-1 rounded-lg border">26</div>
+          <div class="h-20 p-1 rounded-lg border">27
+            <div class="mt-1 px-1 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold truncate">Corte sem 4</div>
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3">Clic en un día vacío → Nuevo evento: Clase en vivo · Examen · Caso EMG · Corte académico</p>
+      </div>
+    </section>
+
+    <section id="p-alumnos" class="page hidden">
+      <h1 class="text-xl font-black">Progreso y Expedientes de Alumnos</h1>
+      <p class="text-sm text-slate-500 mb-4">Supervisión académica de la cohorte, avance curricular, calificaciones y planes personalizados</p>
+      <div class="flex flex-wrap gap-2 p-4 rounded-3xl bg-white border mb-4 text-xs font-bold">
+        <span class="text-slate-400 uppercase tracking-wider mr-1">Gestión Docente:</span>
+        <span class="px-3 py-2 rounded-2xl bg-indigo-50 text-indigo-700 border border-indigo-200">Configurar Rúbricas</span>
+        <span class="px-3 py-2 rounded-2xl bg-violet-50 text-violet-700 border border-violet-200">Calendarización & Checklist</span>
+        <span class="px-3 py-2 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200">Pase de Lista</span>
+        <span class="px-3 py-2 rounded-2xl bg-indigo-600 text-white">+ Asignar Examen Masivo</span>
+        <span class="px-3 py-2 rounded-2xl bg-teal-600 text-white">Asignar Caso EMG</span>
+      </div>
+      <div class="grid grid-cols-4 gap-3 mb-4">
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] uppercase text-slate-400 font-bold">Avance medio</div><div class="text-2xl font-black">62%</div></div>
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] uppercase text-slate-400 font-bold">Capa A (oficial)</div><div class="text-2xl font-black">—</div><div class="text-[11px] text-slate-400">Sin calificar aún</div></div>
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] uppercase text-slate-400 font-bold">Asistencia</div><div class="text-2xl font-black">88%</div></div>
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] uppercase text-rose-500 font-bold">En riesgo</div><div class="text-2xl font-black text-rose-600">2</div></div>
+      </div>
+      <div class="rounded-3xl bg-white border overflow-hidden text-sm">
+        <div class="grid grid-cols-12 px-4 py-2 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase">
+          <div class="col-span-4">Alumno</div><div class="col-span-2">Avance</div><div class="col-span-2">Capa A</div><div class="col-span-2">Estado</div><div class="col-span-2">Acciones</div>
+        </div>
+        <div class="grid grid-cols-12 px-4 py-3 border-t items-center">
+          <div class="col-span-4 font-semibold">Dra. Ana García</div><div class="col-span-2">74%</div><div class="col-span-2 text-slate-400">En curso</div><div class="col-span-2"><span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold">Al corriente</span></div><div class="col-span-2 text-indigo-600 font-bold text-xs">Kárdex →</div>
+        </div>
+        <div class="grid grid-cols-12 px-4 py-3 border-t items-center">
+          <div class="col-span-4 font-semibold">Dr. Luis Pérez</div><div class="col-span-2">41%</div><div class="col-span-2 text-slate-400">En curso</div><div class="col-span-2"><span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[11px] font-bold">En riesgo</span></div><div class="col-span-2 text-indigo-600 font-bold text-xs">Kárdex →</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-talleres" class="page hidden">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h1 class="text-xl font-black">Talleres en Vivo</h1>
+          <p class="text-sm text-slate-500">Programa la sesión, pega el stream y luego la grabación. Lo que marca “cuenta para kárdex” entra a asistencia.</p>
+        </div>
+        <span class="px-4 py-2 rounded-2xl bg-rose-600 text-white text-xs font-bold">+ Nueva clase</span>
+      </div>
+      <div class="rounded-3xl bg-white border p-5">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs font-bold text-rose-600 uppercase">21 sep · 19:00 · 90 min · En línea</div>
+            <h2 class="text-lg font-black mt-1">Semana 4 · Nervio mediano motor</h2>
+            <p class="text-sm text-slate-500">Módulo 2 · Conducción nerviosa · Cuenta para kárdex</p>
+          </div>
+          <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-bold">Programada</span>
+        </div>
+        <div class="flex gap-2 mt-4 text-xs font-bold">
+          <span class="px-3 py-2 rounded-xl bg-blue-50 text-blue-700 border">Pase de lista</span>
+          <span class="px-3 py-2 rounded-xl bg-slate-50 border">Editar</span>
+          <span class="px-3 py-2 rounded-xl bg-slate-50 border">Añadir grabación</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-temario" class="page hidden">
+      <h1 class="text-xl font-black">Cursos, Precios y Temario</h1>
+      <p class="text-sm text-slate-500 mb-4">Reordena, oculta o crea temas. El alumno ve el árbol, no el repositorio.</p>
+      <div class="flex gap-2 mb-4 text-xs font-bold">
+        <span class="px-3 py-2 rounded-xl bg-indigo-600 text-white">Vista previa del alumno</span>
+        <span class="px-3 py-2 rounded-xl bg-white border">+ Tema</span>
+        <span class="px-3 py-2 rounded-xl bg-white border">+ Subtema</span>
+      </div>
+      <div class="rounded-3xl bg-white border divide-y text-sm">
+        <div class="p-4 flex items-center justify-between"><div><b>Módulo 1 · Fundamentos</b><div class="text-xs text-slate-400">12 temas · visible</div></div><div class="flex gap-2 text-xs font-bold"><span class="text-slate-400">↑ ↓</span><span class="text-indigo-600">Ojo</span><span>Lápiz</span></div></div>
+        <div class="p-4 pl-10 flex items-center justify-between bg-slate-50/80"><div>Introducción al neurodiagnóstico</div><div class="flex gap-2 text-[11px]"><span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-bold">Evaluación</span><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">Offline</span></div></div>
+        <div class="p-4 flex items-center justify-between"><div><b>Módulo 2 · Conducción nerviosa</b><div class="text-xs text-slate-400">semana activa</div></div><div class="text-xs font-bold text-emerald-600">Visible</div></div>
+        <div class="p-4 flex items-center justify-between opacity-50"><div><b>Módulo 3 · EMG de aguja</b><div class="text-xs">oculto esta semana</div></div><div class="text-xs font-bold">Oculto</div></div>
+      </div>
+    </section>
+
+    <section id="p-quizzes" class="page hidden">
+      <h1 class="text-xl font-black">Editor de Quizzes</h1>
+      <p class="text-sm text-slate-500 mb-4">Se liga al tema hoja. Sin preguntas publicadas, el alumno no ve el badge Evaluación.</p>
+      <div class="rounded-3xl bg-white border p-5">
+        <div class="text-xs font-bold text-indigo-600 uppercase">Tema hoja · history</div>
+        <h2 class="text-lg font-black mt-1">Evaluación: Historia de la electrofisiología clínica</h2>
+        <div class="flex gap-2 mt-3 text-xs font-bold">
+          <span class="px-2 py-1 rounded-lg bg-slate-100">12 preguntas</span>
+          <span class="px-2 py-1 rounded-lg bg-slate-100">Aprobación 70%</span>
+          <span class="px-2 py-1 rounded-lg bg-slate-100">Mezclar opciones</span>
+          <span class="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700">Publicado</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-ejercicios" class="page hidden">
+      <h1 class="text-xl font-black">Casos y Simulador</h1>
+      <p class="text-sm text-slate-500 mb-4">El caso no aparece solo porque existe en el banco: hay que asignarlo.</p>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] font-black uppercase text-teal-600">Entrapment</div><div class="font-black mt-1">STC clásico</div><div class="text-xs text-slate-500 mt-1">Práctica + examen</div></div>
+        <div class="p-4 rounded-2xl bg-white border"><div class="text-[10px] font-black uppercase text-rose-600">Trampa</div><div class="font-black mt-1">Martin-Gruber</div><div class="text-xs text-slate-500 mt-1">Solo práctica</div></div>
+        <div class="p-4 rounded-2xl bg-white border border-dashed text-center text-sm font-bold text-slate-400 py-8">+ Duplicar / crear caso</div>
+      </div>
+    </section>
+  </div>
+  <script>
+    const q = new URLSearchParams(location.search).get('p') || 'admin';
+    const labels = { admin:'Inicio', cal:'Calendario académico', alumnos:'Progreso de Alumnos', talleres:'Talleres en Vivo', temario:'Cursos y temario', quizzes:'Editor de Quizzes', ejercicios:'Casos y Simulador' };
+    document.querySelectorAll('.page').forEach((el) => el.classList.add('hidden'));
+    const page = document.getElementById('p-' + q);
+    if (page) page.classList.remove('hidden');
+    document.getElementById('crumb').textContent = labels[q] || 'Inicio';
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.className = tab.dataset.p === q
+        ? 'tab px-3 py-1.5 rounded-full bg-indigo-600 text-white'
+        : 'tab px-3 py-1.5 rounded-full bg-white border border-slate-200';
+    });
+  </script>
+</body>
+</html>

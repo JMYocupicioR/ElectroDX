@@ -20,6 +20,7 @@ import {
   getAcademicMilestones,
   saveMilestone,
   deleteMilestone,
+  rememberAdminMilestones,
 } from '../../services/academicScheduleService';
 import { allModules } from '../../content/modules';
 import { getAllTopicIds } from '../../services/studentService';
@@ -46,12 +47,14 @@ export default function AcademicScheduleManagerModal({
   const [selectedMilestoneId, setSelectedMilestoneId] = useState<string>('');
   const [editingMilestone, setEditingMilestone] = useState<AcademicMilestone | null>(null);
   const [expandedMilestoneId, setExpandedMilestoneId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setLoading(true);
       getAcademicMilestones()
         .then((res) => {
+          rememberAdminMilestones(res);
           setMilestones(res);
           if (res.length > 0) {
             setSelectedMilestoneId(res[0].id);
@@ -109,12 +112,16 @@ export default function AcademicScheduleManagerModal({
   const handleSaveMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMilestone) return;
-
-    await saveMilestone(editingMilestone);
-    const updated = await getAcademicMilestones();
-    setMilestones(updated);
-    setEditingMilestone(null);
-    if (onUpdated) onUpdated();
+    setSaveError(null);
+    try {
+      await saveMilestone(editingMilestone);
+      const updated = await getAcademicMilestones();
+      setMilestones(updated);
+      setEditingMilestone(null);
+      if (onUpdated) onUpdated();
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'No se pudo guardar el corte.');
+    }
   };
 
   const handleDeleteMilestone = async (id: string) => {
@@ -566,6 +573,10 @@ export default function AcademicScheduleManagerModal({
                     })}
                   </div>
                 </div>
+
+                {saveError ? (
+                  <p className="text-xs text-rose-600 dark:text-rose-400">{saveError}</p>
+                ) : null}
 
                 <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                   <button

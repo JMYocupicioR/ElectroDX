@@ -54,3 +54,15 @@ export function resetSupabaseTablesCache(): void {
     localStorage.removeItem(KEY_MISSING_TABLES);
   } catch {}
 }
+
+/** True only when PostgREST/Postgres says the relation itself is absent — not RLS or bad row data. */
+export function isMissingRelationError(
+  error: { code?: string | null; message?: string | null } | null | undefined,
+  status?: number | null
+): boolean {
+  if (status === 404) return true;
+  const code = (error?.code ?? '').toUpperCase();
+  if (code === 'PGRST205' || code === '42P01') return true;
+  const message = (error?.message ?? '').toLowerCase();
+  return message.includes('could not find the table') || message.includes('schema cache');
+}

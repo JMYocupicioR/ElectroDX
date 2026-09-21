@@ -1,4 +1,4 @@
-import { getAcademicMilestones } from './academicScheduleService';
+import { getAcademicMilestones, hasCustomAdminDates, rememberAdminMilestones } from './academicScheduleService';
 import { getGradebookRubrics } from './gradebookService';
 import { getWorkshops } from './courseService';
 import { getAllStudentAssignments } from './studentPlanService';
@@ -52,6 +52,10 @@ export async function loadAcademicCalendarFeed(
     ...groupAssignmentsIntoEvents(assignmentResult.data),
     ...milestoneResult.data.map(milestoneToCalendarItem),
   ].sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+
+  if (hasCustomAdminDates(milestoneResult.data)) {
+    rememberAdminMilestones(milestoneResult.data);
+  }
 
   return {
     items,

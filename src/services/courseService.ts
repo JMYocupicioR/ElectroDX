@@ -391,6 +391,46 @@ export async function cancelCourseEnrollmentRequest(courseId: CourseId): Promise
   if (error) throw error;
 }
 
+async function upsertActiveCourseEnrollment(
+  userId: string,
+  courseId: CourseId,
+  options?: {
+    method?: string;
+    reference?: string | null;
+    notes?: string | null;
+    expiresAt?: string | null;
+    reviewed?: boolean;
+  }
+): Promise<CourseEnrollment> {
+  const { data: sessionData } = await supabase.auth.getUser();
+  const adminId = sessionData.user?.id ?? null;
+  const now = new Date().toISOString();
+  const payload: Record<string, unknown> = {
+    user_id: userId,
+    course_id: courseId,
+    status: 'active',
+    granted_by: adminId,
+    granted_at: now,
+    payment_method: options?.method ?? 'manual',
+    payment_reference: options?.reference?.trim() || null,
+    notes: options?.notes?.trim() || null,
+    expires_at: options?.expiresAt ?? null,
+    updated_at: now,
+  };
+  if (options?.reviewed) {
+    payload.reviewed_by = adminId;
+    payload.reviewed_at = now;
+  }
+
+  const { data, error } = await sb
+    .from('course_enrollments')
+    .upsert(payload, { onConflict: 'user_id,course_id' })
+    .select('*')
+    .single();
+  if (error) throw new Error(error.message);
+  return data as CourseEnrollment;
+}
+
 export async function adminAdmitStudentToCourse(
   userId: string,
   courseId: CourseId,
@@ -404,8 +444,16 @@ export async function adminAdmitStudentToCourse(
     p_payment_reference: options?.reference?.trim() || null,
     p_expires_at: options?.expiresAt ?? null,
   });
-  if (error) throw error;
-  return data as CourseEnrollment;
+  if (!error) return data as CourseEnrollment;
+
+  // grant/admit RPCs still insert the deleted 'referencia' course → FK 409.
+  return upsertActiveCourseEnrollment(userId, courseId, {
+    method: options?.method,
+    reference: options?.reference,
+    notes: options?.notes,
+    expiresAt: options?.expiresAt,
+    reviewed: true,
+  });
 }
 
 export async function adminRejectCourseRequest(
@@ -464,7 +512,14 @@ export async function grantCourseAccess(
     p_notes: options?.notes ?? null,
     p_expires_at: options?.expiresAt ?? null,
   });
-  if (error) throw error;
+  if (!error) return;
+
+  await upsertActiveCourseEnrollment(userId, courseId, {
+    method: options?.method,
+    reference: options?.reference,
+    notes: options?.notes,
+    expiresAt: options?.expiresAt,
+  });
 }
 
 export async function revokeCourseAccess(userId: string, courseId: CourseId): Promise<void> {

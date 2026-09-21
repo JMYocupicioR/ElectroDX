@@ -238,6 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingCourseIds([]);
         setCourseSchemaReady(false);
         setSubscription(null);
+        setIsLoading(false);
         return;
       }
       if (nextSession?.user) {

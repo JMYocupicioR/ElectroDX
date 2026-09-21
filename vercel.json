@@ -2,6 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "api/verify-cedula.ts": {
+      "maxDuration": 20,
+      "includeFiles": "server/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!assets/|icons/|api/|sw\\.js|registerSW\\.js|manifest\\.json|robots\\.txt|sitemap\\.xml|llms\\.txt|llms-full\\.txt).*)",

@@ -562,6 +562,14 @@ export default function RegisterPage() {
                     )}
                   </div>
 
+                  <form
+                    autoComplete="on"
+                    className="space-y-5"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (canProceedStep1) setStep(2);
+                    }}
+                  >
                   {/* Nombre Completo */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -572,6 +580,7 @@ export default function RegisterPage() {
                       <input
                         type="text"
                         required
+                        autoComplete="name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="ej. Dr. Juan Pablo Morales Ruiz"
@@ -590,6 +599,7 @@ export default function RegisterPage() {
                       <input
                         type="email"
                         required
+                        autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="tu_correo@hospital.com.mx"
@@ -611,6 +621,7 @@ export default function RegisterPage() {
                       <input
                         type={showPassword ? 'text' : 'password'}
                         required
+                        autoComplete="new-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Mínimo 8 caracteres, números y mayúsculas"
@@ -652,6 +663,7 @@ export default function RegisterPage() {
                       </div>
                     )}
                   </div>
+                  </form>
                 </motion.div>
               )}
 

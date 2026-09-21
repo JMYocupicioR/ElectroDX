@@ -109,6 +109,39 @@ function formatRemainingExamTime(seconds: number) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+const EMPTY_STREAK: StudentStreakInfo = {
+  currentStreak: 0,
+  longestStreak: 0,
+  totalActiveDays: 0,
+  lastActiveDate: null,
+  activeDatesLast30Days: [],
+  totalSessions: 0,
+};
+
+function settleWithTimeout<T>(
+  promise: Promise<T>,
+  fallback: T,
+  label: string,
+  ms = 12_000
+): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = window.setTimeout(() => {
+      console.warn(`[StudentDashboard] timeout ${label} after ${ms}ms`);
+      resolve(fallback);
+    }, ms);
+    promise
+      .then((value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((err) => {
+        window.clearTimeout(timer);
+        console.error(`[StudentDashboard] ${label}:`, err);
+        resolve(fallback);
+      });
+  });
+}
+
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -220,26 +253,25 @@ export default function StudentDashboard() {
 
   // Load user data & sync cloud topics
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
+    let cancelled = false;
     setLoading(true);
     Promise.all([
-      getMyAttempts(user.id),
-      getMyProgressByModule(user.id),
-      getUpcomingWorkshops(5).catch((error) => {
-        console.error('[StudentDashboard] workshops:', error);
-        return [] as LiveWorkshop[];
-      }),
-      getStudentAssignments(user.id),
-      getStudentActivityAndStreak(user.id),
-      fetchStudentCompletedTopics(user.id),
-      getStudentLearningPlans(user.id).catch(() => []),
-      calculateStudentKardex(user.id, profile).catch((error) => {
-        console.error('[StudentDashboard] kardex:', error);
-        return null;
-      }),
+      settleWithTimeout(getMyAttempts(user.id), [], 'attempts'),
+      settleWithTimeout(getMyProgressByModule(user.id), [], 'moduleProgress'),
+      settleWithTimeout(getUpcomingWorkshops(5), [] as LiveWorkshop[], 'workshops'),
+      settleWithTimeout(getStudentAssignments(user.id), [], 'assignments'),
+      settleWithTimeout(getStudentActivityAndStreak(user.id), EMPTY_STREAK, 'streak'),
+      settleWithTimeout(fetchStudentCompletedTopics(user.id), getCompletedTopics(user.id), 'completedTopics'),
+      settleWithTimeout(getStudentLearningPlans(user.id), [], 'plans'),
+      settleWithTimeout(calculateStudentKardex(user.id, profile), null, 'kardex'),
     ])
       .then(([att, modProg, ws, asgs, stk, syncedTopics, plans, nextKardex]) => {
+        if (cancelled) return;
         setAttempts(att);
         setModuleProgress(modProg);
         setWorkshops(ws);
@@ -273,10 +305,17 @@ export default function StudentDashboard() {
         setLastVisited(last);
       })
       .catch((err) => {
+        if (cancelled) return;
         console.error(err);
         setActionError('No se pudieron cargar tus datos académicos. Revisa tu conexión e inténtalo de nuevo.');
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, profile, refreshTrigger]);
 
   // Derived metrics

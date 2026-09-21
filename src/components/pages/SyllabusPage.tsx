@@ -33,6 +33,8 @@ import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { getCourseIdForModule } from '../../content/courseCatalog';
 import type { CourseId } from '../../types/database';
 import { DownloadSyllabusBrochureButton } from './DownloadSyllabusBrochureButton';
+import type { AcademicMilestone } from '../../types/academicGradebook';
+import { getAcademicMilestones } from '../../services/academicScheduleService';
 
 /* ── Flatten topics for search ── */
 function flattenTopics(
@@ -210,6 +212,17 @@ export default function SyllabusPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [didExpand, setDidExpand] = useState(false);
+  const [milestones, setMilestones] = useState<AcademicMilestone[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getAcademicMilestones().then((rows) => {
+      if (!cancelled) setMilestones(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!didExpand && modulesWithOverrides.length) {
@@ -363,7 +376,12 @@ export default function SyllabusPage() {
                 Ya tengo cuenta · Iniciar sesión
               </Link>
             )}
-            <DownloadSyllabusBrochureButton grouped={grouped} unassigned={unassigned} disabled={loading} />
+            <DownloadSyllabusBrochureButton
+              grouped={grouped}
+              unassigned={unassigned}
+              milestones={milestones}
+              disabled={loading}
+            />
           </motion.div>
         </div>
       </section>
@@ -419,6 +437,7 @@ export default function SyllabusPage() {
               <DownloadSyllabusBrochureButton
                 grouped={grouped}
                 unassigned={unassigned}
+                milestones={milestones}
                 disabled={loading}
                 variant="compact"
               />
