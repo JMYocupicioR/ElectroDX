@@ -15,6 +15,7 @@ export async function getPublicProfiles(): Promise<Profile[]> {
   const { data, error } = await sb
     .from('public_specialist_profiles')
     .select('*')
+    .eq('is_public', true)
     .order('display_name');
   if (error) throw error;
   const seen = new Set<string>();
@@ -258,23 +259,25 @@ export async function toggleSpecialistVisibility(userId: string, isPublic: boole
 
 export async function getCommitteeMembers(): Promise<Profile[]> {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
+    const { data, error } = await sb
+      .from('public_specialist_profiles')
       .select('*')
       .eq('show_in_editorial_committee', true)
       .order('created_at', { ascending: true });
-    if (!error && data) {
-      const seen = new Set<string>();
-      return (data as Profile[]).filter((p) => {
-        if (seen.has(p.id)) return false;
-        seen.add(p.id);
-        return true;
-      });
+    if (error) {
+      console.warn('[getCommitteeMembers] error:', error);
+      return [];
     }
+    const seen = new Set<string>();
+    return ((data ?? []) as Profile[]).filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
   } catch (e) {
     console.warn('[getCommitteeMembers] error:', e);
+    return [];
   }
-  return [];
 }
 
 export async function getMyRevisions(authorId: string): Promise<ContentRevision[]> {
