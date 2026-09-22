@@ -470,20 +470,27 @@ export default function ProfileSetupPage() {
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <FileCheck className="w-4 h-4 text-cyan-500" />
-              Cédula profesional (Verificación Oficial SEP) *
+              Cédula profesional (Verificación Oficial SEP)
             </label>
-            {form.cedula_verified && (
+            {form.cedula_verified ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Verificada ante la SEP
               </span>
+            ) : (
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                Opcional
+              </span>
             )}
           </div>
+
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            No es obligatoria para usar la plataforma. Puedes guardarla más adelante si la necesitas para constancia o diploma.
+          </p>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
               <input
                 type="text"
-                required
                 value={form.cedula_profesional ?? ''}
                 onChange={(e) => {
                   setForm({ ...form, cedula_profesional: e.target.value, cedula_verified: false });

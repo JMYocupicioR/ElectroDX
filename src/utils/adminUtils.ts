@@ -46,8 +46,7 @@ export function isEnrollmentProfileComplete(user: {
   return Boolean(
     user.display_name?.trim() &&
       user.credentials?.trim() &&
-      user.institution?.trim() &&
-      user.cedula_profesional?.trim()
+      user.institution?.trim()
   );
 }
 

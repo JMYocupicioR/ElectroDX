@@ -445,13 +445,13 @@ export default function RegisterPage() {
                           </p>
                         </div>
                       </div>
-                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-bold uppercase tracking-wider">
-                        Autocompletado
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 font-bold uppercase tracking-wider">
+                        Opcional
                       </span>
                     </div>
 
                     <p className="text-xs text-slate-300 mb-3 leading-relaxed">
-                      Si cuentas con Cédula Profesional (Médico General o Especialista), ingrésala para validar tu identidad médica y autocompletar tu cuenta:
+                      Si ya tienes cédula profesional, puedes validarla ahora para autocompletar tu cuenta. No es necesaria para registrarte: puedes omitirla y añadirla después en tu perfil.
                     </p>
 
                     {/* Input y Botón de Consulta */}
@@ -894,7 +894,7 @@ export default function RegisterPage() {
                         Cédula profesional (Médico General o Especialista)
                       </label>
                       <span className="text-[10px] text-slate-400 font-medium">
-                        {cedulaVerified ? '✅ Verificada' : '(Opcional para R1 en trámite)'}
+                        {cedulaVerified ? '✅ Verificada' : 'Opcional'}
                       </span>
                     </div>
 
