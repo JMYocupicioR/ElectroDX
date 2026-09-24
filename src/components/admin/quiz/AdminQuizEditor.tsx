@@ -23,6 +23,7 @@ import {
 import { useAuth } from '../../../contexts/AuthProvider';
 import { useAllModules } from '../../../hooks/useAllModules';
 import { useMergedModule } from '../../../hooks/useMergedModule';
+import { useGoBack } from '../../../hooks/useGoBack';
 import { findTopicInTree, getAllFlatTopics } from '../../../services/contentMerge';
 import {
   getQuizEditorDataForTopic,
@@ -72,6 +73,7 @@ interface AdminQuizEditorProps {
 export function AdminQuizEditor({ initialTopicId, onBackToCatalog }: AdminQuizEditorProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const goBack = useGoBack('/admin/quizzes');
   const { modules: availableModules } = useAllModules();
 
   // Selected module & topic
@@ -398,8 +400,8 @@ export function AdminQuizEditor({ initialTopicId, onBackToCatalog }: AdminQuizEd
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={onBackToCatalog || (() => navigate('/admin/quizzes'))}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            onClick={onBackToCatalog || (() => goBack('/admin/quizzes'))}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Volver al Catálogo
           </button>

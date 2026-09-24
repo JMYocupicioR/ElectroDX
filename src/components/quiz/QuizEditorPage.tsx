@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Save, Send, ArrowLeft, Plus, Trash2, ClipboardList } from 'lucide-react';
+import { Save, Send, Plus, Trash2, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAllModules } from '../../hooks/useAllModules';
 import { useMergedModule } from '../../hooks/useMergedModule';
@@ -12,6 +12,8 @@ import {
 } from '../../services/editorialService';
 import { findTopicInTree, getAllFlatTopics } from '../../services/contentMerge';
 import { defaultOptionsForType, publishedQuestionsToDraft } from '../../utils/quizScoring';
+import { useGoBack } from '../../hooks/useGoBack';
+import { BackButton } from '../common/BackButton';
 import type { QuizQuestionDraft, QuizQuestionType } from '../../types/quiz';
 import type { RevisionAction, RevisionPayload } from '../../types/database';
 
@@ -48,6 +50,7 @@ export default function QuizEditorPage() {
   const { revisionId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const goBack = useGoBack('/colaborador');
   const { user } = useAuth();
   const { modules: availableModules } = useAllModules();
 
@@ -159,7 +162,7 @@ export default function QuizEditorPage() {
       if (submit) {
         await submitRevision(saved.id);
         setMessage('Cuestionario enviado a revisión.');
-        navigate('/colaborador');
+        goBack('/colaborador');
       } else {
         setMessage('Borrador guardado.');
         navigate(`/colaborador/cuestionario/${saved.id}`, { replace: true });
@@ -173,9 +176,7 @@ export default function QuizEditorPage() {
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
-      <Link to="/colaborador" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Volver al panel
-      </Link>
+      <BackButton fallback="/colaborador" />
 
       <div className="flex items-center gap-3 mb-6">
         <ClipboardList className="w-8 h-8 text-indigo-500" />

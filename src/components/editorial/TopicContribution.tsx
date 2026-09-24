@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { BadgeCheck, PenLine, Plus, ClipboardList } from 'lucide-react';
 import { getProfileById } from '../../services/editorialService';
 
@@ -45,6 +45,7 @@ export function ProposeEditLink({
   topicId: string;
   parentPath: string[];
 }) {
+  const location = useLocation();
   const parentId = parentPath.length > 1 ? parentPath[parentPath.length - 2] : null;
   const params = new URLSearchParams({
     moduleId,
@@ -56,6 +57,7 @@ export function ProposeEditLink({
   return (
     <Link
       to={`/colaborador/nueva-revision?${params.toString()}`}
+      state={{ from: location.pathname + location.search }}
       className={`${linkClass} text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/30`}
     >
       <PenLine className="w-3.5 h-3.5" />
@@ -73,6 +75,7 @@ export function ProposeSubtopicLink({
   parentId?: string | null;
   label?: string;
 }) {
+  const location = useLocation();
   const params = new URLSearchParams({
     moduleId,
     action: 'create',
@@ -82,6 +85,7 @@ export function ProposeSubtopicLink({
   return (
     <Link
       to={`/colaborador/nueva-revision?${params.toString()}`}
+      state={{ from: location.pathname + location.search }}
       className={`${linkClass} text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/30`}
     >
       <Plus className="w-3.5 h-3.5" />
@@ -91,9 +95,11 @@ export function ProposeSubtopicLink({
 }
 
 export function ProposeModuleLink({ label = 'Proponer nuevo módulo' }: { label?: string }) {
+  const location = useLocation();
   return (
     <Link
       to="/colaborador/nuevo-modulo"
+      state={{ from: location.pathname + location.search }}
       className={`${linkClass} text-violet-700 bg-violet-50 dark:bg-violet-950/40 border border-violet-200/60 dark:border-violet-800/40 hover:bg-violet-100 dark:hover:bg-violet-900/30`}
     >
       <Plus className="w-3.5 h-3.5" />
@@ -109,10 +115,12 @@ export function ProposeQuizLink({
   moduleId: string;
   topicId: string;
 }) {
+  const location = useLocation();
   const params = new URLSearchParams({ moduleId, topicId });
   return (
     <Link
       to={`/colaborador/cuestionario?${params.toString()}`}
+      state={{ from: location.pathname + location.search }}
       className={`${linkClass} text-purple-700 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/40 hover:bg-purple-100 dark:hover:bg-purple-900/30`}
     >
       <ClipboardList className="w-3.5 h-3.5" />

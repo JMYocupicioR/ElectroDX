@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   UserCheck,
   Shield,
@@ -58,24 +58,25 @@ import {
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { courseDisplayTitle, sellableCourses } from '../../content/courseCatalog';
 
-type Tab = 'enrollment_pending' | 'enrolled' | 'comite' | 'all' | 'premium';
+type Tab = 'enrolled' | 'comite' | 'premium' | 'all' | 'enrollment_pending';
 
 const TAB_CONFIG: { id: Tab; label: string; icon: any }[] = [
-  { id: 'enrollment_pending', label: 'Pendientes de Admisión', icon: Clock },
   { id: 'enrolled', label: 'Médicos Admitidos', icon: Stethoscope },
   { id: 'comite', label: 'Comité Editorial y Especialistas', icon: Scale },
-  { id: 'all', label: 'Todos los Registros', icon: Users },
   { id: 'premium', label: 'Usuarios Premium', icon: Sparkles },
+  { id: 'all', label: 'Directorio General', icon: Users },
+  { id: 'enrollment_pending', label: 'Solicitudes en Espera', icon: Clock },
 ];
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
+  const location = useLocation();
   const { courses } = useSyllabusCatalog();
   const sellable = useMemo(() => sellableCourses(courses), [courses]);
 
-  // Get initial tab from URL if present
+  // Get initial tab from URL if present - Default to directory of admitted physicians
   const searchParams = new URLSearchParams(window.location.search);
-  const initialTab = (searchParams.get('tab') as Tab) || 'enrollment_pending';
+  const initialTab = (searchParams.get('tab') as Tab) || 'enrolled';
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [users, setUsers] = useState<AdminProfileRow[]>([]);
@@ -260,6 +261,28 @@ export default function AdminUsersPage() {
           );
         })}
       </div>
+
+      {/* Notice Banner when viewing pending enrollments */}
+      {tab === 'enrollment_pending' && (
+        <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <p className="text-xs text-amber-900 dark:text-amber-200">
+              <strong>Nota de gestión:</strong> Las solicitudes de admisión a los cursos se gestionan de forma centralizada en el módulo de{' '}
+              <Link to="/admin/admisiones" className="underline font-bold hover:text-amber-700 dark:hover:text-amber-100">
+                Admisiones
+              </Link>.
+            </p>
+          </div>
+          <Link
+            to="/admin/admisiones"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shrink-0 self-start sm:self-auto shadow-2xs"
+          >
+            <span>Ir a Admisiones</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
 
       {/* ─── Search Bar and Quick Filters ─── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white/70 dark:bg-slate-900/40 p-4 mb-6 backdrop-blur-md">
@@ -586,6 +609,7 @@ export default function AdminUsersPage() {
                     {/* Primary Button: Expediente y Progreso Académico */}
                     <Link
                       to={`/admin/alumnos/${u.id}`}
+                      state={{ from: location.pathname + location.search }}
                       className="w-full inline-flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white text-xs font-bold shadow-xs hover:shadow-md transition cursor-pointer group"
                     >
                       <div className="flex items-center gap-2">

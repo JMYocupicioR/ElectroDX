@@ -59,7 +59,7 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   claimBootstrapAdmin: () => Promise<{ error: string | null }>;
   resetPassword: (email: string) => Promise<{ error: string | null }>;
-  updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
+  updatePassword: (newPassword: string, currentPassword?: string) => Promise<{ error: string | null }>;
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: string | null }>;
   uploadAvatar: (file: File) => Promise<{ url: string | null; error: string | null }>;
 }
@@ -365,7 +365,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const resetPassword = useCallback(async (email: string) => {
     try {
-      const redirectTo = `${window.location.origin}/auth/callback`;
+      const redirectTo = `${window.location.origin}/auth/actualizar-password`;
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
       });
@@ -375,16 +375,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const updatePassword = useCallback(async (newPassword: string) => {
+  const updatePassword = useCallback(async (newPassword: string, currentPassword?: string) => {
     try {
+      if (currentPassword) {
+        const email = session?.user.email;
+        if (!email) return { error: 'No hay una sesión activa. Vuelve a iniciar sesión.' };
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password: currentPassword,
+        });
+        if (signInError) return { error: 'La contraseña actual no es correcta.' };
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
       });
-      return { error: error?.message ?? null };
+      if (!error) return { error: null };
+
+      const msg = error.message.toLowerCase();
+      if (msg.includes('reauth') || msg.includes('nonce') || msg.includes('recent login')) {
+        return {
+          error: 'Por seguridad debes confirmar tu contraseña actual. Si ya lo hiciste, cierra sesión y usa “Olvidé mi contraseña”.',
+        };
+      }
+      return { error: error.message };
     } catch (err: any) {
       return { error: err?.message || 'Error al actualizar la contraseña.' };
     }
-  }, []);
+  }, [session?.user.email]);
 
   const updateProfile = useCallback(
     async (updates: Partial<Profile>) => {
@@ -424,7 +442,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const uploadAvatar = useCallback(
     async (file: File) => {
       if (!session?.user.id) return { url: null, error: 'No autenticado' };
-      if (file.size > 512 * 1024) return { url: null, error: 'Máximo 512 KB' };
+      if (file.size > 1024 * 1024) return { url: null, error: 'Máximo 1 MB' };
       if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
         return { url: null, error: 'Formato no permitido (JPG, PNG, WebP)' };
       }

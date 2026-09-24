@@ -19,6 +19,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { postLoginPath } from '../../utils/postLoginPath';
 import { BrandLogo } from '../brand/BrandLogo';
+import { BackButton } from '../common/BackButton';
 
 interface LoginPageProps {
   initialMode?: 'password' | 'otp' | 'recovery';
@@ -81,36 +82,55 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
     if (searchParams.get('verified') === '1') setSent(true);
   }, [searchParams]);
 
+function translateAuthError(msg: string): string {
+  if (!msg) return 'Ocurrió un error inesperado. Inténtalo de nuevo.';
+  if (msg.includes('Invalid login credentials')) {
+    return 'Correo electrónico o contraseña incorrectos. Verifica tus datos e inténtalo de nuevo.';
+  }
+  if (msg.includes('Email not confirmed')) {
+    return 'Tu correo no ha sido confirmado aún. Revisa tu bandeja de entrada o solicita un enlace mágico.';
+  }
+  if (msg.includes('Too many requests') || msg.includes('rate limit')) {
+    return 'Demasiados intentos fallidos. Por seguridad, espera unos minutos antes de volver a intentar.';
+  }
+  if (msg.includes('User disabled')) {
+    return 'Esta cuenta ha sido deshabilitada. Contacta a la dirección médica.';
+  }
+  return msg;
+}
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
+    const sanitizedEmail = email.trim().toLowerCase();
+
     try {
       if (mode === 'password') {
-        const result = await signInWithPassword(email, password);
+        const result = await signInWithPassword(sanitizedEmail, password);
         if (result.error) {
-          setError(result.error);
+          setError(translateAuthError(result.error));
         }
       } else if (mode === 'otp') {
-        const result = await signInWithOtp(email, nextPath);
+        const result = await signInWithOtp(sanitizedEmail, nextPath);
         if (result.error) {
-          setError(result.error);
+          setError(translateAuthError(result.error));
           return;
         }
         setSent(true);
         setResendCooldown(60);
       } else if (mode === 'recovery') {
-        const result = await resetPassword(email);
+        const result = await resetPassword(sanitizedEmail);
         if (result.error) {
-          setError(result.error);
+          setError(translateAuthError(result.error));
           return;
         }
         setSent(true);
         setResendCooldown(60);
       }
     } catch (err: any) {
-      setError(err?.message || 'Ocurrió un error inesperado. Inténtalo de nuevo.');
+      setError(translateAuthError(err?.message));
     } finally {
       setLoading(false);
     }
@@ -147,23 +167,21 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950">
+    <div className="dark min-h-screen pt-24 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950 text-slate-100">
       {/* Luces de fondo */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-md w-full mx-auto relative z-10">
-        <Link
-          to={nextPath && nextPath.startsWith('/') ? nextPath : '/'}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-cyan-400 mb-6 transition"
-        >
-          <ArrowLeft className="w-4 h-4" /> Volver al Inicio
-        </Link>
+        <BackButton
+          fallback={nextPath && nextPath.startsWith('/') ? nextPath : '/'}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-cyan-400 mb-6 transition cursor-pointer"
+        />
 
         <div className="rounded-3xl border border-slate-800/90 bg-slate-900/85 backdrop-blur-2xl p-6 sm:p-8 shadow-2xl">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} theme="dark" />
               <p className="text-xs text-slate-400 mt-1">
                 {mode === 'recovery' ? 'Recuperación de Acceso' : 'Acceso a la Plataforma Médica'}
               </p>
@@ -281,6 +299,9 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
                     type="email"
                     name="email"
                     autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

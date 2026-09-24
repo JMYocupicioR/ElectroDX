@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Save, Send, ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Save, Send, Plus, Trash2 } from 'lucide-react';
 import { allModules, getModuleById } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getRevisionById, saveRevision, submitRevision, getPublishedTopic } from '../../services/editorialService';
 import { findTopicInTree, topicToRevisionPayload, getAllFlatTopics } from '../../services/contentMerge';
 import { useAllModules } from '../../hooks/useAllModules';
 import { useMergedModule } from '../../hooks/useMergedModule';
+import { useGoBack } from '../../hooks/useGoBack';
+import { BackButton } from '../common/BackButton';
 import { slugify } from '../../utils/slugify';
 import type { Topic } from '../../types/content';
 import type { RevisionAction, RevisionPayload } from '../../types/database';
@@ -38,6 +40,7 @@ export default function RevisionEditorPage() {
   const { revisionId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const goBack = useGoBack('/colaborador');
   const { user, isVerifiedContributor } = useAuth();
   const { modules: availableModules } = useAllModules();
 
@@ -194,7 +197,7 @@ export default function RevisionEditorPage() {
       if (submit) {
         await submitRevision(saved.id);
         setMessage('Propuesta enviada a revisión. Un administrador la publicará si es aprobada.');
-        navigate('/colaborador');
+        goBack('/colaborador');
       } else {
         setMessage('Borrador guardado.');
         navigate(`/colaborador/revision/${saved.id}`, { replace: true });
@@ -228,9 +231,7 @@ export default function RevisionEditorPage() {
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
-      <Link to="/colaborador" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Mis propuestas
-      </Link>
+      <BackButton fallback="/colaborador" />
 
       <h1 className="text-2xl font-bold mb-2">{pageTitle}</h1>
       {action === 'create' && (

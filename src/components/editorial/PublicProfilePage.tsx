@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  ArrowLeft,
   Building2,
   Stethoscope,
   GraduationCap,
@@ -11,6 +10,7 @@ import {
   Award,
 } from 'lucide-react';
 import { getProfileById } from '../../services/editorialService';
+import { BackButton } from '../common/BackButton';
 import type { Profile } from '../../types/database';
 import { BRAND } from '../../config/brand';
 
@@ -49,13 +49,10 @@ export default function PublicProfilePage() {
         <p className="text-sm text-slate-500">
           Este perfil médico no se encuentra público o el enlace ha cambiado.
         </p>
-        <Link
-          to="/especialistas"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold shadow-xs hover:bg-blue-700 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Directorio</span>
-        </Link>
+        <BackButton
+          fallback="/especialistas"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold shadow-xs hover:bg-blue-700 transition cursor-pointer"
+        />
       </div>
     );
   }
@@ -63,13 +60,10 @@ export default function PublicProfilePage() {
   return (
     <div className="pt-24 pb-20 px-4 sm:px-6 max-w-3xl mx-auto">
       {/* ─── Breadcrumb Navigation ─── */}
-      <Link
-        to="/especialistas"
-        className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 mb-6 transition"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span>Directorio de Especialistas</span>
-      </Link>
+      <BackButton
+        fallback="/especialistas"
+        className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-cyan-400 mb-6 transition cursor-pointer"
+      />
 
       {/* ─── Main Profile Card ─── */}
       <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden mb-6">

@@ -21,6 +21,11 @@ import {
   Search,
   Video,
   Sparkles,
+  Bell,
+  UserCircle,
+  Settings,
+  LogOut,
+  Play,
 } from 'lucide-react';
 import { useCommandPaletteStore } from './stores/commandPaletteStore';
 import { BrandLogo } from './components/brand/BrandLogo';
@@ -32,7 +37,8 @@ import { useAuth } from './contexts/AuthProvider';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
-import { flushProgressOutbox } from './services/studentService';
+import { flushProgressOutbox, getLastVisitedTopic, getStudentNotifications, type StudentNotification } from './services/studentService';
+import { getStudentAssignments } from './services/studentPlanService';
 
 function navClass(active: boolean) {
   return `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -77,16 +83,18 @@ export function Header() {
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const openCommandPalette = useCommandPaletteStore((s) => s.open);
   const initializeOffline = useOfflineStore((s) => s.initialize);
-  const { user, isAdmin, isEditor, isPendingApproval } = useAuth();
+  const { user, profile, isAdmin, isEditor, isPendingApproval, signOut } = useAuth();
   const { totalPending } = useAdminPendingCounts();
   const { pendingCount } = useStudentPendingAssignments();
   const location = useLocation();
 
   const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuNotifs, setMenuNotifs] = useState<StudentNotification[]>([]);
 
   const isLoggedIn = Boolean(user);
   const showPublicNav = !isLoggedIn;
+  const showStudentNav = isLoggedIn && !isAdmin;
   const homeHref = isLoggedIn ? (isAdmin || isEditor ? '/admin' : '/portal') : '/';
   const portalActive = location.pathname === '/portal' || location.pathname === '/dashboard' || location.pathname === '/estudiante';
   const courseActive = location.pathname.startsWith('/modulo');
@@ -126,16 +134,45 @@ export function Header() {
     setCourseSidebarOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen || !user?.id) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const assignments = await getStudentAssignments(user.id);
+        const notifs = getStudentNotifications(user.id, profile, [], assignments);
+        if (!cancelled) setMenuNotifs(notifs.filter((n) => !n.isRead).slice(0, 3));
+      } catch {
+        if (!cancelled) setMenuNotifs([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mobileMenuOpen, user?.id, profile]);
+
+  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico';
+  const resumeTopic = user ? getLastVisitedTopic(user.id) : null;
+  const roleLabel = isAdmin
+    ? 'Administrador'
+    : isEditor
+    ? 'Profesor'
+    : isPendingApproval
+    ? 'Admisión en revisión'
+    : 'Médico inscrito';
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Link to={homeHref} className="flex items-center group transition-transform hover:scale-[1.02]">
               <BrandLogo variant="full" size="md" />
             </Link>
           </div>
 
+          {!isAdmin && (
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Principal">
             {showPublicNav && (
               <>
@@ -150,7 +187,7 @@ export function Header() {
               </>
             )}
 
-            {isLoggedIn && !isAdmin && (
+            {showStudentNav && (
               <Link to="/portal" className={navClass(portalActive)}>
                 <GraduationCap className="w-4 h-4" />
                 <span>Portal</span>
@@ -162,7 +199,7 @@ export function Header() {
               </Link>
             )}
 
-            {isLoggedIn && (
+            {showStudentNav && (
               <button
                 type="button"
                 onClick={openCourseSidebar}
@@ -174,31 +211,33 @@ export function Header() {
               </button>
             )}
 
-            <Link to="/simuladores" className={navClass(simulatorsActive)}>
-              <Wrench className="w-4 h-4" />
-              <span>Simuladores</span>
-              {showPublicNav && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                  PRO
-                </span>
-              )}
-            </Link>
-
-            {isLoggedIn && (
-              <Link to="/examenes" className={navClass(examsActive)}>
-                <ClipboardList className="w-4 h-4" />
-                <span>Exámenes</span>
+            {(showPublicNav || showStudentNav) && (
+              <Link to="/simuladores" className={navClass(simulatorsActive)}>
+                <Wrench className="w-4 h-4" />
+                <span>Simuladores</span>
+                {showPublicNav && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                    PRO
+                  </span>
+                )}
               </Link>
             )}
 
-            {isLoggedIn && (
+            {showStudentNav && (
+              <Link to="/examenes" className={navClass(examsActive)}>
+                <ClipboardList className="w-4 h-4" />
+                <span>Evaluaciones</span>
+              </Link>
+            )}
+
+            {showStudentNav && (
               <Link to="/talleres" className={navClass(location.pathname.startsWith('/talleres') || location.pathname.startsWith('/taller'))}>
                 <Video className="w-4 h-4" />
                 <span>Clases en Vivo</span>
               </Link>
             )}
 
-            {isLoggedIn && (
+            {showStudentNav && (
               <Link to="/biblioteca" className={navClass(location.pathname.startsWith('/biblioteca') || location.pathname.startsWith('/especialistas/contenido'))}>
                 <Sparkles className="w-4 h-4" />
                 <span>Biblioteca</span>
@@ -218,6 +257,7 @@ export function Header() {
               </>
             )}
           </nav>
+          )}
 
           <div className="hidden lg:flex items-center gap-2">
             {/* Buscador Rápido Global (Cmd+K / Ctrl+K) */}
@@ -306,10 +346,13 @@ export function Header() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+              className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú de cuenta'}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {!mobileMenuOpen && isLoggedIn && (pendingCount > 0 || menuNotifs.length > 0) && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500" />
+              )}
             </button>
           </div>
         </div>
@@ -322,58 +365,133 @@ export function Header() {
             className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
           />
 
-          <div className="fixed top-15 sm:top-16 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
-            <div className="space-y-6">
+          <div className="fixed top-14 sm:top-16 right-0 bottom-0 w-full max-w-sm bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl p-5 overflow-y-auto flex flex-col justify-between">
+            <div className="space-y-5">
               {isSupabaseConfigured && user ? (
-                <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
-                      {user.email?.substring(0, 2).toUpperCase()}
+                <>
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                      {displayName.slice(0, 2).toUpperCase()}
                     </div>
-                    <div className="overflow-hidden">
-                      <div className="text-sm font-bold text-slate-900 dark:text-white truncate">{user.email}</div>
-                      <div className="text-xs text-blue-600 dark:text-cyan-400 font-medium">
-                        {isAdmin ? 'Administrador' : 'Médico registrado'}
-                      </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{displayName}</p>
+                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      <p className="text-[11px] font-semibold text-blue-600 dark:text-cyan-400 mt-0.5">{roleLabel}</p>
                     </div>
                   </div>
 
-                  <div className="pt-2 flex flex-col gap-2">
-                    {isAdmin ? (
-                      <Link
-                        to="/admin"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold"
-                      >
-                        <Shield className="w-3.5 h-3.5" />
-                        Panel de administración
-                      </Link>
-                    ) : isPendingApproval ? (
-                      <Link
-                        to="/portal"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-amber-600 text-white text-xs font-semibold shadow-xs"
-                      >
-                        <Lock className="w-3.5 h-3.5" />
-                        Ver estado de admisión
-                      </Link>
+                  {isPendingApproval ? (
+                    <Link
+                      to="/portal"
+                      onClick={closeMobileMenu}
+                      className="flex items-center gap-2 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-sm font-semibold"
+                    >
+                      <Lock className="w-4 h-4 shrink-0" />
+                      Ver estado de admisión
+                    </Link>
+                  ) : resumeTopic ? (
+                    <Link
+                      to={resumeTopic.url}
+                      onClick={closeMobileMenu}
+                      className="flex items-center gap-3 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800"
+                    >
+                      <span className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                        <Play className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-bold uppercase tracking-wide text-indigo-500">Continuar</span>
+                        <span className="block text-sm font-semibold text-slate-900 dark:text-white truncate">{resumeTopic.topicTitle}</span>
+                      </span>
+                    </Link>
+                  ) : null}
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notificaciones</span>
+                      {(menuNotifs.length > 0 || pendingCount > 0) && (
+                        <span className="min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                          {menuNotifs.length || pendingCount}
+                        </span>
+                      )}
+                    </div>
+                    {menuNotifs.length === 0 ? (
+                      <p className="text-xs text-slate-500 px-1">No tienes avisos sin leer.</p>
                     ) : (
-                      <Link
-                        to="/portal"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold"
-                      >
-                        <GraduationCap className="w-3.5 h-3.5" />
-                        <span>Ir a mi portal</span>
-                        {pendingCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-black leading-none">
-                            {pendingCount}
-                          </span>
-                        )}
-                      </Link>
+                      <div className="space-y-1">
+                        {menuNotifs.map((notif) => (
+                          <Link
+                            key={notif.id}
+                            to={notif.linkUrl || '/portal?tab=notifications'}
+                            onClick={closeMobileMenu}
+                            className="block p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{notif.title}</p>
+                            <p className="text-[11px] text-slate-500 truncate">{notif.message}</p>
+                          </Link>
+                        ))}
+                      </div>
                     )}
+                    <Link
+                      to="/portal?tab=notifications"
+                      onClick={closeMobileMenu}
+                      className="mt-1 flex items-center justify-between p-2.5 rounded-xl text-sm font-semibold text-indigo-600 dark:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Bell className="w-4 h-4" />
+                        Ver todas
+                      </span>
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
                   </div>
-                </div>
+
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Cuenta</span>
+                    <MobileNavRow
+                      to="/perfil"
+                      onClick={closeMobileMenu}
+                      icon={<UserCircle className="w-4 h-4 text-indigo-500" />}
+                      label="Configurar perfil"
+                    />
+                    <MobileNavRow
+                      to="/cuenta"
+                      onClick={closeMobileMenu}
+                      icon={<GraduationCap className="w-4 h-4 text-blue-500" />}
+                      label="Mi cuenta"
+                    />
+                    <MobileNavRow
+                      to="/cuenta/ajustes"
+                      onClick={closeMobileMenu}
+                      icon={<Settings className="w-4 h-4 text-slate-500" />}
+                      label="Ajustes"
+                    />
+                    {(isAdmin || isEditor) && (
+                      <MobileNavRow
+                        to="/admin"
+                        onClick={closeMobileMenu}
+                        icon={<Shield className="w-4 h-4 text-violet-500" />}
+                        label={isAdmin ? 'Panel de administración' : 'Panel del profesor'}
+                        trailing={
+                          totalPending > 0 ? (
+                            <span className="min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
+                              {totalPending > 9 ? '9+' : totalPending}
+                            </span>
+                          ) : undefined
+                        }
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeMobileMenu();
+                        void signOut();
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Cerrar sesión
+                    </button>
+                  </div>
+                </>
               ) : isSupabaseConfigured ? (
                 <div className="space-y-2.5">
                   <Link
@@ -395,87 +513,41 @@ export function Header() {
                 </div>
               ) : null}
 
+              {showPublicNav && (
               <div>
                 <span className="text-[11px] font-mono uppercase tracking-wider font-bold text-slate-400 block mb-3">
-                  {isLoggedIn ? 'Estudiar' : 'Programa'}
+                  Programa
                 </span>
                 <div className="space-y-1">
-                  {showPublicNav && (
-                    <>
-                      <MobileNavRow
-                        to="/temario"
-                        onClick={() => setMobileMenuOpen(false)}
-                        icon={<BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />}
-                        label="Temario"
-                      />
-                      <MobileNavRow
-                        to="/cursos"
-                        onClick={() => setMobileMenuOpen(false)}
-                        icon={<GraduationCap className="w-4 h-4" />}
-                        label="Cursos"
-                      />
-                    </>
-                  )}
-
-                  {isLoggedIn && (
-                    <button
-                      type="button"
-                      onClick={openCourseSidebar}
-                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
-                    >
-                      <div className="flex items-center gap-3">
-                        <PanelLeft className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-                        <span>Curso</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400" />
-                    </button>
-                  )}
-
+                  <MobileNavRow
+                    to="/temario"
+                    onClick={closeMobileMenu}
+                    icon={<BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />}
+                    label="Temario"
+                  />
+                  <MobileNavRow
+                    to="/cursos"
+                    onClick={closeMobileMenu}
+                    icon={<GraduationCap className="w-4 h-4" />}
+                    label="Cursos"
+                  />
                   <MobileNavRow
                     to="/simuladores"
-                    onClick={() => setMobileMenuOpen(false)}
+                    onClick={closeMobileMenu}
                     icon={<Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
                     label="Simuladores"
                   />
-
-                  {isLoggedIn && (
-                    <MobileNavRow
-                      to="/examenes"
-                      onClick={() => setMobileMenuOpen(false)}
-                      icon={<ClipboardList className="w-4 h-4 text-cyan-600" />}
-                      label="Exámenes"
-                    />
-                  )}
-
-                  {isLoggedIn && (
-                    <MobileNavRow
-                      to="/talleres"
-                      onClick={() => setMobileMenuOpen(false)}
-                      icon={<Video className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
-                      label="Clases en Vivo"
-                    />
-                  )}
-
-                  {isLoggedIn && (
-                    <MobileNavRow
-                      to="/biblioteca"
-                      onClick={() => setMobileMenuOpen(false)}
-                      icon={<Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
-                      label="Biblioteca de Especialistas"
-                    />
-                  )}
-
-                  {showPublicNav && isSupabaseConfigured && (
+                  {isSupabaseConfigured && (
                     <>
                       <MobileNavRow
                         to="/especialistas"
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={closeMobileMenu}
                         icon={<Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
                         label="Especialistas"
                       />
                       <MobileNavRow
                         to="/comite-editorial"
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={closeMobileMenu}
                         icon={<Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />}
                         label={BRAND.enableAccreditation ? 'Comité editorial y aval' : 'Comité editorial'}
                       />
@@ -483,6 +555,7 @@ export function Header() {
                   )}
                 </div>
               </div>
+              )}
             </div>
 
             <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">

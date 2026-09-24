@@ -458,7 +458,7 @@ export default function ProfileSetupPage() {
                 </button>
               )}
 
-              <span className="text-[11px] text-slate-500">JPG, PNG o WebP (máx. 512 KB)</span>
+              <span className="text-[11px] text-slate-500">JPG, PNG o WebP (máx. 1 MB). Visible en tu perfil público.</span>
             </div>
             {avatarError && <p className="text-xs text-rose-500 mt-2 font-medium">{avatarError}</p>}
             {avatarMessage && <p className="text-xs text-emerald-500 mt-2 font-medium">{avatarMessage}</p>}

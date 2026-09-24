@@ -261,6 +261,7 @@ function TopicEditorList({
                 to={`/colaborador/nueva-revision?moduleId=${module.id}&topicId=${topic.id}&action=update${
                   parentId ? `&parentId=${parentId}` : ''
                 }`}
+                state={{ from: pathname }}
                 title="Editar contenido"
                 className="p-1 rounded-md text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 onClick={(event) => event.stopPropagation()}

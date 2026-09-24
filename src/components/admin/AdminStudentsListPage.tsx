@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Search,
   CheckCircle2,
@@ -29,6 +29,7 @@ import type { StudentCohortSummary } from '../../types/academicGradebook';
 import { BRAND } from '../../config/brand';
 
 export default function AdminStudentsListPage() {
+  const location = useLocation();
   const { user } = useAuth();
   const [profiles, setProfiles] = useState<AdminProfileRow[]>([]);
   const [summaries, setSummaries] = useState<Map<string, StudentCohortSummary>>(new Map());
@@ -126,12 +127,12 @@ export default function AdminStudentsListPage() {
 
   return (
     <AdminLayout
-      title="Progreso y Expedientes de Alumnos"
-      subtitle="Supervisión académica de la cohorte, avance curricular, calificaciones y planes personalizados"
+      title="Alumnos"
+      subtitle="Expediente de la cohorte, calificaciones ponderadas, asistencias y planes académicos"
     >
       <div className="space-y-6 pb-20">
         {/* Top Control Bar: Action Buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl bg-white/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md shadow-xs">
+        <div className="hidden lg:flex flex-wrap items-center justify-between gap-3 p-4 rounded-3xl bg-white/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 backdrop-blur-md shadow-xs">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-black uppercase tracking-wider text-slate-400 mr-1">
               Gestión Docente:
@@ -411,6 +412,7 @@ export default function AdminStudentsListPage() {
 
                         <Link
                           to={`/admin/alumnos/${student.id}`}
+                          state={{ from: location.pathname + location.search }}
                           className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer group"
                         >
                           <Activity className="w-3.5 h-3.5 text-cyan-300 group-hover:scale-110 transition-transform" />

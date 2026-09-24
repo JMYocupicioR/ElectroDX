@@ -10,6 +10,8 @@ interface BrandLogoProps {
   className?: string;
   /** Mostrar badge de aval COMEFYR */
   showAccreditation?: boolean;
+  /** Tema o contraste forzado: 'light' (texto oscuro), 'dark' (texto blanco/claro), o 'auto' (según modo oscuro de Tailwind) */
+  theme?: 'light' | 'dark' | 'auto';
 }
 
 const sizeConfig = {
@@ -161,12 +163,41 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = 'md',
   className = '',
   showAccreditation = true,
+  theme = 'auto',
 }) => {
   const config = sizeConfig[size];
 
   if (variant === 'icon-only') {
     return <BioelectricLightningIcon size={config.iconSize} className={className} />;
   }
+
+  const prefixColor =
+    theme === 'dark'
+      ? 'text-white'
+      : theme === 'light'
+      ? 'text-slate-900'
+      : 'text-slate-900 dark:text-white';
+
+  const accentGradient =
+    theme === 'dark'
+      ? 'bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent'
+      : theme === 'light'
+      ? 'bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent'
+      : 'bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent';
+
+  const badgeColor =
+    theme === 'dark'
+      ? 'text-slate-400'
+      : theme === 'light'
+      ? 'text-slate-500'
+      : 'text-slate-500 dark:text-slate-400';
+
+  const accreditationColor =
+    theme === 'dark'
+      ? 'text-cyan-400'
+      : theme === 'light'
+      ? 'text-blue-600'
+      : 'text-blue-600 dark:text-cyan-400';
 
   return (
     <div className={`flex items-center ${config.containerClass} ${className}`}>
@@ -178,14 +209,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {/* Logotipo Tipográfico */}
       <div className="flex flex-col justify-center">
         <div className="flex items-baseline tracking-tight">
-          <span className={`text-slate-900 dark:text-white ${config.titleClass}`}>
+          <span className={`${prefixColor} ${config.titleClass}`}>
             {BRAND.wordmarkPrefix}
           </span>
-          <span className={`bg-gradient-to-r from-blue-600 to-cyan-500 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent ${config.titleClass}`}>
+          <span className={`${accentGradient} ${config.titleClass}`}>
             {BRAND.wordmarkAccent}
           </span>
           {variant !== 'compact' && (
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1.5 hidden sm:inline">
+            <span className={`text-[11px] font-bold ${badgeColor} uppercase tracking-wider ml-1.5 hidden sm:inline`}>
               {BRAND.badge}
             </span>
           )}
@@ -194,7 +225,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         {/* Subtítulo o Aval Opcional */}
         {BRAND.enableAccreditation && showAccreditation && variant === 'full' && (
           <div className="flex items-center gap-1.5 mt-0.5">
-            <span className="text-[9px] font-semibold tracking-wider text-blue-600 dark:text-cyan-400 uppercase">
+            <span className={`text-[9px] font-semibold tracking-wider ${accreditationColor} uppercase`}>
               {BRAND.accreditation}
             </span>
           </div>

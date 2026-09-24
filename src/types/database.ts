@@ -120,6 +120,8 @@ export interface Profile {
   clinical_interests?: string[] | null;
   admin_notes?: string | null;
   completed_topics?: string[] | null;
+  portal_guide_completed_at?: string | null;
+  portal_guide_version?: number;
   created_at: string;
   updated_at: string;
 }
@@ -659,6 +661,10 @@ export interface Database {
         Returns: unknown;
       };
       update_my_profile: { Args: { p_updates: Record<string, unknown> }; Returns: Profile };
+      mark_portal_guide_seen: {
+        Args: { p_version: number };
+        Returns: Profile;
+      };
       submit_my_assignment: {
         Args: { p_assignment_id: string; p_notes?: string | null; p_submission_url?: string | null };
         Returns: unknown;

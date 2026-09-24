@@ -33,30 +33,43 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Verificar si hay sesión activa para actualizar contraseña
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session || user) {
-        setHasValidSession(true);
-        setCheckingSession(false);
-      } else {
-        // Escuchar por si el evento PASSWORD_RECOVERY llega
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-          if (session) {
-            setHasValidSession(true);
-            setCheckingSession(false);
-            authListener.subscription.unsubscribe();
-          }
-        });
+    let settled = false;
 
-        const timer = setTimeout(() => {
-          setCheckingSession(false);
-          authListener.subscription.unsubscribe();
-        }, 2000);
+    const accept = () => {
+      if (settled) return;
+      settled = true;
+      setHasValidSession(true);
+      setCheckingSession(false);
+    };
 
-        return () => clearTimeout(timer);
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) return;
+      if (
+        event === 'PASSWORD_RECOVERY' ||
+        event === 'SIGNED_IN' ||
+        event === 'INITIAL_SESSION' ||
+        event === 'TOKEN_REFRESHED'
+      ) {
+        accept();
       }
     });
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session || user) accept();
+    });
+
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      setCheckingSession(false);
+    }, 4000);
+
+    return () => {
+      settled = true;
+      window.clearTimeout(timer);
+      authListener.subscription.unsubscribe();
+    };
   }, [user]);
 
   // Validaciones en tiempo real
@@ -113,7 +126,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950">
+    <div className="dark min-h-screen pt-24 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950 text-slate-100">
       {/* Resplandor de fondo */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -122,7 +135,7 @@ export default function ResetPasswordPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} theme="dark" />
               <p className="text-[11px] text-slate-400 mt-1">Seguridad de la Cuenta</p>
             </div>
             <div className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[11px] font-medium flex items-center gap-1.5">

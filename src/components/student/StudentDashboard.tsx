@@ -38,6 +38,9 @@ import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
 import { getUpcomingWorkshops } from '../../services/courseService';
 import PendingTasksAlertModal from './PendingTasksAlertModal';
+import { StudentPortalGuide } from './StudentPortalGuide';
+import type { PortalGuideCourseState } from './portalGuideSteps';
+import { shouldShowPortalGuide, markPortalGuideSeen } from '../../services/portalGuideService';
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -175,6 +178,11 @@ export default function StudentDashboard() {
   const [learningPlans, setLearningPlans] = useState<StudentLearningPlan[]>([]);
   const [showKardexModal, setShowKardexModal] = useState(false);
   const [showPendingTasksModal, setShowPendingTasksModal] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [guideStep, setGuideStep] = useState(0);
+  const [guideSaving, setGuideSaving] = useState(false);
+  const [guideError, setGuideError] = useState<string | null>(null);
+  const [guideDismissedThisVisit, setGuideDismissedThisVisit] = useState(false);
   const [courseForModal, setCourseForModal] = useState<Course | null>(null);
   const [dismissedTopBanner, setDismissedTopBanner] = useState(false);
   const [deviceNotifStatus, setDeviceNotifStatus] = useState<NotificationPermissionStatus>('default');
@@ -293,7 +301,7 @@ export default function StudentDashboard() {
         if (pendingList.length > 0) {
           const today = new Date().toISOString().slice(0, 10);
           const dismissedDate = localStorage.getItem(`neurosafe_dismiss_pending_modal_${user.id}`);
-          if (dismissedDate !== today) {
+          if (dismissedDate !== today && !guideOpen) {
             setShowPendingTasksModal(true);
           }
           // Notify device in background if permission is active
@@ -359,6 +367,104 @@ export default function StudentDashboard() {
     if (!metrics) return null;
     return checkCertificationEligibility(profile, metrics.overallProgressPct, moduleProgress, kardex);
   }, [profile, metrics, moduleProgress, kardex]);
+
+  // Evitar solapamiento entre la guía de inducción y el modal de tareas pendientes
+  useEffect(() => {
+    if (guideOpen && showPendingTasksModal) {
+      setShowPendingTasksModal(false);
+    }
+  }, [guideOpen, showPendingTasksModal]);
+
+  // Apertura de la inducción de primer ingreso al portal
+  useEffect(() => {
+    if (loading || !user || !profile || guideDismissedThisVisit) return;
+
+    const isExamActive = Boolean(activeExamLock && (remainingActiveSeconds ?? 1) > 0);
+    if (isExamActive) {
+      if (guideOpen) {
+        setGuideOpen(false);
+      }
+      return;
+    }
+
+    if (shouldShowPortalGuide(profile) && !guideOpen) {
+      setGuideStep(0);
+      setGuideOpen(true);
+    }
+  }, [loading, user?.id, profile, activeExamLock, remainingActiveSeconds, guideDismissedThisVisit, guideOpen]);
+
+  // Estado del curso para el paso 3 de la guía
+  const guideCourseState: PortalGuideCourseState = useMemo(() => {
+    if (sellable.some((c) => hasCourseAccess(c.id))) return 'active';
+    if (sellable.some((c) => isCoursePending(c.id))) return 'pending';
+    return 'none';
+  }, [sellable, hasCourseAccess, isCoursePending]);
+
+  // Etiqueta del botón de acción final en el paso 5
+  const guideFinalActionLabel = useMemo(() => {
+    if (guideCourseState === 'active') {
+      if (resumeLesson) {
+        const hasModuleProgress =
+          moduleProgress.some(
+            (mp) => mp.moduleId === resumeLesson.moduleId && (mp.bestScores?.length || 0) > 0
+          ) ||
+          Boolean(lastVisited) ||
+          (metrics?.overallProgressPct || 0) > 0 ||
+          (metrics?.totalCompletedCurriculumTopics || 0) > 0;
+
+        const prefix = hasModuleProgress ? 'Continuar' : 'Empezar';
+        return `${prefix}: ${resumeLesson.topicTitle}`;
+      }
+      return 'Ir a Clases';
+    }
+    if (guideCourseState === 'pending') {
+      return 'Ver estado de mi curso';
+    }
+    return 'Solicitar admisión';
+  }, [guideCourseState, resumeLesson, moduleProgress, lastVisited, metrics]);
+
+  // Guardar persistencia en Supabase (RPC propio) y opcionalmente navegar
+  const handleSaveGuide = async (action: 'skip' | 'finish') => {
+    if (guideSaving) return;
+    setGuideSaving(true);
+    setGuideError(null);
+
+    const { error } = await markPortalGuideSeen();
+    if (error) {
+      setGuideError(error);
+      setGuideSaving(false);
+      setGuideOpen(false);
+      setGuideDismissedThisVisit(true);
+      return;
+    }
+
+    await refreshProfile();
+    setGuideOpen(false);
+    setGuideDismissedThisVisit(true);
+    setGuideSaving(false);
+
+    if (action === 'finish') {
+      if (guideCourseState === 'active') {
+        if (resumeLesson?.url) {
+          navigate(resumeLesson.url);
+        } else {
+          selectTab('modules');
+        }
+      } else if (guideCourseState === 'pending') {
+        selectTab('summary');
+        const pendingCourse = sellable.find((c) => isCoursePending(c.id));
+        if (pendingCourse) {
+          setCourseForModal(pendingCourse);
+        }
+      } else {
+        selectTab('summary');
+        const firstSellable = sellable[0];
+        if (firstSellable) {
+          setCourseForModal(firstSellable);
+        }
+      }
+    }
+  };
 
   // Quizzes list with status
   const quizzesList = useMemo(() => {
@@ -629,6 +735,25 @@ export default function StudentDashboard() {
                   </button>
                 );
               })}
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeExamLock && (remainingActiveSeconds ?? 1) > 0) return;
+                  setGuideStep(0);
+                  setGuideError(null);
+                  setGuideOpen(true);
+                }}
+                disabled={Boolean(activeExamLock && (remainingActiveSeconds ?? 1) > 0)}
+                title={
+                  activeExamLock && (remainingActiveSeconds ?? 1) > 0
+                    ? 'Termina el examen en curso para ver la guía'
+                    : 'Ver la guía del portal'
+                }
+                className="text-xs text-slate-300 hover:text-white underline underline-offset-4 decoration-slate-400 hover:decoration-white transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Guía del portal
+              </button>
             </div>
           </div>
 
@@ -3206,6 +3331,19 @@ export default function StudentDashboard() {
           }}
         />
       )}
+
+      <StudentPortalGuide
+        open={guideOpen}
+        courseState={guideCourseState}
+        finalActionLabel={guideFinalActionLabel}
+        onBack={() => setGuideStep((prev) => Math.max(0, prev - 1))}
+        onNext={() => setGuideStep((prev) => prev + 1)}
+        onSkip={() => handleSaveGuide('skip')}
+        onFinish={() => handleSaveGuide('finish')}
+        stepIndex={guideStep}
+        saving={guideSaving}
+        saveError={guideError}
+      />
     </div>
   );
 }

@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Save, Send, ArrowLeft, Stethoscope, AlertTriangle } from 'lucide-react';
+import { Save, Send, Stethoscope, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getRevisionById, saveRevision, submitRevision } from '../../services/editorialService';
 import { useAllModules } from '../../hooks/useAllModules';
+import { useGoBack } from '../../hooks/useGoBack';
+import { BackButton } from '../common/BackButton';
 import type { RevisionPayload, RevisionStatus } from '../../types/database';
 
 export default function ClinicalCaseEditorPage() {
   const { revisionId } = useParams();
   const navigate = useNavigate();
+  const goBack = useGoBack('/colaborador');
   const { user } = useAuth();
   const { modules } = useAllModules();
 
@@ -88,7 +91,7 @@ export default function ClinicalCaseEditorPage() {
       if (submitAfter) {
         setIsSubmitting(true);
         await submitRevision(saved.id);
-        navigate('/colaborador');
+        goBack('/colaborador');
       } else {
         if (!revisionId) {
           navigate(`/colaborador/caso-clinico/${saved.id}`, { replace: true });
@@ -109,12 +112,7 @@ export default function ClinicalCaseEditorPage() {
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-4xl mx-auto">
-      <Link
-        to="/colaborador"
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" /> Volver al panel
-      </Link>
+      <BackButton fallback="/colaborador" />
 
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center">
@@ -198,7 +196,7 @@ export default function ClinicalCaseEditorPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Datos EMG en formato JSON</label>
-          <p className="text-xs text-slate-500 mb-2">Pega aquí los valores tabulares exportados del equipo EMG.</p>
+          <p className="text-xs text-slate-500 mb-2">Descarga el .JSON de ejemplo y enviaselo a tu ia de confianza (ChatGPT, Gemini, Claude, etc) para que complete los datos clínicos basándose en los resultados de la neurofisiología. Y por último pega aquí los valores tabulares exportados del equi del caso de EMG.</p>
           <textarea
             value={clinicalCaseJsonStr}
             onChange={(e) => {

@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import type { AdminProfileRow } from '../../../types/admin';
+import { BackButton } from '../../common/BackButton';
 
 const fieldClass =
   'w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200';
@@ -20,13 +20,11 @@ export function AdminAnalyticsScopeBar({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link
-          to="/admin/alumnos"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Volver a Progreso de Alumnos
-        </Link>
+        <BackButton
+          fallback="/admin/alumnos"
+          iconClassName="w-3.5 h-3.5"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+        />
         {actions}
       </div>
 

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Video, Calendar, Clock, ArrowLeft, CheckCircle, Users } from 'lucide-react';
+import { Video, Calendar, Clock, CheckCircle, Users } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useCourseStore } from '../../stores/courseStore';
+import { BackButton } from '../common/BackButton';
 import type { LiveWorkshop } from '../../types/database';
 
 export default function WorkshopDetailPage() {
@@ -74,12 +74,10 @@ export default function WorkshopDetailPage() {
 
   return (
     <div className="pt-24 pb-20 px-4 max-w-4xl mx-auto">
-      <Link
-        to="/talleres"
-        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors mb-8"
-      >
-        <ArrowLeft className="w-4 h-4" /> Volver a talleres
-      </Link>
+      <BackButton
+        fallback="/talleres"
+        className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors mb-8 cursor-pointer"
+      />
 
       <div className="p-8 md:p-10 rounded-3xl bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-xl">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-6">

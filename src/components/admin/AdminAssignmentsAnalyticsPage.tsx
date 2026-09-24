@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { Search, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -47,6 +47,7 @@ const EMPTY_FILTERS: Omit<AssignmentAnalyticsFilters, 'studentId'> = {
 
 export default function AdminAssignmentsAnalyticsPage() {
   const { user } = useAuth();
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
   const studentId = params.get('alumno') || '';
 
@@ -284,6 +285,7 @@ export default function AdminAssignmentsAnalyticsPage() {
                           )}
                           <Link
                             to={`/admin/alumnos/${row.student_id}`}
+                            state={{ from: location.pathname + location.search }}
                             className="text-xs font-bold text-slate-500 hover:text-indigo-600"
                           >
                             Expediente

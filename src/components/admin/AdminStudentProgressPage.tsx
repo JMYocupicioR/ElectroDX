@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { BackButton } from '../common/BackButton';
 import {
-  ArrowLeft,
   Activity,
   Award,
   BookOpen,
@@ -643,12 +643,10 @@ export default function AdminStudentProgressPage() {
           <h2 className="text-lg font-bold text-slate-800 dark:text-white">
             {error || 'No se encontró la información del alumno'}
           </h2>
-          <Link
-            to="/admin/usuarios"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium"
-          >
-            <ArrowLeft className="w-4 h-4" /> Volver al directorio de usuarios
-          </Link>
+          <BackButton
+            fallback="/admin/alumnos"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium cursor-pointer"
+          />
         </div>
       </AdminLayout>
     );
@@ -661,13 +659,11 @@ export default function AdminStudentProgressPage() {
       <div className="space-y-6 pb-20">
         {/* Top Back Navigation */}
         <div className="flex items-center justify-between">
-          <Link
-            to="/admin/usuarios"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Volver a Usuarios y Médicos</span>
-          </Link>
+          <BackButton
+            fallback="/admin/alumnos"
+            iconClassName="w-3.5 h-3.5"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition cursor-pointer"
+          />
 
           <div className="flex items-center gap-3">
             <button

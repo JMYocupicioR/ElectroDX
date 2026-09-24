@@ -219,10 +219,18 @@ export function externalListToVideoMedia(videos: ExternalVideoInput[]): VideoMed
   return { videoUrls, youtubeUrls, vimeoUrls, embedUrls };
 }
 
+function isSupabasePublicImage(parsed: URL): boolean {
+  return (
+    parsed.hostname.endsWith('.supabase.co') &&
+    /\/storage\/v1\/object\/public\/course-images\/.+\.(png|jpe?g|webp)$/i.test(parsed.pathname)
+  );
+}
+
 export function isAllowedImageUrl(url: string): boolean {
   try {
     const parsed = new URL(url.trim());
     if (parsed.protocol !== 'https:') return false;
+    if (isSupabasePublicImage(parsed)) return true;
     if (ALLOWED_IMAGE_HOSTS.some((host) => parsed.hostname === host || parsed.hostname.endsWith('.' + host))) {
       return true;
     }

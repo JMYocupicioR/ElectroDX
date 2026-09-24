@@ -16,6 +16,9 @@ import type { Topic } from '../../types/content';
 import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
+import { uploadTeachingFile } from '../../services/teachingStorage';
+
+type SourceMode = 'file' | 'link';
 
 type MaterialType = 'video' | 'pdf' | 'image' | 'pearl';
 
@@ -26,6 +29,41 @@ interface QuickTopicMaterialModalProps {
   topic: Topic;
   onSuccess?: () => void;
   initialTab?: MaterialType;
+}
+
+function SourceToggle({
+  value,
+  onChange,
+  fileLabel,
+  linkLabel,
+  accent,
+}: {
+  value: SourceMode;
+  onChange: (mode: SourceMode) => void;
+  fileLabel: string;
+  linkLabel: string;
+  accent: 'purple' | 'emerald';
+}) {
+  const active =
+    accent === 'purple'
+      ? 'bg-purple-600 text-white'
+      : 'bg-emerald-600 text-white';
+  return (
+    <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
+      {(['file', 'link'] as const).map((mode) => (
+        <button
+          key={mode}
+          type="button"
+          onClick={() => onChange(mode)}
+          className={`px-3 py-1.5 rounded-lg transition-colors ${
+            value === mode ? active : 'text-slate-600 dark:text-slate-300'
+          }`}
+        >
+          {mode === 'file' ? fileLabel : linkLabel}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 export function QuickTopicMaterialModal({
@@ -49,11 +87,15 @@ export function QuickTopicMaterialModal({
 
   // PDF
   const [pdfTitle, setPdfTitle] = useState('');
+  const [pdfSource, setPdfSource] = useState<SourceMode>('file');
   const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfDescription, setPdfDescription] = useState('');
 
   // Image
+  const [imageSource, setImageSource] = useState<SourceMode>('file');
   const [imageSrc, setImageSrc] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageCaption, setImageCaption] = useState('');
 
   // Pearl
@@ -111,26 +153,40 @@ export function QuickTopicMaterialModal({
             break;
         }
       } else if (activeTab === 'pdf') {
-        if (!pdfTitle.trim() || !pdfUrl.trim()) {
-          throw new Error('Por favor ingresa el título y el enlace al PDF o guía clínica.');
+        if (!pdfTitle.trim()) {
+          throw new Error('Por favor ingresa el nombre del documento.');
         }
-        const cleanPdfUrl = pdfUrl.trim();
+        let cleanPdfUrl = pdfUrl.trim();
+        if (pdfSource === 'file') {
+          if (!pdfFile) throw new Error('Selecciona un PDF de tu equipo o cambia a enlace público.');
+          const uploaded = await uploadTeachingFile(user.id, 'pdf', pdfFile);
+          if (uploaded.error || !uploaded.url) throw new Error(uploaded.error || 'No se pudo subir el PDF.');
+          cleanPdfUrl = uploaded.url;
+        } else if (!cleanPdfUrl) {
+          throw new Error('Por favor ingresa el enlace al PDF o guía clínica.');
+        }
         const cleanDesc = pdfDescription.trim() || 'Material docente de referencia clínica.';
         
         // Append an elegant downloadable card markdown block to content
         const pdfMarkdown = `\n\n> 📄 **Recurso Clínico Docente:** [${pdfTitle.trim()}](${cleanPdfUrl})\n> *Aportado por ${authorName}*\n> ${cleanDesc}\n`;
         payload.content = (payload.content ? payload.content + pdfMarkdown : pdfMarkdown).trim();
       } else if (activeTab === 'image') {
-        if (!imageSrc.trim()) {
+        let cleanImageSrc = imageSrc.trim();
+        if (imageSource === 'file') {
+          if (!imageFile) throw new Error('Selecciona una imagen de tu equipo o cambia a enlace público.');
+          const uploaded = await uploadTeachingFile(user.id, 'image', imageFile);
+          if (uploaded.error || !uploaded.url) throw new Error(uploaded.error || 'No se pudo subir la imagen.');
+          cleanImageSrc = uploaded.url;
+        } else if (!cleanImageSrc) {
           throw new Error('Por favor ingresa la URL de la imagen o trazado EMG.');
         }
-        if (!isAllowedImageUrl(imageSrc.trim()) && !imageSrc.trim().startsWith('data:image')) {
+        if (!isAllowedImageUrl(cleanImageSrc) && !cleanImageSrc.startsWith('data:image')) {
           throw new Error('URL de imagen no permitida o formato incorrecto (.png, .jpg, .webp, google drive, etc).');
         }
         payload.imageUrls = [
           ...(payload.imageUrls ?? []),
           {
-            src: imageSrc.trim(),
+            src: cleanImageSrc,
             alt: imageCaption.trim() || topic.title,
             caption: imageCaption.trim() ? `${imageCaption.trim()} — Aportado por ${authorName}` : `Aportado por ${authorName}`,
           },
@@ -309,7 +365,7 @@ export function QuickTopicMaterialModal({
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Los alumnos podrán reproducir el video directamente dentro de la lección.
+                    Los videos no se guardan en la plataforma: el plan gratuito solo tiene 1 GB y se llenaría con pocas clases. Usa YouTube, Drive, Vimeo o Loom. Los alumnos lo reproducen dentro de la lección.
                   </p>
                 </div>
               </div>
@@ -332,19 +388,46 @@ export function QuickTopicMaterialModal({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Enlace de descarga o visualización (Google Drive, Cloudinary, etc.) *
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://drive.google.com/... o https://midominio.com/guia.pdf"
-                    value={pdfUrl}
-                    onChange={(e) => setPdfUrl(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
-                  />
-                </div>
+                <SourceToggle
+                  value={pdfSource}
+                  onChange={setPdfSource}
+                  fileLabel="Subir PDF"
+                  linkLabel="Enlace público"
+                  accent="purple"
+                />
+
+                {pdfSource === 'file' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Archivo PDF desde tu equipo *
+                    </label>
+                    <input
+                      type="file"
+                      accept="application/pdf,.pdf"
+                      required
+                      onChange={(e) => setPdfFile(e.target.files?.[0] ?? null)}
+                      className="w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      Máximo 20 MB. El plan gratuito de Supabase permite hasta 50 MB por archivo y 1 GB en total.
+                      {pdfFile ? ` Seleccionado: ${pdfFile.name}.` : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Enlace de descarga o visualización (Google Drive, Cloudinary, etc.) *
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://drive.google.com/... o https://midominio.com/guia.pdf"
+                      value={pdfUrl}
+                      onChange={(e) => setPdfUrl(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none dark:text-white"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
@@ -364,19 +447,46 @@ export function QuickTopicMaterialModal({
             {/* Tab: Image */}
             {activeTab === 'image' && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    URL de la imagen o captura de electromiografía *
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://i.imgur.com/... o enlace de imagen directo"
-                    value={imageSrc}
-                    onChange={(e) => setImageSrc(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"
-                  />
-                </div>
+                <SourceToggle
+                  value={imageSource}
+                  onChange={setImageSource}
+                  fileLabel="Subir imagen"
+                  linkLabel="Enlace público"
+                  accent="emerald"
+                />
+
+                {imageSource === 'file' ? (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Imagen o captura de electromiografía *
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      required
+                      onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+                      className="w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">
+                      JPG, PNG o WebP. Máximo 5 MB.
+                      {imageFile ? ` Seleccionado: ${imageFile.name}.` : ''}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                      URL de la imagen o captura de electromiografía *
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://i.imgur.com/... o enlace de imagen directo"
+                      value={imageSrc}
+                      onChange={(e) => setImageSrc(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:text-white"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">

@@ -32,11 +32,11 @@ export default function AdminQuizzesPage() {
 
   return (
     <AdminLayout
-      title={selectedTopicId ? 'Editor de Cuestionario' : 'Gestión y Edición de Quizzes'}
+      title={selectedTopicId ? 'Editor de Evaluación' : 'Evaluaciones'}
       subtitle={
         selectedTopicId
           ? 'Redacta viñetas clínicas, opciones de respuesta, perlas COMEFYR y publica en vivo para alumnos.'
-          : 'Supervisa y edita los cuestionarios de evaluación de los 13 módulos del temario de ElectroDx Diplomado.'
+          : 'Supervisa y edita las evaluaciones y cuestionarios de los módulos de la cohorte.'
       }
     >
       {selectedTopicId ? (

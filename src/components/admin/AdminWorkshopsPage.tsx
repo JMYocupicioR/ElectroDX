@@ -168,7 +168,10 @@ export default function AdminWorkshopsPage() {
   };
 
   return (
-    <AdminLayout title="Gestión de Talleres En Vivo">
+    <AdminLayout
+      title="Clases en vivo"
+      subtitle="Sesiones programadas, enlaces de transmisión y grabaciones de la cohorte"
+    >
       {/* Aviso Push */}
       <div className="mb-6 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
         <h3 className="font-bold text-sm flex items-center gap-2 mb-3 text-slate-900 dark:text-white">

@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Save, Send, ArrowLeft } from 'lucide-react';
+import { Save, Send } from 'lucide-react';
 import { allModules } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
 import { saveRevision, submitRevision, getPublishedModules, getRevisionById } from '../../services/editorialService';
+import { useGoBack } from '../../hooks/useGoBack';
+import { BackButton } from '../common/BackButton';
 import type { RevisionPayload } from '../../types/database';
 import { slugify } from '../../utils/slugify';
 import { isSupabaseConfigured } from '../../lib/supabase';
@@ -29,6 +31,7 @@ const emptyModulePayload = (): RevisionPayload => ({
 
 export default function ModuleEditorPage() {
   const navigate = useNavigate();
+  const goBack = useGoBack('/colaborador');
   const [searchParams] = useSearchParams();
   const revisionId = searchParams.get('revisionId');
   const { user, isVerifiedContributor } = useAuth();
@@ -102,7 +105,7 @@ export default function ModuleEditorPage() {
       if (submit) {
         await submitRevision(saved.id);
         setMessage('Módulo enviado a revisión. Un administrador lo publicará si es aprobado.');
-        navigate('/colaborador');
+        goBack('/colaborador');
       } else {
         setMessage('Borrador guardado.');
         navigate(`/colaborador/nuevo-modulo?revisionId=${saved.id}`, { replace: true });
@@ -125,9 +128,7 @@ export default function ModuleEditorPage() {
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-3xl mx-auto">
-      <Link to="/colaborador" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-blue-600 mb-6">
-        <ArrowLeft className="w-4 h-4" /> Mis propuestas
-      </Link>
+      <BackButton fallback="/colaborador" />
 
       <h1 className="text-2xl font-bold mb-2">Proponer nuevo módulo</h1>
       <p className="text-sm text-slate-500 mb-6">

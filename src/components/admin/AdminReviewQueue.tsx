@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Check, X, MessageSquare, ExternalLink, User, Filter } from 'lucide-react';
 import { allModules } from '../../content/modules';
 import { AdminLayout } from './AdminLayout';
@@ -83,7 +83,9 @@ async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayl
 }
 
 export default function AdminReviewQueue() {
-  const [queueTab, setQueueTab] = useState<QueueTab>('pending');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as QueueTab) || 'pending';
+  const [queueTab, setQueueTab] = useState<QueueTab>(initialTab);
   const [revisions, setRevisions] = useState<ContentRevision[]>([]);
   const [authorNames, setAuthorNames] = useState<Map<string, string>>(new Map());
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -184,7 +186,10 @@ export default function AdminReviewQueue() {
           <button
             key={t}
             type="button"
-            onClick={() => setQueueTab(t)}
+            onClick={() => {
+              setQueueTab(t);
+              setSearchParams(t === 'pending' ? {} : { tab: t });
+            }}
             className={`px-4 py-2 rounded-xl text-sm font-medium ${
               queueTab === t
                 ? 'bg-emerald-600 text-white'

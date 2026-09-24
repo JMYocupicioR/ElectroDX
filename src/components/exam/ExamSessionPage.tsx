@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useGoBack } from '../../hooks/useGoBack';
 import { Loader2, Clock, Send, LayoutGrid, X, Brain, ChevronLeft, ShieldAlert } from 'lucide-react';
 import type { ExamConfig, ExamAttemptRecord, ExamQuestion } from '../../types/exam';
 import {
@@ -78,6 +79,7 @@ function writeQuestionCache(key: string, prepared: PreparedExam): void {
 export default function ExamSessionPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const goBack = useGoBack('/examenes');
   const { user } = useAuth();
   const state = location.state as LocationState | null;
 
@@ -391,10 +393,10 @@ export default function ExamSessionPage() {
             if (Object.keys(runner.answers).length === 0) {
               await runner.abandonExam();
             }
-            navigate('/examenes');
+            goBack('/examenes');
           }}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all"
-          title={isStrictLock ? 'Salir de la evaluación' : 'Volver a exámenes'}
+          className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+          title={isStrictLock ? 'Salir de la evaluación' : 'Volver'}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>

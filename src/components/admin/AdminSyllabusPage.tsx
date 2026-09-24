@@ -943,7 +943,7 @@ function ModuleTopicsPanel({
               </div>
               <div className="flex items-center gap-1 shrink-0">
                 <a
-                  href={`/colaborador/nueva-revision?moduleId=${mod.id}&topicId=${topic.id}&action=update`}
+                  href={`/colaborador/nueva-revision?moduleId=${mod.id}&topicId=${topic.id}&action=update&from=/admin/temario`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1.5 rounded-lg border"

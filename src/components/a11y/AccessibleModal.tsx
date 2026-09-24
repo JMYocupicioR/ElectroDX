@@ -7,9 +7,10 @@ interface AccessibleModalProps {
   onClose: () => void;
   children: ReactNode;
   labelledBy?: string;
+  headerSlot?: ReactNode;
 }
 
-export function AccessibleModal({ open, title, onClose, children, labelledBy }: AccessibleModalProps) {
+export function AccessibleModal({ open, title, onClose, children, labelledBy, headerSlot }: AccessibleModalProps) {
   const ref = useFocusTrap(open);
 
   if (!open) return null;
@@ -33,7 +34,12 @@ export function AccessibleModal({ open, title, onClose, children, labelledBy }: 
           if (e.key === 'Escape') onClose();
         }}
       >
-        <h2 id={titleId} className="text-lg font-bold text-slate-900 dark:text-white mb-3">
+        {headerSlot}
+        <h2
+          id={titleId}
+          tabIndex={-1}
+          className="text-lg font-bold text-slate-900 dark:text-white mb-3 focus:outline-none"
+        >
           {title}
         </h2>
         {children}

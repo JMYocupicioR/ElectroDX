@@ -270,7 +270,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950">
+    <div className="dark min-h-screen pt-20 pb-16 px-4 flex items-center justify-center relative overflow-hidden bg-slate-950 text-slate-100">
       {/* Luces de fondo y atmósfera médica de alta tecnología */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[500px] bg-gradient-to-tr from-blue-600/15 via-indigo-600/10 to-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-blue-500/10 rounded-full blur-[100px] pointer-events-none" />
@@ -283,7 +283,7 @@ export default function RegisterPage() {
           <div>
             {/* Header de la Tarjeta */}
             <div className="flex items-center justify-between mb-6">
-              <BrandLogo variant="compact" size="sm" showAccreditation={false} />
+              <BrandLogo variant="compact" size="sm" showAccreditation={false} theme="dark" />
               <div className="px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[10px] font-semibold uppercase tracking-wider">
                 Registro Alumnos
               </div>

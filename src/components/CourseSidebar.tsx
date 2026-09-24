@@ -318,7 +318,9 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
       return;
     }
     if (action === 'quiz' && ctx.topic) {
-      navigate(`/colaborador/cuestionario?moduleId=${ctx.moduleId}&topicId=${ctx.topic.id}`);
+      navigate(`/colaborador/cuestionario?moduleId=${ctx.moduleId}&topicId=${ctx.topic.id}`, {
+        state: { from: location.pathname + location.search },
+      });
       return;
     }
     if (action === 'edit' && ctx.topic) {
@@ -328,7 +330,9 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
         action: 'update',
       });
       if (ctx.parentId) params.set('parentId', ctx.parentId);
-      navigate(`/colaborador/nueva-revision?${params.toString()}`);
+      navigate(`/colaborador/nueva-revision?${params.toString()}`, {
+        state: { from: location.pathname + location.search },
+      });
     }
   };
 

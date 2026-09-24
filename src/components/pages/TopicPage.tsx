@@ -832,7 +832,11 @@ export default function TopicPage() {
                 <p className="text-xs text-violet-600 dark:text-violet-400 mb-2">
                   Los cuestionarios se crean por subtema. Usa &quot;Proponer cuestionario&quot; en cada sección numerada abajo,
                   o ve a{' '}
-                  <Link to="/colaborador/cuestionario" className="underline font-medium">
+                  <Link
+                    to="/colaborador/cuestionario"
+                    state={{ from: location.pathname + location.search }}
+                    className="underline font-medium"
+                  >
                     Colaborar → Nuevo cuestionario
                   </Link>
                   .

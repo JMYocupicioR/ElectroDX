@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff, Users, Scale, BookOpen, GraduationCap, Home } from 'lucide-react';
+import { Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff, Users, Scale, BookOpen, GraduationCap, Home } from 'lucide-react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuth } from '../../contexts/AuthProvider';
+import { BackButton } from '../common/BackButton';
 
 export default function SettingsPage() {
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
-  const { updatePassword } = useAuth();
+  const { updatePassword, user } = useAuth();
 
   const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -21,6 +23,14 @@ export default function SettingsPage() {
     setPassError(null);
     setPassSuccess(false);
 
+    if (!user?.email) {
+      setPassError('No hay una sesión activa. Vuelve a iniciar sesión.');
+      return;
+    }
+    if (currentPassword.length < 1) {
+      setPassError('Escribe tu contraseña actual.');
+      return;
+    }
     if (newPassword.length < 8) {
       setPassError('La contraseña debe tener al menos 8 caracteres.');
       return;
@@ -29,15 +39,20 @@ export default function SettingsPage() {
       setPassError('Las contraseñas no coinciden.');
       return;
     }
+    if (newPassword === currentPassword) {
+      setPassError('La nueva contraseña debe ser distinta de la actual.');
+      return;
+    }
 
     setSavingPass(true);
-    const result = await updatePassword(newPassword);
+    const result = await updatePassword(newPassword, currentPassword);
     setSavingPass(false);
 
     if (result.error) {
       setPassError(result.error);
     } else {
       setPassSuccess(true);
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setTimeout(() => {
@@ -49,13 +64,7 @@ export default function SettingsPage() {
 
   return (
     <div className="pt-24 pb-16 px-4 max-w-2xl mx-auto">
-      <Link
-        to="/cuenta"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 mb-6"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Volver a mi cuenta
-      </Link>
+      <BackButton fallback="/cuenta" />
 
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Ajustes</h1>
       <p className="text-sm text-slate-500 mb-8">Preferencias de la aplicación y seguridad</p>
@@ -120,6 +129,21 @@ export default function SettingsPage() {
 
         {showPasswordChange && (
           <form onSubmit={handlePasswordSubmit} className="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                Contraseña actual
+              </label>
+              <input
+                type={showPass ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                placeholder="Tu contraseña actual"
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+              />
+            </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                 Nueva Contraseña

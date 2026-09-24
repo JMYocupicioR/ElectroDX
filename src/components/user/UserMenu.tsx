@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   ChevronDown,
+  Bell,
   ClipboardList,
   LogOut,
   PenLine,
@@ -24,6 +25,7 @@ import {
 } from '../../utils/roleLabels';
 
 export function UserMenu() {
+  const location = useLocation();
   const {
     user,
     profile,
@@ -276,6 +278,9 @@ export function UserMenu() {
           )}
 
           <div className="py-1">
+            <MenuLink to="/portal?tab=notifications" icon={Bell} onClick={() => setOpen(false)}>
+              Notificaciones
+            </MenuLink>
             <MenuLink to="/portal" icon={GraduationCap} onClick={() => setOpen(false)}>
               Mi portal
             </MenuLink>
@@ -291,7 +296,12 @@ export function UserMenu() {
               </MenuLink>
             )}
             {canProposeContent && (
-              <MenuLink to="/colaborador/cuestionario" icon={ClipboardList} onClick={() => setOpen(false)}>
+              <MenuLink
+                to="/colaborador/cuestionario"
+                icon={ClipboardList}
+                onClick={() => setOpen(false)}
+                state={{ from: location.pathname + location.search }}
+              >
                 Cuestionarios
               </MenuLink>
             )}
@@ -305,7 +315,12 @@ export function UserMenu() {
                 {isAdmin ? 'Administración' : 'Panel del profesor'}
               </MenuLink>
             )}
-            <MenuLink to="/cuenta/ajustes" icon={Settings} onClick={() => setOpen(false)}>
+            <MenuLink
+              to="/cuenta/ajustes"
+              icon={Settings}
+              onClick={() => setOpen(false)}
+              state={{ from: location.pathname + location.search }}
+            >
               Ajustes
             </MenuLink>
           </div>
@@ -336,16 +351,19 @@ function MenuLink({
   children,
   onClick,
   badge,
+  state,
 }: {
   to: string;
   icon: typeof User;
   children: React.ReactNode;
   onClick?: () => void;
   badge?: string;
+  state?: any;
 }) {
   return (
     <Link
       to={to}
+      state={state}
       role="menuitem"
       onClick={onClick}
       className="flex items-center gap-3 px-3 py-2.5 mx-1 rounded-xl text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

@@ -15,50 +15,53 @@ export default function AuthCallbackPage() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    // Verificar si hay errores en query o hash
-    const errorDescription = searchParams.get('error_description') || searchParams.get('error');
+    let settled = false;
+    const next = searchParams.get('next');
     const hash = window.location.hash;
     const isRecovery =
       searchParams.get('type') === 'recovery' ||
-      searchParams.get('next') === '/auth/actualizar-password' ||
+      next === '/auth/actualizar-password' ||
       hash.includes('type=recovery');
 
+    const errorDescription = searchParams.get('error_description') || searchParams.get('error');
     if (errorDescription || hash.includes('error=')) {
       navigate('/auth/login?mode=recovery&error=expired', { replace: true });
       return;
     }
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!data.session) {
-        // En algunos casos de recovery, la sesión se establece tras el evento onAuthStateChange
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-          if ((event === 'PASSWORD_RECOVERY' || isRecovery) && session) {
-            authListener.subscription.unsubscribe();
-            navigate('/auth/actualizar-password', { replace: true });
-          } else if (session) {
-            authListener.subscription.unsubscribe();
-            getPostLoginPath(session.user.id, searchParams.get('next')).then((path) => {
-              navigate(path, { replace: true });
-            });
-          }
-        });
-
-        // Timeout de fallback si no hay sesión
-        setTimeout(() => {
-          authListener.subscription.unsubscribe();
-          navigate('/auth/login', { replace: true });
-        }, 3000);
-        return;
-      }
-
-      if (isRecovery) {
+    const finish = async (userId: string, recovery: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (recovery) {
         navigate('/auth/actualizar-password', { replace: true });
         return;
       }
-
-      const path = await getPostLoginPath(data.session.user.id, searchParams.get('next'));
+      const path = await getPostLoginPath(userId, next);
       navigate(path, { replace: true });
+    };
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) return;
+      const recovery = isRecovery || event === 'PASSWORD_RECOVERY';
+      void finish(session.user.id, recovery);
     });
+
+    void supabase.auth.getSession().then(({ data }) => {
+      if (data.session) void finish(data.session.user.id, isRecovery);
+    });
+
+    const timer = window.setTimeout(() => {
+      authListener.subscription.unsubscribe();
+      if (settled) return;
+      settled = true;
+      navigate(isRecovery ? '/auth/login?mode=recovery&error=expired' : '/auth/login', { replace: true });
+    }, 4000);
+
+    return () => {
+      settled = true;
+      window.clearTimeout(timer);
+      authListener.subscription.unsubscribe();
+    };
   }, [navigate, searchParams]);
 
   return (

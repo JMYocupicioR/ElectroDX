@@ -1,106 +1,208 @@
 import { Link, useLocation } from 'react-router-dom';
 import {
-  Home,
   BookOpen,
-  Wrench,
+  Activity,
   ClipboardList,
-  User,
+  Video,
+  Waves,
+  GraduationCap,
+  LayoutDashboard,
+  Home,
+  LogIn,
   Shield,
+  type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useStudentPendingAssignments } from '../../hooks/useStudentPendingAssignments';
+
+type DockItem = {
+  id: string;
+  label: string;
+  to: string;
+  icon: LucideIcon;
+  well: string;
+  activeWell: string;
+  iconColor: string;
+  isActive: boolean;
+  badge?: string | number;
+};
 
 export function MobileBottomNav() {
   const location = useLocation();
   const { user, isAdmin, isEditor } = useAuth();
   const isStaff = isAdmin || isEditor;
   const { pendingCount } = useStudentPendingAssignments();
+  const path = location.pathname;
 
-  // Hide on exam session or full-screen immersive tools to prevent clutter
-  if (location.pathname.startsWith('/examenes/sesion')) {
+  if (
+    path.startsWith('/examenes/sesion') ||
+    isAdmin ||
+    (isStaff && path.startsWith('/admin'))
+  ) {
     return null;
   }
 
-  const navItems = [
+  const examBadge = pendingCount > 0 ? (pendingCount > 9 ? '9+' : pendingCount) : undefined;
+
+  const studentItems: DockItem[] = [
     {
-      to: '/',
-      label: 'Inicio',
-      icon: Home,
-      isActive: location.pathname === '/',
+      id: 'portal',
+      label: 'Portal',
+      to: '/portal',
+      icon: LayoutDashboard,
+      well: 'bg-indigo-500/15',
+      activeWell: 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30',
+      iconColor: 'text-indigo-300',
+      isActive: path === '/portal' || path === '/dashboard' || path === '/estudiante',
     },
     {
+      id: 'topics',
+      label: 'Temas',
       to: '/temario',
-      label: 'Curso',
       icon: BookOpen,
-      isActive:
-        location.pathname.startsWith('/modulo') ||
-        location.pathname === '/temario' ||
-        location.pathname === '/programa',
+      well: 'bg-blue-500/15',
+      activeWell: 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30',
+      iconColor: 'text-blue-300',
+      isActive: path.startsWith('/modulo') || path === '/temario' || path === '/programa',
     },
     {
-      to: '/simuladores',
-      label: 'Simuladores',
-      icon: Wrench,
-      isActive:
-        location.pathname.startsWith('/simuladores') ||
-        location.pathname.startsWith('/ejercicios') ||
-        location.pathname.startsWith('/herramientas'),
+      id: 'cases',
+      label: 'Casos',
+      to: '/ejercicios',
+      icon: Activity,
+      well: 'bg-teal-500/15',
+      activeWell: 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-md shadow-teal-500/30',
+      iconColor: 'text-teal-300',
+      isActive: path.startsWith('/ejercicios'),
     },
     {
+      id: 'exams',
+      label: 'Examen',
       to: '/examenes',
-      label: 'Exámenes',
       icon: ClipboardList,
-      badge: pendingCount > 0 ? (pendingCount > 9 ? '9+' : pendingCount) : undefined,
-      isActive: location.pathname.startsWith('/examenes'),
+      well: 'bg-rose-500/15',
+      activeWell: 'bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-md shadow-rose-500/30',
+      iconColor: 'text-rose-300',
+      isActive: path.startsWith('/examenes'),
+      badge: examBadge,
     },
     {
-      to: isStaff ? '/admin' : user ? '/portal' : '/auth/login',
-      label: isStaff ? (isAdmin ? 'Admin' : 'Profesor') : user ? 'Mi Portal' : 'Ingresar',
-      icon: isStaff ? Shield : User,
+      id: 'classes',
+      label: 'Clases',
+      to: '/talleres',
+      icon: Video,
+      well: 'bg-violet-500/15',
+      activeWell: 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-md shadow-violet-500/30',
+      iconColor: 'text-violet-300',
+      isActive: path.startsWith('/talleres') || path.startsWith('/taller'),
+    },
+    {
+      id: 'sims',
+      label: 'Simular',
+      to: '/simuladores',
+      icon: Waves,
+      well: 'bg-cyan-500/15',
+      activeWell: 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30',
+      iconColor: 'text-cyan-300',
       isActive:
-        (isStaff && location.pathname.startsWith('/admin')) ||
-        (!isStaff && location.pathname.startsWith('/portal')),
+        path.startsWith('/simuladores') ||
+        path.startsWith('/herramientas'),
+    },
+    {
+      id: 'courses',
+      label: isStaff ? 'Panel' : 'Cursos',
+      to: isStaff ? '/admin' : '/cursos',
+      icon: isStaff ? Shield : GraduationCap,
+      well: 'bg-amber-500/15',
+      activeWell: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/30',
+      iconColor: 'text-amber-300',
+      isActive: isStaff ? path.startsWith('/admin') : path.startsWith('/cursos'),
     },
   ];
 
+  const guestItems: DockItem[] = [
+    {
+      id: 'home',
+      label: 'Inicio',
+      to: '/',
+      icon: Home,
+      well: 'bg-indigo-500/15',
+      activeWell: 'bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-500/30',
+      iconColor: 'text-indigo-300',
+      isActive: path === '/',
+    },
+    {
+      id: 'topics',
+      label: 'Temas',
+      to: '/temario',
+      icon: BookOpen,
+      well: 'bg-blue-500/15',
+      activeWell: 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/30',
+      iconColor: 'text-blue-300',
+      isActive: path === '/temario' || path === '/programa',
+    },
+    {
+      id: 'courses',
+      label: 'Cursos',
+      to: '/cursos',
+      icon: GraduationCap,
+      well: 'bg-amber-500/15',
+      activeWell: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/30',
+      iconColor: 'text-amber-300',
+      isActive: path.startsWith('/cursos'),
+    },
+    {
+      id: 'login',
+      label: 'Ingresar',
+      to: '/auth/login',
+      icon: LogIn,
+      well: 'bg-emerald-500/15',
+      activeWell: 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/30',
+      iconColor: 'text-emerald-300',
+      isActive: path.startsWith('/auth') || path === '/login' || path === '/registro',
+    },
+  ];
+
+  const navItems = user ? studentItems : guestItems;
+
   return (
     <nav
-      aria-label="Navegación móvil inferior"
-      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 shadow-lg shadow-black/10 transition-colors"
+      aria-label="Accesos rápidos del estudiante"
+      className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.35)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="flex items-center justify-around px-2 py-1.5 max-w-md mx-auto">
+      <div className="flex items-stretch justify-between gap-0.5 px-1.5 pt-1.5 pb-1 max-w-lg mx-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const active = item.isActive;
           return (
             <Link
-              key={item.to}
+              key={item.id}
               to={item.to}
-              className={`flex flex-col items-center justify-center py-1 px-3 rounded-2xl transition-all relative group ${
-                active
-                  ? 'text-blue-600 dark:text-cyan-400 font-bold'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
+              aria-current={item.isActive ? 'page' : undefined}
+              className="flex flex-1 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl py-1 active:scale-95 transition-transform"
             >
-              <div className="relative">
+              <span
+                className={`relative w-8 h-8 rounded-xl flex items-center justify-center ${
+                  item.isActive ? item.activeWell : item.well
+                }`}
+              >
                 <Icon
-                  className={`w-5 h-5 transition-transform group-active:scale-90 ${
-                    active ? 'stroke-[2.5px]' : 'stroke-[1.8px]'
-                  }`}
+                  className={`w-[18px] h-[18px] ${item.isActive ? 'text-white' : item.iconColor}`}
+                  strokeWidth={2.25}
                 />
-                {item.badge && (
-                  <span className="absolute -top-1 -right-2 px-1 py-0.2 rounded-full bg-red-500 text-white text-[9px] font-black leading-none flex items-center justify-center shadow-xs animate-pulse">
+                {item.badge != null && (
+                  <span className="absolute -top-1 -right-1.5 min-w-[14px] h-3.5 px-1 rounded-full bg-rose-500 text-white text-[8px] font-black leading-none flex items-center justify-center">
                     {item.badge}
                   </span>
                 )}
-              </div>
-              <span className="text-[10px] mt-0.5 tracking-tight font-medium truncate max-w-[64px]">
+              </span>
+              <span
+                className={`text-[9px] font-semibold leading-none tracking-tight truncate max-w-full ${
+                  item.isActive ? 'text-white' : 'text-slate-400'
+                }`}
+              >
                 {item.label}
               </span>
-              {active && (
-                <span className="w-1 h-1 rounded-full bg-blue-600 dark:bg-cyan-400 mt-0.5 shadow-sm" />
-              )}
             </Link>
           );
         })}

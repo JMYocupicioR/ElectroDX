@@ -1,0 +1,94 @@
+import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { StudentPortalGuide } from './StudentPortalGuide';
+
+describe('StudentPortalGuide', () => {
+  it('returns null when open is false', () => {
+    const html = renderToStaticMarkup(
+      <StudentPortalGuide
+        open={false}
+        courseState="active"
+        finalActionLabel="Empezar: Módulo 1"
+        onBack={() => undefined}
+        onNext={() => undefined}
+        onSkip={() => undefined}
+        onFinish={() => undefined}
+        stepIndex={0}
+        saving={false}
+        saveError={null}
+      />
+    );
+    expect(html).toBe('');
+  });
+
+  it('renders modal dialog with step 1 content, disabled back button, and skip button', () => {
+    const html = renderToStaticMarkup(
+      <StudentPortalGuide
+        open={true}
+        courseState="active"
+        finalActionLabel="Empezar: Módulo 1"
+        onBack={() => undefined}
+        onNext={() => undefined}
+        onSkip={() => undefined}
+        onFinish={() => undefined}
+        stepIndex={0}
+        saving={false}
+        saveError={null}
+      />
+    );
+
+    expect(html).toContain('role="dialog"');
+    expect(html).toContain('aria-modal="true"');
+    expect(html).toContain('id="portal-guide-title"');
+    expect(html).toContain('Cuatro lugares, y ya puedes estudiar');
+    expect(html).toContain('Paso 1 de 5');
+    expect(html).toContain('aria-current="step"');
+    expect(html).toContain('Saltar');
+    expect(html).toContain('Siguiente');
+
+    // Atrás button must be disabled on step 1
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*aria-disabled="true"[^>]*>Atrás<\/button>/);
+  });
+
+  it('renders final action label on step 5 instead of Siguiente', () => {
+    const html = renderToStaticMarkup(
+      <StudentPortalGuide
+        open={true}
+        courseState="active"
+        finalActionLabel="Continuar: Conducción Nerviosa"
+        onBack={() => undefined}
+        onNext={() => undefined}
+        onSkip={() => undefined}
+        onFinish={() => undefined}
+        stepIndex={4}
+        saving={false}
+        saveError={null}
+      />
+    );
+
+    expect(html).toContain('Continuar: Conducción Nerviosa');
+    expect(html).not.toContain('>Siguiente<');
+    expect(html).toContain('Paso 5 de 5');
+  });
+
+  it('displays role="alert" when saveError is provided', () => {
+    const html = renderToStaticMarkup(
+      <StudentPortalGuide
+        open={true}
+        courseState="active"
+        finalActionLabel="Empezar: Módulo 1"
+        onBack={() => undefined}
+        onNext={() => undefined}
+        onSkip={() => undefined}
+        onFinish={() => undefined}
+        stepIndex={0}
+        saving={false}
+        saveError="Network timeout error"
+      />
+    );
+
+    expect(html).toContain('role="alert"');
+    expect(html).toContain('No se pudo guardar. La guía volverá a aparecer la próxima vez.');
+    expect(html).toContain('Network timeout error');
+  });
+});
