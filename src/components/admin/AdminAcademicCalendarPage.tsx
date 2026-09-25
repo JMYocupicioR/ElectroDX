@@ -6,6 +6,7 @@ import { CalendarCreateMenu, type CalendarCreateAction } from './calendar/Calend
 import { CalendarEventInspector } from './calendar/CalendarEventInspector';
 import { CalendarRubricRail } from './calendar/CalendarRubricRail';
 import AssignExamModal from './AssignExamModal';
+import AssignHomeworkModal from './AssignHomeworkModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
@@ -44,6 +45,7 @@ export default function AdminAcademicCalendarPage() {
   const [createDay, setCreateDay] = useState<Date | null>(null);
 
   const [showExam, setShowExam] = useState(false);
+  const [showHomework, setShowHomework] = useState(false);
   const [showCase, setShowCase] = useState(false);
   const [showClass, setShowClass] = useState(false);
   const [showMilestone, setShowMilestone] = useState(false);
@@ -114,6 +116,7 @@ export default function AdminAcademicCalendarPage() {
       setShowClass(true);
     }
     if (action === 'exam') setShowExam(true);
+    if (action === 'practical_task') setShowHomework(true);
     if (action === 'clinical_case') setShowCase(true);
     if (action === 'milestone') setShowMilestone(true);
   };
@@ -185,7 +188,9 @@ export default function AdminAcademicCalendarPage() {
           if (!selected) return;
           setPrefillDate(localDateTimeInputValue(new Date(selected.startsAt), 23, 59));
           if (selected.type === 'exam') setShowExam(true);
-          else setShowCase(true);
+          else if (selected.type === 'practical_task' || selected.type === 'reading' || selected.type === 'emg_report') {
+            setShowHomework(true);
+          } else setShowCase(true);
         }}
         onEditMilestone={() => setShowMilestone(true)}
       />
@@ -218,6 +223,13 @@ export default function AdminAcademicCalendarPage() {
       <AssignExamModal
         isOpen={showExam}
         onClose={() => setShowExam(false)}
+        profiles={profiles}
+        initialDueDate={prefillDate}
+        onAssigned={() => refreshAfterWrite('tareas')}
+      />
+      <AssignHomeworkModal
+        isOpen={showHomework}
+        onClose={() => setShowHomework(false)}
         profiles={profiles}
         initialDueDate={prefillDate}
         onAssigned={() => refreshAfterWrite('tareas')}

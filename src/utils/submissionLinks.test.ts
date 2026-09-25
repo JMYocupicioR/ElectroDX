@@ -8,6 +8,7 @@ describe('submissionLinkError', () => {
     expect(submissionLinkError('https://1drv.ms/b/s!abc')).toBeNull();
     expect(submissionLinkError('https://contoso.sharepoint.com/sites/curso/doc')).toBeNull();
     expect(submissionLinkError('https://www.dropbox.com/s/abc/reporte.pdf?dl=0')).toBeNull();
+    expect(submissionLinkError('https://app.box.com/s/abc')).toBeNull();
   });
 
   it('rechaza http, otros hosts y texto vacío', () => {
@@ -20,7 +21,7 @@ describe('submissionLinkError', () => {
 describe('submissionFileError', () => {
   it('rechaza tipos y tamaños fuera de la política del bucket', () => {
     const video = new File([new Uint8Array(8)], 'clase.mp4', { type: 'video/mp4' });
-    expect(submissionFileError(video)).toMatch(/PDF/);
+    expect(submissionFileError(video)).toMatch(/Word/);
 
     const huge = new File([new Uint8Array(15 * 1024 * 1024 + 1)], 'trazo.pdf', {
       type: 'application/pdf',
@@ -28,8 +29,12 @@ describe('submissionFileError', () => {
     expect(submissionFileError(huge)).toMatch(/15 MB/);
   });
 
-  it('acepta un PDF dentro del límite', () => {
+  it('acepta un PDF o un Word dentro del límite', () => {
     const pdf = new File([new Uint8Array(32)], 'reporte.pdf', { type: 'application/pdf' });
     expect(submissionFileError(pdf)).toBeNull();
+    const word = new File([new Uint8Array(32)], 'ensayo.docx', {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    });
+    expect(submissionFileError(word)).toBeNull();
   });
 });

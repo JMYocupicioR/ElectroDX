@@ -91,6 +91,13 @@ export function AdminLayout({
           badge: 0,
         },
         {
+          to: '/admin/alumnos/tareas',
+          label: 'Tareas',
+          icon: ClipboardList,
+          exact: false,
+          badge: pendingTeacherReviews,
+        },
+        {
           to: '/admin/alumnos',
           label: 'Alumnos',
           icon: Users,
@@ -101,8 +108,8 @@ export function AdminLayout({
     },
     {
       id: 'curso',
-      title: 'El curso',
-      subtitle: 'cuando preparas contenido',
+      title: 'Contenido',
+      subtitle: 'Aqui editas el contenido del curso',
       items: [
         {
           to: '/admin/temario',
@@ -199,8 +206,17 @@ export function AdminLayout({
 
   const allTabs = groups.flatMap((g) => g.items).filter((t) => !t.adminOnly || isAdmin);
 
-  const isActive = (to: string, exact: boolean) =>
-    exact ? location.pathname === to : location.pathname.startsWith(to);
+  const isActive = (to: string, exact: boolean) => {
+    if (exact) return location.pathname === to;
+    if (to === '/admin/alumnos') {
+      return (
+        location.pathname === '/admin/alumnos' ||
+        location.pathname === '/admin/progreso' ||
+        /^\/admin\/(alumnos|progreso)\/[0-9a-f-]{8,}$/i.test(location.pathname)
+      );
+    }
+    return location.pathname.startsWith(to);
+  };
 
   const currentTab = allTabs.find((t) => isActive(t.to, t.exact)) ?? allTabs[0];
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Activity, Calendar, FileQuestion, Video, X } from 'lucide-react';
+import { Activity, Calendar, ClipboardList, FileQuestion, Video, X } from 'lucide-react';
 
-export type CalendarCreateAction = 'session' | 'exam' | 'clinical_case' | 'milestone';
+export type CalendarCreateAction = 'session' | 'exam' | 'clinical_case' | 'practical_task' | 'milestone';
 
 export function CalendarCreateMenu({
   dateLabel,
@@ -16,6 +16,7 @@ export function CalendarCreateMenu({
   const options: { id: CalendarCreateAction; label: string; hint: string; icon: typeof Video }[] = [
     { id: 'session', label: 'Clase en vivo', hint: 'Taller o sesión que cuenta a asistencia', icon: Video },
     { id: 'exam', label: 'Examen', hint: 'Asignar evaluación a la cohorte', icon: FileQuestion },
+    { id: 'practical_task', label: 'Tarea', hint: 'Entrega de archivo o enlace para la cohorte', icon: ClipboardList },
     { id: 'clinical_case', label: 'Caso EMG', hint: 'Tarea clínica del simulador', icon: Activity },
     { id: 'milestone', label: 'Corte académico', hint: 'Checklist de temas y fecha de corte', icon: Calendar },
   ];

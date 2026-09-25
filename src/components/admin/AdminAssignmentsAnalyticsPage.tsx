@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useSearchParams } from 'react-router-dom';
-import { Search, Trash2, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Search, Trash2, AlertTriangle, CheckCircle2, Plus } from 'lucide-react';
+import AssignHomeworkModal from './AssignHomeworkModal';
 import { AdminLayout } from './AdminLayout';
 import {
   AdminAnalyticsScopeBar,
@@ -56,6 +57,7 @@ export default function AdminAssignmentsAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [gradingItem, setGradingItem] = useState<TeacherPendingReviewItem | null>(null);
+  const [showHomeworkModal, setShowHomeworkModal] = useState(params.get('nueva') === '1');
 
   // Estado para confirmación de eliminación
   const [assignmentToDelete, setAssignmentToDelete] = useState<AssignmentAnalyticsRow | null>(null);
@@ -89,6 +91,19 @@ export default function AdminAssignmentsAnalyticsPage() {
   const graded = filtered.filter((row) => typeof row.grade === 'number');
   const avgGrade = average(graded.map((row) => row.grade || 0));
 
+  useEffect(() => {
+    if (params.get('nueva') === '1') setShowHomeworkModal(true);
+  }, [params]);
+
+  const closeHomeworkModal = () => {
+    setShowHomeworkModal(false);
+    if (params.get('nueva')) {
+      const next = new URLSearchParams(params);
+      next.delete('nueva');
+      setParams(next, { replace: true });
+    }
+  };
+
   const setStudentId = (id: string) => {
     const next = new URLSearchParams(params);
     if (id) next.set('alumno', id);
@@ -114,14 +129,24 @@ export default function AdminAssignmentsAnalyticsPage() {
 
   return (
     <AdminLayout
-      title="Tareas enviadas"
-      subtitle="Entregas de casos, reportes y tareas prácticas. Filtra por alumno, tipo, estatus y fecha"
+      title="Tareas"
+      subtitle="Publica la misma tarea a la cohorte o a alumnos elegidos, y califica las entregas"
     >
       <div className="space-y-5 pb-16">
         <AdminAnalyticsScopeBar
           student={scopedStudent}
           cohortHref="/admin/alumnos/tareas"
           studentLabel="Tareas del alumno"
+          actions={
+            <button
+              type="button"
+              onClick={() => setShowHomeworkModal(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nueva tarea
+            </button>
+          }
         />
 
         {toastMessage && (
@@ -310,6 +335,18 @@ export default function AdminAssignmentsAnalyticsPage() {
       </div>
 
       {/* Modal de Calificación Rápida */}
+      <AssignHomeworkModal
+        isOpen={showHomeworkModal}
+        onClose={closeHomeworkModal}
+        profiles={profiles}
+        initialStudentId={studentId || undefined}
+        initialStudentName={scopedStudent?.display_name}
+        onAssigned={async () => {
+          closeHomeworkModal();
+          await load();
+        }}
+      />
+
       <TeacherQuickGradeModal
         isOpen={Boolean(gradingItem)}
         onClose={() => setGradingItem(null)}

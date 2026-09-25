@@ -594,7 +594,7 @@ export default function AdminDashboard() {
 
         {/* ── 2. Entregas por calificar (la más antigua arriba, con Calificar en la fila) ── */}
         <section>
-          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-3 gap-3">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
                 <FileCheck className="w-4 h-4" />
@@ -612,6 +612,12 @@ export default function AdminDashboard() {
                 </span>
               </h2>
             </div>
+            <Link
+              to="/admin/alumnos/tareas?nueva=1"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shrink-0"
+            >
+              Nueva tarea
+            </Link>
           </div>
 
           {sortedSubmissions.length === 0 ? (

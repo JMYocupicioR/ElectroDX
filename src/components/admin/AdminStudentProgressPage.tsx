@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import AssignExamModal from './AssignExamModal';
+import AssignHomeworkModal from './AssignHomeworkModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
@@ -412,6 +413,7 @@ export default function AdminStudentProgressPage() {
 
   // New Assignment Modal state
   const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [showHomeworkModal, setShowHomeworkModal] = useState(false);
   const [showAssignCaseModal, setShowAssignCaseModal] = useState(false);
   const [asgTitle, setAsgTitle] = useState('');
   const [asgType, setAsgType] = useState<AssignmentType>('exam');
@@ -1793,6 +1795,15 @@ export default function AdminStudentProgressPage() {
 
                 <button
                   type="button"
+                  onClick={() => setShowHomeworkModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition cursor-pointer shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Nueva tarea</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setShowAssignCaseModal(true)}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition cursor-pointer shadow-xs"
                 >
@@ -2105,6 +2116,14 @@ export default function AdminStudentProgressPage() {
       <AssignExamModal
         isOpen={showAssignmentModal}
         onClose={() => setShowAssignmentModal(false)}
+        initialStudentId={studentId}
+        initialStudentName={dossier?.profile.display_name}
+        onAssigned={loadData}
+      />
+
+      <AssignHomeworkModal
+        isOpen={showHomeworkModal}
+        onClose={() => setShowHomeworkModal(false)}
         initialStudentId={studentId}
         initialStudentName={dossier?.profile.display_name}
         onAssigned={loadData}

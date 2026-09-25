@@ -210,6 +210,7 @@ export default function StudentDashboard() {
   const [streak, setStreak] = useState<StudentStreakInfo | null>(null);
   const [submittingAsg, setSubmittingAsg] = useState<StudentAssignment | null>(null);
   const [submitNotes, setSubmitNotes] = useState('');
+  const [submitAttachmentCount, setSubmitAttachmentCount] = useState(0);
   const [savingSubmission, setSavingSubmission] = useState(false);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
 
@@ -534,14 +535,20 @@ export default function StudentDashboard() {
   const handleSubmitAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!submittingAsg || !user) return;
+    if (submittingAsg.status !== 'pending' && submittingAsg.status !== 'needs_revision') return;
+    if (!submitNotes.trim() && submitAttachmentCount < 1) {
+      setActionError('Escribe tu respuesta, sube un archivo o agrega un enlace para entregar.');
+      return;
+    }
     setSavingSubmission(true);
     try {
-      await submitAssignment(submittingAsg.id, user.id, submitNotes);
+      await submitAssignment(submittingAsg.id, user.id, submitNotes.trim() || undefined);
       setSubmittingAsg(null);
       setSubmitNotes('');
+      setSubmitAttachmentCount(0);
       setRefreshTrigger((prev) => prev + 1);
-    } catch {
-      setActionError('Error al enviar la tarea. Inténtalo de nuevo.');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Error al enviar la tarea. Inténtalo de nuevo.');
     } finally {
       setSavingSubmission(false);
     }
@@ -2669,17 +2676,22 @@ export default function StudentDashboard() {
                           Actividad Aprobada
                         </div>
                       ) : asg.status === 'submitted' ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSubmittingAsg(asg);
-                            setSubmitNotes(asg.student_notes || '');
-                          }}
-                          className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-600 dark:text-indigo-300 text-xs font-semibold transition cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span>Modificar Entrega Enviada</span>
-                        </button>
+                        <div className="space-y-2">
+                          <div className="w-full py-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold text-center border border-indigo-200 dark:border-indigo-800">
+                            En revisión del profesor. Ya no se puede modificar.
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSubmittingAsg(asg);
+                              setSubmitNotes(asg.student_notes || '');
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Ver lo enviado</span>
+                          </button>
+                        </div>
                       ) : (
                         <button
                           type="button"
@@ -2705,64 +2717,77 @@ export default function StudentDashboard() {
           {/* Modal para que el Alumno entregue su Tarea */}
           {submittingAsg && (
             <div className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-xl">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Send className="w-4 h-4 text-blue-600" />
-                    <span>Entregar Tarea: {submittingAsg.type === 'clinical_case' ? 'Caso Clínico' : submittingAsg.title}</span>
-                  </h3>
+              <div className="w-full max-w-2xl max-h-[90vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Send className="w-4 h-4 text-blue-600" />
+                      <span>Entregar: {submittingAsg.title}</span>
+                    </h3>
+                    {submittingAsg.description && (
+                      <p className="text-xs text-slate-500 mt-1">{submittingAsg.description}</p>
+                    )}
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setSubmittingAsg(null)}
+                    onClick={() => {
+                      setSubmittingAsg(null);
+                      setSubmitAttachmentCount(0);
+                    }}
                     className="text-slate-400 hover:text-slate-600"
+                    aria-label="Cerrar"
                   >
-                    ✕
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <p className="text-xs text-slate-500">
-                  {submittingAsg.type === 'clinical_case'
-                    ? 'Caso clínico sin detalles asignado por tu profesor.'
-                    : submittingAsg.description}
-                </p>
-
-                <form onSubmit={handleSubmitAssignment} className="space-y-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Conclusiones, Respuesta o Enlace del Caso Clínico
+                <form onSubmit={handleSubmitAssignment} className="flex-1 overflow-y-auto p-6 space-y-4 text-xs">
+                  <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-4 space-y-2">
+                    <label className="block font-bold text-slate-900 dark:text-white">
+                      Tu respuesta por escrito
                     </label>
+                    <p className="text-[11px] text-slate-500">
+                      {submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision'
+                        ? 'Explica el trabajo o deja un comentario para el profesor. Puedes entregar solo con este texto.'
+                        : 'Esta entrega ya está en revisión. No se puede editar hasta que el profesor pida una corrección.'}
+                    </p>
                     <textarea
-                      rows={4}
+                      rows={5}
+                      readOnly={submittingAsg.status !== 'pending' && submittingAsg.status !== 'needs_revision'}
                       value={submitNotes}
                       onChange={(e) => setSubmitNotes(e.target.value)}
-                      placeholder="Hallazgos, diagnóstico o comentario para el profesor (opcional si ya adjuntaste archivo o enlace)..."
-                      className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
+                      placeholder="Escribe aquí tu respuesta, hallazgos o comentario…"
+                      className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-blue-500/40 focus:outline-none read-only:opacity-80"
                     />
-                  </div>
+                  </section>
 
                   {user && submittingAsg.type !== 'exam' && submittingAsg.type !== 'clinical_case' && (
                     <AssignmentDeliveryEditor
                       assignmentId={submittingAsg.id}
                       studentId={user.id}
                       canEdit={submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision'}
+                      onItemsChange={setSubmitAttachmentCount}
                     />
                   )}
 
-                  <div className="flex items-center justify-end gap-2 pt-2">
+                  <div className="flex items-center justify-end gap-2 pt-2 sticky bottom-0 bg-white dark:bg-slate-900">
                     <button
                       type="button"
-                      onClick={() => setSubmittingAsg(null)}
-                      className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 text-xs font-semibold"
+                      onClick={() => {
+                        setSubmittingAsg(null);
+                        setSubmitAttachmentCount(0);
+                      }}
+                      className="px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold"
                     >
-                      Cancelar
+                      {submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision' ? 'Cancelar' : 'Cerrar'}
                     </button>
                     {(submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision') && (
                       <button
                         type="submit"
-                        disabled={savingSubmission}
+                        disabled={savingSubmission || (!submitNotes.trim() && submitAttachmentCount < 1)}
                         className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition disabled:opacity-50"
                       >
-                        {savingSubmission ? 'Enviando...' : 'Confirmar Entrega'}
+                        {savingSubmission ? 'Enviando...' : 'Confirmar entrega'}
                       </button>
                     )}
                   </div>
