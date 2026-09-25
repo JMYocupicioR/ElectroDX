@@ -29,3 +29,19 @@ export const useStaffViewStore = create<StaffViewStore>()(
     }
   )
 );
+
+function markStaffViewHydrated() {
+  if (!useStaffViewStore.getState().hydrated) {
+    useStaffViewStore.setState({ hydrated: true });
+  }
+}
+
+useStaffViewStore.persist.onFinishHydration(markStaffViewHydrated);
+
+if (useStaffViewStore.persist.hasHydrated()) {
+  markStaffViewHydrated();
+}
+
+if (typeof window !== 'undefined') {
+  window.setTimeout(markStaffViewHydrated, 0);
+}

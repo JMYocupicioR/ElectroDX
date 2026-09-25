@@ -12,6 +12,7 @@ import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { AdminStudentModeBanner } from './components/admin/AdminStudentModeBanner';
 import { useAuth } from './contexts/AuthProvider';
 import { useStaffViewStore } from './stores/staffViewStore';
+import { shouldRedirectToStaffInbox } from './utils/postLoginPath';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const SyllabusPage = lazy(() => import('./components/pages/SyllabusPage'));
@@ -66,13 +67,18 @@ const AdminTextbookExportPage = lazy(() => import('./components/admin/AdminTextb
 const CoursesCatalogPage = lazy(() => import('./components/pages/CoursesCatalogPage'));
 
 function AdminEntryGate() {
-  const { user, isAdmin, isLoading } = useAuth();
+  const { user, isAdmin, isEditor, isLoading } = useAuth();
   const location = useLocation();
   const view = useStaffViewStore((s) => s.view);
   const hydrated = useStaffViewStore((s) => s.hydrated);
-  if (isLoading || !hydrated || !user || !isAdmin || view === 'student') return null;
-  const entryPaths = ['/', '/portal', '/dashboard', '/estudiante'];
-  if (!entryPaths.includes(location.pathname)) return null;
+  const openInbox = shouldRedirectToStaffInbox({
+    isStaff: Boolean(user && (isAdmin || isEditor)),
+    isLoading,
+    hydrated,
+    studentMode: isAdmin && view === 'student',
+    pathname: location.pathname,
+  });
+  if (!openInbox) return null;
   return <Navigate to="/admin" replace />;
 }
 

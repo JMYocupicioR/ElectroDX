@@ -35,6 +35,8 @@ interface AuthContextValue {
   profile: Profile | null;
   roles: AppRole[];
   isLoading: boolean;
+  /** Roles y perfil del usuario de la sesión ya se cargaron. Evita redirigir antes de saber si es admin. */
+  isSessionReady: boolean;
   isAdmin: boolean;
   isEditor: boolean;
   isStudent: boolean;
@@ -166,17 +168,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [courseSchemaReady, setCourseSchemaReady] = useState(false);
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured);
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
 
   const loadUserData = useCallback(async (userId: string) => {
-    const data = await fetchUserData(userId);
-    setProfile(data.profile);
-    setRoles(data.roles);
-    setBootstrapAvailable(data.bootstrapAvailable);
-    setHasPremiumAccess(data.hasPremiumAccess);
-    setCourseIds(data.courseIds);
-    setPendingCourseIds(data.pendingCourseIds);
-    setCourseSchemaReady(data.courseSchemaReady);
-    setSubscription(data.subscription);
+    try {
+      const data = await fetchUserData(userId);
+      setProfile(data.profile);
+      setRoles(data.roles);
+      setBootstrapAvailable(data.bootstrapAvailable);
+      setHasPremiumAccess(data.hasPremiumAccess);
+      setCourseIds(data.courseIds);
+      setPendingCourseIds(data.pendingCourseIds);
+      setCourseSchemaReady(data.courseSchemaReady);
+      setSubscription(data.subscription);
+    } finally {
+      setLoadedUserId(userId);
+    }
   }, []);
 
   const refreshProfile = useCallback(async () => {
@@ -241,6 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingCourseIds([]);
         setCourseSchemaReady(false);
         setSubscription(null);
+        setLoadedUserId(null);
         setIsLoading(false);
         return;
       }
@@ -260,6 +268,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPendingCourseIds([]);
         setCourseSchemaReady(false);
         setSubscription(null);
+        setLoadedUserId(null);
       }
     });
 
@@ -360,6 +369,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPendingCourseIds([]);
     setCourseSchemaReady(false);
     setSubscription(null);
+    setLoadedUserId(null);
   }, []);
 
   const claimBootstrapAdmin = useCallback(async () => {
@@ -532,6 +542,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       roles,
       isLoading,
+      isSessionReady: !session?.user || loadedUserId === session.user.id,
       isAdmin,
       isEditor,
       isStudent,
@@ -568,6 +579,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       profile,
       roles,
       isLoading,
+      loadedUserId,
       hasPremiumAccess,
       courseIds,
       pendingCourseIds,

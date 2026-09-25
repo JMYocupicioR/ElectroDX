@@ -26,7 +26,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ initialMode = 'password' }: LoginPageProps) {
-  const { signInWithOtp, signInWithPassword, resetPassword, user, isAdmin, isEditor, roles } = useAuth();
+  const { signInWithOtp, signInWithPassword, resetPassword, user, isAdmin, isEditor, roles, isLoading, isSessionReady } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = searchParams.get('next') ?? undefined;
@@ -62,11 +62,7 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
   }, [resendCooldown]);
 
   useEffect(() => {
-    if (!user) return;
-    if (nextPath && nextPath.startsWith('/')) {
-      navigate(nextPath, { replace: true });
-      return;
-    }
+    if (!user || isLoading || !isSessionReady) return;
     navigate(
       postLoginPath({
         next: nextPath,
@@ -76,7 +72,7 @@ export default function LoginPage({ initialMode = 'password' }: LoginPageProps) 
       }),
       { replace: true }
     );
-  }, [user, isAdmin, isEditor, roles, nextPath, navigate]);
+  }, [user, isLoading, isSessionReady, isAdmin, isEditor, roles, nextPath, navigate]);
 
   useEffect(() => {
     if (searchParams.get('verified') === '1') setSent(true);
