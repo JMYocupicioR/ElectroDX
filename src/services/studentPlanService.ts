@@ -17,6 +17,7 @@ import type { QuizAttempt } from '../types/quiz';
 import type { ExamConfig, ExamSession } from '../types/exam';
 import type { Profile } from '../types/database';
 import { getMyAttempts, getMyProgressByModule } from './quizService';
+import { sendAcademicPush } from './studentToolsService';
 import { calculateStudentMetrics, checkCertificationEligibility, fetchStudentCompletedTopics } from './studentService';
 
 // ─── LocalStorage Keys for Resilient Fallback ────────────────────────────────
@@ -455,7 +456,14 @@ export async function createAssignment(
   }
 
   writeLocal(data as StudentAssignment, newAssignment.id);
-  return data as StudentAssignment;
+  const saved = data as StudentAssignment;
+  void sendAcademicPush({
+    userId: saved.student_id,
+    title: `Nueva tarea: ${saved.title}`,
+    body: saved.description || 'Tu profesor publicó una actividad en el portal.',
+    url: '/portal?tab=assignments',
+  }).catch(() => undefined);
+  return saved;
 }
 
 export async function createBatchAssignments(
@@ -952,10 +960,11 @@ export async function gradeAssignment(
   studentId: string,
   grade: number,
   feedback: string,
-  reviewerId?: string
+  reviewerId?: string,
+  decision?: 'approved' | 'needs_revision'
 ): Promise<void> {
   const reviewedAt = new Date().toISOString();
-  const status: AssignmentStatus = grade >= 70 ? 'approved' : 'needs_revision';
+  const status: AssignmentStatus = decision ?? (grade >= 70 ? 'approved' : 'needs_revision');
 
   // Local
   try {
@@ -1000,6 +1009,14 @@ export async function gradeAssignment(
   if (!data) {
     throw new Error('No se pudo asentar la calificación. Revisa permisos y el identificador del revisor.');
   }
+
+  const title = status === 'needs_revision' ? 'Corrección solicitada' : `Calificación: ${grade}/100`;
+  void sendAcademicPush({
+    userId: studentId,
+    title,
+    body: feedback || 'Tu profesor revisó tu entrega.',
+    url: '/portal?tab=assignments',
+  }).catch(() => undefined);
 }
 
 export async function deleteAssignment(assignmentId: string, studentId: string): Promise<void> {

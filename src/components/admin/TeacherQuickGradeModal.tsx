@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { TeacherPendingReviewItem } from '../../types/studentPlan';
 import { gradeAssignment } from '../../services/studentPlanService';
+import { AssignmentSubmissionReview } from '../student/AssignmentDeliveryPanel';
 import { getEmgReportForAssignment, gradeEmgReport } from '../../services/studentToolsService';
 import { useAuth } from '../../contexts/AuthProvider';
 
@@ -87,8 +88,8 @@ export default function TeacherQuickGradeModal({
 
   const { assignment, studentProfile } = item;
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async (event: { preventDefault(): void }, decision: 'approved' | 'needs_revision') => {
+    event.preventDefault();
     if (grade < 0 || grade > 100) {
       setError('La calificación debe estar entre 0 y 100.');
       return;
@@ -115,7 +116,8 @@ export default function TeacherQuickGradeModal({
         assignment.student_id,
         finalGrade,
         signedFeedback,
-        user?.id
+        user?.id,
+        decision
       );
       onGraded();
       onClose();
@@ -255,7 +257,7 @@ export default function TeacherQuickGradeModal({
             )}
 
             {/* Submission Link if provided */}
-            {assignment.submission_url && (
+            {assignment.submission_url && !assignment.submission_url.startsWith('exam_session:') && (
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs">
                 <span className="truncate max-w-sm text-slate-600 dark:text-slate-300 font-mono">
                   {assignment.submission_url}
@@ -271,10 +273,12 @@ export default function TeacherQuickGradeModal({
                 </a>
               </div>
             )}
+
+            <AssignmentSubmissionReview assignmentId={assignment.id} />
           </div>
 
           {/* Grading Form */}
-          <form onSubmit={handleSave} className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-4">
+          <form onSubmit={(event) => void handleSave(event, 'approved')} className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-4">
             {assignment.type === 'emg_report' && (
               <div className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Rúbrica EMG (25 pts c/u)</p>
@@ -390,6 +394,14 @@ export default function TeacherQuickGradeModal({
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               >
                 Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={(event) => void handleSave(event, 'needs_revision')}
+                className="px-4 py-2.5 rounded-xl border border-amber-300 text-amber-800 dark:text-amber-200 text-xs font-bold disabled:opacity-50"
+              >
+                Devolver para corrección
               </button>
               <button
                 type="submit"

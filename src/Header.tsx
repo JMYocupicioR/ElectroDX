@@ -39,6 +39,7 @@ import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
 import { flushProgressOutbox, getLastVisitedTopic, getStudentNotifications, type StudentNotification } from './services/studentService';
+import { fetchServerNotifications, mergeServerNotifications } from './services/assignmentSubmissionService';
 import { getStudentAssignments } from './services/studentPlanService';
 
 function navClass(active: boolean) {
@@ -142,7 +143,9 @@ export function Header() {
     void (async () => {
       try {
         const assignments = await getStudentAssignments(user.id);
-        const notifs = getStudentNotifications(user.id, profile, [], assignments);
+        const local = getStudentNotifications(user.id, profile, [], assignments);
+        const server = await fetchServerNotifications(user.id);
+        const notifs = mergeServerNotifications(local, server);
         if (!cancelled) setMenuNotifs(notifs.filter((n) => !n.isRead).slice(0, 3));
       } catch {
         if (!cancelled) setMenuNotifs([]);

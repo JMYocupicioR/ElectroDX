@@ -549,6 +549,57 @@ export interface Database {
         Insert: { user_id: string; endpoint: string; p256dh?: string; auth?: string };
         Update: never;
       };
+      assignment_submissions: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          student_id: string;
+          kind: 'file' | 'link';
+          storage_path: string | null;
+          file_name: string | null;
+          mime_type: string | null;
+          byte_size: number | null;
+          link_url: string | null;
+          link_label: string | null;
+          created_at: string;
+        };
+        Insert: {
+          assignment_id: string;
+          student_id: string;
+          kind: 'file' | 'link';
+          storage_path?: string | null;
+          file_name?: string | null;
+          mime_type?: string | null;
+          byte_size?: number | null;
+          link_url?: string | null;
+          link_label?: string | null;
+        };
+        Update: never;
+      };
+      student_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          message: string;
+          type: string;
+          severity: 'info' | 'success' | 'warning';
+          link_url: string | null;
+          source_key: string;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          title: string;
+          message: string;
+          source_key: string;
+          type?: string;
+          severity?: 'info' | 'success' | 'warning';
+          link_url?: string | null;
+        };
+        Update: { is_read?: boolean };
+      };
       emg_report_submissions: {
         Row: {
           id: string;
@@ -720,6 +771,24 @@ export interface Database {
       };
       submit_my_assignment: {
         Args: { p_assignment_id: string; p_notes?: string | null; p_submission_url?: string | null };
+        Returns: unknown;
+      };
+      add_my_submission_link: {
+        Args: { p_assignment_id: string; p_url: string; p_label?: string | null };
+        Returns: unknown;
+      };
+      register_my_submission_file: {
+        Args: {
+          p_assignment_id: string;
+          p_storage_path: string;
+          p_file_name: string;
+          p_mime_type: string;
+          p_byte_size: number;
+        };
+        Returns: unknown;
+      };
+      delete_my_submission: {
+        Args: { p_submission_id: string };
         Returns: unknown;
       };
       complete_my_assigned_exam: {

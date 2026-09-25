@@ -92,6 +92,8 @@ import {
   requestExamRetake,
   getStudentLearningPlans,
 } from '../../services/studentPlanService';
+import { AssignmentDeliveryEditor } from './AssignmentDeliveryPanel';
+import { fetchServerNotifications, markAllServerNotificationsRead, markServerNotificationRead, mergeServerNotifications } from '../../services/assignmentSubmissionService';
 import { StudentStudyHub } from './StudentStudyHub';
 import { StudentCertificatePanel } from './StudentCertificatePanel';
 import { StudentPerformancePanel } from './StudentPerformancePanel';
@@ -289,7 +291,7 @@ export default function StudentDashboard() {
       settleWithTimeout(getStudentLearningPlans(user.id), [], 'plans'),
       settleWithTimeout(calculateStudentKardex(user.id, profile), null, 'kardex'),
     ])
-      .then(([att, modProg, ws, asgs, stk, syncedTopics, plans, nextKardex]) => {
+      .then(async ([att, modProg, ws, asgs, stk, syncedTopics, plans, nextKardex]) => {
         if (cancelled) return;
         setAttempts(att);
         setModuleProgress(modProg);
@@ -304,8 +306,10 @@ export default function StudentDashboard() {
         }
 
         // Notifications - pass assignments to include teacher tasks
-        const notifs = getStudentNotifications(user.id, profile, ws, asgs);
-        setNotifications(notifs);
+        const localNotifs = getStudentNotifications(user.id, profile, ws, asgs);
+        const serverNotifs = await fetchServerNotifications(user.id);
+        if (cancelled) return;
+        setNotifications(mergeServerNotifications(localNotifs, serverNotifs));
 
         // Check for pending tasks and trigger modal & device notification
         const pendingList = asgs.filter((a) => a.status === 'pending');
@@ -662,6 +666,7 @@ export default function StudentDashboard() {
   const handleMarkNotifRead = (id: string) => {
     if (!user) return;
     markNotificationAsRead(user.id, id);
+    void markServerNotificationRead(id);
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
@@ -673,6 +678,7 @@ export default function StudentDashboard() {
       user.id,
       notifications.map((n) => n.id)
     );
+    void markAllServerNotificationsRead(user.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
   };
 
@@ -2336,6 +2342,8 @@ export default function StudentDashboard() {
                             ? 'Caso Clínico'
                             : asg.type === 'emg_report'
                             ? 'Reporte de Trazo EMG'
+                            : asg.type === 'practical_task'
+                            ? 'Tarea práctica'
                             : 'Tarea de Lectura'}
                         </span>
 
@@ -2364,6 +2372,8 @@ export default function StudentDashboard() {
                             ? 'Reintento Denegado'
                             : asg.status === 'approved'
                             ? 'Aprobada ✓'
+                            : asg.status === 'needs_revision'
+                            ? 'Corrección solicitada'
                             : asg.status === 'submitted'
                             ? (isExam && attemptsExhausted ? 'Examen Finalizado' : 'Entregada (En revisión)')
                             : isOverdue
@@ -2642,6 +2652,18 @@ export default function StudentDashboard() {
                             <span>Resolver Caso Clínico Asignado</span>
                           </button>
                         )
+                      ) : asg.status === 'needs_revision' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSubmittingAsg(asg);
+                            setSubmitNotes(asg.student_notes || '');
+                          }}
+                          className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Corregir y volver a entregar</span>
+                        </button>
                       ) : asg.status === 'approved' ? (
                         <div className="w-full py-2 rounded-xl bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center">
                           Actividad Aprobada
@@ -2710,14 +2732,21 @@ export default function StudentDashboard() {
                       Conclusiones, Respuesta o Enlace del Caso Clínico
                     </label>
                     <textarea
-                      rows={6}
-                      required
+                      rows={4}
                       value={submitNotes}
                       onChange={(e) => setSubmitNotes(e.target.value)}
-                      placeholder="Escribe tus hallazgos neurofisiológicos, diagnóstico topográfico o pega el enlace a tu reporte de trazo..."
+                      placeholder="Hallazgos, diagnóstico o comentario para el profesor (opcional si ya adjuntaste archivo o enlace)..."
                       className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs focus:ring-2 focus:ring-blue-500/40 focus:outline-none"
                     />
                   </div>
+
+                  {user && submittingAsg.type !== 'exam' && submittingAsg.type !== 'clinical_case' && (
+                    <AssignmentDeliveryEditor
+                      assignmentId={submittingAsg.id}
+                      studentId={user.id}
+                      canEdit={submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision'}
+                    />
+                  )}
 
                   <div className="flex items-center justify-end gap-2 pt-2">
                     <button
@@ -2727,13 +2756,15 @@ export default function StudentDashboard() {
                     >
                       Cancelar
                     </button>
-                    <button
-                      type="submit"
-                      disabled={savingSubmission}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition disabled:opacity-50"
-                    >
-                      {savingSubmission ? 'Enviando...' : 'Confirmar Entrega'}
-                    </button>
+                    {(submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision') && (
+                      <button
+                        type="submit"
+                        disabled={savingSubmission}
+                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition disabled:opacity-50"
+                      >
+                        {savingSubmission ? 'Enviando...' : 'Confirmar Entrega'}
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>
