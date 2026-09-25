@@ -1,4 +1,4 @@
-import { lookupSepCedula, normalizeCedula } from '../server/sepCedulaLookup';
+import { lookupSepCedula, normalizeCedula } from '../server/sepCedulaLookup.js';
 
 type VercelReq = {
   method?: string;

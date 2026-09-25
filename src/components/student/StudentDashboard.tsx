@@ -154,7 +154,7 @@ export default function StudentDashboard() {
     hasPremiumAccess,
     isAdmin,
     isEditor,
-    hasCourseAccess,
+    isEnrolledInCourse,
     isCoursePending,
     courseIds,
     pendingCourseIds,
@@ -395,10 +395,10 @@ export default function StudentDashboard() {
 
   // Estado del curso para el paso 3 de la guía
   const guideCourseState: PortalGuideCourseState = useMemo(() => {
-    if (sellable.some((c) => hasCourseAccess(c.id))) return 'active';
+    if (sellable.some((c) => isEnrolledInCourse(c.id))) return 'active';
     if (sellable.some((c) => isCoursePending(c.id))) return 'pending';
     return 'none';
-  }, [sellable, hasCourseAccess, isCoursePending]);
+  }, [sellable, isEnrolledInCourse, isCoursePending]);
 
   // Etiqueta del botón de acción final en el paso 5
   const guideFinalActionLabel = useMemo(() => {
@@ -698,8 +698,8 @@ export default function StudentDashboard() {
             {/* Cursos Activos / Cursando Actualmente */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-xs font-semibold text-slate-300">Cursos activos:</span>
-              {sellable.filter((course) => hasCourseAccess(course.id)).length > 0 ? (
-                sellable.filter((course) => hasCourseAccess(course.id)).map((course) => {
+              {sellable.filter((course) => isEnrolledInCourse(course.id)).length > 0 ? (
+                sellable.filter((course) => isEnrolledInCourse(course.id)).map((course) => {
                   const cId = course.id;
                   const title = course.title;
                   return (
@@ -1128,7 +1128,7 @@ export default function StudentDashboard() {
                       Cursos en los que estás Activo y Cursando
                     </h2>
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300/60">
-                      {sellable.filter((course) => hasCourseAccess(course.id)).length} de {sellable.length} activos
+                      {sellable.filter((course) => isEnrolledInCourse(course.id)).length} de {sellable.length} activos
                     </span>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -1156,7 +1156,7 @@ export default function StudentDashboard() {
                     : 0;
                 const completed = courseStats.reduce((acc, m) => acc + m.completedTopics, 0);
                 const total = courseStats.reduce((acc, m) => acc + m.totalTopics, 0);
-                const unlocked = hasCourseAccess(courseId);
+                const unlocked = isEnrolledInCourse(courseId);
                 const isPending = isCoursePending(courseId);
                 const title = course.title;
 
@@ -1844,7 +1844,7 @@ export default function StudentDashboard() {
                 stats.length > 0
                   ? Math.round(stats.reduce((acc, m) => acc + m.progressPct, 0) / stats.length)
                   : 0;
-              const unlocked = hasCourseAccess(courseId);
+              const unlocked = isEnrolledInCourse(courseId);
               const isPending = isCoursePending(courseId);
               const title = course.title;
 

@@ -21,15 +21,14 @@ import {
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
-  getAdminStats,
   getAdminProfiles,
-  verifyPhysicianEnrollment,
   getPendingRevisions,
   reviewRevision,
+  verifyPhysicianEnrollment,
 } from '../../services/editorialService';
 import {
   getAdminCourseWaitlist,
-  adminAdmitStudentToCourse,
+  adminAdmitStudentAndApproveProfile,
 } from '../../services/courseService';
 import {
   getTeacherPendingReviewItems,
@@ -67,6 +66,7 @@ export default function AdminDashboard() {
 
   // State for data
   const [waitlistItems, setWaitlistItems] = useState<CourseWaitlistRow[]>([]);
+  const [profilePending, setProfilePending] = useState<AdminProfileRow[]>([]);
   const [pendingSubmissions, setPendingSubmissions] = useState<TeacherPendingReviewItem[]>([]);
   const [pendingTopicRevisions, setPendingTopicRevisions] = useState<ContentRevision[]>([]);
   const [pendingQuizzes, setPendingQuizzes] = useState<QuizValidationItem[]>([]);
@@ -82,6 +82,7 @@ export default function AdminDashboard() {
   const [retakeActionId, setRetakeActionId] = useState<string | null>(null);
   const [showAllQuizzes, setShowAllQuizzes] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [waitlistError, setWaitlistError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Modals state
@@ -110,14 +111,30 @@ export default function AdminDashboard() {
 
   const loadData = async () => {
     try {
-      const [allActiveProfiles, waitlistData, revisionsData, quizzesData] = await Promise.all([
+      const [allActiveProfiles, waitlistData, pendingProfiles, revisionsData, quizzesData] = await Promise.all([
         getAdminProfiles(false, 'all').catch(() => []),
-        getAdminCourseWaitlist(null, 'pending').catch(() => []),
+        getAdminCourseWaitlist(null, 'pending')
+          .then((rows) => {
+            setWaitlistError(null);
+            return rows;
+          })
+          .catch((err: unknown) => {
+            const message = err instanceof Error ? err.message : 'No se pudo leer la lista de espera';
+            setWaitlistError(message);
+            return [] as CourseWaitlistRow[];
+          }),
+        getAdminProfiles(false, 'enrollment_pending').catch(() => [] as AdminProfileRow[]),
         getPendingRevisions().catch(() => []),
         listQuizzesForValidation().catch(() => []),
       ]);
 
       setWaitlistItems(waitlistData);
+      const queuedIds = new Set(waitlistData.map((row) => row.user_id));
+      setProfilePending(
+        pendingProfiles.filter(
+          (profile) => profile.enrollment_status === 'pending' && !queuedIds.has(profile.id)
+        )
+      );
       setPendingTopicRevisions(revisionsData);
 
       // Quizzes pendientes de validación clínica
@@ -157,15 +174,31 @@ export default function AdminDashboard() {
     loadData();
   }, []);
 
+  const admissionCount = waitlistItems.length + profilePending.length;
+
+  const handleApproveProfile = async (profile: AdminProfileRow) => {
+    setAdmittingId(profile.id);
+    try {
+      await verifyPhysicianEnrollment(profile.id);
+      setSuccessMessage(`¡Dr(a). ${profile.display_name} quedó aprobado(a)!`);
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+      alert(`Error al aprobar al médico: ${err?.message || 'Error inesperado'}`);
+    } finally {
+      setAdmittingId(null);
+      setTimeout(() => setSuccessMessage(null), 4000);
+    }
+  };
+
   // 1. Quick Admit for Waitlist row
   const handleQuickAdmit = async (item: CourseWaitlistRow) => {
     setAdmittingId(item.enrollment_id);
     try {
-      await adminAdmitStudentToCourse(item.user_id, item.course_id, {
+      await adminAdmitStudentAndApproveProfile(item.user_id, item.course_id, {
         method: 'transferencia',
         notes: 'Admitido directamente desde la Bandeja del profesor',
       });
-      await verifyPhysicianEnrollment(item.user_id).catch(() => {});
       setSuccessMessage(`¡Dr(a). ${item.display_name} ha sido admitido(a) a ${item.course_title}!`);
       await loadData();
     } catch (err: any) {
@@ -446,32 +479,74 @@ export default function AdminDashboard() {
                 <span>Médicos en lista de espera</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                    waitlistItems.length > 0
+                    waitlistError
+                      ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                      : admissionCount > 0
                       ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                       : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
                   }`}
                 >
-                  {waitlistItems.length} por admitir
+                  {waitlistError ? 'sin lectura' : `${admissionCount} por admitir`}
                 </span>
               </h2>
             </div>
-            {waitlistItems.length > 0 && (
-              <Link
-                to="/admin/admisiones"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                Ver todas las admisiones →
-              </Link>
-            )}
+            <Link
+              to="/admin/admisiones"
+              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
+              Ver todas las admisiones →
+            </Link>
           </div>
 
-          {waitlistItems.length === 0 ? (
+          {waitlistError ? (
+            <div className="p-4 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/30 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>No se pudo leer la lista de espera: {waitlistError}</span>
+            </div>
+          ) : admissionCount === 0 ? (
             <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Al día: no hay solicitudes de médicos en lista de espera pendientes de admisión.</span>
             </div>
           ) : (
             <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-sm">
+              {profilePending.map((profile) => (
+                <div
+                  key={profile.id}
+                  className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
+                      {(profile.display_name || 'M').charAt(0)}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-slate-900 dark:text-white truncate">
+                          {profile.display_name || 'Médico sin nombre'}
+                        </p>
+                        <span className="px-2 py-0.2 rounded-md text-[10px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                          Perfil por aprobar
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                        {profile.specialty || profile.institution || profile.email}
+                        {profile.cedula_profesional ? ` · Cédula: ${profile.cedula_profesional}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-end gap-3 shrink-0">
+                    <button
+                      type="button"
+                      disabled={admittingId === profile.id}
+                      onClick={() => handleApproveProfile(profile)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-2xs transition disabled:opacity-50 cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{admittingId === profile.id ? 'Aprobando...' : 'Aprobar'}</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
               {waitlistItems.map((item) => (
                 <div
                   key={item.enrollment_id}

@@ -8,7 +8,7 @@ import CourseEnrollmentRequestModal from '../course/CourseEnrollmentRequestModal
 import type { Course } from '../../types/database';
 
 export default function CoursesCatalogPage() {
-  const { hasCourseAccess, isCoursePending, courseIds, user } = useAuth();
+  const { isEnrolledInCourse, isCoursePending, courseIds, user } = useAuth();
   const { grouped, courses, reload } = useSyllabusCatalog();
   const sellable = sellableCourses(courses);
   const nextSuggested = recommendedNextCourse(courseIds, courses);
@@ -43,7 +43,7 @@ export default function CoursesCatalogPage() {
         {grouped
           .filter((g) => g.course.is_sellable && g.course.is_active)
           .map(({ course, modules }) => {
-            const owned = hasCourseAccess(course.id);
+            const owned = isEnrolledInCourse(course.id);
             const isPending = isCoursePending(course.id);
             const prevId = previousSellableCourseId(course.id, courses);
 

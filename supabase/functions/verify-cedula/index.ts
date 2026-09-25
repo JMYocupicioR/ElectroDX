@@ -41,6 +41,7 @@ async function getSepToken(): Promise<string> {
       'X-Client-Id': clientId,
       'X-API-Key': apiKey,
     }),
+    signal: AbortSignal.timeout(12000),
   });
   if (!tokenRes.ok) {
     throw new Error(`Error al autenticar con SEP: ${tokenRes.statusText}`);
@@ -96,6 +97,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       }),
       body: JSON.stringify({ numCedula: cleanCedula }),
+      signal: AbortSignal.timeout(12000),
     });
 
     if (!queryRes.ok) {

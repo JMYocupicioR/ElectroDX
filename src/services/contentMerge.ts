@@ -2,8 +2,32 @@ import type { Module, Topic } from '../types/content';
 import type { PublishedTopic, RevisionPayload } from '../types/database';
 import { getLessonExpansion } from '../content/lessonExpansions';
 
+function extractLegacyPdfs(content?: string | null): { title: string; url: string; description?: string; author?: string }[] {
+  if (!content) return [];
+  const list: { title: string; url: string; description?: string; author?: string }[] = [];
+  const regex = />\s*📄\s*\*\*Recurso Clínico Docente:\*\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(?:\s*>\s*\*Aportado por ([^*]+)\*)?(?:\s*>\s*([^\n\r]+))?/gi;
+  let m;
+  while ((m = regex.exec(content)) !== null) {
+    list.push({
+      title: m[1].trim(),
+      url: m[2].trim(),
+      author: m[3]?.trim(),
+      description: m[4]?.trim(),
+    });
+  }
+  return list;
+}
+
 export function publishedTopicToTopic(pt: PublishedTopic): Topic {
   const media = pt.media ?? {};
+  const legacyPdfs = extractLegacyPdfs(pt.content);
+  const combinedPdfs = [...(media.pdfUrls ?? [])];
+  for (const leg of legacyPdfs) {
+    if (!combinedPdfs.some((p) => p.url === leg.url)) {
+      combinedPdfs.push(leg);
+    }
+  }
+
   return {
     id: pt.id,
     title: pt.title,
@@ -17,6 +41,7 @@ export function publishedTopicToTopic(pt: PublishedTopic): Topic {
     vimeoUrls: media.vimeoUrls?.length ? media.vimeoUrls : undefined,
     embedUrls: media.embedUrls?.length ? media.embedUrls : undefined,
     imageUrls: media.imageUrls?.length ? media.imageUrls : undefined,
+    pdfUrls: combinedPdfs.length ? combinedPdfs : undefined,
     clinicalPearls: pt.clinical_pearls?.length ? pt.clinical_pearls : undefined,
     clinicalPearlsEn: pt.clinical_pearls_en?.length ? pt.clinical_pearls_en : undefined,
     keyPoints: pt.key_points?.length ? pt.key_points : undefined,
@@ -45,6 +70,15 @@ export function topicToRevisionPayload(topic: Topic): RevisionPayload {
     vimeoUrls: topic.vimeoUrls ?? [],
     embedUrls: topic.embedUrls ?? [],
     imageUrls: topic.imageUrls ?? [],
+    pdfUrls: topic.pdfUrls ?? [],
+    media: {
+      videoUrls: topic.videoUrls ?? [],
+      youtubeUrls: topic.youtubeUrls ?? [],
+      vimeoUrls: topic.vimeoUrls ?? [],
+      embedUrls: topic.embedUrls ?? [],
+      imageUrls: topic.imageUrls ?? [],
+      pdfUrls: topic.pdfUrls ?? [],
+    },
     clinicalPearls: topic.clinicalPearls ?? [],
     clinicalPearlsEn: topic.clinicalPearlsEn ?? [],
     keyPoints: topic.keyPoints ?? [],
@@ -68,6 +102,7 @@ function overlayTopic(base: Topic, overlay: Topic): Topic {
     vimeoUrls: overlay.vimeoUrls ?? base.vimeoUrls,
     embedUrls: overlay.embedUrls ?? base.embedUrls,
     imageUrls: overlay.imageUrls ?? base.imageUrls,
+    pdfUrls: overlay.pdfUrls ?? base.pdfUrls,
     clinicalPearls: overlay.clinicalPearls ?? base.clinicalPearls,
     clinicalPearlsEn: overlay.clinicalPearlsEn ?? base.clinicalPearlsEn,
     keyPoints: overlay.keyPoints ?? base.keyPoints,
@@ -150,6 +185,7 @@ function overlayExpansion(topic: Topic): Topic {
     keyPoints: [...(topic.keyPoints ?? []), ...(expansion.keyPoints ?? [])],
     keyPointsEn: [...(topic.keyPointsEn ?? []), ...(expansion.keyPointsEn ?? [])],
     imageUrls: [...(topic.imageUrls ?? []), ...(expansion.imageUrls ?? [])],
+    pdfUrls: topic.pdfUrls,
     children: topic.children?.map(overlayExpansion),
   };
 }

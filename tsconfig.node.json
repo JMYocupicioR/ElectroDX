@@ -22,5 +22,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "server/sepCedulaLookup.ts"]
+  "include": ["vite.config.ts"]
 }

@@ -19,6 +19,7 @@ type ClassifiedLine =
   | { kind: 'bullet'; text: string }
   | { kind: 'ordered'; start: number; text: string }
   | { kind: 'table'; raw: string }
+  | { kind: 'blockquote'; text: string }
   | { kind: 'paragraph'; text: string };
 
 function classifyLine(line: string): ClassifiedLine | null {
@@ -38,6 +39,9 @@ function classifyLine(line: string): ClassifiedLine | null {
   }
   if (trimmed.startsWith('|')) {
     return { kind: 'table', raw: line };
+  }
+  if (trimmed.startsWith('>')) {
+    return { kind: 'blockquote', text: trimmed.replace(/^>\s*/, '') };
   }
   return { kind: 'paragraph', text: trimmed };
 }
@@ -151,6 +155,21 @@ function renderOrderedList(items: { start: number; text: string }[], keyBase: st
   );
 }
 
+function renderBlockquote(lines: string[], keyBase: string) {
+  return (
+    <blockquote
+      key={keyBase}
+      className="my-3 pl-4 py-2.5 border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 rounded-r-xl text-slate-700 dark:text-slate-300 text-sm leading-relaxed"
+    >
+      {lines.map((line, idx) => (
+        <p key={`${keyBase}-${idx}`} className={idx > 0 ? 'mt-1.5' : ''}>
+          {renderInline(line, `${keyBase}-${idx}`)}
+        </p>
+      ))}
+    </blockquote>
+  );
+}
+
 function renderHeading(text: string, mdLevel: number, baseHeadingLevel: RichHeadingLevel, key: string) {
   const level = resolveHeadingLevel(mdLevel, baseHeadingLevel);
   const Tag = (`h${level}`) as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
@@ -206,6 +225,18 @@ function renderBlockLines(
         i += 1;
       }
       parts.push(renderOrderedList(items, gKey));
+      continue;
+    }
+
+    if (classified.kind === 'blockquote') {
+      const bqLines: string[] = [];
+      while (i < lines.length) {
+        const next = classifyLine(lines[i]);
+        if (next?.kind !== 'blockquote') break;
+        bqLines.push(next.text);
+        i += 1;
+      }
+      parts.push(renderBlockquote(bqLines, gKey));
       continue;
     }
 

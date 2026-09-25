@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Users,
   Clock,
@@ -21,13 +22,15 @@ import {
 import { AdminLayout } from './AdminLayout';
 import {
   getAdminCourseWaitlist,
-  adminAdmitStudentToCourse,
-  adminRejectCourseRequest,
-  revokeCourseAccess,
+  adminAdmitStudentAndApproveProfile,
+  adminRejectCourseRequestAndSyncProfile,
+  revokeCourseAccessAndSyncProfile,
 } from '../../services/courseService';
+import { getAdminProfiles, rejectPhysicianEnrollment, verifyPhysicianEnrollment } from '../../services/editorialService';
+import type { AdminProfileRow } from '../../types/admin';
 import type { CourseWaitlistRow, CourseEnrollmentStatus, CourseId } from '../../types/database';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
-import { sellableCourses } from '../../content/courseCatalog';
+import { sellableCourses, isCourseId } from '../../content/courseCatalog';
 import StudentKardexModal from './StudentKardexModal';
 
 const STATUS_FILTERS: { id: CourseEnrollmentStatus | 'all'; label: string }[] = [
@@ -39,6 +42,7 @@ const STATUS_FILTERS: { id: CourseEnrollmentStatus | 'all'; label: string }[] = 
 
 export default function AdminCourseWaitlistPage() {
   const { courses } = useSyllabusCatalog();
+  const [searchParams] = useSearchParams();
   const courseTabs = useMemo(
     () => [
       { id: 'all' as const, label: 'Todos los cursos' },
@@ -46,11 +50,15 @@ export default function AdminCourseWaitlistPage() {
     ],
     [courses]
   );
+  const requestedCourse = searchParams.get('course');
   const [waitlist, setWaitlist] = useState<CourseWaitlistRow[]>([]);
+  const [profilePending, setProfilePending] = useState<AdminProfileRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState<CourseId | 'all'>('all');
+  const [selectedCourse, setSelectedCourse] = useState<CourseId | 'all'>(
+    isCourseId(requestedCourse) ? requestedCourse : 'all'
+  );
   const [selectedStatus, setSelectedStatus] = useState<CourseEnrollmentStatus | 'all'>('pending');
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
 
@@ -80,6 +88,15 @@ export default function AdminCourseWaitlistPage() {
         selectedStatus
       );
       setWaitlist(data);
+      if (selectedStatus === 'pending' || selectedStatus === 'all') {
+        const profiles = await getAdminProfiles(false, 'enrollment_pending');
+        const queuedIds = new Set(data.filter((row) => row.status === 'pending').map((row) => row.user_id));
+        setProfilePending(
+          profiles.filter((profile) => profile.enrollment_status === 'pending' && !queuedIds.has(profile.id))
+        );
+      } else {
+        setProfilePending([]);
+      }
     } catch (err: any) {
       console.error('Error al cargar lista de espera:', err);
       setError(err?.message || 'No se pudo cargar la lista de espera');
@@ -98,7 +115,7 @@ export default function AdminCourseWaitlistPage() {
 
     setActionBusyId(admitTarget.enrollment_id);
     try {
-      await adminAdmitStudentToCourse(admitTarget.user_id, admitTarget.course_id, {
+      await adminAdmitStudentAndApproveProfile(admitTarget.user_id, admitTarget.course_id, {
         method: admitPaymentMethod,
         reference: admitPaymentRef || undefined,
         notes: admitNotes || undefined,
@@ -122,8 +139,36 @@ export default function AdminCourseWaitlistPage() {
 
     setActionBusyId(row.enrollment_id);
     try {
-      await adminRejectCourseRequest(row.user_id, row.course_id, reason || undefined);
+      await adminRejectCourseRequestAndSyncProfile(row.user_id, row.course_id, reason || undefined);
       showToast(`Solicitud de ${row.display_name} rechazada.`);
+      await loadData();
+    } catch (err: any) {
+      alert(`Error: ${err?.message}`);
+    } finally {
+      setActionBusyId(null);
+    }
+  };
+
+  const handleApproveProfile = async (profile: AdminProfileRow) => {
+    setActionBusyId(profile.id);
+    try {
+      await verifyPhysicianEnrollment(profile.id);
+      showToast(`¡Dr(a). ${profile.display_name} quedó aprobado(a)!`);
+      await loadData();
+    } catch (err: any) {
+      alert(`Error al aprobar: ${err?.message || 'Error inesperado'}`);
+    } finally {
+      setActionBusyId(null);
+    }
+  };
+
+  const handleRejectProfile = async (profile: AdminProfileRow) => {
+    const reason = window.prompt(`¿Rechazar la solicitud de ${profile.display_name}?\nMotivo (opcional):`, '');
+    if (reason === null) return;
+    setActionBusyId(profile.id);
+    try {
+      await rejectPhysicianEnrollment(profile.id, reason || undefined);
+      showToast(`Solicitud de ${profile.display_name} rechazada.`);
       await loadData();
     } catch (err: any) {
       alert(`Error: ${err?.message}`);
@@ -137,7 +182,7 @@ export default function AdminCourseWaitlistPage() {
 
     setActionBusyId(row.enrollment_id);
     try {
-      await revokeCourseAccess(row.user_id, row.course_id);
+      await revokeCourseAccessAndSyncProfile(row.user_id, row.course_id);
       showToast(`Acceso revocado para ${row.display_name}.`);
       await loadData();
     } catch (err: any) {
@@ -163,7 +208,10 @@ export default function AdminCourseWaitlistPage() {
     return list;
   }, [waitlist, searchQuery]);
 
-  const pendingCount = useMemo(() => waitlist.filter((r) => r.status === 'pending').length, [waitlist]);
+  const pendingCount = useMemo(
+    () => waitlist.filter((r) => r.status === 'pending').length + profilePending.length,
+    [waitlist, profilePending]
+  );
 
   return (
     <AdminLayout
@@ -281,7 +329,7 @@ export default function AdminCourseWaitlistPage() {
           <AlertCircle className="w-5 h-5 shrink-0" />
           <span>{error}</span>
         </div>
-      ) : filteredList.length === 0 ? (
+      ) : filteredList.length === 0 && profilePending.length === 0 ? (
         <div className="p-12 text-center rounded-3xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 text-slate-500">
           <CheckCircle2 className="w-10 h-10 mx-auto mb-3 text-emerald-500 opacity-60" />
           <p className="font-bold text-slate-700 dark:text-slate-300">
@@ -295,6 +343,51 @@ export default function AdminCourseWaitlistPage() {
         </div>
       ) : (
         <div className="space-y-3">
+          {profilePending
+            .filter((profile) => {
+              if (!searchQuery.trim()) return true;
+              const q = searchQuery.toLowerCase();
+              return (
+                profile.display_name?.toLowerCase().includes(q) ||
+                profile.email?.toLowerCase().includes(q) ||
+                profile.cedula_profesional?.toLowerCase().includes(q) ||
+                profile.institution?.toLowerCase().includes(q) ||
+                profile.specialty?.toLowerCase().includes(q)
+              );
+            })
+            .map((profile) => (
+              <div
+                key={profile.id}
+                className="p-5 rounded-2xl border border-amber-300/80 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+              >
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-900 dark:text-white">{profile.display_name || 'Médico sin nombre'}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {profile.specialty || profile.institution || profile.email}
+                    {profile.cedula_profesional ? ` · Cédula: ${profile.cedula_profesional}` : ''}
+                  </p>
+                  <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300 mt-1">Perfil pendiente de aprobación</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    disabled={actionBusyId === profile.id}
+                    onClick={() => handleRejectProfile(profile)}
+                    className="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold disabled:opacity-50"
+                  >
+                    Rechazar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={actionBusyId === profile.id}
+                    onClick={() => handleApproveProfile(profile)}
+                    className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold disabled:opacity-50"
+                  >
+                    {actionBusyId === profile.id ? 'Aprobando...' : 'Aprobar'}
+                  </button>
+                </div>
+              </div>
+            ))}
           {filteredList.map((row) => {
             const isPending = row.status === 'pending';
             const isActive = row.status === 'active';

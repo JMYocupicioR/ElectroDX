@@ -14,6 +14,8 @@ import {
   MoreHorizontal,
   GraduationCap,
   PackageOpen,
+  ArrowUpDown,
+  Layers,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
@@ -50,6 +52,15 @@ export default function AdminSyllabusPage() {
     moduleTitles: string[];
   } | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [reorderConfirm, setReorderConfirm] = useState<{
+    title: string;
+    itemType: 'módulo' | 'tema' | 'subtema';
+    direction: 'arriba' | 'abajo';
+    fromPosition: number;
+    toPosition: number;
+    onConfirm: () => void;
+  } | null>(null);
 
   const [createTopicState, setCreateTopicState] = useState<{
     isOpen: boolean;
@@ -159,6 +170,59 @@ export default function AdminSyllabusPage() {
     void run(`topic-${topicId}`, () =>
       setSyllabusTopicOverrides(moduleId, siblingOverrideInputs(swapped.map((topic) => topic.id), moduleId, overrides))
     );
+  };
+
+  const requestReorderModule = (modTitle: string, courseId: CourseId, from: number, to: number) => {
+    const direction = to < from ? 'arriba' : 'abajo';
+    setReorderConfirm({
+      title: modTitle,
+      itemType: 'módulo',
+      direction,
+      fromPosition: from + 1,
+      toPosition: to + 1,
+      onConfirm: () => reorderModules(courseId, from, to),
+    });
+  };
+
+  const requestMoveTopic = (topicTitle: string, moduleId: string, topicId: string, direction: -1 | 1) => {
+    const mod = moduleById.get(moduleId);
+    if (!mod) return;
+    const rows = topicRowsForModule(mod);
+    const idx = rows.findIndex((r) => r.topic.id === topicId);
+    if (idx < 0) return;
+    const next = idx + direction;
+    if (next < 0 || next >= rows.length) return;
+
+    setReorderConfirm({
+      title: topicTitle,
+      itemType: 'tema',
+      direction: direction === -1 ? 'arriba' : 'abajo',
+      fromPosition: idx + 1,
+      toPosition: next + 1,
+      onConfirm: () => moveTopic(moduleId, topicId, direction),
+    });
+  };
+
+  const requestMoveSibling = (
+    subTitle: string,
+    moduleId: string,
+    siblings: Topic[],
+    topicId: string,
+    direction: -1 | 1
+  ) => {
+    const idx = siblings.findIndex((t) => t.id === topicId);
+    if (idx < 0) return;
+    const next = idx + direction;
+    if (next < 0 || next >= siblings.length) return;
+
+    setReorderConfirm({
+      title: subTitle,
+      itemType: 'subtema',
+      direction: direction === -1 ? 'arriba' : 'abajo',
+      fromPosition: idx + 1,
+      toPosition: next + 1,
+      onConfirm: () => moveSiblings(moduleId, siblings, topicId, direction),
+    });
   };
 
   const toggleTopicVisible = (moduleId: string, topicId: string, currentlyVisible: boolean, sortOrder: number) => {
@@ -340,7 +404,7 @@ export default function AdminSyllabusPage() {
               <ul className="space-y-2 max-h-40 overflow-y-auto">
                 {unassigned.map((mod) => (
                   <li key={mod.id} className="text-xs text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                    <span className="truncate flex-1">
+                    <span className="line-clamp-2 break-words leading-tight flex-1 min-w-0" title={mod.title}>
                       {mod.emoji} {mod.title}
                     </span>
                     {selectedCourseId && (
@@ -393,16 +457,22 @@ export default function AdminSyllabusPage() {
                 onDelete={() => handleRequestDelete(selectedCourse)}
               />
 
-              <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                  <div>
-                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Temario del curso</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Arrastra para reordenar. Expande un módulo para ver temas y subtemas.
-                    </p>
+              <div className="p-4 sm:p-5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/50 flex items-center justify-center text-blue-600 dark:text-cyan-400 shadow-2xs shrink-0">
+                      <ListTree className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight">Temario del curso</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Arrastra para reordenar o usa las flechas. Expande un módulo para ver temas y subtemas.
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-xs font-semibold text-slate-500">
-                    {selectedGrouped?.rows.length ?? 0} módulo{(selectedGrouped?.rows.length ?? 0) === 1 ? '' : 's'}
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 shadow-2xs">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-cyan-400" />
+                    {selectedGrouped?.rows.length ?? 0} {selectedGrouped?.rows.length === 1 ? 'módulo' : 'módulos'}
                   </span>
                 </div>
 
@@ -442,115 +512,153 @@ export default function AdminSyllabusPage() {
                       const { assignment, mod } = row;
                       const visible = assignment.is_visible;
                       const isOpen = expandedModules.has(mod.id);
+                      const topicCount = topicRowsForModule(mod).length;
                       return (
-                        <div className="mb-2 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-800/20">
-                          <div className="flex flex-wrap items-center gap-2">
-                            {handle}
-                            <button
-                              type="button"
-                              className="flex flex-1 min-w-0 items-center gap-2 text-left cursor-pointer"
-                              onClick={() => toggleModuleExpanded(mod.id)}
-                            >
-                              <span className={`text-lg ${visible ? '' : 'opacity-50'}`}>{mod.emoji}</span>
-                              <span className={`font-semibold text-sm truncate ${visible ? '' : 'opacity-50'}`}>
-                                {mod.title}
-                              </span>
-                              {!visible && (
-                                <span className="text-[10px] uppercase tracking-wide font-bold text-slate-400 border border-slate-300 dark:border-slate-600 rounded px-1.5 py-0.5 shrink-0">
-                                  Oculto
-                                </span>
-                              )}
-                              <span className="text-[11px] text-slate-400 shrink-0">
-                                {topicRowsForModule(mod).length} temas
-                              </span>
-                              {isOpen ? (
-                                <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" />
-                              ) : (
-                                <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
-                              )}
-                            </button>
-
-                            <div className="relative">
+                        <div
+                          className={`mb-3 p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 ${
+                            isOpen
+                              ? 'border-blue-400/60 dark:border-blue-500/50 bg-blue-50/20 dark:bg-slate-800/70 shadow-sm ring-1 ring-blue-500/15'
+                              : 'border-slate-200/90 dark:border-slate-700/60 bg-white/90 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-600/80 hover:bg-slate-50/60 dark:hover:bg-slate-800/60 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            {/* Module Header / Title Trigger */}
+                            <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
+                              <div className="pt-1 sm:pt-0 shrink-0">{handle}</div>
                               <button
                                 type="button"
-                                aria-label="Acciones del módulo"
-                                className="p-2 rounded-lg border min-h-[40px] hover:bg-white dark:hover:bg-slate-800"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  setModuleMenuId((current) => (current === mod.id ? null : mod.id));
-                                }}
+                                className="flex flex-1 min-w-0 items-start sm:items-center gap-3 text-left cursor-pointer group"
+                                onClick={() => toggleModuleExpanded(mod.id)}
                               >
-                                <MoreHorizontal className="w-4 h-4" />
-                              </button>
-                              {moduleMenuId === mod.id && (
-                                <div
-                                  className="absolute right-0 top-full mt-1 z-20 min-w-[200px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg py-1"
-                                  onMouseDown={(event) => event.stopPropagation()}
-                                >
-                                  <button
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
-                                    disabled={busyKey !== null}
-                                    onClick={() => {
-                                      setModuleMenuId(null);
-                                      void run(`vis-${mod.id}`, () => setCourseModuleVisible(mod.id, !visible));
-                                    }}
-                                  >
-                                    {visible ? 'Ocultar módulo' : 'Mostrar módulo'}
-                                  </button>
-                                  {assignableCourses.map((course) => (
-                                    <button
-                                      key={course.id}
-                                      type="button"
-                                      className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
-                                      disabled={busyKey !== null}
-                                      onClick={() => {
-                                        setModuleMenuId(null);
-                                        void run(`move-${mod.id}`, () =>
-                                          assignModuleToCourse(mod.id, course.id, nextSortOrder(course.id), visible)
-                                        );
-                                      }}
-                                    >
-                                      Mover a {course.title}
-                                    </button>
-                                  ))}
-                                  <button
-                                    type="button"
-                                    className="w-full text-left px-3 py-2 text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
-                                    disabled={busyKey !== null}
-                                    onClick={() => {
-                                      setModuleMenuId(null);
-                                      const ok = window.confirm(
-                                        `¿Quitar "${mod.title}" del curso? Pasará a "Sin asignar".`
-                                      );
-                                      if (!ok) return;
-                                      void run(`move-${mod.id}`, () => assignModuleToCourse(mod.id, null, 0, visible));
-                                    }}
-                                  >
-                                    Quitar del curso
-                                  </button>
+                                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-xl bg-slate-100/90 dark:bg-slate-700/50 border border-slate-200/60 dark:border-slate-600/40 shadow-2xs group-hover:scale-105 transition-transform">
+                                  {mod.emoji}
                                 </div>
-                              )}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span
+                                      className={`font-bold text-sm leading-snug break-words text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors ${
+                                        visible ? '' : 'opacity-50'
+                                      }`}
+                                    >
+                                      {mod.title}
+                                    </span>
+                                    {!visible && (
+                                      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 rounded-full px-2 py-0.5 shadow-2xs shrink-0">
+                                        <EyeOff className="w-2.5 h-2.5" />
+                                        Oculto
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Right status badges & Chevron (desktop badge inline) */}
+                                <div className="flex items-center gap-2 shrink-0 ml-1">
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50/90 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-cyan-300 dark:border-blue-800/60 shadow-2xs hidden sm:inline-flex">
+                                    <Layers className="w-3 h-3 text-blue-500 dark:text-cyan-400" />
+                                    {topicCount} {topicCount === 1 ? 'tema' : 'temas'}
+                                  </span>
+                                  <div className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-cyan-400 group-hover:bg-blue-50 dark:group-hover:bg-slate-700/60 transition-all">
+                                    {isOpen ? (
+                                      <ChevronUp className="w-4 h-4 shrink-0" />
+                                    ) : (
+                                      <ChevronDown className="w-4 h-4 shrink-0" />
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
                             </div>
 
-                            <button
-                              type="button"
-                              className="p-2 rounded-lg border min-h-[40px] disabled:opacity-40"
-                              aria-label="Subir módulo"
-                              disabled={busyKey !== null || index === 0}
-                              onClick={() => reorderModules(selectedCourse.id, index, index - 1)}
-                            >
-                              <ChevronUp className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              className="p-2 rounded-lg border min-h-[40px] disabled:opacity-40"
-                              aria-label="Bajar módulo"
-                              disabled={busyKey !== null || index === moduleRows.length - 1}
-                              onClick={() => reorderModules(selectedCourse.id, index, index + 1)}
-                            >
-                              <ChevronDown className="w-4 h-4" />
-                            </button>
+                            {/* Sub-row with count and actions on mobile, inline on desktop */}
+                            <div className="flex items-center justify-between sm:justify-end gap-2 pl-7 sm:pl-0 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-200/50 dark:border-slate-700/50">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-blue-50/90 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-cyan-300 dark:border-blue-800/60 shadow-2xs sm:hidden">
+                                <Layers className="w-3 h-3 text-blue-500 dark:text-cyan-400" />
+                                {topicCount} {topicCount === 1 ? 'tema' : 'temas'}
+                              </span>
+
+                              <div className="flex items-center gap-1.5 shrink-0 ml-auto sm:ml-0">
+                                <div className="relative">
+                                  <button
+                                    type="button"
+                                    aria-label="Acciones del módulo"
+                                    className="p-2 sm:p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/80 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:bg-slate-700/60 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-all active:scale-95 shadow-2xs"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setModuleMenuId((current) => (current === mod.id ? null : mod.id));
+                                    }}
+                                  >
+                                    <MoreHorizontal className="w-4 h-4" />
+                                  </button>
+                                  {moduleMenuId === mod.id && (
+                                    <div
+                                      className="absolute right-0 top-full mt-1 z-20 min-w-[200px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg py-1"
+                                      onMouseDown={(event) => event.stopPropagation()}
+                                    >
+                                      <button
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
+                                        disabled={busyKey !== null}
+                                        onClick={() => {
+                                          setModuleMenuId(null);
+                                          void run(`vis-${mod.id}`, () => setCourseModuleVisible(mod.id, !visible));
+                                        }}
+                                      >
+                                        {visible ? 'Ocultar módulo' : 'Mostrar módulo'}
+                                      </button>
+                                      {assignableCourses.map((course) => (
+                                        <button
+                                          key={course.id}
+                                          type="button"
+                                          className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
+                                          disabled={busyKey !== null}
+                                          onClick={() => {
+                                            setModuleMenuId(null);
+                                            void run(`move-${mod.id}`, () =>
+                                              assignModuleToCourse(mod.id, course.id, nextSortOrder(course.id), visible)
+                                            );
+                                          }}
+                                        >
+                                          Mover a {course.title}
+                                        </button>
+                                      ))}
+                                      <button
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                                        disabled={busyKey !== null}
+                                        onClick={() => {
+                                          setModuleMenuId(null);
+                                          const ok = window.confirm(
+                                            `¿Quitar "${mod.title}" del curso? Pasará a "Sin asignar".`
+                                          );
+                                          if (!ok) return;
+                                          void run(`move-${mod.id}`, () => assignModuleToCourse(mod.id, null, 0, visible));
+                                        }}
+                                      >
+                                        Quitar del curso
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  className="p-2 sm:p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/80 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:bg-slate-700/60 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-30 disabled:pointer-events-none min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-all active:scale-95 shadow-2xs"
+                                  aria-label="Subir módulo"
+                                  disabled={busyKey !== null || index === 0}
+                                  onClick={() => requestReorderModule(mod.title, selectedCourse.id, index, index - 1)}
+                                >
+                                  <ChevronUp className="w-4 h-4" />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="p-2 sm:p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100/80 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:bg-slate-700/60 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-30 disabled:pointer-events-none min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-all active:scale-95 shadow-2xs"
+                                  aria-label="Bajar módulo"
+                                  disabled={busyKey !== null || index === moduleRows.length - 1}
+                                  onClick={() => requestReorderModule(mod.title, selectedCourse.id, index, index + 1)}
+                                >
+                                  <ChevronDown className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
                           </div>
 
                           {isOpen && (
@@ -563,9 +671,9 @@ export default function AdminSyllabusPage() {
                               onCreateSubtopic={(topic) =>
                                 handleOpenCreateModal(mod.id, mod.title, topic.id, topic.title)
                               }
-                              onMoveTopic={(topicId, direction) => moveTopic(mod.id, topicId, direction)}
-                              onMoveSibling={(siblings, topicId, direction) =>
-                                moveSiblings(mod.id, siblings, topicId, direction)
+                              onMoveTopic={(topic, direction) => requestMoveTopic(topic.title, mod.id, topic.id, direction)}
+                              onMoveSibling={(sub, siblings, topicId, direction) =>
+                                requestMoveSibling(sub.title, mod.id, siblings, topicId, direction)
                               }
                               onToggleTopicVisible={(topicId, topicVisible, order) =>
                                 toggleTopicVisible(mod.id, topicId, topicVisible, order)
@@ -658,6 +766,72 @@ export default function AdminSyllabusPage() {
                     Sí, eliminar curso
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {reorderConfirm && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-reorder-title"
+        >
+          <div className="max-w-md w-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-950/70 text-blue-600 dark:text-cyan-400 shrink-0">
+                <ArrowUpDown className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-cyan-400">
+                  Confirmar reordenamiento
+                </span>
+                <h3 id="modal-reorder-title" className="text-base font-extrabold text-slate-900 dark:text-white leading-snug">
+                  ¿Mover {reorderConfirm.itemType} hacia {reorderConfirm.direction}?
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium break-words">
+                  {reorderConfirm.itemType.charAt(0).toUpperCase() + reorderConfirm.itemType.slice(1)}: <span className="font-bold text-slate-800 dark:text-slate-200">&ldquo;{reorderConfirm.title}&rdquo;</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2.5 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+              <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-700/60 font-semibold text-slate-700 dark:text-slate-200">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500" />
+                  Posición {reorderConfirm.fromPosition}
+                </span>
+                <span className="text-blue-500 dark:text-cyan-400 font-black text-sm">➔</span>
+                <span className="flex items-center gap-1.5 text-blue-600 dark:text-cyan-300 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-cyan-400" />
+                  Posición {reorderConfirm.toPosition}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                Esta acción modificará el orden en que los alumnos recorren este contenido en el diplomado.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setReorderConfirm(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold cursor-pointer text-slate-700 dark:text-slate-300 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  reorderConfirm.onConfirm();
+                  setReorderConfirm(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                Sí, mover {reorderConfirm.direction}
               </button>
             </div>
           </div>
@@ -915,69 +1089,75 @@ function ModuleTopicsPanel({
   topicRows: { topic: Topic; order: number; visible: boolean }[];
   onCreateTopic: () => void;
   onCreateSubtopic: (topic: Topic) => void;
-  onMoveTopic: (topicId: string, direction: -1 | 1) => void;
-  onMoveSibling: (siblings: Topic[], topicId: string, direction: -1 | 1) => void;
+  onMoveTopic: (topic: Topic, direction: -1 | 1) => void;
+  onMoveSibling: (sub: Topic, siblings: Topic[], topicId: string, direction: -1 | 1) => void;
   onToggleTopicVisible: (topicId: string, visible: boolean, order: number) => void;
 }) {
   return (
-    <div className="mt-3 space-y-2 pl-2 border-t border-slate-200/80 dark:border-slate-800 pt-3">
-      <ul className="space-y-1.5">
+    <div className="mt-3.5 space-y-2 pt-3.5 border-t border-slate-200/70 dark:border-slate-700/60">
+      <ul className="space-y-2">
         {topicRows.map(({ topic, order, visible: topicVisible }, tIndex, tArr) => (
-          <li key={topic.id} className="text-sm py-1 border-b border-slate-100 dark:border-slate-800/60 last:border-b-0">
-            <div className="flex items-center gap-2">
-              <div className={`flex-1 min-w-0 flex items-center gap-2 ${topicVisible ? '' : 'opacity-50'}`}>
+          <li
+            key={topic.id}
+            className="text-sm p-3 rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600/70 transition-all shadow-2xs"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className={`flex items-start gap-2 min-w-0 flex-1 ${topicVisible ? '' : 'opacity-50'}`}>
                 <a
                   href={`/modulo/${mod.id}/${topic.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-cyan-400 hover:underline flex items-center gap-1.5 truncate"
+                  className="font-semibold text-xs sm:text-sm leading-snug break-words text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-cyan-400 hover:underline inline-flex items-start gap-1.5 flex-1 group/link"
                 >
-                  <span className="truncate">{topic.title}</span>
-                  <ExternalLink className="w-3 h-3 text-slate-400 shrink-0" />
+                  <span className="break-words">{topic.title}</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover/link:text-blue-500 shrink-0 mt-0.5 transition-colors" />
                 </a>
                 {!topicVisible && (
-                  <span className="text-[10px] uppercase font-bold text-slate-400 border rounded px-1.5 py-0.5 shrink-0">
+                  <span className="text-[10px] uppercase font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded px-1.5 py-0.5 shrink-0">
                     Oculto
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center justify-end gap-1.5 shrink-0 self-end sm:self-auto pt-1 sm:pt-0">
+                <button
+                  type="button"
+                  onClick={() => onCreateSubtopic(topic)}
+                  className="px-2.5 py-1.5 rounded-lg border border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors inline-flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+                >
+                  <Plus className="w-3 h-3" /> Subtema
+                </button>
                 <a
                   href={`/colaborador/nueva-revision?moduleId=${mod.id}&topicId=${topic.id}&action=update&from=/admin/temario`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-1.5 rounded-lg border"
+                  className="p-1.5 rounded-lg border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 transition-all shadow-2xs"
                   title="Editar contenido"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                 </a>
                 <button
                   type="button"
-                  onClick={() => onCreateSubtopic(topic)}
-                  className="px-2 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold"
-                >
-                  <Plus className="w-3 h-3 inline" /> Subtema
-                </button>
-                <button
-                  type="button"
-                  className="p-1.5 rounded border disabled:opacity-40"
+                  className="p-1.5 rounded-lg border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                   disabled={busy || tIndex === 0}
-                  onClick={() => onMoveTopic(topic.id, -1)}
+                  aria-label="Subir tema"
+                  onClick={() => onMoveTopic(topic, -1)}
                 >
                   <ChevronUp className="w-3.5 h-3.5" />
                 </button>
                 <button
                   type="button"
-                  className="p-1.5 rounded border disabled:opacity-40"
+                  className="p-1.5 rounded-lg border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                   disabled={busy || tIndex === tArr.length - 1}
-                  onClick={() => onMoveTopic(topic.id, 1)}
+                  aria-label="Bajar tema"
+                  onClick={() => onMoveTopic(topic, 1)}
                 >
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
                 <button
                   type="button"
-                  className="p-1.5 rounded border disabled:opacity-40"
+                  className="p-1.5 rounded-lg border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                   disabled={busy}
+                  aria-label={topicVisible ? 'Ocultar tema' : 'Mostrar tema'}
                   onClick={() => onToggleTopicVisible(topic.id, topicVisible, order)}
                 >
                   {topicVisible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
@@ -985,7 +1165,7 @@ function ModuleTopicsPanel({
               </div>
             </div>
             {topic.children && topic.children.length > 0 && (
-              <ul className="mt-1.5 ml-4 pl-3 border-l-2 border-slate-200 dark:border-slate-800 space-y-1">
+              <ul className="mt-2.5 ml-1 sm:ml-3 pl-2.5 sm:pl-3 border-l-2 border-blue-400/40 dark:border-blue-500/30 space-y-1.5">
                 {topic.children.map((sub, subIndex, subArr) => {
                   const subVisible =
                     overrides.find((o) => o.module_id === mod.id && o.topic_id === sub.id)?.is_visible ?? true;
@@ -994,37 +1174,50 @@ function ModuleTopicsPanel({
                   return (
                     <li
                       key={sub.id}
-                      className={`flex items-center justify-between text-xs py-0.5 gap-2 ${subVisible ? '' : 'opacity-50'}`}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between text-xs py-1.5 px-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-700/40 gap-1.5 sm:gap-2 shadow-2xs ${
+                        subVisible ? '' : 'opacity-50'
+                      }`}
                     >
-                      <a
-                        href={`/modulo/${mod.id}/${topic.id}/${sub.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-slate-600 dark:text-slate-300 hover:underline truncate min-w-0"
-                      >
-                        ↳ {sub.title}
-                      </a>
-                      <div className="flex items-center gap-0.5 shrink-0">
+                      <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                        <span className="text-blue-500/70 dark:text-cyan-400/70 shrink-0 select-none">↳</span>
+                        <a
+                          href={`/modulo/${mod.id}/${topic.id}/${sub.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:underline break-words leading-snug flex-1"
+                        >
+                          {sub.title}
+                        </a>
+                        {!subVisible && (
+                          <span className="text-[9px] uppercase font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded px-1 py-0.2 shrink-0">
+                            Oculto
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-end gap-1 shrink-0 self-end sm:self-auto">
                         <button
                           type="button"
-                          className="p-1 rounded border disabled:opacity-40"
+                          className="p-1 rounded-md border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                           disabled={busy || subIndex === 0}
-                          onClick={() => onMoveSibling(topic.children ?? [], sub.id, -1)}
+                          aria-label="Subir subtema"
+                          onClick={() => onMoveSibling(sub, topic.children ?? [], sub.id, -1)}
                         >
                           <ChevronUp className="w-3 h-3" />
                         </button>
                         <button
                           type="button"
-                          className="p-1 rounded border disabled:opacity-40"
+                          className="p-1 rounded-md border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                           disabled={busy || subIndex === subArr.length - 1}
-                          onClick={() => onMoveSibling(topic.children ?? [], sub.id, 1)}
+                          aria-label="Bajar subtema"
+                          onClick={() => onMoveSibling(sub, topic.children ?? [], sub.id, 1)}
                         >
                           <ChevronDown className="w-3 h-3" />
                         </button>
                         <button
                           type="button"
-                          className="p-1 rounded border disabled:opacity-40"
+                          className="p-1 rounded-md border border-slate-200/90 dark:border-slate-700/80 bg-slate-100/90 dark:bg-slate-700/60 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 dark:hover:bg-slate-700 dark:text-slate-300 dark:hover:text-cyan-300 dark:hover:border-slate-600 disabled:opacity-25 disabled:pointer-events-none transition-all shadow-2xs cursor-pointer active:scale-95"
                           disabled={busy}
+                          aria-label={subVisible ? 'Ocultar subtema' : 'Mostrar subtema'}
                           onClick={() => onToggleTopicVisible(sub.id, subVisible, subOrder)}
                         >
                           {subVisible ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3 text-slate-400" />}
@@ -1038,16 +1231,16 @@ function ModuleTopicsPanel({
           </li>
         ))}
       </ul>
-      <div className="pt-2.5 mt-2 border-t border-dashed border-slate-200 dark:border-slate-800 flex items-center justify-between">
+      <div className="pt-2.5 mt-2 border-t border-dashed border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between">
         <button
           type="button"
           onClick={onCreateTopic}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-blue-300 dark:border-blue-700 bg-blue-50/60 dark:bg-blue-950/20 text-blue-600 dark:text-cyan-400 text-xs font-bold cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed border-blue-400/80 dark:border-blue-600 bg-blue-50/70 dark:bg-blue-950/30 text-blue-600 dark:text-cyan-400 text-xs font-bold hover:bg-blue-100/70 dark:hover:bg-blue-900/40 transition-colors cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           Agregar tema nuevo
         </button>
-        <span className="text-[11px] text-slate-400 font-medium">{topicRows.length} temas</span>
+        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">{topicRows.length} temas</span>
       </div>
     </div>
   );

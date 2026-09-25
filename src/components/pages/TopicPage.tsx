@@ -13,7 +13,7 @@ import { getQuizFlagForTopic } from '../../services/quizService';
 import { CourseGate } from '../CourseGate';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList, Sparkles } from 'lucide-react';
+import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList, Sparkles, FileText } from 'lucide-react';
 import { QuickTopicMaterialModal } from '../editorial/QuickTopicMaterialModal';
 import { getReferencesForTopic, Reference } from '../../content/topicReferences';
 import {
@@ -36,6 +36,97 @@ import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { RichContent, renderInline, type RichHeadingLevel } from '../content/RichContent';
+
+export interface TopicPdf {
+  title: string;
+  url: string;
+  description?: string;
+  author?: string;
+}
+
+export function topicPdfList(topic: Topic): TopicPdf[] {
+  const list: TopicPdf[] = [];
+  if (topic.pdfUrls && topic.pdfUrls.length > 0) {
+    list.push(...topic.pdfUrls);
+  }
+  // Also parse legacy markdown PDFs from content if present
+  if (topic.content) {
+    const legacyRe = />\s*📄\s*\*\*Recurso Clínico Docente:\*\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(?:\s*>\s*\*Aportado por ([^*]+)\*)?(?:\s*>\s*([^\n\r]+))?/gi;
+    let m;
+    while ((m = legacyRe.exec(topic.content)) !== null) {
+      const url = m[2];
+      if (!list.some((p) => p.url === url)) {
+        list.push({
+          title: m[1].trim(),
+          url,
+          author: m[3]?.trim(),
+          description: m[4]?.trim(),
+        });
+      }
+    }
+  }
+  return list;
+}
+
+export function stripLegacyPdfMarkdown(text?: string | null): string {
+  if (!text) return '';
+  return text
+    .replace(/>\s*📄\s*\*\*Recurso Clínico Docente:\*\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(?:\s*>\s*\*Aportado por ([^*]+)\*)?(?:\s*>\s*([^\n\r]+))?/gi, '')
+    .trim();
+}
+
+function PdfDocumentsSection({ topic }: { topic: Topic }) {
+  const pdfs = topicPdfList(topic);
+  if (pdfs.length === 0) return null;
+
+  return (
+    <div className="mt-5 space-y-3">
+      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+        <FileText className="w-3.5 h-3.5" />
+        <span>Documentos y Guías PDF ({pdfs.length})</span>
+      </div>
+      <div className={`grid gap-3 ${pdfs.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+        {pdfs.map((pdf, idx) => (
+          <a
+            key={idx}
+            href={pdf.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-2xl border border-purple-200/60 dark:border-purple-800/40 bg-gradient-to-br from-purple-50/70 to-indigo-50/30 dark:from-purple-950/20 dark:to-indigo-950/10 p-4 flex items-start gap-3.5 hover:border-purple-400 dark:hover:border-purple-600 hover:shadow-md hover:shadow-purple-500/10 transition-all text-left"
+          >
+            <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-purple-600/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-300 flex items-center justify-center group-hover:scale-105 group-hover:bg-purple-600 group-hover:text-white transition-all shadow-xs">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">
+                  PDF
+                </span>
+                {pdf.author && (
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    Por {pdf.author}
+                  </span>
+                )}
+              </div>
+              <h5 className="text-sm font-bold text-slate-900 dark:text-white mt-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors line-clamp-1">
+                {pdf.title}
+              </h5>
+              {pdf.description && (
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 line-clamp-2 leading-relaxed">
+                  {pdf.description}
+                </p>
+              )}
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-600 dark:text-purple-400 mt-2.5">
+                <span>Ver / Descargar documento</span>
+                <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 /* ─── Video Section ─── */
 function topicHasVideos(topic: Topic): boolean {
@@ -185,18 +276,21 @@ function TopicBody({
   headingLevel?: RichHeadingLevel;
 }) {
   const lt = localizedTopic(topic, lang);
-  const hasContent = Boolean(lt.content);
+  const cleanContent = stripLegacyPdfMarkdown(lt.content);
+  const hasContent = Boolean(cleanContent);
+  const hasPdfs = topicPdfList(topic).length > 0;
   const hasExtras = Boolean(
     (lt.clinicalPearls && lt.clinicalPearls.length > 0)
     || (lt.keyPoints && lt.keyPoints.length > 0)
     || (topic.imageUrls && topic.imageUrls.length > 0)
     || topicHasVideos(topic)
+    || hasPdfs
   );
   if (!hasContent && !hasExtras) return null;
 
   return (
     <div>
-      {hasContent && <RichContent text={lt.content!} headingLevel={headingLevel} />}
+      {hasContent && <RichContent text={cleanContent} headingLevel={headingLevel} />}
       {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
         <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
       )}
@@ -207,6 +301,7 @@ function TopicBody({
         <ImageGallery images={topic.imageUrls} />
       )}
       {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
+      {hasPdfs && <PdfDocumentsSection topic={topic} />}
     </div>
   );
 }
@@ -854,9 +949,9 @@ export default function TopicPage() {
           )}
 
           {/* Main content */}
-          {lt.content && (
+          {Boolean(stripLegacyPdfMarkdown(lt.content)) && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
-              <RichContent text={lt.content} headingLevel={2} />
+              <RichContent text={stripLegacyPdfMarkdown(lt.content)} headingLevel={2} />
               {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
                 <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
               )}
@@ -867,10 +962,11 @@ export default function TopicPage() {
                 <ImageGallery images={topic.imageUrls} />
               )}
               {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
+              {topicPdfList(topic).length > 0 && <PdfDocumentsSection topic={topic} />}
             </div>
           )}
           {/* Media without content */}
-          {!lt.content && (topicHasVideos(topic) || lt.clinicalPearls?.length || lt.keyPoints?.length) && (
+          {!stripLegacyPdfMarkdown(lt.content) && (topicHasVideos(topic) || topicPdfList(topic).length > 0 || lt.clinicalPearls?.length || lt.keyPoints?.length) && (
             <div className="mb-8 p-5 sm:p-6 rounded-2xl bg-white/80 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/30 shadow-sm">
               {lt.clinicalPearls && lt.clinicalPearls.length > 0 && (
                 <ClinicalPearlsBox pearls={lt.clinicalPearls} lang={lang} />
@@ -879,6 +975,7 @@ export default function TopicPage() {
                 <KeyPointsBox points={lt.keyPoints} lang={lang} />
               )}
               {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
+              {topicPdfList(topic).length > 0 && <PdfDocumentsSection topic={topic} />}
             </div>
           )}
 

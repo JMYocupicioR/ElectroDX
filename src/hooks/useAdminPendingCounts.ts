@@ -66,7 +66,7 @@ export function useAdminPendingCounts() {
     };
   }, [isAdmin, isEditor]);
 
-  const totalPending = pendingCourseEnrollments + pendingRevisions + pendingTeacherReviews + pendingQuizzes;
+  const totalPending = pendingEnrollments + pendingCourseEnrollments + pendingRevisions + pendingTeacherReviews + pendingQuizzes;
 
   return {
     pendingUsers,

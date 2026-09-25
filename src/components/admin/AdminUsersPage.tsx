@@ -1,10 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  UserCheck,
   Shield,
-  UserX,
-  PenLine,
   Mail,
   Calendar,
   AlertTriangle,
@@ -19,10 +16,8 @@ import {
   Scale,
   Copy,
   Check,
-  ShieldAlert,
   Building2,
   Clock,
-  Filter,
   Eye,
   EyeOff,
   Trash2,
@@ -33,9 +28,6 @@ import { AdminLayout } from './AdminLayout';
 import {
   getAdminProfiles,
   verifyContributor,
-  verifyPhysicianEnrollment,
-  rejectPhysicianEnrollment,
-  revokePhysicianEnrollment,
   grantRole,
   revokeRole,
   revokeContributor,
@@ -51,22 +43,29 @@ import { isEnrollmentProfileComplete, isProfileComplete } from '../../utils/admi
 import { useAuth } from '../../contexts/AuthProvider';
 import {
   getCourseEnrollmentsForUsers,
-  grantCourseAccess,
-  revokeCourseAccess,
-  adminAdmitStudentToCourse,
+  grantCourseAccessAndApproveProfile,
+  revokeCourseAccessAndSyncProfile,
 } from '../../services/courseService';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { courseDisplayTitle, sellableCourses } from '../../content/courseCatalog';
 
-type Tab = 'enrolled' | 'comite' | 'premium' | 'all' | 'enrollment_pending';
+type Tab = 'enrolled' | 'comite' | 'premium' | 'all';
 
 const TAB_CONFIG: { id: Tab; label: string; icon: any }[] = [
   { id: 'enrolled', label: 'Médicos Admitidos', icon: Stethoscope },
   { id: 'comite', label: 'Comité Editorial y Especialistas', icon: Scale },
   { id: 'premium', label: 'Usuarios Premium', icon: Sparkles },
   { id: 'all', label: 'Directorio General', icon: Users },
-  { id: 'enrollment_pending', label: 'Solicitudes en Espera', icon: Clock },
 ];
+
+function readInitialTab(): Tab {
+  const requested = new URLSearchParams(window.location.search).get('tab');
+  if (requested === 'enrollment_pending') return 'all';
+  if (requested === 'enrolled' || requested === 'comite' || requested === 'premium' || requested === 'all') {
+    return requested;
+  }
+  return 'enrolled';
+}
 
 export default function AdminUsersPage() {
   const { user } = useAuth();
@@ -75,10 +74,7 @@ export default function AdminUsersPage() {
   const sellable = useMemo(() => sellableCourses(courses), [courses]);
 
   // Get initial tab from URL if present - Default to directory of admitted physicians
-  const searchParams = new URLSearchParams(window.location.search);
-  const initialTab = (searchParams.get('tab') as Tab) || 'enrolled';
-
-  const [tab, setTab] = useState<Tab>(initialTab);
+  const [tab, setTab] = useState<Tab>(readInitialTab);
   const [users, setUsers] = useState<AdminProfileRow[]>([]);
   const [allUsersCache, setAllUsersCache] = useState<AdminProfileRow[]>([]);
   const [courseEnrollments, setCourseEnrollments] = useState<CourseEnrollment[]>([]);
@@ -93,7 +89,6 @@ export default function AdminUsersPage() {
   const [filterResidentsOnly, setFilterResidentsOnly] = useState(false);
   const [filterComiteVisible, setFilterComiteVisible] = useState(false);
   const [filterSpecialistVisible, setFilterSpecialistVisible] = useState(false);
-  const [filterWaitlistCourses, setFilterWaitlistCourses] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -163,7 +158,6 @@ export default function AdminUsersPage() {
   // Tab counts
   const counts = useMemo(() => {
     return {
-      pending: allUsersCache.filter((u) => u.enrollment_status === 'pending' || u.enrollment_status === 'none').length,
       enrolled: allUsersCache.filter((u) => u.enrollment_status === 'approved').length,
       comite: allUsersCache.filter((u) => u.show_in_editorial_committee || u.is_public || u.roles.some((r) => r === 'editor' || r === 'admin' || r === 'contributor')).length,
       all: allUsersCache.length,
@@ -207,15 +201,8 @@ export default function AdminUsersPage() {
       result = result.filter((u) => u.is_public === true);
     }
 
-    if (filterWaitlistCourses) {
-      const pendingUserIds = new Set(
-        courseEnrollments.filter((r) => r.status === 'pending').map((r) => r.user_id)
-      );
-      result = result.filter((u) => pendingUserIds.has(u.id));
-    }
-
     return result;
-  }, [users, searchQuery, filterSepVerified, filterResidentsOnly, filterComiteVisible, filterSpecialistVisible, filterWaitlistCourses, courseEnrollments]);
+  }, [users, searchQuery, filterSepVerified, filterResidentsOnly, filterComiteVisible, filterSpecialistVisible]);
 
   return (
     <AdminLayout title="Coordinación y Estatus de Médicos">
@@ -223,8 +210,7 @@ export default function AdminUsersPage() {
       <div className="flex flex-wrap gap-2 mb-6">
         {TAB_CONFIG.map(({ id, label, icon: Icon }) => {
           let count = 0;
-          if (id === 'enrollment_pending') count = counts.pending;
-          else if (id === 'enrolled') count = counts.enrolled;
+          if (id === 'enrolled') count = counts.enrolled;
           else if (id === 'comite') count = counts.comite;
           else if (id === 'all') count = counts.all;
           else if (id === 'premium') count = counts.premium;
@@ -249,8 +235,6 @@ export default function AdminUsersPage() {
                   className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     isActive
                       ? 'bg-white/20 text-white'
-                      : id === 'enrollment_pending'
-                      ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                       : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                   }`}
                 >
@@ -261,28 +245,6 @@ export default function AdminUsersPage() {
           );
         })}
       </div>
-
-      {/* Notice Banner when viewing pending enrollments */}
-      {tab === 'enrollment_pending' && (
-        <div className="mb-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <p className="text-xs text-amber-900 dark:text-amber-200">
-              <strong>Nota de gestión:</strong> Las solicitudes de admisión a los cursos se gestionan de forma centralizada en el módulo de{' '}
-              <Link to="/admin/admisiones" className="underline font-bold hover:text-amber-700 dark:hover:text-amber-100">
-                Admisiones
-              </Link>.
-            </p>
-          </div>
-          <Link
-            to="/admin/admisiones"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shrink-0 self-start sm:self-auto shadow-2xs"
-          >
-            <span>Ir a Admisiones</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-      )}
 
       {/* ─── Search Bar and Quick Filters ─── */}
       <div className="rounded-2xl border border-slate-200 dark:border-slate-700/80 bg-white/70 dark:bg-slate-900/40 p-4 mb-6 backdrop-blur-md">
@@ -355,19 +317,16 @@ export default function AdminUsersPage() {
               <span>En Especialistas</span>
             </button>
 
-            <button
-              onClick={() => setFilterWaitlistCourses(!filterWaitlistCourses)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
-                filterWaitlistCourses
-                  ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300'
-                  : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
-              }`}
+            <Link
+              to="/admin/admisiones"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-amber-300 dark:border-amber-700 text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/70 transition"
             >
               <Clock className="w-3.5 h-3.5 text-amber-600" />
               <span>
-                En Lista de Espera ({courseEnrollments.filter((r) => r.status === 'pending').length})
+                Lista de espera ({courseEnrollments.filter((r) => r.status === 'pending').length})
               </span>
-            </button>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
       </div>
@@ -619,66 +578,6 @@ export default function AdminUsersPage() {
                       <ChevronRight className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                     </Link>
 
-                    {/* Section 1: Course Admission Controls (Not for self) */}
-                    {!isSelf && (
-                      <div className="bg-slate-100/80 dark:bg-slate-800/80 p-3 rounded-xl border border-slate-200/80 dark:border-slate-700/80 space-y-2">
-                        <span className="text-[11px] font-bold tracking-wide uppercase text-slate-500 dark:text-slate-400 block">
-                          Admisión al Curso
-                        </span>
-
-                        {isPending && (
-                          <div className="flex flex-col gap-1.5">
-                            <button
-                              type="button"
-                              disabled={loadingId === u.id}
-                              onClick={() => run(u.id, () => verifyPhysicianEnrollment(u.id))}
-                              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer disabled:opacity-50"
-                            >
-                              <Stethoscope className="w-3.5 h-3.5" />
-                              <span>Aprobar Admisión al Curso</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              disabled={loadingId === u.id}
-                              onClick={() => run(u.id, () => rejectPhysicianEnrollment(u.id))}
-                              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 dark:text-red-400 hover:bg-red-50 text-xs font-medium transition cursor-pointer"
-                            >
-                              <XCircle className="w-3.5 h-3.5" />
-                              <span>Rechazar Solicitud</span>
-                            </button>
-                          </div>
-                        )}
-
-                        {isApproved && (
-                          <button
-                            type="button"
-                            disabled={loadingId === u.id}
-                            onClick={() => {
-                              if (!confirm(`¿Revocar acceso al curso para ${u.display_name}? El usuario verá la pantalla de candado.`)) return;
-                              run(u.id, () => revokePhysicianEnrollment(u.id));
-                            }}
-                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 text-xs font-medium transition cursor-pointer"
-                          >
-                            <UserX className="w-3.5 h-3.5" />
-                            <span>Revocar Admisión (Bloquear)</span>
-                          </button>
-                        )}
-
-                        {isRejected && (
-                          <button
-                            type="button"
-                            disabled={loadingId === u.id}
-                            onClick={() => run(u.id, () => verifyPhysicianEnrollment(u.id))}
-                            className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 transition cursor-pointer"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Reactivar y Aprobar</span>
-                          </button>
-                        )}
-                      </div>
-                    )}
-
                     {/* Section 2: Public Visibility Controls (Only available if approved) */}
                     {isApproved ? (
                       <div className="bg-gradient-to-br from-indigo-50/50 via-white to-violet-50/40 dark:from-slate-800/90 dark:via-slate-800/70 dark:to-indigo-950/30 p-3 rounded-xl border border-indigo-200/80 dark:border-indigo-800/60 space-y-2 shadow-xs">
@@ -757,7 +656,7 @@ export default function AdminUsersPage() {
                         <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight">
                           {isRejected
                             ? 'Solicitud rechazada: el usuario no es visible en ningún directorio público.'
-                            : 'Requiere admisión aprobada previamente para habilitar visibilidad.'}
+                            : 'La visibilidad se habilita al admitir un curso desde Admisiones.'}
                         </p>
                       </div>
                     )}
@@ -905,7 +804,7 @@ export default function AdminUsersPage() {
                                   disabled={loadingId === u.id}
                                   onClick={() => {
                                     if (!confirm(`¿Revocar ${label} para ${u.display_name}?`)) return;
-                                    run(u.id, () => revokeCourseAccess(u.id, courseId));
+                                    run(u.id, () => revokeCourseAccessAndSyncProfile(u.id, courseId));
                                   }}
                                   className="w-full inline-flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-100/70 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold"
                                 >
@@ -921,44 +820,23 @@ export default function AdminUsersPage() {
                                   key={courseId}
                                   className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/50 border border-amber-300 dark:border-amber-700/60 space-y-1"
                                 >
-                                  <div className="flex items-center justify-between text-xs">
+                                  <div className="flex items-center text-xs">
                                     <span className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
                                       <Clock className="w-3 h-3 text-amber-600 animate-pulse" />
                                       <span>{label}: Espera</span>
                                     </span>
-                                    <Link
-                                      to={`/admin/admisiones?course=${courseId}`}
-                                      className="text-[10px] font-semibold text-amber-900 dark:text-amber-200 underline"
-                                    >
-                                      Ver cola
-                                    </Link>
                                   </div>
                                   {pendingEnrollment.request_notes && (
                                     <p className="text-[10px] text-slate-600 dark:text-slate-400 italic line-clamp-1">
                                       "{pendingEnrollment.request_notes}"
                                     </p>
                                   )}
-                                  <button
-                                    type="button"
-                                    disabled={loadingId === u.id}
-                                    onClick={() => {
-                                      const ref = window.prompt(
-                                        `Referencia de pago para admitir en ${label}:`,
-                                        pendingEnrollment.payment_reference || 'Confirmado por admin'
-                                      );
-                                      if (ref === null) return;
-                                      run(u.id, () =>
-                                        adminAdmitStudentToCourse(u.id, courseId, {
-                                          notes: 'Admitido desde Gestión de Médicos',
-                                          method: 'manual',
-                                          reference: ref || undefined,
-                                        })
-                                      );
-                                    }}
+                                  <Link
+                                    to={`/admin/admisiones?course=${courseId}`}
                                     className="w-full inline-flex items-center justify-center gap-1 px-2 py-1 rounded bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-xs transition"
                                   >
-                                    <Check className="w-3 h-3" /> Admitir a {label}
-                                  </button>
+                                    Resolver en Admisiones
+                                  </Link>
                                 </div>
                               );
                             }
@@ -972,7 +850,7 @@ export default function AdminUsersPage() {
                                   const ref = window.prompt(`Referencia de pago para ${label} (opcional):`, '');
                                   if (ref === null) return;
                                   run(u.id, () =>
-                                    grantCourseAccess(u.id, courseId as CourseId, {
+                                    grantCourseAccessAndApproveProfile(u.id, courseId as CourseId, {
                                       method: 'manual',
                                       reference: ref || undefined,
                                     })

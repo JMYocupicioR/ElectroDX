@@ -34,7 +34,7 @@ export function UserMenu() {
     isEditor,
     canProposeContent,
     isEnrolledPhysician,
-    hasCourseAccess,
+    isEnrolledInCourse,
     enrollmentStatus,
     bootstrapAvailable,
     claimBootstrapAdmin,
@@ -42,7 +42,7 @@ export function UserMenu() {
   } = useAuth();
   const { totalPending } = useAdminPendingCounts();
   const { courses } = useSyllabusCatalog();
-  const activeSellable = sellableCourses(courses).filter((course) => hasCourseAccess(course.id));
+  const activeSellable = sellableCourses(courses).filter((course) => isEnrolledInCourse(course.id));
   const [open, setOpen] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimError, setClaimError] = useState<string | null>(null);

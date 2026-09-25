@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -76,6 +76,8 @@ export function QuickTopicMaterialModal({
 }: QuickTopicMaterialModalProps) {
   const { user, isAdmin, isEditor, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<MaterialType>(initialTab);
+  const [selectedTargetId, setSelectedTargetId] = useState<string>(topic.id);
+  const [adminPublishMode, setAdminPublishMode] = useState<'instant' | 'review'>('instant');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -101,9 +103,16 @@ export function QuickTopicMaterialModal({
   // Pearl
   const [pearlText, setPearlText] = useState('');
 
+  const targetTopic = useMemo(() => {
+    if (selectedTargetId === topic.id) return topic;
+    const foundChild = topic.children?.find((c) => c.id === selectedTargetId);
+    return foundChild ?? topic;
+  }, [topic, selectedTargetId]);
+
   useEffect(() => {
     if (!isOpen) return;
     setActiveTab(initialTab);
+    setSelectedTargetId(topic.id);
     setError(null);
     setSuccessMsg(null);
   }, [isOpen, initialTab, topic.id]);
@@ -121,7 +130,7 @@ export function QuickTopicMaterialModal({
     setLoading(true);
 
     try {
-      const payload = topicToRevisionPayload(topic);
+      const payload = topicToRevisionPayload(targetTopic);
       const authorName = profile?.display_name || 'Especialista Docente';
 
       if (activeTab === 'video') {
@@ -167,9 +176,15 @@ export function QuickTopicMaterialModal({
         }
         const cleanDesc = pdfDescription.trim() || 'Material docente de referencia clínica.';
         
-        // Append an elegant downloadable card markdown block to content
-        const pdfMarkdown = `\n\n> 📄 **Recurso Clínico Docente:** [${pdfTitle.trim()}](${cleanPdfUrl})\n> *Aportado por ${authorName}*\n> ${cleanDesc}\n`;
-        payload.content = (payload.content ? payload.content + pdfMarkdown : pdfMarkdown).trim();
+        payload.pdfUrls = [
+          ...(payload.pdfUrls ?? []),
+          {
+            title: pdfTitle.trim(),
+            url: cleanPdfUrl,
+            description: cleanDesc,
+            author: authorName,
+          },
+        ];
       } else if (activeTab === 'image') {
         let cleanImageSrc = imageSrc.trim();
         if (imageSource === 'file') {
@@ -187,7 +202,7 @@ export function QuickTopicMaterialModal({
           ...(payload.imageUrls ?? []),
           {
             src: cleanImageSrc,
-            alt: imageCaption.trim() || topic.title,
+            alt: imageCaption.trim() || targetTopic.title,
             caption: imageCaption.trim() ? `${imageCaption.trim()} — Aportado por ${authorName}` : `Aportado por ${authorName}`,
           },
         ];
@@ -201,10 +216,22 @@ export function QuickTopicMaterialModal({
         ];
       }
 
+      // Ensure media object is also populated for Supabase media JSONB persistence
+      payload.media = {
+        videoUrls: payload.videoUrls ?? [],
+        youtubeUrls: payload.youtubeUrls ?? [],
+        vimeoUrls: payload.vimeoUrls ?? [],
+        embedUrls: payload.embedUrls ?? [],
+        imageUrls: payload.imageUrls ?? [],
+        pdfUrls: payload.pdfUrls ?? [],
+      };
+
       // Save revision
+      const isChild = targetTopic.id !== topic.id;
       const saved = await saveRevision({
-        targetTopicId: topic.id,
+        targetTopicId: targetTopic.id,
         moduleId,
+        parentId: isChild ? topic.id : null,
         action: 'update',
         payload,
         authorId: user.id,
@@ -212,10 +239,12 @@ export function QuickTopicMaterialModal({
 
       await submitRevision(saved.id);
 
-      // Instant publish if admin or editor
-      if (isAdmin || isEditor) {
+      // Instant publish or leave in review queue
+      if ((isAdmin || isEditor) && adminPublishMode === 'instant') {
         await reviewRevision(saved.id, 'approved', `Material docente agregado directamente por ${authorName}`);
         setSuccessMsg('¡Material publicado exitosamente en el tema!');
+      } else if (isAdmin || isEditor) {
+        setSuccessMsg('¡Material enviado a la cola de revisión para los demás administradores!');
       } else {
         setSuccessMsg('¡Material enviado a revisión con éxito!');
       }
@@ -318,6 +347,32 @@ export function QuickTopicMaterialModal({
               Perla <span className="hidden sm:inline">Clínica</span>
             </button>
           </div>
+
+          {/* Subtopic Target Selector (if parent topic has children) */}
+          {topic.children && topic.children.length > 0 && (
+            <div className="px-6 py-3.5 bg-blue-50/70 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-blue-900 dark:text-blue-200">
+                  ¿A qué sección o subtema deseas agregar este material?
+                </span>
+                <span className="block text-[11px] text-blue-700/80 dark:text-blue-300/70">
+                  Puedes guardarlo en la cabecera general o en un subtema numerado.
+                </span>
+              </div>
+              <select
+                value={selectedTargetId}
+                onChange={(e) => setSelectedTargetId(e.target.value)}
+                className="text-xs font-medium rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none min-w-[220px]"
+              >
+                <option value={topic.id}>📌 {topic.title} (Tema General)</option>
+                {topic.children.map((child, idx) => (
+                  <option key={child.id} value={child.id}>
+                    {idx + 1}. {child.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -525,6 +580,62 @@ export function QuickTopicMaterialModal({
               </div>
             )}
 
+            {/* Admin Publishing Mode Selection */}
+            {(isAdmin || isEditor) && (
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    Modo de publicación (Administrador)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <label
+                    className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                      adminPublishMode === 'instant'
+                        ? 'bg-blue-50/80 dark:bg-blue-950/40 border-blue-300 dark:border-blue-700 text-blue-900 dark:text-blue-200 font-semibold'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="adminPublishMode"
+                      checked={adminPublishMode === 'instant'}
+                      onChange={() => setAdminPublishMode('instant')}
+                      className="mt-0.5 text-blue-600"
+                    />
+                    <div>
+                      <span className="block font-bold">Publicar de Inmediato</span>
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                        Visible en vivo de inmediato en el tema.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label
+                    className={`flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                      adminPublishMode === 'review'
+                        ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-semibold'
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="adminPublishMode"
+                      checked={adminPublishMode === 'review'}
+                      onChange={() => setAdminPublishMode('review')}
+                      className="mt-0.5 text-amber-600"
+                    />
+                    <div>
+                      <span className="block font-bold">Enviar a Revisión</span>
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                        Aparecerá en &quot;Pendientes&quot; del panel admin para los demás.
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+
             {/* Footer Buttons */}
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
@@ -548,7 +659,11 @@ export function QuickTopicMaterialModal({
                 ) : (
                   <>
                     <UploadCloud className="w-4 h-4" />
-                    {isAdmin || isEditor ? 'Guardar y Publicar en el Tema' : 'Proponer Material Docente'}
+                    {isAdmin || isEditor
+                      ? adminPublishMode === 'instant'
+                        ? 'Guardar y Publicar en el Tema'
+                        : 'Enviar a Revisión de Administradores'
+                      : 'Proponer Material Docente'}
                   </>
                 )}
               </button>

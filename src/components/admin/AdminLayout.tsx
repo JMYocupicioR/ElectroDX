@@ -59,7 +59,7 @@ export function AdminLayout({
 }) {
   const location = useLocation();
   const { isAdmin, user } = useAuth();
-  const { pendingCourseEnrollments, pendingRevisions, pendingTeacherReviews, pendingQuizzes } = useAdminPendingCounts();
+  const { pendingEnrollments, pendingCourseEnrollments, pendingRevisions, pendingTeacherReviews, pendingQuizzes } = useAdminPendingCounts();
 
   const groups: NavGroup[] = [
     {
@@ -72,7 +72,7 @@ export function AdminLayout({
           label: 'Bandeja',
           icon: Inbox,
           exact: true,
-          badge: pendingTeacherReviews,
+          badge: pendingTeacherReviews + pendingCourseEnrollments + pendingEnrollments,
         },
         {
           to: '/admin/calendario',
@@ -135,7 +135,7 @@ export function AdminLayout({
           label: 'Admisiones',
           icon: UserCheck,
           exact: false,
-          badge: pendingCourseEnrollments,
+          badge: pendingCourseEnrollments + pendingEnrollments,
           adminOnly: true,
         },
         {

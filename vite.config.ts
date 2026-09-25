@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
-import { lookupSepCedula, normalizeCedula } from './server/sepCedulaLookup';
+import { lookupSepCedula, normalizeCedula } from './server/sepCedulaLookup.js';
 
 function sepCedulaProxyPlugin(): Plugin {
   return {
@@ -126,6 +126,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Emitted .js siblings must not shadow the .ts/.tsx source (duplicate Auth context).
+    extensions: ['.mjs', '.mts', '.ts', '.tsx', '.jsx', '.js', '.json'],
   },
   optimizeDeps: {
     include: ['@react-pdf/renderer', 'qrcode'],

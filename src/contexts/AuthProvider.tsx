@@ -11,6 +11,7 @@ import type { Session, User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured, sb } from '../lib/supabase';
 import type { AppRole, CourseId, EnrollmentStatus, Profile, Subscription } from '../types/database';
 import { recordUserActivity } from '../services/studentPlanService';
+import { hasActivePremiumSubscription, isEnrolledInCourse as enrolledInCourse } from '../utils/courseEnrollment';
 
 export interface StudentRegistrationData {
   email: string;
@@ -43,6 +44,7 @@ interface AuthContextValue {
   courseIds: CourseId[];
   pendingCourseIds: CourseId[];
   hasCourseAccess: (courseId: CourseId) => boolean;
+  isEnrolledInCourse: (courseId: CourseId) => boolean;
   isCoursePending: (courseId: CourseId) => boolean;
   hasAnySellableCourse: boolean;
   subscription: Subscription | null;
@@ -503,6 +505,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const staffOrPremium = isAdmin || isEditor || effectivePremium;
     const legacyUnlock = !courseSchemaReady && isEnrolledPhysician;
     const ownedCourses: CourseId[] = courseIds;
+    const paidPremium = hasActivePremiumSubscription(subscription);
+    const legacyStudentUnlock =
+      !courseSchemaReady &&
+      enrollmentStatus === 'approved' &&
+      Boolean(profile?.enrollment_verified_at);
     const hasAnySellableCourse =
       staffOrPremium || legacyUnlock || ownedCourses.some((id) => id !== 'referencia');
     const hasCourseAccess = (courseId: CourseId) => {
@@ -510,6 +517,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (courseId === 'referencia') return hasAnySellableCourse;
       return ownedCourses.includes(courseId);
     };
+    const isEnrolledInCourse = (courseId: CourseId) =>
+      enrolledInCourse(courseId, ownedCourses, {
+        premiumSubscription: paidPremium,
+        legacyStudentUnlock,
+      });
 
     return {
       session,
@@ -527,6 +539,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       courseIds: ownedCourses,
       pendingCourseIds,
       hasCourseAccess,
+      isEnrolledInCourse,
       isCoursePending: (courseId: CourseId) => pendingCourseIds.includes(courseId),
       hasAnySellableCourse,
       subscription,

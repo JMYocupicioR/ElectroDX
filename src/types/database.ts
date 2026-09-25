@@ -140,6 +140,7 @@ export interface TopicMedia {
   vimeoUrls?: { title: string; videoId: string }[];
   embedUrls?: { title: string; embedUrl: string }[];
   imageUrls?: { src: string; alt: string; caption?: string }[];
+  pdfUrls?: { title: string; url: string; description?: string; author?: string }[];
 }
 
 import type { QuizQuestionDraft } from './quiz';
@@ -165,6 +166,8 @@ export interface RevisionPayload {
   vimeoUrls?: { title: string; videoId: string }[];
   embedUrls?: { title: string; embedUrl: string }[];
   imageUrls?: { src: string; alt: string; caption?: string }[];
+  pdfUrls?: { title: string; url: string; description?: string; author?: string }[];
+  media?: TopicMedia;
   clinicalPearls?: string[];
   clinicalPearlsEn?: string[];
   keyPoints?: string[];

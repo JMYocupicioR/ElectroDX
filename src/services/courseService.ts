@@ -1,5 +1,10 @@
 import { supabase, sb } from '../lib/supabase';
 import { DEFAULT_COURSES, DEFAULT_COURSE_MODULES, isCourseId } from '../content/courseCatalog';
+import {
+  rejectPhysicianEnrollment,
+  revokePhysicianEnrollment,
+  verifyPhysicianEnrollment,
+} from './editorialService';
 import type {
   ModuleAccess,
   LiveWorkshop,
@@ -429,6 +434,53 @@ async function upsertActiveCourseEnrollment(
     .single();
   if (error) throw new Error(error.message);
   return data as CourseEnrollment;
+}
+
+function hasOpenCourseEnrollment(rows: CourseEnrollment[]): boolean {
+  return rows.some(
+    (row) => row.course_id !== 'referencia' && (row.status === 'active' || row.status === 'pending')
+  );
+}
+
+/** Abre el curso y el candado del perfil. Las dos pantallas de admisión usan esta misma operación. */
+export async function adminAdmitStudentAndApproveProfile(
+  userId: string,
+  courseId: CourseId,
+  options?: { notes?: string; method?: string; reference?: string; expiresAt?: string | null }
+): Promise<CourseEnrollment> {
+  const enrollment = await adminAdmitStudentToCourse(userId, courseId, options);
+  await verifyPhysicianEnrollment(userId);
+  return enrollment;
+}
+
+/** Otorga un curso fuera de la cola y deja el perfil aprobado, igual que una admisión. */
+export async function grantCourseAccessAndApproveProfile(
+  userId: string,
+  courseId: CourseId,
+  options?: { method?: string; reference?: string; notes?: string; expiresAt?: string | null }
+): Promise<void> {
+  await grantCourseAccess(userId, courseId, options);
+  await verifyPhysicianEnrollment(userId);
+}
+
+export async function adminRejectCourseRequestAndSyncProfile(
+  userId: string,
+  courseId: CourseId,
+  reason?: string
+): Promise<void> {
+  await adminRejectCourseRequest(userId, courseId, reason);
+  const rows = await getCourseEnrollmentsForUsers([userId]);
+  if (!hasOpenCourseEnrollment(rows)) {
+    await rejectPhysicianEnrollment(userId, reason);
+  }
+}
+
+export async function revokeCourseAccessAndSyncProfile(userId: string, courseId: CourseId): Promise<void> {
+  await revokeCourseAccess(userId, courseId);
+  const rows = await getCourseEnrollmentsForUsers([userId]);
+  if (!hasOpenCourseEnrollment(rows)) {
+    await revokePhysicianEnrollment(userId);
+  }
 }
 
 export async function adminAdmitStudentToCourse(

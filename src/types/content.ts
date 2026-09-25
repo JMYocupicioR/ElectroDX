@@ -15,6 +15,7 @@ export interface Topic {
   vimeoUrls?: { title: string; videoId: string }[];  // Vimeo video embeds
   embedUrls?: { title: string; embedUrl: string }[];  // Other platform embed URLs
   imageUrls?: { src: string; alt: string; caption?: string }[];  // Educational images/diagrams
+  pdfUrls?: { title: string; url: string; description?: string; author?: string }[];  // Teaching PDFs / Clinical guidelines
   clinicalPearls?: string[];    // Highlighted clinical tips (💡)
   clinicalPearlsEn?: string[];
   keyPoints?: string[];         // Key takeaway summaries (📌)

@@ -29,7 +29,7 @@ export function StudentCertificatePanel({
   completedTopics: Set<string>;
   standing?: KardexStanding | null;
 }) {
-  const { profile, hasCourseAccess } = useAuth();
+  const { profile, isEnrolledInCourse } = useAuth();
   const { assignments, courses } = useSyllabusCatalog();
   const [certs, setCerts] = useState<AcademicCertificate[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -44,9 +44,9 @@ export function StudentCertificatePanel({
       const ids = moduleIdsForCourse(assignments, course.id);
       const req = checkCourseCertificationEligibility(profile, completedTopics, moduleProgress, ids, standing);
       const cert = certs.find((c) => c.course_id === course.id) ?? null;
-      return { courseId: course.id, title: course.title, req, cert, unlocked: hasCourseAccess(course.id) };
+      return { courseId: course.id, title: course.title, req, cert, unlocked: isEnrolledInCourse(course.id) };
     });
-  }, [assignments, courses, profile, completedTopics, moduleProgress, certs, hasCourseAccess, standing]);
+  }, [assignments, courses, profile, completedTopics, moduleProgress, certs, isEnrolledInCourse, standing]);
 
   return (
     <div className="space-y-6">

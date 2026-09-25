@@ -106,7 +106,7 @@ export function CourseSyllabusEditorTree({
                         className="flex-1 flex items-center gap-2 min-w-0 py-1 text-left"
                       >
                         <span className="text-base flex-shrink-0">{mod.emoji}</span>
-                        <span className={`flex-1 truncate leading-snug ${isCurrent ? 'font-semibold' : 'font-medium'}`}>
+                        <span className={`flex-1 break-words line-clamp-2 leading-snug ${isCurrent ? 'font-semibold' : 'font-medium'}`}>
                           {mod.title}
                         </span>
                         {isExpanded ? (
@@ -235,7 +235,7 @@ function TopicEditorList({
               )}
               <Link
                 to={topicUrl}
-                className="flex-1 min-w-0 truncate leading-snug hover:underline"
+                className="flex-1 min-w-0 break-words line-clamp-2 leading-snug hover:underline"
                 title={topic.title}
               >
                 {topic.title}
