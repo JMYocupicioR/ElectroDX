@@ -26,6 +26,7 @@ export interface CustomCaseTemplateRecord extends CaseTemplate {
   updated_at?: string;
   created_by?: string | null;
   is_custom?: boolean;
+  isPublic?: boolean;
 }
 
 // ─── Carga de Plantillas ───────────────────────────────────────────────────────
@@ -123,7 +124,59 @@ export async function loadAllCaseTemplates(
     }
   }
 
+  const publicIds = await loadPublicExerciseIds();
+  const publicSet = new Set(publicIds);
+  finalTemplates = finalTemplates.map(t => ({
+    ...t,
+    isPublic: publicSet.has(t.patternId),
+  }));
+
   return { templates: finalTemplates, source };
+}
+
+/** Pattern ids marked visible on the public simulator. Empty list if the table is unavailable. */
+export async function loadPublicExerciseIds(): Promise<string[]> {
+  try {
+    const { data, error } = await (supabase.from('emg_public_exercises') as any)
+      .select('pattern_id');
+    if (error) throw error;
+    return (data || [])
+      .map((row: { pattern_id?: string }) => row.pattern_id)
+      .filter((id: string | undefined): id is string => Boolean(id));
+  } catch (err) {
+    console.warn('[emgExerciseService] No se pudo leer el modo público:', err);
+    return [];
+  }
+}
+
+/** Shows or hides one exercise on the public simulator. */
+export async function setExercisePublicVisibility(
+  patternId: string,
+  isPublic: boolean,
+  userId?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (isPublic) {
+      const { error } = await (supabase.from('emg_public_exercises') as any)
+        .upsert(
+          {
+            pattern_id: patternId,
+            updated_at: new Date().toISOString(),
+            updated_by: userId || null,
+          },
+          { onConflict: 'pattern_id' }
+        );
+      if (error) throw error;
+    } else {
+      const { error } = await (supabase.from('emg_public_exercises') as any)
+        .delete()
+        .eq('pattern_id', patternId);
+      if (error) throw error;
+    }
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'No se pudo actualizar la visibilidad pública.' };
+  }
 }
 
 /** Obtiene una plantilla específica por su patternId */

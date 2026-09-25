@@ -15,15 +15,18 @@ import {
   RefreshCw,
   GraduationCap,
   SearchX,
+  Globe,
 } from 'lucide-react';
 import { Breadcrumbs } from '../common/Breadcrumbs';
 import {
   loadAllCaseTemplates,
   deleteCaseTemplate,
+  setExercisePublicVisibility,
   type CustomCaseTemplateRecord,
 } from '../../services/emgExerciseService';
 import { EmgCaseEditorModal } from './EmgCaseEditorModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
+import { useAuth } from '../../contexts/AuthProvider';
 
 const CATEGORY_NAMES: Record<string, string> = {
   all: 'Todas las Categorías',
@@ -41,6 +44,7 @@ const CATEGORY_NAMES: Record<string, string> = {
 
 export default function AdminExerciseCasesPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [cases, setCases] = useState<CustomCaseTemplateRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [source, setSource] = useState<'supabase' | 'fallback'>('fallback');
@@ -50,6 +54,8 @@ export default function AdminExerciseCasesPage() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [originFilter, setOriginFilter] = useState<'all' | 'custom' | 'base'>('all');
   const [usageFilter, setUsageFilter] = useState<'all' | 'practice' | 'exam_only' | 'both'>('all');
+  const [publicFilter, setPublicFilter] = useState<'all' | 'public' | 'hidden'>('all');
+  const [publicBusyId, setPublicBusyId] = useState<string | null>(null);
 
   // Modales
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -97,9 +103,14 @@ export default function AdminExerciseCasesPage() {
         (usageFilter === 'exam_only' && c.usageMode === 'exam_only') ||
         (usageFilter === 'both' && c.usageMode === 'both');
 
-      return matchesSearch && matchesCat && matchesOrigin && matchesUsage;
+      const matchesPublic =
+        publicFilter === 'all' ||
+        (publicFilter === 'public' && c.isPublic) ||
+        (publicFilter === 'hidden' && !c.isPublic);
+
+      return matchesSearch && matchesCat && matchesOrigin && matchesUsage && matchesPublic;
     });
-  }, [cases, searchTerm, categoryFilter, originFilter, usageFilter]);
+  }, [cases, searchTerm, categoryFilter, originFilter, usageFilter, publicFilter]);
 
   // Conteo de casos por categoría para las píldoras de filtrado
   const categoryCounts = useMemo(() => {
@@ -111,7 +122,7 @@ export default function AdminExerciseCasesPage() {
   }, [cases]);
 
   const hasActiveFilters = Boolean(
-    searchTerm.trim() || categoryFilter !== 'all' || originFilter !== 'all' || usageFilter !== 'all'
+    searchTerm.trim() || categoryFilter !== 'all' || originFilter !== 'all' || usageFilter !== 'all' || publicFilter !== 'all'
   );
 
   const resetFilters = () => {
@@ -119,6 +130,25 @@ export default function AdminExerciseCasesPage() {
     setCategoryFilter('all');
     setOriginFilter('all');
     setUsageFilter('all');
+    setPublicFilter('all');
+  };
+
+  const publicCount = cases.filter(c => c.isPublic).length;
+
+  const handleTogglePublic = async (c: CustomCaseTemplateRecord) => {
+    if (c.usageMode === 'exam_only') {
+      alert('Los casos exclusivos de examen no se publican en el simulador público.');
+      return;
+    }
+    const next = !c.isPublic;
+    setPublicBusyId(c.patternId);
+    setCases(prev => prev.map(item => item.patternId === c.patternId ? { ...item, isPublic: next } : item));
+    const result = await setExercisePublicVisibility(c.patternId, next, user?.id);
+    setPublicBusyId(null);
+    if (!result.success) {
+      setCases(prev => prev.map(item => item.patternId === c.patternId ? { ...item, isPublic: !next } : item));
+      alert(result.error || 'No se pudo actualizar la visibilidad pública. Aplica la migración emg_public_exercises.');
+    }
   };
 
   // Métricas
@@ -187,11 +217,11 @@ export default function AdminExerciseCasesPage() {
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
             <Link
-              to="/ejercicios"
+              to="/simuladores/publico"
               target="_blank"
               className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition flex items-center gap-1.5"
             >
-              <Eye className="w-4 h-4" />
+              <Globe className="w-4 h-4" />
               <span>Ver Simulador Público</span>
             </Link>
           </div>
@@ -333,6 +363,16 @@ export default function AdminExerciseCasesPage() {
                 <option value="all">Todos los Orígenes</option>
                 <option value="custom">Solo Creados por Docentes</option>
                 <option value="base">Plantillas Base del Sistema (33)</option>
+              </select>
+
+              <select
+                value={publicFilter}
+                onChange={(e) => setPublicFilter(e.target.value as 'all' | 'public' | 'hidden')}
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 outline-none"
+              >
+                <option value="all">Modo público: todos ({publicCount} visibles)</option>
+                <option value="public">Solo visibles al público</option>
+                <option value="hidden">Ocultos del modo público</option>
               </select>
 
               {hasActiveFilters && (
@@ -521,6 +561,26 @@ export default function AdminExerciseCasesPage() {
                       title="Probar en el simulador"
                     >
                       <Eye className="w-3.5 h-3.5" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePublic(c)}
+                      disabled={publicBusyId === c.patternId || c.usageMode === 'exam_only'}
+                      className={`p-2 rounded-xl border transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                        c.isPublic
+                          ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-200'
+                          : 'bg-slate-800 border-transparent text-slate-400 hover:text-cyan-200'
+                      }`}
+                      title={
+                        c.usageMode === 'exam_only'
+                          ? 'Los casos de examen no se publican'
+                          : c.isPublic
+                            ? 'Visible en modo público. Clic para ocultar.'
+                            : 'Oculto. Clic para mostrarlo en el simulador público.'
+                      }
+                    >
+                      <Globe className="w-3.5 h-3.5" />
                     </button>
 
                     {c.is_custom && (

@@ -212,7 +212,7 @@ export function Header() {
             )}
 
             {(showPublicNav || showStudentNav) && (
-              <Link to="/simuladores" className={navClass(simulatorsActive)}>
+              <Link to={showPublicNav ? '/simuladores/publico' : '/simuladores'} className={navClass(simulatorsActive)}>
                 <Wrench className="w-4 h-4" />
                 <span>Simuladores</span>
                 {showPublicNav && (
@@ -532,7 +532,7 @@ export function Header() {
                     label="Cursos"
                   />
                   <MobileNavRow
-                    to="/simuladores"
+                    to="/simuladores/publico"
                     onClick={closeMobileMenu}
                     icon={<Wrench className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
                     label="Simuladores"

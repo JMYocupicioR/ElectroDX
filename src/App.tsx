@@ -90,6 +90,7 @@ function App() {
               <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
               
               {/* Simuladores y herramientas con candado exclusivo Premium */}
+              <Route path="/simuladores/publico" element={<ExerciseMode publicMode />} />
               <Route path="/simuladores" element={<ProtectedRoute mode="premium"><SimulatorsHubPage /></ProtectedRoute>} />
               <Route path="/simuladores/trazos" element={<ProtectedRoute mode="premium"><TraceSimulatorPage /></ProtectedRoute>} />
               <Route path="/ejercicios" element={<ProtectedRoute mode="premium"><ExerciseMode /></ProtectedRoute>} />

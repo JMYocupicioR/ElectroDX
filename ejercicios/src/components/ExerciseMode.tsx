@@ -16,6 +16,7 @@ import { MyotomeBodyMap } from './tools/MyotomeBodyMap';
 import { useAuth } from '../../../src/contexts/AuthProvider';
 import {
   loadAllCaseTemplates,
+  loadPublicExerciseIds,
   submitClinicalCaseAssignment,
   loadClinicalAssignmentLaunch,
   loadClinicalCaseLock,
@@ -23,6 +24,7 @@ import {
   type ClinicalAssignmentLaunchState,
   type ClinicalCaseSessionLock,
 } from '../../../src/services/emgExerciseService';
+import { PublicSimulatorAuthBar } from '../../../src/components/exercise/PublicSimulatorAuthBar';
 
 type ExerciseStep = 'config' | 'case' | 'ncs' | 'emg' | 'diagnosis' | 'feedback';
 
@@ -219,7 +221,7 @@ const formatTime = (seconds: number): string => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-const ExerciseMode: React.FC = () => {
+const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }) => {
   const store = useExerciseStore();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -240,8 +242,11 @@ const ExerciseMode: React.FC = () => {
     title?: string;
     studentId?: string;
   };
-  const assignmentId = searchParams.get('assignmentId') || navState.assignmentId;
-  const previewPatternId = searchParams.get('patternId') || (!assignmentId ? navState.patternId : undefined);
+  const assignmentId = publicMode ? undefined : (searchParams.get('assignmentId') || navState.assignmentId);
+  const previewPatternId = publicMode
+    ? undefined
+    : (searchParams.get('patternId') || (!assignmentId ? navState.patternId : undefined));
+  const [publicIds, setPublicIds] = useState<Set<string> | null>(publicMode ? null : new Set());
   const [assignmentLaunch, setAssignmentLaunch] = useState<ClinicalAssignmentLaunchState | null>(null);
   const [assignmentLoading, setAssignmentLoading] = useState(Boolean(assignmentId));
   const [assignmentError, setAssignmentError] = useState<string | null>(null);
@@ -273,6 +278,17 @@ const ExerciseMode: React.FC = () => {
       }
     }).catch((e: unknown) => console.error(e));
   }, []);
+
+  useEffect(() => {
+    if (!publicMode) return;
+    let cancelled = false;
+    loadPublicExerciseIds().then((ids) => {
+      if (!cancelled) setPublicIds(new Set(ids));
+    }).catch(() => {
+      if (!cancelled) setPublicIds(new Set());
+    });
+    return () => { cancelled = true; };
+  }, [publicMode]);
 
   // Detener audio al cambiar de paso o desmontar
   useEffect(() => {
@@ -396,11 +412,15 @@ const ExerciseMode: React.FC = () => {
   // Active pool of templates: in free practice mode, exclude 'exam_only' cases so students cannot spoil exam questions!
   // Only include them if explicitly assigned by teacher via assignmentId / previewPatternId
   const activePool = useMemo(() => {
+    if (publicMode) {
+      if (!publicIds) return [];
+      return allTemplates.filter(t => publicIds.has(t.patternId) && t.usageMode !== 'exam_only');
+    }
     if (previewPatternId || assignmentId) {
       return allTemplates;
     }
     return allTemplates.filter(t => t.usageMode !== 'exam_only');
-  }, [allTemplates, previewPatternId, assignmentId]);
+  }, [allTemplates, previewPatternId, assignmentId, publicMode, publicIds]);
 
   // Available categories for filter
   const availableCategories = ['all', ...Array.from(new Set(activePool.map(t => t.category)))];
@@ -432,6 +452,7 @@ const ExerciseMode: React.FC = () => {
 
   const generateNewCase = useCallback(() => {
     if (isAssignedPending) return;
+    if (activePool.length === 0) return;
 
     const pool = categoryFilter !== 'all'
       ? activePool.filter(t => t.category === categoryFilter)
@@ -804,9 +825,13 @@ const ExerciseMode: React.FC = () => {
             <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
-            Modo Ejercicio EMG
+            {publicMode ? 'Simulador público' : 'Modo Ejercicio EMG'}
           </h1>
-          <p className="text-gray-400 mt-1 text-sm sm:text-base">Practica diagnosticando casos clínicos de electromiografía</p>
+          <p className="text-gray-400 mt-1 text-sm sm:text-base">
+            {publicMode
+              ? 'Prueba el caso abierto. El resto del simulador se desbloquea con tu cuenta.'
+              : 'Practica diagnosticando casos clínicos de electromiografía'}
+          </p>
         </div>
       </div>
 
@@ -905,11 +930,43 @@ const ExerciseMode: React.FC = () => {
         </div>
       </div>
 
+      {publicMode && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider px-1">Ejercicios abiertos</h3>
+          {publicIds === null ? (
+            <p className="text-sm text-gray-400 px-1">Cargando ejercicios públicos...</p>
+          ) : activePool.length === 0 ? (
+            <p className="text-sm text-gray-400 px-1">Todavía no hay un ejercicio visible en modo público.</p>
+          ) : (
+            activePool.map((template) => (
+              <button
+                key={template.patternId}
+                type="button"
+                onClick={() => startFromTemplate(template, null, null, Date.now())}
+                className="w-full text-left px-4 py-3 rounded-xl bg-gray-800/60 border border-gray-700/60 hover:border-amber-500/50 text-white"
+              >
+                <div className="text-sm font-semibold">{template.patternName}</div>
+                <div className="text-[11px] text-gray-400 mt-0.5">{CATEGORY_LABELS[template.category] || template.category}</div>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+
       {/* CTA */}
+      {!publicMode && (
       <button onClick={generateNewCase}
         className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-amber-600/30 flex items-center justify-center gap-2">
         <Zap className="w-5 h-5" /> Generar Caso Clínico
       </button>
+      )}
+      {publicMode && activePool.length > 1 && (
+        <button onClick={generateNewCase}
+          className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all shadow-xl shadow-amber-600/30 flex items-center justify-center gap-2">
+          <Zap className="w-5 h-5" /> Caso al azar
+        </button>
+      )}
+      {publicMode && <PublicSimulatorAuthBar />}
     </div>
     );
   };
@@ -1702,6 +1759,7 @@ const ExerciseMode: React.FC = () => {
             </button>
           )}
         </div>
+        {publicMode && <PublicSimulatorAuthBar />}
       </div>
     );
   };
@@ -1860,6 +1918,9 @@ const ExerciseMode: React.FC = () => {
       {/* Content */}
       <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8" style={{ paddingBottom: '12rem' }}>
         {renderStep()}
+        {publicMode && currentStep !== 'config' && currentStep !== 'feedback' && (
+          <PublicSimulatorAuthBar />
+        )}
 
         {/* Hints — rendered INLINE in the content flow, never overlaps */}
         {hintsAllowed && showHint && hintsUsed > 0 && currentStep !== 'config' && currentStep !== 'feedback' && (
