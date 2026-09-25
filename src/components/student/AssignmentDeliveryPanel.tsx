@@ -7,8 +7,8 @@ import {
   signedSubmissionUrl,
   uploadAssignmentFile,
   type AssignmentSubmission,
-} from '../services/assignmentSubmissionService';
-import { submissionLinkError } from '../utils/submissionLinks';
+} from '../../services/assignmentSubmissionService';
+import { submissionLinkError } from '../../utils/submissionLinks';
 
 interface AssignmentDeliveryEditorProps {
   assignmentId: string;
