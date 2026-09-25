@@ -13,6 +13,8 @@ WITH expected_functions AS (
       ('update_my_profile', 'jsonb'),
       ('submit_my_assignment', 'uuid, text, text'),
       ('complete_my_assigned_exam', 'uuid, uuid, numeric, integer'),
+      ('start_my_clinical_case', 'uuid, jsonb'),
+      ('complete_my_clinical_case', 'uuid, text, integer'),
       ('issue_my_certificate', ''),
       ('issue_my_certificate', 'text'),
       ('compute_kardex_scores', 'uuid, text'),

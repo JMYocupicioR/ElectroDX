@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User,
@@ -24,6 +25,9 @@ import {
   Briefcase,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { adminUpdateProfile } from '../../services/editorialService';
+import { sb } from '../../lib/supabase';
+import type { Profile } from '../../types/database';
 import { isEnrollmentProfileComplete } from '../../utils/adminUtils';
 import { verifyCedula, type CedulaVerificationResult } from '../../services/cedulaService';
 import { BRAND } from '../../config/brand';
@@ -64,14 +68,52 @@ const MEDICAL_CATEGORIES = [
 ];
 
 export default function ProfileSetupPage() {
+  const { userId: routeUserId } = useParams();
   const {
-    profile,
+    user,
+    profile: ownProfile,
+    isAdmin,
     updateProfile,
     uploadAvatar,
     isVerifiedContributor,
     enrollmentStatus,
     isEnrolledPhysician,
   } = useAuth();
+
+  const editingOther = Boolean(routeUserId && isAdmin && routeUserId !== user?.id);
+  const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
+  const [loadingTarget, setLoadingTarget] = useState(Boolean(routeUserId));
+  const [targetError, setTargetError] = useState<string | null>(null);
+  const profile = editingOther ? targetProfile : ownProfile;
+
+  useEffect(() => {
+    if (!routeUserId) {
+      setLoadingTarget(false);
+      return;
+    }
+    if (!isAdmin) {
+      setTargetError('Solo un administrador puede editar el perfil de otro usuario.');
+      setLoadingTarget(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingTarget(true);
+    setTargetError(null);
+    sb.from('profiles')
+      .select('*')
+      .eq('id', routeUserId)
+      .maybeSingle()
+      .then(({ data, error }: { data: Profile | null; error: { message: string } | null }) => {
+        if (cancelled) return;
+        if (error) setTargetError(error.message);
+        else if (!data) setTargetError('No se encontró el perfil de este usuario.');
+        else setTargetProfile(data);
+        setLoadingTarget(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [routeUserId, isAdmin]);
 
   const [form, setForm] = useState({
     display_name: profile?.display_name ?? '',
@@ -285,7 +327,16 @@ export default function ProfileSetupPage() {
     setError(null);
     setMessage(null);
 
-    const result = await updateProfile(form);
+    const result = editingOther && routeUserId
+      ? await adminUpdateProfile(routeUserId, form)
+          .then(() => ({ error: null as string | null }))
+          .catch((err: unknown) => ({
+            error: err instanceof Error ? err.message : 'No se pudo guardar el perfil.',
+          }))
+      : await updateProfile(form as Partial<Profile>);
+    if (!result.error && editingOther && routeUserId) {
+      setTargetProfile((prev) => (prev ? { ...prev, ...form } : prev));
+    }
     setSaving(false);
 
     if (result.error) {
@@ -390,21 +441,42 @@ export default function ProfileSetupPage() {
     );
   };
 
+  if (routeUserId && (loadingTarget || targetError || !profile)) {
+    return (
+      <div className="pt-24 pb-16 px-4 max-w-3xl mx-auto">
+        <Link to="/admin/usuarios" className="text-sm text-cyan-600 dark:text-cyan-400 font-semibold">
+          Volver al directorio
+        </Link>
+        <p className="mt-6 text-sm text-slate-600 dark:text-slate-300">
+          {targetError || 'Cargando perfil del usuario…'}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16 px-4 max-w-3xl mx-auto">
       {/* Encabezado */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
+          {editingOther && (
+            <Link to={`/admin/alumnos/${routeUserId}`} className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
+              Volver al expediente
+            </Link>
+          )}
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2.5">
-            <Shield className="w-6 h-6 text-cyan-500" /> Mi perfil profesional
+            <Shield className="w-6 h-6 text-cyan-500" />
+            {editingOther ? 'Editar perfil del usuario' : 'Mi perfil profesional'}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Expediente de posgrado médico, verificación SEP y constancias COMEFYR
+            {editingOther
+              ? `Estás editando el expediente de ${profile?.display_name || 'este usuario'}. Desde aquí puedes verificar la cédula ante la SEP.`
+              : 'Expediente de posgrado médico, verificación SEP y constancias COMEFYR'}
           </p>
         </div>
       </div>
 
-      {enrollmentBanner()}
+      {editingOther ? null : enrollmentBanner()}
 
       <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/80 backdrop-blur-md p-6 sm:p-8 shadow-xl shadow-slate-950/5 space-y-8">
         
@@ -424,6 +496,9 @@ export default function ProfileSetupPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-3">
+              {editingOther ? (
+                <span className="text-[11px] text-slate-500">La foto se conserva. Puedes corregir datos y verificar la cédula.</span>
+              ) : (
               <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-semibold cursor-pointer border border-slate-200 dark:border-slate-700 transition">
                 {uploadingAvatar ? (
                   <>
@@ -444,8 +519,9 @@ export default function ProfileSetupPage() {
                   onChange={handleAvatar}
                 />
               </label>
+              )}
 
-              {profile?.avatar_url && (
+              {!editingOther && profile?.avatar_url && (
                 <button
                   type="button"
                   onClick={handleRemoveAvatar}
@@ -458,7 +534,9 @@ export default function ProfileSetupPage() {
                 </button>
               )}
 
-              <span className="text-[11px] text-slate-500">JPG, PNG o WebP (máx. 1 MB). Visible en tu perfil público.</span>
+              {!editingOther && (
+                <span className="text-[11px] text-slate-500">JPG, PNG o WebP (máx. 1 MB). Visible en tu perfil público.</span>
+              )}
             </div>
             {avatarError && <p className="text-xs text-rose-500 mt-2 font-medium">{avatarError}</p>}
             {avatarMessage && <p className="text-xs text-emerald-500 mt-2 font-medium">{avatarMessage}</p>}

@@ -1,6 +1,7 @@
 import { useMemo, type JSX, type ReactNode } from 'react';
 
 export type RichHeadingLevel = 2 | 3 | 4 | 5;
+export type RichContentTone = 'screen' | 'print';
 
 const HEADING_CLASS: Record<2 | 3 | 4 | 5 | 6, string> = {
   2: 'text-lg sm:text-xl font-semibold text-slate-900 dark:text-white leading-tight tracking-tight mt-6 mb-2 first:mt-0',
@@ -8,6 +9,14 @@ const HEADING_CLASS: Record<2 | 3 | 4 | 5 | 6, string> = {
   4: 'text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200 leading-snug mt-4 mb-1.5 first:mt-0',
   5: 'text-sm font-semibold text-slate-700 dark:text-slate-200 mt-3 mb-1 first:mt-0',
   6: 'text-sm font-semibold text-slate-700 dark:text-slate-300 mt-3 mb-1 first:mt-0',
+};
+
+const PRINT_HEADING_CLASS: Record<2 | 3 | 4 | 5 | 6, string> = {
+  2: 'text-[13.5pt] font-semibold text-slate-900 leading-tight tracking-tight mt-4 mb-2 first:mt-0',
+  3: 'text-[12pt] font-semibold text-slate-900 leading-tight mt-3.5 mb-1.5 first:mt-0',
+  4: 'text-[11pt] font-semibold text-slate-800 leading-snug mt-3 mb-1 first:mt-0',
+  5: 'text-[10.5pt] font-semibold text-slate-800 mt-2.5 mb-1 first:mt-0',
+  6: 'text-[10.5pt] font-semibold text-slate-700 mt-2.5 mb-1 first:mt-0',
 };
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
@@ -51,7 +60,11 @@ function resolveHeadingLevel(mdLevel: number, baseHeadingLevel: RichHeadingLevel
   return Math.min(6, Math.max(2, level)) as 2 | 3 | 4 | 5 | 6;
 }
 
-export function renderInline(text: string, keyPrefix: string): (string | JSX.Element)[] {
+export function renderInline(
+  text: string,
+  keyPrefix: string,
+  tone: RichContentTone = 'screen',
+): (string | JSX.Element)[] {
   const parts: (string | JSX.Element)[] = [];
   const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   let lastIndex = 0;
@@ -67,7 +80,11 @@ export function renderInline(text: string, keyPrefix: string): (string | JSX.Ele
         href={match[2]}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-blue-600 dark:text-blue-400 underline underline-offset-2 decoration-blue-400/40 hover:decoration-blue-500 transition-colors font-medium"
+        className={
+          tone === 'print'
+            ? 'text-slate-800 underline underline-offset-2 decoration-slate-400 font-medium'
+            : 'text-blue-600 dark:text-blue-400 underline underline-offset-2 decoration-blue-400/40 hover:decoration-blue-500 transition-colors font-medium'
+        }
       >
         {match[1]} ↗
       </a>
@@ -80,11 +97,11 @@ export function renderInline(text: string, keyPrefix: string): (string | JSX.Ele
 
   return parts.flatMap((part, i) => {
     if (typeof part !== 'string') return [part];
-    return formatTextSegment(part, `${keyPrefix}-${i}`);
+    return formatTextSegment(part, `${keyPrefix}-${i}`, tone);
   });
 }
 
-function renderTable(lines: string[], keyBase: string) {
+function renderTable(lines: string[], keyBase: string, tone: RichContentTone) {
   const rows = lines
     .filter(l => l.trim().startsWith('|'))
     .map(line => {
@@ -101,25 +118,47 @@ function renderTable(lines: string[], keyBase: string) {
 
   const header = dataRows[0];
   const body = dataRows.slice(1);
+  const print = tone === 'print';
 
   return (
-    <div key={keyBase} className="my-5 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900/40">
-      <table className="w-full text-left border-collapse min-w-[450px]">
+    <div
+      key={keyBase}
+      className={
+        print
+          ? 'book-table-wrap my-3 border border-slate-300 bg-white'
+          : 'my-5 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900/40'
+      }
+    >
+      <table className={print ? 'w-full text-left border-collapse' : 'w-full text-left border-collapse min-w-[450px]'}>
         <thead>
-          <tr className="bg-slate-50/80 dark:bg-slate-800/80">
+          <tr className={print ? 'bg-slate-100' : 'bg-slate-50/80 dark:bg-slate-800/80'}>
             {header.map((cell, i) => (
-              <th key={i} className="px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
-                {renderInline(cell, `${keyBase}-th-${i}`)}
+              <th
+                key={i}
+                className={
+                  print
+                    ? 'px-2 py-1.5 text-[9pt] font-bold uppercase tracking-wider text-slate-700 border-b border-slate-300'
+                    : 'px-4 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700'
+                }
+              >
+                {renderInline(cell, `${keyBase}-th-${i}`, tone)}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody className={print ? '' : 'divide-y divide-slate-100 dark:divide-slate-800'}>
           {body.map((row, ri) => (
-            <tr key={ri} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors">
+            <tr key={ri} className={print ? '' : 'hover:bg-slate-50/30 dark:hover:bg-slate-800/20 transition-colors'}>
               {row.map((cell, ci) => (
-                <td key={ci} className="px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {renderInline(cell, `${keyBase}-tr-${ri}-td-${ci}`)}
+                <td
+                  key={ci}
+                  className={
+                    print
+                      ? 'px-2 py-1.5 text-[10pt] text-slate-800 leading-relaxed border-b border-slate-200'
+                      : 'px-4 py-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed'
+                  }
+                >
+                  {renderInline(cell, `${keyBase}-tr-${ri}-td-${ci}`, tone)}
                 </td>
               ))}
             </tr>
@@ -130,52 +169,73 @@ function renderTable(lines: string[], keyBase: string) {
   );
 }
 
-function renderBulletList(items: string[], keyBase: string) {
+function renderBulletList(items: string[], keyBase: string, tone: RichContentTone) {
+  const print = tone === 'print';
   return (
-    <ul key={keyBase} className="list-none space-y-1.5 my-3 ml-1">
+    <ul key={keyBase} className={print ? 'list-none space-y-1 my-2 ml-0' : 'list-none space-y-1.5 my-3 ml-1'}>
       {items.map((item, lIdx) => (
         <li key={`${keyBase}-${lIdx}`} className="flex items-start gap-2">
-          <span className="text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
-          <span>{renderInline(item, `${keyBase}-${lIdx}`)}</span>
+          <span className={print ? 'text-slate-700 mt-0.5 flex-shrink-0' : 'text-blue-500 dark:text-blue-400 mt-1 flex-shrink-0'}>•</span>
+          <span>{renderInline(item, `${keyBase}-${lIdx}`, tone)}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function renderOrderedList(items: { start: number; text: string }[], keyBase: string) {
+function renderOrderedList(items: { start: number; text: string }[], keyBase: string, tone: RichContentTone) {
+  const print = tone === 'print';
   return (
-    <ol key={keyBase} start={items[0]?.start ?? 1} className="list-decimal my-3 ml-6 space-y-1.5 marker:text-blue-500 dark:marker:text-blue-400">
+    <ol
+      key={keyBase}
+      start={items[0]?.start ?? 1}
+      className={
+        print
+          ? 'list-decimal my-2 ml-5 space-y-1 marker:text-slate-700'
+          : 'list-decimal my-3 ml-6 space-y-1.5 marker:text-blue-500 dark:marker:text-blue-400'
+      }
+    >
       {items.map((item, lIdx) => (
         <li key={`${keyBase}-${lIdx}`} className="pl-1">
-          {renderInline(item.text, `${keyBase}-${lIdx}`)}
+          {renderInline(item.text, `${keyBase}-${lIdx}`, tone)}
         </li>
       ))}
     </ol>
   );
 }
 
-function renderBlockquote(lines: string[], keyBase: string) {
+function renderBlockquote(lines: string[], keyBase: string, tone: RichContentTone) {
+  const print = tone === 'print';
   return (
     <blockquote
       key={keyBase}
-      className="my-3 pl-4 py-2.5 border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 rounded-r-xl text-slate-700 dark:text-slate-300 text-sm leading-relaxed"
+      className={
+        print
+          ? 'my-2 pl-3 py-1.5 border-l-2 border-slate-400 bg-slate-50 text-slate-800 text-[10.5pt] leading-relaxed'
+          : 'my-3 pl-4 py-2.5 border-l-4 border-indigo-500 dark:border-indigo-400 bg-indigo-50/40 dark:bg-indigo-950/20 rounded-r-xl text-slate-700 dark:text-slate-300 text-sm leading-relaxed'
+      }
     >
       {lines.map((line, idx) => (
         <p key={`${keyBase}-${idx}`} className={idx > 0 ? 'mt-1.5' : ''}>
-          {renderInline(line, `${keyBase}-${idx}`)}
+          {renderInline(line, `${keyBase}-${idx}`, tone)}
         </p>
       ))}
     </blockquote>
   );
 }
 
-function renderHeading(text: string, mdLevel: number, baseHeadingLevel: RichHeadingLevel, key: string) {
+function renderHeading(
+  text: string,
+  mdLevel: number,
+  baseHeadingLevel: RichHeadingLevel,
+  key: string,
+  tone: RichContentTone,
+) {
   const level = resolveHeadingLevel(mdLevel, baseHeadingLevel);
   const Tag = (`h${level}`) as 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   return (
-    <Tag key={key} className={HEADING_CLASS[level]}>
-      {renderInline(text, key)}
+    <Tag key={key} className={(tone === 'print' ? PRINT_HEADING_CLASS : HEADING_CLASS)[level]}>
+      {renderInline(text, key, tone)}
     </Tag>
   );
 }
@@ -184,6 +244,7 @@ function renderBlockLines(
   lines: string[],
   keyBase: string,
   headingLevel: RichHeadingLevel,
+  tone: RichContentTone,
 ): ReactNode[] {
   const parts: ReactNode[] = [];
   let i = 0;
@@ -199,7 +260,7 @@ function renderBlockLines(
     const gKey = `${keyBase}-g${group++}`;
 
     if (classified.kind === 'heading') {
-      parts.push(renderHeading(classified.text, classified.mdLevel, headingLevel, gKey));
+      parts.push(renderHeading(classified.text, classified.mdLevel, headingLevel, gKey, tone));
       i += 1;
       continue;
     }
@@ -212,7 +273,7 @@ function renderBlockLines(
         items.push(next.text);
         i += 1;
       }
-      parts.push(renderBulletList(items, gKey));
+      parts.push(renderBulletList(items, gKey, tone));
       continue;
     }
 
@@ -224,7 +285,7 @@ function renderBlockLines(
         items.push({ start: next.start, text: next.text });
         i += 1;
       }
-      parts.push(renderOrderedList(items, gKey));
+      parts.push(renderOrderedList(items, gKey, tone));
       continue;
     }
 
@@ -236,7 +297,7 @@ function renderBlockLines(
         bqLines.push(next.text);
         i += 1;
       }
-      parts.push(renderBlockquote(bqLines, gKey));
+      parts.push(renderBlockquote(bqLines, gKey, tone));
       continue;
     }
 
@@ -248,7 +309,7 @@ function renderBlockLines(
         tableLines.push(next.raw);
         i += 1;
       }
-      const table = renderTable(tableLines, gKey);
+      const table = renderTable(tableLines, gKey, tone);
       if (table) parts.push(table);
       continue;
     }
@@ -262,7 +323,7 @@ function renderBlockLines(
     }
     parts.push(
       <p key={gKey} className="mt-3 first:mt-0">
-        {renderInline(paragraphLines.join(' '), gKey)}
+        {renderInline(paragraphLines.join(' '), gKey, tone)}
       </p>,
     );
   }
@@ -270,7 +331,7 @@ function renderBlockLines(
   return parts;
 }
 
-function formatTextSegment(text: string, keyBase: string): (string | JSX.Element)[] {
+function formatTextSegment(text: string, keyBase: string, tone: RichContentTone = 'screen'): (string | JSX.Element)[] {
   const result: (string | JSX.Element)[] = [];
   const boldRegex = /\*\*([^*]+)\*\*/g;
   let last = 0;
@@ -278,22 +339,25 @@ function formatTextSegment(text: string, keyBase: string): (string | JSX.Element
 
   while ((match = boldRegex.exec(text)) !== null) {
     if (match.index > last) {
-      result.push(...highlightClinical(text.slice(last, match.index), `${keyBase}-${last}`));
+      result.push(...highlightClinical(text.slice(last, match.index), `${keyBase}-${last}`, tone));
     }
     result.push(
-      <strong key={`b-${keyBase}-${match.index}`} className="font-semibold text-slate-900 dark:text-white">
+      <strong
+        key={`b-${keyBase}-${match.index}`}
+        className={tone === 'print' ? 'font-semibold text-slate-900' : 'font-semibold text-slate-900 dark:text-white'}
+      >
         {match[1]}
       </strong>
     );
     last = match.index + match[0].length;
   }
   if (last < text.length) {
-    result.push(...highlightClinical(text.slice(last), `${keyBase}-${last}`));
+    result.push(...highlightClinical(text.slice(last), `${keyBase}-${last}`, tone));
   }
   return result;
 }
 
-function highlightClinical(text: string, key: string): (string | JSX.Element)[] {
+function highlightClinical(text: string, key: string, tone: RichContentTone = 'screen'): (string | JSX.Element)[] {
   const clinicalRegex = /([≥≤><]?\s*\d+[\.\d]*\s*(?:ms|mV|µV|m\/s|mm²|Hz|°C|%|m\/seg))/g;
   const parts: (string | JSX.Element)[] = [];
   let last = 0;
@@ -302,7 +366,14 @@ function highlightClinical(text: string, key: string): (string | JSX.Element)[] 
   while ((match = clinicalRegex.exec(text)) !== null) {
     if (match.index > last) parts.push(text.slice(last, match.index));
     parts.push(
-      <span key={`cv-${key}-${match.index}`} className="font-mono text-[0.85em] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 whitespace-nowrap">
+      <span
+        key={`cv-${key}-${match.index}`}
+        className={
+          tone === 'print'
+            ? 'font-mono text-[0.9em] px-0.5 text-slate-800 whitespace-nowrap'
+            : 'font-mono text-[0.85em] px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 whitespace-nowrap'
+        }
+      >
         {match[1]}
       </span>
     );
@@ -317,10 +388,12 @@ export function RichContent({
   text,
   className = '',
   headingLevel = 2,
+  tone = 'screen',
 }: {
   text: string;
   className?: string;
   headingLevel?: RichHeadingLevel;
+  tone?: RichContentTone;
 }) {
   const rendered = useMemo(() => {
     const normalized = text.replace(/\r\n/g, '\n');
@@ -329,12 +402,18 @@ export function RichContent({
     return blocks.flatMap((block, bIdx) => {
       const trimmed = block.trim();
       if (!trimmed) return [];
-      return renderBlockLines(trimmed.split('\n'), `b-${bIdx}`, headingLevel);
+      return renderBlockLines(trimmed.split('\n'), `b-${bIdx}`, headingLevel, tone);
     });
-  }, [text, headingLevel]);
+  }, [text, headingLevel, tone]);
 
   return (
-    <div className={`text-[0.95rem] sm:text-base leading-[1.8] text-slate-700 dark:text-slate-300 ${className}`}>
+    <div
+      className={
+        tone === 'print'
+          ? `text-[length:var(--book-body,11pt)] leading-[var(--book-line,1.55)] text-slate-800 ${className}`
+          : `text-[0.95rem] sm:text-base leading-[1.8] text-slate-700 dark:text-slate-300 ${className}`
+      }
+    >
       {rendered}
     </div>
   );

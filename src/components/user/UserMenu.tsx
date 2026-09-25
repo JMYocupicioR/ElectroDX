@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useStaffViewStore } from '../../stores/staffViewStore';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { courseDisplayTitle, sellableCourses } from '../../content/courseCatalog';
@@ -41,6 +42,9 @@ export function UserMenu() {
     signOut,
   } = useAuth();
   const { totalPending } = useAdminPendingCounts();
+  const studentMode = useStaffViewStore((s) => s.view) === 'student' && isAdmin;
+  const enterStudentMode = useStaffViewStore((s) => s.enterStudentMode);
+  const exitStudentMode = useStaffViewStore((s) => s.exitStudentMode);
   const { courses } = useSyllabusCatalog();
   const activeSellable = sellableCourses(courses).filter((course) => isEnrolledInCourse(course.id));
   const [open, setOpen] = useState(false);
@@ -85,7 +89,9 @@ export function UserMenu() {
   const initials = getInitials(displayName);
 
   // Rol representativo principal para el subtítulo del chip
-  const primaryRole = isAdmin
+  const primaryRole = studentMode
+    ? 'Modo estudiante'
+    : isAdmin
     ? 'Administrador'
     : roles.includes('editor')
     ? 'Editor Académico'
@@ -149,7 +155,7 @@ export function UserMenu() {
           >
             {displayName}
           </span>
-          <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight truncate">
+          <span className={`text-[10px] font-medium leading-tight truncate ${studentMode ? 'text-amber-600 dark:text-amber-300' : 'text-slate-400 dark:text-slate-500'}`}>
             {primaryRole}
           </span>
         </div>
@@ -281,9 +287,21 @@ export function UserMenu() {
             <MenuLink to="/portal?tab=notifications" icon={Bell} onClick={() => setOpen(false)}>
               Notificaciones
             </MenuLink>
-            <MenuLink to="/portal" icon={GraduationCap} onClick={() => setOpen(false)}>
-              Mi portal
-            </MenuLink>
+            {isAdmin ? (
+              studentMode ? (
+                <MenuLink to="/admin" icon={Shield} onClick={() => { exitStudentMode(); setOpen(false); }}>
+                  Volver al panel admin
+                </MenuLink>
+              ) : (
+                <MenuLink to="/portal" icon={GraduationCap} onClick={() => { enterStudentMode(); setOpen(false); }}>
+                  Entrar en modo estudiante
+                </MenuLink>
+              )
+            ) : (
+              <MenuLink to="/portal" icon={GraduationCap} onClick={() => setOpen(false)}>
+                Mi portal
+              </MenuLink>
+            )}
             <MenuLink to="/cuenta" icon={UserCircle} onClick={() => setOpen(false)}>
               Mi cuenta
             </MenuLink>

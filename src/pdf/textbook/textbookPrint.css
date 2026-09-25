@@ -1,0 +1,325 @@
+.book-sheet {
+  color: #1e293b;
+  background: #fff;
+  color-scheme: light;
+  font-family: var(--book-font, Georgia, 'Times New Roman', serif);
+  font-size: var(--book-body, 11pt);
+  line-height: var(--book-line, 1.55);
+}
+
+.book-kicker {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #334155;
+  margin-bottom: 0.6rem;
+}
+
+.book-cover {
+  min-height: 220mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.book-cover-title {
+  font-size: var(--book-cover-title, 22pt);
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.book-chapter-title {
+  font-size: var(--book-chapter-title, 18pt);
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.book-cover-subtitle,
+.book-chapter-deck,
+.book-lesson-deck {
+  font-size: var(--book-subtitle, 12pt);
+  color: #334155;
+  margin-bottom: 1rem;
+}
+
+.book-authors {
+  margin-top: 2.5rem;
+}
+
+.book-cover-credits {
+  margin-top: 1.4rem;
+}
+
+.book-credits {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 9.5pt;
+  color: #334155;
+  margin: 0.15rem 0 0.75rem;
+}
+
+.book-credits-label {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 8pt;
+}
+
+.book-credits-role {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.book-edited-date {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 8.5pt;
+  color: #64748b;
+  margin: 0 0 0.35rem;
+}
+
+.book-frontmatter {
+  font-size: 10.5pt;
+}
+
+.book-toc {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+.book-toc li {
+  margin: 0.4rem 0;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.book-lesson {
+  margin-top: var(--book-lesson-gap, 1.4em);
+}
+
+.book-lesson-title {
+  font-size: var(--book-lesson-title, 14pt);
+  margin-bottom: 0.35rem;
+}
+
+.book-hidden-flag {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 8.5pt;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.book-callout {
+  margin: 0.85rem 0;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+}
+
+.book-callout h6,
+.book-section-refs h6 {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 9pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0 0 0.4rem;
+}
+
+.book-pearls {
+  border-left: 3px solid #b45309;
+}
+
+.book-keypoints {
+  border-left: 3px solid #1d4ed8;
+}
+
+.book-pdf-cite {
+  border-left: 3px solid #6d28d9;
+  font-size: 10pt;
+}
+
+.book-figure {
+  margin: 1rem 0;
+}
+
+.book-figure figcaption {
+  font-size: 9.5pt;
+  font-style: italic;
+  color: #475569;
+  margin-top: 0.35rem;
+}
+
+.book-section-refs,
+.book-appendix {
+  margin-top: 1.5rem;
+}
+
+.book-appendix ol,
+.book-section-refs ol,
+.book-callout ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.book-sheet h1,
+.book-sheet h2,
+.book-sheet h3,
+.book-sheet h4,
+.book-sheet h5,
+.book-sheet h6,
+.book-sheet p {
+  margin-top: 0;
+  color: #0f172a;
+}
+
+.book-sheet h1 {
+  font-size: var(--book-chapter-title, 18pt);
+  font-weight: 700;
+  margin-bottom: 0.55rem;
+}
+
+.book-sheet p {
+  margin-bottom: var(--book-p-gap, 0.7em);
+}
+
+.book-cover,
+.book-frontmatter,
+.book-chapter {
+  break-after: page;
+  page-break-after: always;
+}
+
+.book-chapter:last-of-type,
+.book-appendix {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.book-chapter {
+  break-before: page;
+  page-break-before: always;
+}
+
+.book-cover + .book-frontmatter,
+.book-frontmatter + .book-toc-page {
+  break-before: page;
+  page-break-before: always;
+}
+
+.book-figure,
+.book-callout,
+.book-pdf-cite {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.book-sheet table {
+  break-inside: auto;
+}
+
+.book-sheet thead {
+  display: table-header-group;
+}
+
+.book-sheet tr,
+.book-sheet img {
+  break-inside: avoid;
+}
+
+.book-sheet img {
+  max-width: 100%;
+  height: auto;
+}
+
+.book-toc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.book-paginated .book-toc a::after {
+  content: leader('.') target-counter(attr(href url), page);
+  font-variant-numeric: tabular-nums;
+}
+
+.book-toc--plain a::after {
+  content: none;
+}
+
+.book-figure-missing {
+  border: 1px dashed #94a3b8;
+  padding: 0.75rem 1rem;
+  font-size: 9.5pt;
+  color: #475569;
+  background: #f8fafc;
+}
+
+@page {
+  size: A4;
+  margin: 18mm 16mm 20mm;
+}
+
+@media print {
+  body:has(.textbook-print-root) > *:not(.textbook-print-root) {
+    display: none !important;
+  }
+
+  .textbook-print-root {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+  }
+
+  .textbook-print-toolbar {
+    display: none !important;
+  }
+}
+
+.textbook-print-root {
+  color-scheme: light;
+}
+
+@media screen {
+  .book-preview-host .book-sheet {
+    max-width: var(--book-page-width, 210mm);
+    margin: 0 auto;
+    padding: var(--book-margin-top, 16mm) var(--book-margin-side, 14mm);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
+  }
+
+  .textbook-print-root {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    overflow: auto;
+    background: #64748b;
+  }
+
+  .textbook-print-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.25rem;
+    background: #0f172a;
+    color: #f8fafc;
+  }
+
+  .textbook-print-root .book-sheet {
+    max-width: var(--book-page-width, 210mm);
+    margin: 1.5rem auto 3rem;
+    padding: var(--book-margin-top, 18mm) var(--book-margin-side, 16mm) var(--book-margin-bottom, 20mm);
+    min-height: var(--book-page-height, 297mm);
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.28);
+  }
+}

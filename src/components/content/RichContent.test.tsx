@@ -76,6 +76,17 @@ describe('RichContent', () => {
     expect(markup).not.toMatch(/velocidad:<\/strong>\s*•/);
   });
 
+  it('prints without dark-mode utility classes', () => {
+    const markup = renderToStaticMarkup(
+      <RichContent
+        text="Latencia **distal** de 3.2 ms.\n\n[Preston](https://example.com)"
+        tone="print"
+      />,
+    );
+    expect(markup).toContain('text-slate-800');
+    expect(markup).not.toContain('dark:');
+  });
+
   it('renders a real lesson expansion without leftover markdown hashes', () => {
     const expanded = applyLessonExpansions(module01);
     const topic = findTopicInTree(expanded.topics, 'motor-unit-composition');

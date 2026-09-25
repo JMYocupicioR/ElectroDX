@@ -3,7 +3,7 @@
  * Híbrido y Resiliente: Supabase (emg_case_templates) + Fallback a las 33 plantillas locales (ALL_CASE_TEMPLATES).
  */
 
-import { supabase } from '../lib/supabase';
+import { supabase, sb } from '../lib/supabase';
 import { ALL_CASE_TEMPLATES, type CaseTemplate, type CaseUsageMode } from '../../ejercicios/src/data/CaseTemplates';
 import type {
   ClinicalCase,
@@ -12,8 +12,14 @@ import type {
   Difficulty,
   EvaluationResult,
 } from '../../ejercicios/src/types/ClinicalCase';
-import { createAssignment, getStudentAssignmentById, gradeAssignment } from './studentPlanService';
-import type { AssignmentPriority, AssignmentStatus, StudentAssignment } from '../types/studentPlan';
+import { createAssignment, getStudentAssignmentById } from './studentPlanService';
+import type {
+  AssignmentPriority,
+  AssignmentStatus,
+  ClinicalCaseAttemptRecord,
+  ClinicalCaseSnapshot,
+  StudentAssignment,
+} from '../types/studentPlan';
 
 const KEY_LOCAL_CUSTOM_TEMPLATES = 'neurosafe_custom_emg_templates_v1';
 
@@ -66,10 +72,13 @@ export async function loadAllCaseTemplates(
 
     if (data && data.length > 0) {
       customTemplates = data.map(rowToTemplate);
-      // Cachear en localStorage
-      try {
-        localStorage.setItem(KEY_LOCAL_CUSTOM_TEMPLATES, JSON.stringify(customTemplates));
-      } catch {}
+      const unfiltered =
+        (!filter?.category || filter.category === 'all') && !filter?.usageMode;
+      if (unfiltered) {
+        try {
+          localStorage.setItem(KEY_LOCAL_CUSTOM_TEMPLATES, JSON.stringify(customTemplates));
+        } catch {}
+      }
     }
   } catch (err) {
     console.warn('[emgExerciseService] Fallback a caché local:', err);
@@ -214,37 +223,35 @@ export async function saveCaseTemplate(
     explanation: template.explanation,
     differentials: template.differentials,
     recommendations: template.recommendations || [],
-    hints: (template as any).hints || [],
+    hints: template.hints || [],
     status: template.status || 'PUBLISHED',
-    created_by: userId || null,
     updated_at: new Date().toISOString(),
   };
 
   try {
-    const { data, error } = await (supabase
+    const { data: existing, error: existingError } = await (supabase
       .from('emg_case_templates') as any)
-      .upsert(payload, { onConflict: 'pattern_id' })
-      .select('*')
-      .single();
+      .select('id, created_by')
+      .eq('pattern_id', template.patternId)
+      .maybeSingle();
 
+    if (existingError) throw existingError;
+
+    const query = existing
+      ? (supabase.from('emg_case_templates') as any).update(payload).eq('pattern_id', template.patternId)
+      : (supabase.from('emg_case_templates') as any).insert({ ...payload, created_by: userId || null });
+
+    const { data, error } = await query.select('*').single();
     if (error) throw error;
 
     const saved = rowToTemplate(data);
     updateLocalStorageCustom(saved);
     return { success: true, data: saved };
   } catch (err: any) {
-    console.warn('[emgExerciseService] Error en Supabase, guardando en local:', err);
-    // Guardado local resiliente
-    const localRecord: CustomCaseTemplateRecord = {
-      ...template,
-      status: template.status || 'PUBLISHED',
-      difficulty: template.difficulty || 'medium',
-      usageMode: template.usageMode || 'practice',
-      is_custom: true,
-      updated_at: new Date().toISOString(),
+    return {
+      success: false,
+      error: err?.message || 'No se pudo guardar el caso clínico en el servidor.',
     };
-    updateLocalStorageCustom(localRecord);
-    return { success: true, data: localRecord };
   }
 }
 
@@ -257,11 +264,13 @@ export async function deleteCaseTemplate(patternId: string): Promise<{ success: 
       .eq('pattern_id', patternId);
 
     if (error) throw error;
-  } catch (err) {
-    console.warn('[emgExerciseService] Error eliminando en Supabase:', err);
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || 'No se pudo eliminar el caso clínico en el servidor.',
+    };
   }
 
-  // Eliminar de localStorage
   try {
     const cached = localStorage.getItem(KEY_LOCAL_CUSTOM_TEMPLATES);
     if (cached) {
@@ -303,6 +312,12 @@ export interface ClinicalAssignmentLaunchState {
   assignmentTitle: string;
   studentId?: string;
   status?: AssignmentStatus;
+  snapshot?: ClinicalCaseSnapshot | null;
+  expiresAt?: string | null;
+  lastAttempt?: ClinicalCaseAttemptRecord | null;
+  retakeStatus?: 'none' | 'requested' | 'approved' | 'rejected';
+  attemptsCount?: number;
+  maxAttempts?: number;
 }
 
 const KEY_CLINICAL_CASE_LOCK = 'neurosafe_clinical_case_lock_';
@@ -337,8 +352,8 @@ export function getClinicalCaseLaunchState(
   assignment: StudentAssignment,
   studentId?: string
 ): ClinicalAssignmentLaunchState {
-  const cfg = (assignment.target_exam_config || {}) as Record<string, unknown>;
-  const isReplay = assignment.status !== 'pending';
+  const cfg = assignment.target_exam_config || {};
+  const isReplay = assignment.status !== 'pending' && cfg.retakeStatus !== 'approved';
   return {
     assignmentId: assignment.id,
     patternId: typeof cfg.patternId === 'string' ? cfg.patternId : undefined,
@@ -349,6 +364,12 @@ export function getClinicalCaseLaunchState(
     assignmentTitle: isReplay ? assignment.title : 'Caso Clínico Asignado',
     studentId: studentId || assignment.student_id,
     status: assignment.status,
+    snapshot: cfg.clinicalSnapshot || null,
+    expiresAt: typeof cfg.expiresAt === 'string' ? cfg.expiresAt : null,
+    lastAttempt: cfg.lastClinicalAttempt || null,
+    retakeStatus: cfg.retakeStatus || 'none',
+    attemptsCount: cfg.attemptsCount,
+    maxAttempts: cfg.maxAttempts,
   };
 }
 
@@ -467,40 +488,73 @@ export async function loadClinicalAssignmentLaunch(
     assignmentTitle: fallback.assignmentTitle || 'Caso Clínico Asignado',
     studentId: studentId || fallback.studentId,
     status: fallback.status || 'pending',
+    snapshot: fallback.snapshot || null,
+    expiresAt: fallback.expiresAt || null,
+    lastAttempt: fallback.lastAttempt || null,
+    retakeStatus: fallback.retakeStatus,
+    attemptsCount: fallback.attemptsCount,
+    maxAttempts: fallback.maxAttempts,
   };
 }
 
-/**
- * Registra la entrega y resolución del caso clínico asignado a un alumno.
- */
+function assignmentFromRpc(row: unknown): StudentAssignment | null {
+  const value = Array.isArray(row) ? row[0] : row;
+  return value ? (value as StudentAssignment) : null;
+}
+
+export function snapshotFromAssignment(assignment: StudentAssignment | null | undefined): ClinicalCaseSnapshot | null {
+  return assignment?.target_exam_config?.clinicalSnapshot || null;
+}
+
+export async function startClinicalCaseAssignment(
+  assignmentId: string,
+  snapshot: ClinicalCaseSnapshot
+): Promise<{ success: boolean; assignment?: StudentAssignment; snapshot?: ClinicalCaseSnapshot | null; error?: string }> {
+  try {
+    const { data, error } = await sb.rpc('start_my_clinical_case', {
+      p_assignment_id: assignmentId,
+      p_snapshot: snapshot as unknown as Record<string, unknown>,
+    });
+    if (error) throw error;
+    const assignment = assignmentFromRpc(data);
+    return {
+      success: true,
+      assignment: assignment || undefined,
+      snapshot: snapshotFromAssignment(assignment) || snapshot,
+    };
+  } catch (e: any) {
+    return {
+      success: false,
+      error: e?.message || 'No se pudo iniciar el caso clínico en el servidor.',
+    };
+  }
+}
+
 export async function submitClinicalCaseAssignment(
   assignmentId: string,
-  studentId: string,
+  _studentId: string,
   evaluation: {
-    score: number;
-    isCorrect: boolean;
     selectedAnswer: string;
-    correctPatternId: string;
-    patternName: string;
-    timeSpentSeconds: number;
     hintsUsed?: number;
   }
-): Promise<boolean> {
-  const feedbackNotes = evaluation.isCorrect
-    ? `Diagnóstico acertado: ${evaluation.patternName}. Tiempo: ${evaluation.timeSpentSeconds}s. Pistas: ${evaluation.hintsUsed || 0}.`
-    : `Diagnóstico seleccionado incorrecto: ${evaluation.selectedAnswer}. Caso correspondía a: ${evaluation.patternName}.`;
-
+): Promise<{ success: boolean; assignment?: StudentAssignment; error?: string }> {
   try {
-    await gradeAssignment(
-      assignmentId,
-      studentId,
-      evaluation.score,
-      feedbackNotes
-    );
-    return true;
-  } catch (e) {
-    console.error('[emgExerciseService] Error registrando entrega:', e);
-    return false;
+    const { data, error } = await sb.rpc('complete_my_clinical_case', {
+      p_assignment_id: assignmentId,
+      p_selected_pattern_id: evaluation.selectedAnswer,
+      p_hints_used: evaluation.hintsUsed ?? 0,
+    });
+    if (error) throw error;
+    const assignment = assignmentFromRpc(data);
+    if (!assignment) {
+      return { success: false, error: 'El servidor no devolvió la calificación del caso.' };
+    }
+    return { success: true, assignment };
+  } catch (e: any) {
+    return {
+      success: false,
+      error: e?.message || 'No se pudo asentar la calificación del caso clínico.',
+    };
   }
 }
 

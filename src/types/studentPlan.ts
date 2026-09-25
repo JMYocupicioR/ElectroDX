@@ -7,6 +7,35 @@ export type AssignmentType = 'exam' | 'clinical_case' | 'reading' | 'emg_report'
 export type AssignmentStatus = 'pending' | 'submitted' | 'approved' | 'needs_revision' | 'overdue';
 export type AssignmentPriority = 'normal' | 'high' | 'urgent';
 
+export interface ClinicalCaseAttemptRecord {
+  selectedPatternId?: string | null;
+  selectedPatternName?: string | null;
+  isCorrect: boolean;
+  score: number;
+  hintsUsed?: number;
+  timeSpentSeconds?: number;
+  patternName?: string;
+  correctPatternId?: string;
+  completedAt?: string;
+}
+
+export interface ClinicalCaseSnapshot {
+  clinicalCase: Record<string, unknown>;
+  options: Array<{
+    patternId: string;
+    patternName: string;
+    category: string;
+    description?: string;
+  }>;
+  hints?: string[];
+  startedAt?: string;
+  expiresAt?: string | null;
+  clinicalMode?: 'study' | 'exam';
+  patternId?: string;
+  difficulty?: string;
+  timeLimitMinutes?: number;
+}
+
 export interface StudentLearningPlan {
   id: string;
   student_id: string;
@@ -60,6 +89,8 @@ export interface StudentAssignment {
     retakeReviewedAt?: string;
     retakeReviewedBy?: string;
     retakeReviewNotes?: string;
+    clinicalSnapshot?: ClinicalCaseSnapshot;
+    lastClinicalAttempt?: ClinicalCaseAttemptRecord;
   } | null;
   due_date: string; // ISO date string
   status: AssignmentStatus;

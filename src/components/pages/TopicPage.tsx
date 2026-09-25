@@ -36,44 +36,10 @@ import { localizedTopic } from '../../hooks/useLocalizedContent';
 import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { RichContent, renderInline, type RichHeadingLevel } from '../content/RichContent';
+import { stripLegacyPdfMarkdown, topicPdfList } from '../../utils/topicPrintables';
 
-export interface TopicPdf {
-  title: string;
-  url: string;
-  description?: string;
-  author?: string;
-}
-
-export function topicPdfList(topic: Topic): TopicPdf[] {
-  const list: TopicPdf[] = [];
-  if (topic.pdfUrls && topic.pdfUrls.length > 0) {
-    list.push(...topic.pdfUrls);
-  }
-  // Also parse legacy markdown PDFs from content if present
-  if (topic.content) {
-    const legacyRe = />\s*📄\s*\*\*Recurso Clínico Docente:\*\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(?:\s*>\s*\*Aportado por ([^*]+)\*)?(?:\s*>\s*([^\n\r]+))?/gi;
-    let m;
-    while ((m = legacyRe.exec(topic.content)) !== null) {
-      const url = m[2];
-      if (!list.some((p) => p.url === url)) {
-        list.push({
-          title: m[1].trim(),
-          url,
-          author: m[3]?.trim(),
-          description: m[4]?.trim(),
-        });
-      }
-    }
-  }
-  return list;
-}
-
-export function stripLegacyPdfMarkdown(text?: string | null): string {
-  if (!text) return '';
-  return text
-    .replace(/>\s*📄\s*\*\*Recurso Clínico Docente:\*\*\s*\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)(?:\s*>\s*\*Aportado por ([^*]+)\*)?(?:\s*>\s*([^\n\r]+))?/gi, '')
-    .trim();
-}
+export type { TopicPdf } from '../../utils/topicPrintables';
+export { stripLegacyPdfMarkdown, topicPdfList };
 
 function PdfDocumentsSection({ topic }: { topic: Topic }) {
   const pdfs = topicPdfList(topic);

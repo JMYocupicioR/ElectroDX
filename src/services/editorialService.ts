@@ -26,6 +26,38 @@ export async function getPublicProfiles(): Promise<Profile[]> {
   });
 }
 
+const ADMIN_PROFILE_FIELDS = [
+  'display_name',
+  'credentials',
+  'institution',
+  'academic_institution',
+  'specialty',
+  'residency_year',
+  'cedula_profesional',
+  'comefyr_member_id',
+  'bio',
+  'is_public',
+  'subspecialty',
+  'specialty_cedula',
+  'cmmr_certified',
+  'cmmr_number',
+  'phone',
+  'linkedin_url',
+  'orcid_id',
+  'cedula_verified',
+  'cedula_data',
+] as const;
+
+/** Actualiza el expediente de otro usuario. Solo funciona con sesión de administrador (RLS existente). */
+export async function adminUpdateProfile(userId: string, updates: Partial<Profile>): Promise<void> {
+  const payload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  for (const key of ADMIN_PROFILE_FIELDS) {
+    if (key in updates) payload[key] = updates[key];
+  }
+  const { error } = await sb.from('profiles').update(payload).eq('id', userId);
+  if (error) throw error;
+}
+
 export async function getProfileById(id: string): Promise<Profile | null> {
   const { data: publicRow, error: publicError } = await sb
     .from('public_specialist_profiles')
@@ -399,6 +431,29 @@ export async function getPublishedTopicsByModule(moduleId: string): Promise<Publ
     .order('sort_order');
   if (error) throw error;
   return (data ?? []) as PublishedTopic[];
+}
+
+export async function getApprovedRevisionCredits(): Promise<{ topicId: string; moduleId?: string; authorId: string; at?: string }[]> {
+  const { data, error } = await supabase
+    .from('content_revisions')
+    .select('target_topic_id, module_id, author_id, reviewed_at, updated_at, submitted_at')
+    .eq('status', 'approved');
+  if (error) throw error;
+  return ((data ?? []) as Array<{
+    target_topic_id: string | null;
+    module_id: string | null;
+    author_id: string;
+    reviewed_at: string | null;
+    updated_at: string | null;
+    submitted_at: string | null;
+  }>)
+    .filter((row) => row.target_topic_id && row.author_id)
+    .map((row) => ({
+      topicId: row.target_topic_id as string,
+      moduleId: row.module_id || undefined,
+      authorId: row.author_id,
+      at: row.reviewed_at || row.updated_at || row.submitted_at || undefined,
+    }));
 }
 
 export async function getAllPublishedTopics(): Promise<PublishedTopic[]> {

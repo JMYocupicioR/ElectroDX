@@ -184,7 +184,11 @@ export default function AdminExerciseCasesPage() {
   const handleDelete = async (patternId: string, name: string) => {
     if (!confirm(`¿Estás seguro de eliminar el caso "${name}"?`)) return;
     try {
-      await deleteCaseTemplate(patternId);
+      const res = await deleteCaseTemplate(patternId);
+      if (!res.success) {
+        alert(res.error || 'Error al eliminar caso clínico');
+        return;
+      }
       await loadData();
     } catch (e) {
       alert('Error al eliminar caso clínico');

@@ -125,6 +125,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      pagedjs: path.resolve(__dirname, './node_modules/pagedjs/src/index.js'),
     },
     // Emitted .js siblings must not shadow the .ts/.tsx source (duplicate Auth context).
     extensions: ['.mjs', '.mts', '.ts', '.tsx', '.jsx', '.js', '.json'],

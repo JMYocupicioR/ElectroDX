@@ -74,6 +74,8 @@ export interface CaseTemplate {
   severityExplanation?: string;
   /** Ámbito de uso: práctica formativa, examen oficial exclusivo, o ambos */
   usageMode?: CaseUsageMode;
+  /** Pistas pedagógicas del caso (modo estudio) */
+  hints?: string[];
 }
 
 export type CaseUsageMode = 'practice' | 'exam_only' | 'both';

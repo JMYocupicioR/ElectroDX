@@ -70,9 +70,18 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
     initialTemplate?.patient.sexBias || 'both'
   );
   const [occupations, setOccupations] = useState(initialTemplate?.patient.occupations.join(', ') || 'Oficinista, Operario');
-  const [chiefComplaint, setChiefComplaint] = useState(initialTemplate?.patient.complaints[0] || '');
-  const [clinicalHistory, setClinicalHistory] = useState(initialTemplate?.patient.histories[0] || '');
-  const [physicalExam, setPhysicalExam] = useState(initialTemplate?.patient.physicalExams[0] || '');
+  const [complaintsText, setComplaintsText] = useState(
+    initialTemplate?.patient.complaints.join('\n') || ''
+  );
+  const [historiesText, setHistoriesText] = useState(
+    initialTemplate?.patient.histories.join('\n') || ''
+  );
+  const [physicalExamsText, setPhysicalExamsText] = useState(
+    initialTemplate?.patient.physicalExams.join('\n') || ''
+  );
+  const [technicalNotesText, setTechnicalNotesText] = useState(
+    initialTemplate?.technicalNotes?.join('\n') || ''
+  );
 
   // NCS List
   const [ncsList, setNcsList] = useState<NCSTemplate[]>(
@@ -121,7 +130,7 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
     initialTemplate?.recommendations.join('\n') || 'Control EMG en 3 meses.\nCorrelación clínica.'
   );
   const [hints, setHints] = useState(
-    (initialTemplate as any)?.hints?.join('\n') || 'Pista 1: Analiza la simetría de amplitudes.\nPista 2: Observa la actividad espontánea.'
+    initialTemplate?.hints?.join('\n') || 'Pista 1: Analiza la simetría de amplitudes.\nPista 2: Observa la actividad espontánea.'
   );
   const [differentials, setDifferentials] = useState<{ id: string; name: string; whyNot: string }[]>(
     initialTemplate?.differentials || [
@@ -219,12 +228,20 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
         ageRange: [Number(ageMin), Number(ageMax)],
         sexBias: sexBias === 'both' ? undefined : sexBias,
         occupations: occupations.split(',').map(s => s.trim()).filter(Boolean),
-        complaints: [chiefComplaint.trim() || 'Síntomas neurológicos periféricos.'],
-        histories: [clinicalHistory.trim() || 'Paciente sin antecedentes de relevancia previa.'],
-        physicalExams: [physicalExam.trim() || 'Examen neurológico con fuerza conservada.'],
+        complaints: complaintsText.split('\n').map(s => s.trim()).filter(Boolean).length
+          ? complaintsText.split('\n').map(s => s.trim()).filter(Boolean)
+          : ['Síntomas neurológicos periféricos.'],
+        histories: historiesText.split('\n').map(s => s.trim()).filter(Boolean).length
+          ? historiesText.split('\n').map(s => s.trim()).filter(Boolean)
+          : ['Paciente sin antecedentes de relevancia previa.'],
+        physicalExams: physicalExamsText.split('\n').map(s => s.trim()).filter(Boolean).length
+          ? physicalExamsText.split('\n').map(s => s.trim()).filter(Boolean)
+          : ['Examen neurológico con fuerza conservada.'],
       },
       ncs: ncsList,
       emg: emgList,
+      lateResponses: initialTemplate?.lateResponses,
+      technicalNotes: technicalNotesText.split('\n').map(s => s.trim()).filter(Boolean),
       rns: hasRns
         ? [
             {
@@ -548,11 +565,11 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">Motivo de Consulta Principal</label>
-                  <input
-                    type="text"
-                    value={chiefComplaint}
-                    onChange={(e) => setChiefComplaint(e.target.value)}
+                  <label className="block text-slate-400 mb-1">Motivos de consulta (uno por línea)</label>
+                  <textarea
+                    rows={3}
+                    value={complaintsText}
+                    onChange={(e) => setComplaintsText(e.target.value)}
                     placeholder="Parestesias nocturnas en mano derecha de 6 meses de evolución"
                     className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
                   />
@@ -560,21 +577,21 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-slate-400 mb-1">Historia Clínica Completa</label>
+                    <label className="block text-slate-400 mb-1">Historias clínicas (una por línea)</label>
                     <textarea
                       rows={3}
-                      value={clinicalHistory}
-                      onChange={(e) => setClinicalHistory(e.target.value)}
+                      value={historiesText}
+                      onChange={(e) => setHistoriesText(e.target.value)}
                       placeholder="Paciente femenino de 48 años con hormigueo en dedos 1 a 3..."
                       className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-slate-400 mb-1">Exploración Física</label>
+                    <label className="block text-slate-400 mb-1">Exploraciones físicas (una por línea)</label>
                     <textarea
                       rows={3}
-                      value={physicalExam}
-                      onChange={(e) => setPhysicalExam(e.target.value)}
+                      value={physicalExamsText}
+                      onChange={(e) => setPhysicalExamsText(e.target.value)}
                       placeholder="Fuerza 4/5 en abducción del pulgar. Tinel y Phalen positivos..."
                       className="w-full p-2 rounded-lg bg-slate-800 border border-slate-700 text-white"
                     />
@@ -1130,6 +1147,19 @@ export const EmgCaseEditorModal: React.FC<EmgCaseEditorModalProps> = ({
                     className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-bold mb-1">
+                  Notas técnicas (una por línea)
+                </label>
+                <textarea
+                  rows={2}
+                  value={technicalNotesText}
+                  onChange={(e) => setTechnicalNotesText(e.target.value)}
+                  placeholder="Temperatura cutánea 32 °C. Distancia palmar no estandarizada."
+                  className="w-full p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white"
+                />
               </div>
             </div>
           )}

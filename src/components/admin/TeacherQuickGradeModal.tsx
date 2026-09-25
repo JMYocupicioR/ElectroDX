@@ -100,20 +100,22 @@ export default function TeacherQuickGradeModal({
       const reviewerName = profile?.display_name || user?.email || 'Profesor Titular';
       const rubricTotal = EMG_RUBRIC.reduce((sum, row) => sum + Number(rubric[row.id] ?? 0), 0);
       const finalGrade = assignment.type === 'emg_report' ? Math.min(100, rubricTotal) : Number(grade);
+      const baseFeedback = feedback.trim() || 'Evaluado por el Profesor Titular.';
+      const signedFeedback = `${baseFeedback} — ${reviewerName}`;
       if (assignment.type === 'emg_report' && emgReportId) {
         await gradeEmgReport({
           reportId: emgReportId,
           rubric,
           score: finalGrade,
-          feedback: feedback.trim() || 'Evaluado por el Profesor Titular.',
+          feedback: signedFeedback,
         });
       }
       await gradeAssignment(
         assignment.id,
         assignment.student_id,
         finalGrade,
-        feedback.trim() || 'Evaluado por el Profesor Titular.',
-        reviewerName
+        signedFeedback,
+        user?.id
       );
       onGraded();
       onClose();

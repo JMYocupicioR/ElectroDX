@@ -6,6 +6,7 @@ import type {
   LateResponseResult, RNSResult
 } from '../types/ClinicalCase';
 import { ALL_CASE_TEMPLATES, DIAGNOSIS_OPTIONS, type CaseTemplate, type NCSTemplate, type EMGTemplate } from '../data/CaseTemplates';
+import { scoreClinicalDiagnosis } from '../../../src/utils/clinicalCaseScoring';
 
 // ─── Utilidades ───────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ export class ClinicalCaseEngine {
       technicalNotes,
       isPitfall: template.isPitfall,
       pitfallExplanation: template.pitfallExplanation,
+      hints: template.hints && template.hints.length > 0 ? template.hints : undefined,
     };
   }
 
@@ -409,31 +411,31 @@ export class ClinicalCaseEngine {
   static evaluateAnswer(
     selectedPatternId: string,
     clinicalCase: ClinicalCase,
-    timeSpent?: number
+    timeSpent?: number,
+    options?: DiagnosisOption[]
   ) {
-    const isCorrect = selectedPatternId === clinicalCase.correctDiagnosis.patternId;
-    const baseScore = isCorrect ? 100 : 0;
-
-    // Partial credit for same category
-    const selectedOption = DIAGNOSIS_OPTIONS.find(o => o.patternId === selectedPatternId);
-    const partialCredit = !isCorrect && selectedOption?.category === clinicalCase.correctDiagnosis.category ? 25 : 0;
-
-    // Time bonus (max 20 points for answering in <60s)
-    const timeBonus = isCorrect && timeSpent && timeSpent < 60 ? Math.round(20 * (1 - timeSpent / 60)) : 0;
+    const selectedOption = (options || DIAGNOSIS_OPTIONS).find(o => o.patternId === selectedPatternId)
+      || DIAGNOSIS_OPTIONS.find(o => o.patternId === selectedPatternId);
+    const scored = scoreClinicalDiagnosis({
+      selectedPatternId,
+      correctPatternId: clinicalCase.correctDiagnosis.patternId,
+      correctCategory: clinicalCase.correctDiagnosis.category,
+      selectedCategory: selectedOption?.category,
+    });
 
     const selectedName = selectedOption?.patternName || selectedPatternId;
     const whyNotSelected = clinicalCase.correctDiagnosis.differentials
       .find(d => d.patternId === selectedPatternId);
 
     return {
-      isCorrect,
-      score: Math.min(100, baseScore + partialCredit + timeBonus),
+      isCorrect: scored.isCorrect,
+      score: scored.score,
       selectedAnswer: selectedPatternId,
       correctAnswer: clinicalCase.correctDiagnosis.patternId,
       correctPatternName: clinicalCase.correctDiagnosis.patternName,
       explanation: clinicalCase.correctDiagnosis.explanation,
       keyFindingsHighlighted: clinicalCase.correctDiagnosis.keyFindings,
-      differentialExplanations: isCorrect
+      differentialExplanations: scored.isCorrect
         ? clinicalCase.correctDiagnosis.differentials.map(d => ({
             patternName: d.patternName, whyNot: d.whyNot
           }))

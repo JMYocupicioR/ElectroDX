@@ -14,8 +14,11 @@ import {
   Stethoscope,
   Calendar,
   UserCheck,
+  Sparkles,
+  BookMarked,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useStaffViewStore } from '../../stores/staffViewStore';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
 import { BRAND } from '../../config/brand';
 import { TeacherQuickDock } from './TeacherQuickDock';
@@ -59,6 +62,7 @@ export function AdminLayout({
 }) {
   const location = useLocation();
   const { isAdmin, user } = useAuth();
+  const enterStudentMode = useStaffViewStore((s) => s.enterStudentMode);
   const { pendingEnrollments, pendingCourseEnrollments, pendingRevisions, pendingTeacherReviews, pendingQuizzes } = useAdminPendingCounts();
 
   const groups: NavGroup[] = [
@@ -72,7 +76,12 @@ export function AdminLayout({
           label: 'Bandeja',
           icon: Inbox,
           exact: true,
-          badge: pendingTeacherReviews + pendingCourseEnrollments + pendingEnrollments,
+          badge:
+            pendingTeacherReviews +
+            pendingCourseEnrollments +
+            pendingEnrollments +
+            pendingQuizzes +
+            pendingRevisions,
         },
         {
           to: '/admin/calendario',
@@ -103,6 +112,14 @@ export function AdminLayout({
           badge: 0,
         },
         {
+          to: '/admin/exportacion',
+          label: 'Exportación de material didáctico',
+          shortLabel: 'Exportación',
+          icon: BookMarked,
+          exact: false,
+          badge: 0,
+        },
+        {
           to: '/admin/quizzes',
           label: 'Evaluaciones',
           icon: GraduationCap,
@@ -120,6 +137,13 @@ export function AdminLayout({
           to: '/admin/talleres',
           label: 'Clases en vivo',
           icon: Video,
+          exact: false,
+          badge: 0,
+        },
+        {
+          to: '/admin/induccion',
+          label: 'Inducción',
+          icon: Sparkles,
           exact: false,
           badge: 0,
         },
@@ -204,6 +228,7 @@ export function AdminLayout({
           </span>
           <Link
             to="/portal"
+            onClick={() => { if (isAdmin) enterStudentMode(); }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-cyan-400 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-2xs"
             title="Abrir la experiencia del alumno en el portal"
           >
@@ -232,6 +257,7 @@ export function AdminLayout({
                 </span>
                 <Link
                   to="/portal"
+                  onClick={() => { if (isAdmin) enterStudentMode(); }}
                   className="inline-flex items-center justify-center w-8 h-8 rounded-xl text-indigo-600 dark:text-cyan-400 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700"
                   title="Ver como alumno"
                   aria-label="Ver como alumno"
@@ -243,12 +269,13 @@ export function AdminLayout({
 
             {/* Mobile horizontal scroll of tabs */}
             <div className="lg:hidden overflow-x-auto pb-2 scrollbar-none flex gap-1.5">
-              {allTabs.map(({ to, label, icon: Icon, exact, badge }) => {
+              {allTabs.map(({ to, label, shortLabel, icon: Icon, exact, badge }) => {
                 const active = isActive(to, exact);
                 return (
                   <Link
                     key={to}
                     to={to}
+                    title={label}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
                       active
                         ? 'bg-indigo-600 text-white shadow-xs'
@@ -256,7 +283,7 @@ export function AdminLayout({
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
-                    <span>{label}</span>
+                    <span>{shortLabel ?? label}</span>
                     <NavBadge count={badge} />
                   </Link>
                 );
@@ -281,7 +308,7 @@ export function AdminLayout({
                     </div>
 
                     <div className="space-y-0.5">
-                      {visibleItems.map(({ to, label, icon: Icon, exact, badge }) => {
+                      {visibleItems.map(({ to, label, shortLabel, icon: Icon, exact, badge }) => {
                         const active = isActive(to, exact);
                         return (
                           <Link
@@ -295,7 +322,7 @@ export function AdminLayout({
                             }`}
                           >
                             <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-white' : 'text-slate-400'}`} />
-                            <span className="flex-1 min-w-0 truncate">{label}</span>
+                            <span className="flex-1 min-w-0 truncate">{shortLabel ?? label}</span>
                             <NavBadge count={badge} />
                           </Link>
                         );

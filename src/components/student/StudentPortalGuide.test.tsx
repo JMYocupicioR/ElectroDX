@@ -91,4 +91,40 @@ describe('StudentPortalGuide', () => {
     expect(html).toContain('No se pudo guardar. La guía volverá a aparecer la próxima vez.');
     expect(html).toContain('Network timeout error');
   });
+
+  it('renders an image when the step includes one', () => {
+    const html = renderToStaticMarkup(
+      <StudentPortalGuide
+        open={true}
+        courseState="active"
+        finalActionLabel="Empezar"
+        onBack={() => undefined}
+        onNext={() => undefined}
+        onSkip={() => undefined}
+        onFinish={() => undefined}
+        stepIndex={0}
+        saving={false}
+        saveError={null}
+        steps={[
+          {
+            id: 'foto',
+            kicker: 'Bienvenida',
+            title: 'Así se ve el portal',
+            body: 'Esta es la primera pantalla.',
+            media: [
+              {
+                kind: 'image',
+                src: 'https://images.unsplash.com/photo-1.jpg',
+                alt: 'Portada del curso',
+              },
+            ],
+          },
+        ]}
+      />
+    );
+
+    expect(html).toContain('Así se ve el portal');
+    expect(html).toContain('alt="Portada del curso"');
+    expect(html).toContain('Paso 1 de 1');
+  });
 });

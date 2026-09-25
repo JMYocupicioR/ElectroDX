@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Navigate, Routes, Route, useSearchParams } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Routes, Route, useSearchParams, useLocation } from 'react-router-dom';
 import { Suspense } from 'react';
 import { lazyWithRetry as lazy } from './utils/lazyWithRetry';
 import { useSettingsStore } from './stores/settingsStore';
@@ -9,6 +9,9 @@ import { SkipLink } from './components/a11y/SkipLink';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { GlobalCommandPalette } from './components/common/GlobalCommandPalette';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
+import { AdminStudentModeBanner } from './components/admin/AdminStudentModeBanner';
+import { useAuth } from './contexts/AuthProvider';
+import { useStaffViewStore } from './stores/staffViewStore';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const SyllabusPage = lazy(() => import('./components/pages/SyllabusPage'));
@@ -58,7 +61,20 @@ const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerci
 const AdminSyllabusPage = lazy(() => import('./components/admin/AdminSyllabusPage'));
 const AdminCourseWaitlistPage = lazy(() => import('./components/admin/AdminCourseWaitlistPage'));
 const AdminAcademicCalendarPage = lazy(() => import('./components/admin/AdminAcademicCalendarPage'));
+const AdminPortalWelcomePage = lazy(() => import('./components/admin/AdminPortalWelcomePage'));
+const AdminTextbookExportPage = lazy(() => import('./components/admin/AdminTextbookExportPage'));
 const CoursesCatalogPage = lazy(() => import('./components/pages/CoursesCatalogPage'));
+
+function AdminEntryGate() {
+  const { user, isAdmin, isLoading } = useAuth();
+  const location = useLocation();
+  const view = useStaffViewStore((s) => s.view);
+  const hydrated = useStaffViewStore((s) => s.hydrated);
+  if (isLoading || !hydrated || !user || !isAdmin || view === 'student') return null;
+  const entryPaths = ['/', '/portal', '/dashboard', '/estudiante'];
+  if (!entryPaths.includes(location.pathname)) return null;
+  return <Navigate to="/admin" replace />;
+}
 
 function RedirectToPortal() {
   const [params] = useSearchParams();
@@ -75,6 +91,8 @@ function App() {
         <SkipLink />
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Header />
+          <AdminStudentModeBanner />
+          <AdminEntryGate />
           <GlobalCommandPalette />
           <MobileBottomNav />
           <Suspense fallback={<LoadingSpinner />}>
@@ -153,6 +171,7 @@ function App() {
               <Route path="/admin/admisiones" element={<ProtectedRoute mode="admin"><AdminCourseWaitlistPage /></ProtectedRoute>} />
               <Route path="/admin/revisiones" element={<ProtectedRoute mode="editor"><AdminReviewQueue /></ProtectedRoute>} />
               <Route path="/admin/usuarios" element={<ProtectedRoute mode="admin"><AdminUsersPage /></ProtectedRoute>} />
+              <Route path="/admin/usuarios/:userId/perfil" element={<ProtectedRoute mode="admin"><ProfileSetupPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos" element={<ProtectedRoute mode="editor"><AdminStudentsListPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos/examenes" element={<ProtectedRoute mode="editor"><AdminExamAnalyticsPage /></ProtectedRoute>} />
               <Route path="/admin/alumnos/tareas" element={<ProtectedRoute mode="editor"><AdminAssignmentsAnalyticsPage /></ProtectedRoute>} />
@@ -170,6 +189,8 @@ function App() {
               <Route path="/admin/talleres" element={<ProtectedRoute mode="editor"><AdminWorkshopsPage /></ProtectedRoute>} />
               <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
               <Route path="/admin/temario" element={<ProtectedRoute mode="editor"><AdminSyllabusPage /></ProtectedRoute>} />
+              <Route path="/admin/exportacion" element={<ProtectedRoute mode="editor"><AdminTextbookExportPage /></ProtectedRoute>} />
+              <Route path="/admin/induccion" element={<ProtectedRoute mode="editor"><AdminPortalWelcomePage /></ProtectedRoute>} />
               <Route path="/admin/ejercicios" element={<ProtectedRoute mode="editor"><AdminExerciseCasesPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>

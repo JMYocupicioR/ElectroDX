@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useStaffViewStore } from '../../stores/staffViewStore';
 import { useStudentPendingAssignments } from '../../hooks/useStudentPendingAssignments';
 
 type DockItem = {
@@ -30,13 +31,14 @@ type DockItem = {
 export function MobileBottomNav() {
   const location = useLocation();
   const { user, isAdmin, isEditor } = useAuth();
+  const studentMode = useStaffViewStore((s) => s.view) === 'student' && isAdmin;
   const isStaff = isAdmin || isEditor;
   const { pendingCount } = useStudentPendingAssignments();
   const path = location.pathname;
 
   if (
     path.startsWith('/examenes/sesion') ||
-    isAdmin ||
+    (isAdmin && !studentMode) ||
     (isStaff && path.startsWith('/admin'))
   ) {
     return null;

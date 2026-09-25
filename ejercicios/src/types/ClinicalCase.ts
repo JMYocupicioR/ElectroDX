@@ -197,6 +197,8 @@ export interface ClinicalCase {
   /** ¿Es un caso trampa/pitfall? */
   isPitfall?: boolean;
   pitfallExplanation?: string;
+  /** Pistas del caso (modo estudio) */
+  hints?: string[];
 }
 
 // ─── Opción de diagnóstico (lo que se muestra al alumno) ──────

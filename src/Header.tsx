@@ -34,6 +34,7 @@ import { BRAND } from './config/brand';
 import { OfflineIndicator } from './components/OfflineButton';
 import { UserMenu } from './components/user/UserMenu';
 import { useAuth } from './contexts/AuthProvider';
+import { useStaffViewStore } from './stores/staffViewStore';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
@@ -84,6 +85,7 @@ export function Header() {
   const openCommandPalette = useCommandPaletteStore((s) => s.open);
   const initializeOffline = useOfflineStore((s) => s.initialize);
   const { user, profile, isAdmin, isEditor, isPendingApproval, signOut } = useAuth();
+  const studentMode = useStaffViewStore((s) => s.view) === 'student' && isAdmin;
   const { totalPending } = useAdminPendingCounts();
   const { pendingCount } = useStudentPendingAssignments();
   const location = useLocation();
@@ -94,8 +96,8 @@ export function Header() {
 
   const isLoggedIn = Boolean(user);
   const showPublicNav = !isLoggedIn;
-  const showStudentNav = isLoggedIn && !isAdmin;
-  const homeHref = isLoggedIn ? (isAdmin || isEditor ? '/admin' : '/portal') : '/';
+  const showStudentNav = isLoggedIn && (!isAdmin || studentMode);
+  const homeHref = !isLoggedIn ? '/' : studentMode ? '/portal' : isAdmin || isEditor ? '/admin' : '/portal';
   const portalActive = location.pathname === '/portal' || location.pathname === '/dashboard' || location.pathname === '/estudiante';
   const courseActive = location.pathname.startsWith('/modulo');
   const simulatorsActive =
@@ -153,7 +155,9 @@ export function Header() {
 
   const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico';
   const resumeTopic = user ? getLastVisitedTopic(user.id) : null;
-  const roleLabel = isAdmin
+  const roleLabel = studentMode
+    ? 'Modo estudiante'
+    : isAdmin
     ? 'Administrador'
     : isEditor
     ? 'Profesor'
@@ -172,7 +176,7 @@ export function Header() {
             </Link>
           </div>
 
-          {!isAdmin && (
+          {(!isAdmin || studentMode) && (
           <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Principal">
             {showPublicNav && (
               <>
@@ -276,7 +280,7 @@ export function Header() {
 
             <OfflineIndicator />
 
-            {isSupabaseConfigured && user && isAdmin && (
+            {isSupabaseConfigured && user && isAdmin && !studentMode && (
               <Link
                 to="/admin"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-blue-500/10 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-xs"
@@ -464,6 +468,18 @@ export function Header() {
                       icon={<Settings className="w-4 h-4 text-slate-500" />}
                       label="Ajustes"
                     />
+                    {isAdmin && (
+                      <MobileNavRow
+                        to={studentMode ? '/admin' : '/portal'}
+                        onClick={() => {
+                          if (studentMode) useStaffViewStore.getState().exitStudentMode();
+                          else useStaffViewStore.getState().enterStudentMode();
+                          closeMobileMenu();
+                        }}
+                        icon={<GraduationCap className="w-4 h-4 text-amber-500" />}
+                        label={studentMode ? 'Salir del modo estudiante' : 'Entrar en modo estudiante'}
+                      />
+                    )}
                     {(isAdmin || isEditor) && (
                       <MobileNavRow
                         to="/admin"

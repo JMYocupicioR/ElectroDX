@@ -5,7 +5,7 @@ import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Brain, Activity, Zap, CheckCircle, XCircle, ChevronRight, ChevronLeft,
   Trophy, Target, Clock, Lightbulb, BookOpen, User, Stethoscope,
   Award, TrendingUp, AlertTriangle, Eye, Filter, HelpCircle, ChevronDown,
-  Volume2, VolumeX, CheckCircle2, Layers } from 'lucide-react';
+  Volume2, VolumeX, CheckCircle2, Layers, Lock } from 'lucide-react';
 import { ClinicalCaseEngine } from '../services/ClinicalCaseEngine';
 import { useExerciseStore } from '../store/exerciseStore';
 import type { ClinicalCase, Difficulty, DiagnosisOption, EvaluationResult, ExerciseAttempt } from '../types/ClinicalCase';
@@ -18,12 +18,15 @@ import {
   loadAllCaseTemplates,
   loadPublicExerciseIds,
   submitClinicalCaseAssignment,
+  startClinicalCaseAssignment,
   loadClinicalAssignmentLaunch,
   loadClinicalCaseLock,
   saveClinicalCaseLock,
   type ClinicalAssignmentLaunchState,
   type ClinicalCaseSessionLock,
 } from '../../../src/services/emgExerciseService';
+import type { ClinicalCaseAttemptRecord, ClinicalCaseSnapshot } from '../../../src/types/studentPlan';
+import { scoreClinicalDiagnosis } from '../../../src/utils/clinicalCaseScoring';
 import { PublicSimulatorAuthBar } from '../../../src/components/exercise/PublicSimulatorAuthBar';
 
 type ExerciseStep = 'config' | 'case' | 'ncs' | 'emg' | 'diagnosis' | 'feedback';
@@ -255,6 +258,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const assignedStartRef = useRef(false);
+  const [assignmentStartNonce, setAssignmentStartNonce] = useState(0);
   const submitLockRef = useRef(false);
   const selectedAnswerRef = useRef<string | null>(null);
   const clinicalCaseRef = useRef<ClinicalCase | null>(null);
@@ -309,10 +313,18 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
   const [expandedFeedback, setExpandedFeedback] = useState<Record<string, boolean>>({ explanation: true, findings: false, differential: false });
   const [animatedScore, setAnimatedScore] = useState(0);
 
-  const isAssignedPending = Boolean(assignmentId && assignmentLaunch?.status === 'pending');
+  const canGradeAssignment = Boolean(
+    assignmentId &&
+    assignmentLaunch &&
+    (assignmentLaunch.status === 'pending' || assignmentLaunch.retakeStatus === 'approved') &&
+    !assignmentSubmitted
+  );
+  const isAssignedPending = canGradeAssignment;
   const isAssignedExam = isAssignedPending && assignmentLaunch?.clinicalMode === 'exam';
   const assignmentTitle = assignmentLaunch?.assignmentTitle || 'Caso Clínico Asignado';
-  const hintsAllowed = !isStudyMode && !isAssignedExam;
+  const hintsAllowed = assignmentId
+    ? assignmentLaunch?.clinicalMode === 'study' && canGradeAssignment
+    : !isStudyMode;
 
   useEffect(() => { selectedAnswerRef.current = selectedAnswer; }, [selectedAnswer]);
   useEffect(() => { clinicalCaseRef.current = clinicalCase; }, [clinicalCase]);
@@ -428,7 +440,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
   const persistAssignedLock = useCallback((
     patch: Partial<ClinicalCaseSessionLock> & { clinicalCase: ClinicalCase; options: DiagnosisOption[] }
   ) => {
-    if (!assignmentId || !assignmentLaunch || assignmentLaunch.status !== 'pending') return;
+    if (!assignmentId || !assignmentLaunch || !canGradeAssignment) return;
     const existing = loadClinicalCaseLock(assignmentId);
     const next: ClinicalCaseSessionLock = {
       assignmentId,
@@ -448,7 +460,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
       evaluation: patch.evaluation !== undefined ? patch.evaluation : existing?.evaluation,
     };
     saveClinicalCaseLock(next);
-  }, [assignmentId, assignmentLaunch, difficulty, expiresAt]);
+  }, [assignmentId, assignmentLaunch, canGradeAssignment, difficulty, expiresAt]);
 
   const generateNewCase = useCallback(() => {
     if (isAssignedPending) return;
@@ -547,18 +559,80 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
     }
   }, []);
 
+  const restoreFromSnapshot = useCallback((
+    snapshot: ClinicalCaseSnapshot,
+    lastAttempt?: ClinicalCaseAttemptRecord | null
+  ) => {
+    const caseData = snapshot.clinicalCase as unknown as ClinicalCase;
+    const caseWithHints: ClinicalCase = {
+      ...caseData,
+      hints: snapshot.hints?.length ? snapshot.hints : caseData.hints,
+    };
+    const opts = (snapshot.options || []) as DiagnosisOption[];
+    const startedAt = snapshot.startedAt || new Date().toISOString();
+    setClinicalCase(caseWithHints);
+    setOptions(opts);
+    setDifficulty((snapshot.difficulty as Difficulty) || difficulty);
+    setStartTime(new Date(startedAt).getTime());
+    setElapsedSeconds(Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000));
+    setExpiresAt(snapshot.expiresAt || null);
+    if (snapshot.expiresAt) {
+      setRemainingSeconds(Math.max(0, Math.floor((new Date(snapshot.expiresAt).getTime() - Date.now()) / 1000)));
+    } else {
+      setRemainingSeconds(null);
+    }
+    if (lastAttempt) {
+      const evalResult = ClinicalCaseEngine.evaluateAnswer(
+        lastAttempt.selectedPatternId || '__sin_respuesta__',
+        caseWithHints,
+        lastAttempt.timeSpentSeconds,
+        opts
+      );
+      evalResult.score = lastAttempt.score;
+      evalResult.isCorrect = lastAttempt.isCorrect;
+      setSelectedAnswer(lastAttempt.selectedPatternId || null);
+      setHintsUsed(lastAttempt.hintsUsed || 0);
+      setEvaluation(evalResult);
+      setCurrentStep('feedback');
+      setAssignmentSubmitted(true);
+      return;
+    }
+    setSelectedAnswer(null);
+    setHintsUsed(0);
+    setShowHint(false);
+    setEvaluation(null);
+    setCurrentStep('case');
+  }, [difficulty]);
+
   // Cargar caso automáticamente si viene asignado por el docente (o vista previa admin)
   useEffect(() => {
     if (allTemplates.length === 0) return;
 
     if (assignmentId) {
       if (assignmentLoading || !assignmentLaunch || assignedStartRef.current) return;
-
-      const lock = loadClinicalCaseLock(assignmentId);
       assignedStartRef.current = true;
 
-      if (assignmentLaunch.status === 'pending' && lock?.clinicalCase) {
-        restoreFromLock(lock);
+      const canGrade =
+        assignmentLaunch.status === 'pending' || assignmentLaunch.retakeStatus === 'approved';
+      const existingSnap = assignmentLaunch.snapshot;
+      const lock = loadClinicalCaseLock(assignmentId);
+
+      if (!canGrade && existingSnap?.clinicalCase) {
+        restoreFromSnapshot(existingSnap, assignmentLaunch.lastAttempt);
+        return;
+      }
+
+      if (canGrade && existingSnap?.clinicalCase && assignmentLaunch.retakeStatus !== 'approved') {
+        const snapCaseId = (existingSnap.clinicalCase as { id?: string }).id;
+        if (lock && lock.clinicalCase?.id === snapCaseId) {
+          restoreFromLock({
+            ...lock,
+            expiresAt: existingSnap.expiresAt ?? lock.expiresAt,
+            startedAt: existingSnap.startedAt || lock.startedAt,
+          });
+          return;
+        }
+        restoreFromSnapshot(existingSnap);
         return;
       }
 
@@ -572,15 +646,49 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
       if (!template) template = allTemplates[0];
 
       const now = Date.now();
-      const shouldTime =
-        assignmentLaunch.status === 'pending' &&
-        assignmentLaunch.clinicalMode === 'exam' &&
-        !!assignmentLaunch.timeLimitMinutes;
+      const caseDifficulty = assignmentLaunch.difficulty || difficulty;
+      const newCase = ClinicalCaseEngine.generateCaseFromTemplate(template, caseDifficulty);
+      const opts = ClinicalCaseEngine.getOptionsForCase(newCase.correctDiagnosis.patternId, caseDifficulty, allTemplates);
+      const hints = newCase.hints?.length
+        ? newCase.hints
+        : (PATTERN_HINTS[template.patternId] || []);
+      const shouldTime = canGrade && assignmentLaunch.clinicalMode === 'exam' && !!assignmentLaunch.timeLimitMinutes;
       const lockExpires = shouldTime
         ? new Date(now + (assignmentLaunch.timeLimitMinutes as number) * 60 * 1000).toISOString()
         : null;
+      const snapshot: ClinicalCaseSnapshot = {
+        clinicalCase: newCase as unknown as Record<string, unknown>,
+        options: opts,
+        hints,
+        startedAt: new Date(now).toISOString(),
+        expiresAt: lockExpires,
+        clinicalMode: assignmentLaunch.clinicalMode,
+        patternId: template.patternId,
+        difficulty: caseDifficulty,
+        timeLimitMinutes: assignmentLaunch.timeLimitMinutes,
+      };
 
-      startFromTemplate(template, assignmentLaunch, lockExpires, now);
+      startClinicalCaseAssignment(assignmentId, snapshot).then((started) => {
+        if (!started.success) {
+          assignedStartRef.current = false;
+          setAssignmentError(started.error || 'No se pudo iniciar el caso clínico en el servidor.');
+          return;
+        }
+        const snap = started.snapshot || snapshot;
+        restoreFromSnapshot(snap);
+        persistAssignedLock({
+          patternId: template.patternId,
+          startedAt: snap.startedAt,
+          expiresAt: snap.expiresAt ?? null,
+          difficulty: caseDifficulty,
+          clinicalCase: (snap.clinicalCase as unknown as ClinicalCase) || newCase,
+          options: (snap.options as DiagnosisOption[]) || opts,
+          currentStep: 'case',
+          selectedAnswer: null,
+          hintsUsed: 0,
+          submitted: false,
+        });
+      });
       return;
     }
 
@@ -595,8 +703,12 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
     allTemplates,
     currentStep,
     previewPatternId,
+    difficulty,
     restoreFromLock,
+    restoreFromSnapshot,
+    persistAssignedLock,
     startFromTemplate,
+    assignmentStartNonce,
   ]);
 
   const handleSubmitDiagnosis = (opts?: { timedOut?: boolean }) => {
@@ -608,10 +720,20 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
     submitLockRef.current = true;
     const usedHints = hintsUsedRef.current;
     const timeSpent = Math.round((Date.now() - (startTimeRef.current || startTime || Date.now())) / 1000);
-    let result = ClinicalCaseEngine.evaluateAnswer(answer || '__sin_respuesta__', caseData, timeSpent);
+    let result = ClinicalCaseEngine.evaluateAnswer(answer || '__sin_respuesta__', caseData, timeSpent, options);
 
-    if (usedHints > 0) {
-      result.score = Math.max(0, result.score - usedHints * 5);
+    const applyHintPenalty = Boolean(assignmentId && assignmentLaunch?.clinicalMode === 'study');
+    if (applyHintPenalty) {
+      const scored = scoreClinicalDiagnosis({
+        selectedPatternId: answer,
+        correctPatternId: caseData.correctDiagnosis.patternId,
+        correctCategory: caseData.correctDiagnosis.category,
+        selectedCategory: options.find((o) => o.patternId === answer)?.category,
+        hintsUsed: usedHints,
+        maxHints: (caseData.hints?.length ? caseData.hints : PATTERN_HINTS[caseData.correctDiagnosis.patternId] || []).length,
+        applyHintPenalty: true,
+      });
+      result.score = scored.score;
     }
 
     if (opts?.timedOut && !answer) {
@@ -647,19 +769,24 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
     };
     store.recordAttempt(attempt);
 
-    const canGrade = Boolean(assignmentId && assignmentLaunch?.status === 'pending');
+    const canGrade = canGradeAssignment && Boolean(assignmentId);
     if (canGrade && assignmentId) {
       const studentId = assignmentLaunch?.studentId || user?.id || '';
       submitClinicalCaseAssignment(assignmentId, studentId, {
-        score: result.score,
-        isCorrect: result.isCorrect,
         selectedAnswer: answer || 'Sin respuesta (tiempo agotado)',
-        correctPatternId: caseData.correctDiagnosis.patternId,
-        patternName: caseData.correctDiagnosis.patternName,
-        timeSpentSeconds: timeSpent,
         hintsUsed: usedHints,
-      }).then((ok: boolean) => {
-        if (ok) setAssignmentSubmitted(true);
+      }).then((saved) => {
+        if (saved.success) {
+          setAssignmentSubmitted(true);
+          setAssignmentError(null);
+          const serverScore = saved.assignment?.grade;
+          if (typeof serverScore === 'number') {
+            setEvaluation((prev) => (prev ? { ...prev, score: serverScore } : prev));
+          }
+          return;
+        }
+        submitLockRef.current = false;
+        setAssignmentError(saved.error || 'No se pudo asentar la calificación.');
       });
     }
 
@@ -669,7 +796,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
       currentStep: 'feedback',
       selectedAnswer: answer,
       hintsUsed: usedHints,
-      submitted: canGrade,
+      submitted: false,
       timedOut: opts?.timedOut,
       evaluation: result,
     });
@@ -694,7 +821,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
       currentStep,
       selectedAnswer,
       hintsUsed,
-      submitted: assignmentSubmitted || currentStep === 'feedback',
+      submitted: assignmentSubmitted,
       timedOut,
       evaluation,
     });
@@ -747,7 +874,9 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
 
   // ─── Hints ──────
   const currentHints = clinicalCase
-    ? PATTERN_HINTS[clinicalCase.correctDiagnosis.patternId] || []
+    ? (clinicalCase.hints?.length
+        ? clinicalCase.hints
+        : (PATTERN_HINTS[clinicalCase.correctDiagnosis.patternId] || []))
     : [];
   const maxHints = currentHints.length;
 
@@ -804,13 +933,184 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
           <AlertTriangle className="w-10 h-10 text-amber-400 mx-auto" />
           <h2 className="text-lg font-bold text-white">No se pudo abrir el caso asignado</h2>
           <p className="text-sm text-gray-400">{assignmentError}</p>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard?tab=assignments')}
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold"
-          >
-            Volver a Tareas
-          </button>
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                assignedStartRef.current = false;
+                setAssignmentError(null);
+                setAssignmentStartNonce((n) => n + 1);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold"
+            >
+              Reintentar
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard?tab=assignments')}
+              className="px-4 py-2 rounded-xl border border-gray-600 text-gray-200 text-sm font-bold"
+            >
+              Volver a Tareas
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (publicMode) {
+      const lockedCount = allTemplates.filter(
+        (t) => t.usageMode !== 'exam_only' && !(publicIds?.has(t.patternId))
+      ).length;
+      return (
+        <div className="w-full space-y-6">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-600/30 via-orange-600/20 to-red-600/10 border border-amber-500/20 p-6 sm:p-8">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative max-w-3xl">
+              <div className="inline-flex bg-gradient-to-br from-amber-500 to-orange-600 p-3 rounded-2xl shadow-lg shadow-amber-500/30 mb-4">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-amber-200 mb-2">
+                Simulador público
+              </h1>
+              <p className="text-gray-300 text-sm sm:text-base mb-0 max-w-2xl">
+                Prueba el caso abierto. Recorre la historia, la neuroconducción y la EMG, y elige un diagnóstico. El resto del simulador se desbloquea con tu cuenta.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              ['1', 'Caso'],
+              ['2', 'Neuroconducción'],
+              ['3', 'EMG'],
+              ['4', 'Diagnóstico'],
+            ].map(([n, label]) => (
+              <div key={label} className="rounded-xl border border-gray-700/60 bg-gray-800/40 px-3 py-3">
+                <div className="text-[10px] font-bold text-amber-400">Paso {n}</div>
+                <div className="text-sm font-semibold text-white">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Ejercicios abiertos</h2>
+            {publicIds === null ? (
+              <p className="text-sm text-gray-400 mb-0">Cargando ejercicios públicos...</p>
+            ) : activePool.length === 0 ? (
+              <p className="text-sm text-gray-400 mb-0">Todavía no hay un ejercicio visible en modo público.</p>
+            ) : (
+              <div className="grid gap-3">
+                {(categoryFilter === 'all' ? activePool : activePool.filter((t) => t.category === categoryFilter)).map((template) => (
+                  <article
+                    key={template.patternId}
+                    className="rounded-2xl border border-gray-700/60 bg-gray-800/60 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
+                        {CATEGORY_LABELS[template.category] || template.category}
+                      </div>
+                      <h3 className="text-lg font-bold text-white mt-1 mb-1">{template.patternName}</h3>
+                      <p className="text-sm text-gray-400 mb-0">
+                        {template.patient.complaints[0]}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => startFromTemplate(template, null, null, Date.now())}
+                      className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white text-sm font-bold min-h-[44px]"
+                    >
+                      Empezar caso
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-4">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Dificultad</h2>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {([{ d: 'easy' as Difficulty, emoji: '🟢', label: 'Fácil', desc: '3 opciones, valores claros', border: 'border-green-500/40', bg: 'bg-green-950/20' },
+                  { d: 'medium' as Difficulty, emoji: '🟡', label: 'Medio', desc: '5 opciones, borderline', border: 'border-amber-500/40', bg: 'bg-amber-950/20' },
+                  { d: 'hard' as Difficulty, emoji: '🔴', label: 'Difícil', desc: '7 opciones, sutiles', border: 'border-red-500/40', bg: 'bg-red-950/20' },
+                ]).map(({ d, emoji, label, desc, border, bg }) => (
+                  <button key={d} type="button" onClick={() => { setDifficulty(d); store.setDifficulty(d); }}
+                    className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-center ${
+                      difficulty === d
+                        ? `${bg} ${border} ring-1 ring-offset-1 ring-offset-gray-900 ring-current shadow-lg`
+                        : 'bg-gray-800/40 border-gray-700/50 hover:border-gray-600'
+                    }`}>
+                    <div className="text-xl sm:text-2xl mb-1">{emoji}</div>
+                    <div className={`text-sm font-bold ${difficulty === d ? 'text-white' : 'text-gray-300'}`}>{label}</div>
+                    <div className="text-[10px] text-gray-500 mt-0.5">{desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-gray-800/30 rounded-xl border border-gray-700/50 overflow-hidden">
+              <div className="p-4">
+                <h2 className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+                  <Filter className="w-3 h-3 text-purple-400" /> Categoría
+                </h2>
+                <div className="flex flex-wrap gap-1.5">
+                  {availableCategories.map(cat => {
+                    const count = cat === 'all' ? activePool.length : activePool.filter(t => t.category === cat).length;
+                    return (
+                      <button key={cat} type="button" onClick={() => setCategoryFilter(cat)}
+                        className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all whitespace-nowrap border ${
+                          categoryFilter === cat
+                            ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/20'
+                            : 'bg-gray-800/60 text-gray-400 border-gray-700/60 hover:bg-gray-700/60 hover:text-gray-200 hover:border-gray-600'
+                        }`}>
+                        {CATEGORY_LABELS[cat] || cat}
+                        <span className="ml-1 opacity-50">{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="border-t border-gray-700/40 mx-4" />
+              <div className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-1.5 rounded-lg ${isStudyMode ? 'bg-purple-600/20' : 'bg-gray-700/40'}`}>
+                      {isStudyMode ? <BookOpen className="w-4 h-4 text-purple-400" /> : <Award className="w-4 h-4 text-gray-400" />}
+                    </div>
+                    <div>
+                      <div className={`text-sm font-semibold ${isStudyMode ? 'text-purple-300' : 'text-gray-300'}`}>
+                        {isStudyMode ? 'Modo Estudio' : 'Modo Examen'}
+                      </div>
+                      <div className="text-[10px] text-gray-500">
+                        {isStudyMode ? 'La respuesta queda visible para aprender' : 'Evalúa tu conocimiento'}
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setIsStudyMode(!isStudyMode)}
+                    aria-pressed={isStudyMode}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isStudyMode ? 'bg-purple-600' : 'bg-gray-600'}`}>
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${isStudyMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {lockedCount > 0 && (
+            <div className="rounded-2xl border border-gray-700/60 bg-gray-800/30 p-4 sm:p-5 flex items-start gap-3">
+              <Lock className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+              <div>
+                <h2 className="text-sm font-bold text-white mb-1">El resto del catálogo está cerrado</h2>
+                <p className="text-sm text-gray-400 mb-0">
+                  Hay {lockedCount} {lockedCount === 1 ? 'caso más' : 'casos más'} de práctica. Regístrate o inicia sesión para desbloquearlos.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <PublicSimulatorAuthBar />
         </div>
       );
     }
@@ -825,12 +1125,10 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
             <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-300">
-            {publicMode ? 'Simulador público' : 'Modo Ejercicio EMG'}
+            Modo Ejercicio EMG
           </h1>
           <p className="text-gray-400 mt-1 text-sm sm:text-base">
-            {publicMode
-              ? 'Prueba el caso abierto. El resto del simulador se desbloquea con tu cuenta.'
-              : 'Practica diagnosticando casos clínicos de electromiografía'}
+            Practica diagnosticando casos clínicos de electromiografía
           </p>
         </div>
       </div>
@@ -930,43 +1228,10 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
         </div>
       </div>
 
-      {publicMode && (
-        <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider px-1">Ejercicios abiertos</h3>
-          {publicIds === null ? (
-            <p className="text-sm text-gray-400 px-1">Cargando ejercicios públicos...</p>
-          ) : activePool.length === 0 ? (
-            <p className="text-sm text-gray-400 px-1">Todavía no hay un ejercicio visible en modo público.</p>
-          ) : (
-            activePool.map((template) => (
-              <button
-                key={template.patternId}
-                type="button"
-                onClick={() => startFromTemplate(template, null, null, Date.now())}
-                className="w-full text-left px-4 py-3 rounded-xl bg-gray-800/60 border border-gray-700/60 hover:border-amber-500/50 text-white"
-              >
-                <div className="text-sm font-semibold">{template.patternName}</div>
-                <div className="text-[11px] text-gray-400 mt-0.5">{CATEGORY_LABELS[template.category] || template.category}</div>
-              </button>
-            ))
-          )}
-        </div>
-      )}
-
-      {/* CTA */}
-      {!publicMode && (
       <button onClick={generateNewCase}
         className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-amber-600/30 flex items-center justify-center gap-2">
         <Zap className="w-5 h-5" /> Generar Caso Clínico
       </button>
-      )}
-      {publicMode && activePool.length > 1 && (
-        <button onClick={generateNewCase}
-          className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white py-4 sm:py-5 rounded-2xl font-bold text-base sm:text-lg transition-all shadow-xl shadow-amber-600/30 flex items-center justify-center gap-2">
-          <Zap className="w-5 h-5" /> Caso al azar
-        </button>
-      )}
-      {publicMode && <PublicSimulatorAuthBar />}
     </div>
     );
   };
@@ -1634,6 +1899,24 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
             </div>
           </div>
         )}
+        {assignmentId && assignmentError && !assignmentSubmitted && (
+          <div className="bg-red-950/40 border border-red-500/50 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 text-red-200">
+            <div className="flex items-start gap-3 flex-1">
+              <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+              <div className="text-xs">
+                <span className="font-bold block text-red-100 text-sm">No se asentó la calificación</span>
+                {assignmentError}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleSubmitDiagnosis(timedOut ? { timedOut: true } : undefined)}
+              className="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold"
+            >
+              Reintentar envío
+            </button>
+          </div>
+        )}
 
         {/* Severity Badge */}
         {clinicalCase.correctDiagnosis.severityGrade && (
@@ -1790,10 +2073,10 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen w-full bg-gray-900 text-gray-100 pt-14 sm:pt-16">
       {/* Top bar with timer + clickable progress */}
       {currentStep !== 'config' && (
-        <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-0 z-50" style={{ backgroundColor: 'rgba(31, 41, 55, 0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(55, 65, 81, 0.6)' }}>
+        <div className="bg-gray-800/95 backdrop-blur-lg border-b border-gray-700/60 sticky top-14 sm:top-16 z-40" style={{ backgroundColor: 'rgba(31, 41, 55, 0.97)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(55, 65, 81, 0.6)' }}>
           <div className="max-w-5xl mx-auto px-3 sm:px-4">
             {/* Top row: back + tabs + timer */}
             <div className="flex items-center gap-1 sm:gap-3 py-2 sm:py-2.5">
@@ -1916,7 +2199,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
       )}
 
       {/* Content */}
-      <div className="max-w-5xl mx-auto px-3 sm:px-4 pt-4 sm:pt-8" style={{ paddingBottom: '12rem' }}>
+      <main id="contenido-principal" className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8" style={{ paddingBottom: '12rem' }}>
         {renderStep()}
         {publicMode && currentStep !== 'config' && currentStep !== 'feedback' && (
           <PublicSimulatorAuthBar />
@@ -1943,7 +2226,7 @@ const ExerciseMode: React.FC<{ publicMode?: boolean }> = ({ publicMode = false }
             </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Bottom Nav with Hints */}
       {currentStep !== 'config' && currentStep !== 'feedback' && (

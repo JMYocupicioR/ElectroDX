@@ -3,13 +3,19 @@ import { Sparkles, BookOpen, GraduationCap, FileCheck, Video } from 'lucide-reac
 
 export type PortalGuideCourseState = 'active' | 'pending' | 'none';
 
+export type PortalGuideMedia =
+  | { kind: 'image'; src: string; alt: string }
+  | { kind: 'video'; src: string; alt: string }
+  | { kind: 'link'; href: string; label: string };
+
 export interface PortalGuideStep {
-  id: 'mapa' | 'clases' | 'curso' | 'evaluacion' | 'talleres';
+  id: string;
   kicker: string;
   title: string;
   body: string;
   detail?: string[];
-  icon: LucideIcon;
+  icon?: LucideIcon;
+  media?: PortalGuideMedia[];
 }
 
 export function getPortalGuideSteps(courseState: PortalGuideCourseState): PortalGuideStep[] {

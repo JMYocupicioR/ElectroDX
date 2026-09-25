@@ -1,7 +1,15 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { shouldShowPortalGuide, markPortalGuideSeen, PORTAL_GUIDE_VERSION } from './portalGuideService';
+import {
+  shouldShowPortalGuide,
+  markPortalGuideSeen,
+  PORTAL_GUIDE_VERSION,
+  filterSlidesForCourse,
+  resolveSlideMedia,
+  validatePortalWelcomeDraft,
+  detailFromText,
+} from './portalGuideService';
 import { supabase } from '../lib/supabase';
-import type { Profile } from '../types/database';
+import type { PortalWelcomeSlide, Profile } from '../types/database';
 
 describe('portalGuideService', () => {
   beforeEach(() => {
@@ -54,6 +62,67 @@ describe('portalGuideService', () => {
 
       const result = await markPortalGuideSeen();
       expect(result.error).toBe('Network failure');
+    });
+  });
+
+  describe('published slides', () => {
+    const slide = (overrides: Partial<PortalWelcomeSlide>): PortalWelcomeSlide => ({
+      id: overrides.id ?? '1',
+      sort_order: overrides.sort_order ?? 10,
+      enabled: overrides.enabled ?? true,
+      audience: overrides.audience ?? 'all',
+      kicker: 'Guía',
+      title: overrides.title ?? 'Pantalla',
+      body: 'Texto',
+      detail: [],
+      media_items: overrides.media_items ?? [],
+      media_kind: overrides.media_kind ?? 'none',
+      media_url: overrides.media_url ?? null,
+      media_alt: overrides.media_alt ?? null,
+      updated_by: null,
+      created_at: '',
+      updated_at: '',
+    });
+
+    it('keeps slides for everyone and the one that matches enrollment', () => {
+      const slides = [
+        slide({ id: 'a', title: 'Bienvenida', sort_order: 30 }),
+        slide({ id: 'b', title: 'Inscrito', audience: 'enrolled', sort_order: 10 }),
+        slide({ id: 'c', title: 'Espera', audience: 'waitlist', sort_order: 20 }),
+        slide({ id: 'd', title: 'Oculta', enabled: false, sort_order: 5 }),
+      ];
+      expect(filterSlidesForCourse(slides, 'active').map((item) => item.id)).toEqual(['b', 'a']);
+      expect(filterSlidesForCourse(slides, 'pending').map((item) => item.id)).toEqual(['c', 'a']);
+      expect(filterSlidesForCourse(slides, 'none').map((item) => item.id)).toEqual(['a']);
+    });
+
+    it('turns a YouTube link into an embed and drops an unknown video', () => {
+      expect(
+        resolveSlideMedia(
+          slide({ media_kind: 'video', media_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', title: 'Clase' })
+        )
+      ).toEqual({
+        kind: 'video',
+        src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        alt: 'Clase',
+      });
+      expect(resolveSlideMedia(slide({ media_kind: 'video', media_url: 'https://example.com/clip.mp4' }))).toBeNull();
+    });
+
+    it('rejects a video that is not an allowed host', () => {
+      expect(
+        validatePortalWelcomeDraft({
+          kicker: '',
+          title: 'Video',
+          body: '',
+          detail: detailFromText('una\n\ndos'),
+          audience: 'all',
+          enabled: true,
+          media_items: [
+            { id: 'v', kind: 'video', url: 'https://example.com/video', label: '' },
+          ],
+        })
+      ).toMatch(/YouTube/);
     });
   });
 });

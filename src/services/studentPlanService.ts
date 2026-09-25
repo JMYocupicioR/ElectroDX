@@ -402,42 +402,60 @@ export async function createAssignment(
     updated_at: new Date().toISOString(),
   };
 
-  // 1. Local
-  try {
-    const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`);
-    const list: StudentAssignment[] = raw ? JSON.parse(raw) : [];
-    list.unshift(newAssignment);
-    localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`, JSON.stringify(list));
-  } catch (e) {
-    console.warn('[studentPlanService] Error saving assignment locally:', e);
+  const writeLocal = (row: StudentAssignment, replaceId?: string) => {
+    try {
+      const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`);
+      const list: StudentAssignment[] = raw ? JSON.parse(raw) : [];
+      const next = replaceId
+        ? list.map((item) => (item.id === replaceId ? row : item))
+        : [row, ...list.filter((item) => item.id !== row.id)];
+      if (replaceId && !next.some((item) => item.id === row.id)) {
+        next.unshift(row);
+      }
+      localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`, JSON.stringify(next));
+    } catch (e) {
+      console.warn('[studentPlanService] Error saving assignment locally:', e);
+    }
+  };
+
+  writeLocal(newAssignment);
+
+  const { data, error } = await sb
+    .from('student_assignments')
+    .insert({
+      student_id: assignment.student_id,
+      plan_id: assignment.plan_id ?? null,
+      title: assignment.title,
+      type: assignment.type,
+      description: assignment.description,
+      target_module_id: assignment.target_module_id ?? null,
+      target_topic_id: assignment.target_topic_id ?? null,
+      target_exam_config: assignment.target_exam_config ?? {},
+      due_date: assignment.due_date,
+      status: newAssignment.status,
+      priority: newAssignment.priority,
+      min_score: assignment.min_score ?? null,
+      assigned_by: assignment.assigned_by ?? null,
+    })
+    .select()
+    .single();
+
+  if (error || !data) {
+    try {
+      const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`);
+      if (raw) {
+        const list: StudentAssignment[] = JSON.parse(raw);
+        localStorage.setItem(
+          `${KEY_LOCAL_ASSIGNMENTS}${assignment.student_id}`,
+          JSON.stringify(list.filter((item) => item.id !== newAssignment.id))
+        );
+      }
+    } catch {}
+    throw error || new Error('No se pudo crear la asignación en el servidor.');
   }
 
-  // 2. Supabase
-  try {
-    const { data } = await supabase
-      .from('student_assignments')
-      .insert({
-        student_id: assignment.student_id,
-        plan_id: assignment.plan_id ?? null,
-        title: assignment.title,
-        type: assignment.type,
-        description: assignment.description,
-        target_module_id: assignment.target_module_id ?? null,
-        target_topic_id: assignment.target_topic_id ?? null,
-        target_exam_config: assignment.target_exam_config ?? {},
-        due_date: assignment.due_date,
-        status: newAssignment.status,
-        priority: newAssignment.priority,
-        min_score: assignment.min_score ?? null,
-        assigned_by: assignment.assigned_by ?? null,
-      })
-      .select()
-      .single();
-
-    if (data) return data as StudentAssignment;
-  } catch {}
-
-  return newAssignment;
+  writeLocal(data as StudentAssignment, newAssignment.id);
+  return data as StudentAssignment;
 }
 
 export async function createBatchAssignments(
@@ -960,20 +978,28 @@ export async function gradeAssignment(
     }
   } catch {}
 
-  // Supabase
-  try {
-    await supabase
-      .from('student_assignments')
-      .update({
-        grade,
-        feedback,
-        status,
-        reviewed_at: reviewedAt,
-        reviewed_by: reviewerId,
-        updated_at: reviewedAt,
-      })
-      .eq('id', assignmentId);
-  } catch {}
+  if (!isUuid(assignmentId)) {
+    return;
+  }
+
+  const { data, error } = await sb
+    .from('student_assignments')
+    .update({
+      grade,
+      feedback,
+      status,
+      reviewed_at: reviewedAt,
+      reviewed_by: reviewerId ?? null,
+      updated_at: reviewedAt,
+    })
+    .eq('id', assignmentId)
+    .select('id')
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) {
+    throw new Error('No se pudo asentar la calificación. Revisa permisos y el identificador del revisor.');
+  }
 }
 
 export async function deleteAssignment(assignmentId: string, studentId: string): Promise<void> {

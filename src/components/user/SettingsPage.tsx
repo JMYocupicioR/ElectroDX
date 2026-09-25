@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff, Users, Scale, BookOpen, GraduationCap, Home } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Globe, Moon, Sun, KeyRound, Check, Eye, EyeOff, Users, Scale, BookOpen, GraduationCap, Home, Shield } from 'lucide-react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useStaffViewStore } from '../../stores/staffViewStore';
 import { BackButton } from '../common/BackButton';
 
 export default function SettingsPage() {
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
-  const { updatePassword, user } = useAuth();
+  const { updatePassword, user, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const studentMode = useStaffViewStore((s) => s.view) === 'student' && isAdmin;
+  const enterStudentMode = useStaffViewStore((s) => s.enterStudentMode);
+  const exitStudentMode = useStaffViewStore((s) => s.exitStudentMode);
 
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -68,6 +73,46 @@ export default function SettingsPage() {
 
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Ajustes</h1>
       <p className="text-sm text-slate-500 mb-8">Preferencias de la aplicación y seguridad</p>
+
+      {isAdmin && (
+        <>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 px-1">
+            Vista de la plataforma
+          </h2>
+          <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/30 mb-8 shadow-sm">
+            <SettingRow
+              icon={studentMode ? Shield : GraduationCap}
+              title={studentMode ? 'Modo estudiante activo' : 'Panel de administración'}
+              description={
+                studentMode
+                  ? 'Estás viendo la plataforma como la ve un alumno. El aviso ámbar solo aparece para ti.'
+                  : 'Al entrar, el administrador abre el panel. Desde aquí puedes revisar la experiencia del alumno.'
+              }
+              action={
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (studentMode) {
+                      exitStudentMode();
+                      navigate('/admin');
+                    } else {
+                      enterStudentMode();
+                      navigate('/portal');
+                    }
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    studentMode
+                      ? 'bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-950/50 dark:text-amber-200'
+                      : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {studentMode ? 'Volver al panel' : 'Entrar en modo estudiante'}
+                </button>
+              }
+            />
+          </section>
+        </>
+      )}
 
       {/* Preferencias de interfaz */}
       <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3 px-1">

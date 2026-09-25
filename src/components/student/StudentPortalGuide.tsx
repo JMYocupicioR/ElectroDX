@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Sparkles } from 'lucide-react';
 import { AccessibleModal } from '../a11y/AccessibleModal';
-import { getPortalGuideSteps, type PortalGuideCourseState } from './portalGuideSteps';
+import { getPortalGuideSteps, type PortalGuideCourseState, type PortalGuideStep } from './portalGuideSteps';
 
 export type { PortalGuideCourseState };
 
@@ -15,6 +16,8 @@ export interface StudentPortalGuideProps {
   stepIndex: number;
   saving: boolean;
   saveError: string | null;
+  steps?: PortalGuideStep[];
+  headerExtra?: ReactNode;
 }
 
 export function StudentPortalGuide({
@@ -28,8 +31,10 @@ export function StudentPortalGuide({
   stepIndex,
   saving,
   saveError,
+  steps: stepsProp,
+  headerExtra,
 }: StudentPortalGuideProps) {
-  const steps = getPortalGuideSteps(courseState);
+  const steps = stepsProp && stepsProp.length > 0 ? stepsProp : getPortalGuideSteps(courseState);
   const currentStep = steps[stepIndex] ?? steps[0];
   const [clickedAction, setClickedAction] = useState<'skip' | 'finish' | null>(null);
 
@@ -80,7 +85,7 @@ export function StudentPortalGuide({
 
   if (!open) return null;
 
-  const StepIcon = currentStep.icon;
+  const StepIcon = currentStep.icon ?? Sparkles;
   const isFirstStep = stepIndex === 0;
   const isLastStep = stepIndex === steps.length - 1;
 
@@ -98,6 +103,7 @@ export function StudentPortalGuide({
 
   const headerSlot = (
     <div className="mb-2">
+      {headerExtra}
       {/* Barra superior: Paso n de 5, indicadores de punto y botón Saltar */}
       <div className="flex items-center justify-between gap-3 pb-2">
         <div className="flex items-center gap-2.5">
@@ -150,6 +156,7 @@ export function StudentPortalGuide({
       onClose={handleSkipClick}
       labelledBy="portal-guide-title"
       headerSlot={headerSlot}
+      panelClassName={currentStep.media && currentStep.media.length > 0 ? 'sm:max-w-2xl' : 'sm:max-w-lg'}
     >
       <div className="transition-opacity duration-200 motion-reduce:transition-none">
         {/* Alerta si hubo error al guardar en Supabase */}
@@ -165,6 +172,41 @@ export function StudentPortalGuide({
               </p>
             )}
           </div>
+        )}
+
+        {(currentStep.media ?? []).map((item, mediaIndex) =>
+          item.kind === 'image' ? (
+            <img
+              key={`${item.src}-${mediaIndex}`}
+              src={item.src}
+              alt={item.alt}
+              className="w-full max-h-56 object-cover rounded-xl mb-4 border border-slate-200 dark:border-slate-800"
+            />
+          ) : item.kind === 'video' ? (
+            <div
+              key={`${item.src}-${mediaIndex}`}
+              className="relative w-full mb-4 rounded-xl overflow-hidden bg-slate-950 border border-slate-800"
+              style={{ paddingBottom: '56.25%' }}
+            >
+              <iframe
+                src={item.src}
+                title={item.alt || currentStep.title}
+                className="absolute inset-0 w-full h-full"
+                allow="encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <a
+              key={`${item.href}-${mediaIndex}`}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mb-3 flex min-h-[44px] items-center rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-blue-700 underline-offset-2 hover:underline dark:border-slate-700 dark:text-blue-300"
+            >
+              {item.label}
+            </a>
+          )
         )}
 
         {/* Cuerpo del paso */}

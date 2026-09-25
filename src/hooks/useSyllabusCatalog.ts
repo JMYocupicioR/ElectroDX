@@ -8,7 +8,7 @@ import {
 } from '../content/courseCatalog';
 import { getSyllabusCatalog } from '../services/courseService';
 import { getAllPublishedTopics } from '../services/editorialService';
-import { mergeModuleTopics } from '../services/contentMerge';
+import { applyLessonExpansions, mergeModuleTopics } from '../services/contentMerge';
 import { isSupabaseConfigured } from '../lib/supabase';
 import type { Course, CourseModuleRow, PublishedTopic, SyllabusTopicOverride } from '../types/database';
 import type { Module } from '../types/content';
@@ -58,10 +58,10 @@ export function useSyllabusCatalog() {
   }, [reload]);
 
   const mergedModules: Module[] = useMemo(() => {
-    if (!publishedTopics.length) return allModules;
+    if (!publishedTopics.length) return allModules.map(applyLessonExpansions);
     return allModules.map((mod) => {
       const topicsForModule = publishedTopics.filter((pt) => pt.module_id === mod.id);
-      return topicsForModule.length ? mergeModuleTopics(mod, topicsForModule) : mod;
+      return topicsForModule.length ? mergeModuleTopics(mod, topicsForModule) : applyLessonExpansions(mod);
     });
   }, [publishedTopics]);
 
@@ -101,6 +101,7 @@ export function useSyllabusCatalog() {
     modulesWithOverrides,
     modulesForStaff,
     visibleModules,
+    publishedTopics,
     loading,
     reload,
   };

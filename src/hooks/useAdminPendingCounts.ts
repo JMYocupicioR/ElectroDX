@@ -38,9 +38,11 @@ export function useAdminPendingCounts() {
       .select('id, status, target_exam_config')
       .then(({ data }) => {
         if (!isMounted || !data) return;
-        const pendingCount = (data as any[]).filter(
-          (a) => a.status === 'submitted' || a.target_exam_config?.retakeStatus === 'requested'
-        ).length;
+        const pendingCount = (data as any[]).reduce((sum, assignment) => {
+          const submitted = assignment.status === 'submitted' ? 1 : 0;
+          const retake = assignment.target_exam_config?.retakeStatus === 'requested' ? 1 : 0;
+          return sum + submitted + retake;
+        }, 0);
         setPendingTeacherReviews(pendingCount);
       })
       .catch(() => {

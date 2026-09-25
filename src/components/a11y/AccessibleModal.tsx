@@ -8,9 +8,18 @@ interface AccessibleModalProps {
   children: ReactNode;
   labelledBy?: string;
   headerSlot?: ReactNode;
+  panelClassName?: string;
 }
 
-export function AccessibleModal({ open, title, onClose, children, labelledBy, headerSlot }: AccessibleModalProps) {
+export function AccessibleModal({
+  open,
+  title,
+  onClose,
+  children,
+  labelledBy,
+  headerSlot,
+  panelClassName = 'sm:max-w-lg',
+}: AccessibleModalProps) {
   const ref = useFocusTrap(open);
 
   if (!open) return null;
@@ -29,7 +38,7 @@ export function AccessibleModal({ open, title, onClose, children, labelledBy, he
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-5"
+        className={`relative w-full ${panelClassName} max-h-[92vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl p-5`}
         onKeyDown={(e) => {
           if (e.key === 'Escape') onClose();
         }}

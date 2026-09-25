@@ -23,6 +23,7 @@ import {
   Trash2,
   Activity,
   ChevronRight,
+  Pencil,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -566,6 +567,14 @@ export default function AdminUsersPage() {
                   {/* Right Column: Administrative Controls & Public Visibility */}
                   <div className="flex flex-col gap-2.5 min-w-[240px]">
                     {/* Primary Button: Expediente y Progreso Académico */}
+                    <Link
+                      to={`/admin/usuarios/${u.id}/perfil`}
+                      className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl border border-cyan-300 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-800 dark:text-cyan-200 text-xs font-bold hover:bg-cyan-100 dark:hover:bg-cyan-900/50 transition cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Editar perfil y verificar cédula</span>
+                    </Link>
+
                     <Link
                       to={`/admin/alumnos/${u.id}`}
                       state={{ from: location.pathname + location.search }}

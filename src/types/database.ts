@@ -126,6 +126,42 @@ export interface Profile {
   updated_at: string;
 }
 
+export type PortalWelcomeAudience = 'all' | 'enrolled' | 'waitlist' | 'no_course';
+export type PortalWelcomeMediaKind = 'none' | 'image' | 'video';
+export type PortalWelcomeMediaItemKind = 'image' | 'video' | 'link';
+
+export interface PortalWelcomeMediaItem {
+  id: string;
+  kind: PortalWelcomeMediaItemKind;
+  url: string;
+  label: string;
+}
+
+export interface PortalWelcomeSettings {
+  id: number;
+  published_version: number;
+  published_at: string | null;
+  updated_at: string;
+}
+
+export interface PortalWelcomeSlide {
+  id: string;
+  sort_order: number;
+  enabled: boolean;
+  audience: PortalWelcomeAudience;
+  kicker: string;
+  title: string;
+  body: string;
+  detail: string[];
+  media_items: PortalWelcomeMediaItem[];
+  media_kind: PortalWelcomeMediaKind;
+  media_url: string | null;
+  media_alt: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface UserRole {
   id: string;
   user_id: string;
@@ -316,6 +352,16 @@ export interface Database {
         Row: UserRole;
         Insert: { user_id: string; role: AppRole; granted_by?: string };
         Update: Partial<UserRole>;
+      };
+      portal_welcome_settings: {
+        Row: PortalWelcomeSettings;
+        Insert: Partial<PortalWelcomeSettings> & { id?: number };
+        Update: Partial<PortalWelcomeSettings>;
+      };
+      portal_welcome_slides: {
+        Row: PortalWelcomeSlide;
+        Insert: Partial<PortalWelcomeSlide> & { title: string };
+        Update: Partial<PortalWelcomeSlide>;
       };
       content_revisions: {
         Row: ContentRevision;
@@ -668,6 +714,10 @@ export interface Database {
         Args: { p_version: number };
         Returns: Profile;
       };
+      publish_portal_welcome: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
       submit_my_assignment: {
         Args: { p_assignment_id: string; p_notes?: string | null; p_submission_url?: string | null };
         Returns: unknown;
@@ -678,6 +728,18 @@ export interface Database {
           p_exam_session_id?: string | null;
           p_score?: number | null;
           p_duration_seconds?: number | null;
+        };
+        Returns: unknown;
+      };
+      start_my_clinical_case: {
+        Args: { p_assignment_id: string; p_snapshot: Record<string, unknown> };
+        Returns: unknown;
+      };
+      complete_my_clinical_case: {
+        Args: {
+          p_assignment_id: string;
+          p_selected_pattern_id?: string | null;
+          p_hints_used?: number;
         };
         Returns: unknown;
       };

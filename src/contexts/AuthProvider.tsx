@@ -12,6 +12,7 @@ import { supabase, isSupabaseConfigured, sb } from '../lib/supabase';
 import type { AppRole, CourseId, EnrollmentStatus, Profile, Subscription } from '../types/database';
 import { recordUserActivity } from '../services/studentPlanService';
 import { hasActivePremiumSubscription, isEnrolledInCourse as enrolledInCourse } from '../utils/courseEnrollment';
+import { useStaffViewStore } from '../stores/staffViewStore';
 
 export interface StudentRegistrationData {
   email: string;
@@ -245,6 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (nextSession?.user) {
         if (event === 'SIGNED_IN') {
+          useStaffViewStore.getState().exitStudentMode();
           recordUserActivity(nextSession.user.id, 'user_login', { source: 'auth_event' });
         }
         // TOKEN_REFRESHED: recargar datos para reflejar cambios de suscripción/rol
@@ -348,6 +350,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
+    useStaffViewStore.getState().exitStudentMode();
     await supabase.auth.signOut();
     setProfile(null);
     setRoles([]);

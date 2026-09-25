@@ -600,7 +600,7 @@ export default function AdminStudentProgressPage() {
     if (!gradingTarget || !studentId) return;
     setSavingGrade(true);
     try {
-      await gradeAssignment(gradingTarget.id, studentId, gradeInput, feedbackInput);
+      await gradeAssignment(gradingTarget.id, studentId, gradeInput, feedbackInput, user?.id);
       setGradingTarget(null);
       await loadData();
     } catch (e) {
@@ -666,6 +666,14 @@ export default function AdminStudentProgressPage() {
           />
 
           <div className="flex items-center gap-3">
+            <Link
+              to={`/admin/usuarios/${profile.id}/perfil`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-cyan-300 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/40 text-xs font-semibold text-cyan-800 dark:text-cyan-200 hover:bg-cyan-100 transition"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Editar perfil</span>
+            </Link>
+
             <button
               type="button"
               onClick={loadData}
