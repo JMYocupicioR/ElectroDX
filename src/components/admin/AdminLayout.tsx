@@ -353,7 +353,7 @@ export function AdminLayout({
               <p className="font-bold text-slate-700 dark:text-slate-200">Sesión Directiva</p>
               <p className="truncate text-slate-500 dark:text-slate-400 mt-0.5 text-[11px]">{user?.email}</p>
               <div className="mt-2 text-[10px] text-slate-400 dark:text-slate-500">
-                COMEFYR Ed. Médica Continua v2.4
+                Diplomado en Electrodiagnostico v1.0
               </div>
             </div>
           </div>

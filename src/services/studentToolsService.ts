@@ -39,6 +39,25 @@ export interface QaThread {
   body: string;
   status: 'open' | 'answered' | 'closed';
   visibility?: 'private' | 'cohort';
+  page_url?: string | null;
+  created_at: string;
+}
+
+export interface TopicDiscussionAuthor {
+  user_id: string;
+  display_name: string;
+  is_staff: boolean;
+}
+
+export interface TopicCommentNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  severity: 'info' | 'success' | 'warning';
+  link_url: string | null;
+  source_key: string;
+  is_read: boolean;
   created_at: string;
 }
 
@@ -88,6 +107,15 @@ export async function getLessonNote(topicId: string): Promise<LessonNote | null>
     .maybeSingle();
   throwIfError(error);
   return (data as LessonNote | null) ?? null;
+}
+
+export async function listMyLessonNotes(): Promise<LessonNote[]> {
+  const { data, error } = await supabase
+    .from('student_lesson_notes')
+    .select('*')
+    .order('updated_at', { ascending: false });
+  throwIfError(error);
+  return (data ?? []) as LessonNote[];
 }
 
 export async function upsertLessonNote(input: {
@@ -303,6 +331,154 @@ export async function replyQaThread(threadId: string, body: string): Promise<QaR
     .single();
   throwIfError(error);
   return data as QaReply;
+}
+
+function threadTitleFromBody(body: string): string {
+  const compact = body.replace(/\s+/g, ' ').trim();
+  return compact.length <= 80 ? compact : `${compact.slice(0, 79).trimEnd()}…`;
+}
+
+export async function listTopicThreads(topicId: string): Promise<QaThread[]> {
+  const { data, error } = await supabase
+    .from('student_qa_threads')
+    .select('*')
+    .eq('topic_id', topicId)
+    .eq('visibility', 'cohort')
+    .order('created_at', { ascending: false });
+  throwIfError(error);
+  return (data ?? []) as QaThread[];
+}
+
+export async function listQaRepliesForThreads(threadIds: string[]): Promise<QaReply[]> {
+  if (threadIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from('student_qa_replies')
+    .select('*')
+    .in('thread_id', threadIds)
+    .order('created_at', { ascending: true });
+  throwIfError(error);
+  return (data ?? []) as QaReply[];
+}
+
+export async function createTopicThread(input: {
+  body: string;
+  moduleId: string;
+  topicId: string;
+  pageUrl: string;
+}): Promise<QaThread> {
+  const { data: sessionData } = await supabase.auth.getUser();
+  const userId = sessionData.user?.id;
+  if (!userId) throw new Error('Debe iniciar sesión.');
+  const body = input.body.trim();
+  if (!body) throw new Error('Escribe un comentario.');
+  const row = {
+    student_id: userId,
+    title: threadTitleFromBody(body),
+    body,
+    module_id: input.moduleId,
+    topic_id: input.topicId,
+    visibility: 'cohort' as const,
+    page_url: input.pageUrl.slice(0, 500),
+  };
+  let { data, error } = await supabase.from('student_qa_threads').insert(row).select().single();
+  if (error && /page_url/i.test(error.message)) {
+    const { page_url: _pageUrl, ...withoutUrl } = row;
+    ({ data, error } = await supabase.from('student_qa_threads').insert(withoutUrl).select().single());
+  }
+  throwIfError(error);
+  return data as QaThread;
+}
+
+export async function listTopicDiscussionDirectory(topicId: string): Promise<TopicDiscussionAuthor[]> {
+  const { data, error } = await supabase.rpc('topic_discussion_directory', { p_topic_id: topicId });
+  throwIfError(error);
+  return (data ?? []) as TopicDiscussionAuthor[];
+}
+
+export async function deleteQaThread(threadId: string): Promise<void> {
+  const { error } = await supabase.from('student_qa_threads').delete().eq('id', threadId);
+  throwIfError(error);
+}
+
+export async function deleteQaReply(replyId: string): Promise<void> {
+  const { error } = await supabase.from('student_qa_replies').delete().eq('id', replyId);
+  throwIfError(error);
+}
+
+export async function updateQaThreadStatus(
+  threadId: string,
+  status: QaThread['status']
+): Promise<QaThread> {
+  const { data, error } = await supabase
+    .from('student_qa_threads')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', threadId)
+    .select()
+    .single();
+  throwIfError(error);
+  return data as QaThread;
+}
+
+export async function listOpenCohortThreads(): Promise<QaThread[]> {
+  const { data, error } = await supabase
+    .from('student_qa_threads')
+    .select('*')
+    .eq('visibility', 'cohort')
+    .eq('status', 'open')
+    .order('created_at', { ascending: false })
+    .limit(80);
+  throwIfError(error);
+  return (data ?? []) as QaThread[];
+}
+
+export async function listMyCommentNotifications(): Promise<TopicCommentNotification[]> {
+  const { data: sessionData } = await supabase.auth.getUser();
+  const userId = sessionData.user?.id;
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('student_notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('type', 'topic_comment')
+    .order('created_at', { ascending: false })
+    .limit(40);
+  throwIfError(error);
+  return (data ?? []) as TopicCommentNotification[];
+}
+
+export async function markCommentNotificationRead(notificationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('student_notifications')
+    .update({ is_read: true })
+    .eq('id', notificationId);
+  throwIfError(error);
+}
+
+export function subscribeToMyCommentNotifications(
+  userId: string,
+  onChange: (row: TopicCommentNotification) => void
+): () => void {
+  if (!userId) return () => undefined;
+  const channel = supabase
+    .channel(`topic-comments-${userId}-${Math.random().toString(36).slice(2, 7)}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'student_notifications',
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload: { new: TopicCommentNotification }) => {
+        const row = payload.new;
+        if (!row?.id || row.type !== 'topic_comment') return;
+        onChange(row);
+      }
+    )
+    .subscribe();
+  return () => {
+    void supabase.removeChannel(channel);
+  };
 }
 
 export async function submitEmgReport(input: {

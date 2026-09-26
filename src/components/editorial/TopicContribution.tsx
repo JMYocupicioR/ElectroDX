@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BadgeCheck, PenLine, Plus, ClipboardList } from 'lucide-react';
 import { getProfileById } from '../../services/editorialService';
+import { useAuth } from '../../contexts/AuthProvider';
 
 export function ContributionBanner({
   meta,
@@ -111,20 +112,35 @@ export function ProposeModuleLink({ label = 'Proponer nuevo módulo' }: { label?
 export function ProposeQuizLink({
   moduleId,
   topicId,
+  hasQuiz = false,
+  prominent = false,
 }: {
   moduleId: string;
   topicId: string;
+  hasQuiz?: boolean;
+  prominent?: boolean;
 }) {
   const location = useLocation();
+  const { isAdmin, isEditor } = useAuth();
+  const staffEditor = isAdmin || isEditor;
   const params = new URLSearchParams({ moduleId, topicId });
+  const label = hasQuiz ? 'Modificar cuestionario' : 'Agregar cuestionario';
+  const to = staffEditor
+    ? `/admin/quizzes/${encodeURIComponent(topicId)}`
+    : `/colaborador/cuestionario?${params.toString()}`;
+
   return (
     <Link
-      to={`/colaborador/cuestionario?${params.toString()}`}
+      to={to}
       state={{ from: location.pathname + location.search }}
-      className={`${linkClass} text-purple-700 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/40 hover:bg-purple-100 dark:hover:bg-purple-900/30`}
+      className={
+        prominent
+          ? 'inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-purple-800 dark:text-purple-100 bg-purple-50 dark:bg-purple-950/40 border border-purple-300/70 dark:border-purple-700/50 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition'
+          : `${linkClass} text-purple-700 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/40 hover:bg-purple-100 dark:hover:bg-purple-900/30`
+      }
     >
-      <ClipboardList className="w-3.5 h-3.5" />
-      Proponer cuestionario
+      <ClipboardList className={prominent ? 'w-4 h-4' : 'w-3.5 h-3.5'} />
+      {label}
     </Link>
   );
 }
@@ -137,6 +153,8 @@ export function ContributorContentActions({
   showSubtopic = true,
   isLeafTopic = false,
   compact = false,
+  showQuiz = true,
+  hasQuiz = false,
 }: {
   moduleId: string;
   topicId?: string;
@@ -145,6 +163,8 @@ export function ContributorContentActions({
   showSubtopic?: boolean;
   isLeafTopic?: boolean;
   compact?: boolean;
+  showQuiz?: boolean;
+  hasQuiz?: boolean;
 }) {
   const wrapperClass = compact
     ? 'flex flex-wrap items-center gap-2'
@@ -160,8 +180,8 @@ export function ContributorContentActions({
       {topicId && parentPath && (
         <ProposeEditLink moduleId={moduleId} topicId={topicId} parentPath={parentPath} />
       )}
-      {isLeafTopic && topicId && (
-        <ProposeQuizLink moduleId={moduleId} topicId={topicId} />
+      {showQuiz && isLeafTopic && topicId && (
+        <ProposeQuizLink moduleId={moduleId} topicId={topicId} hasQuiz={hasQuiz} />
       )}
       {showSubtopic && (
         <ProposeSubtopicLink

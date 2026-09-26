@@ -21,8 +21,6 @@ import {
   Search,
   Video,
   Sparkles,
-  Bell,
-  UserCircle,
   Settings,
   LogOut,
   Play,
@@ -33,14 +31,13 @@ import { CourseSidebar } from './components/CourseSidebar';
 import { BRAND } from './config/brand';
 import { OfflineIndicator } from './components/OfflineButton';
 import { UserMenu } from './components/user/UserMenu';
+import { TeacherCommentBell } from './components/admin/TeacherCommentBell';
 import { useAuth } from './contexts/AuthProvider';
 import { useStaffViewStore } from './stores/staffViewStore';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
 import { useStudentPendingAssignments } from './hooks/useStudentPendingAssignments';
 import { isSupabaseConfigured } from './lib/supabase';
-import { flushProgressOutbox, getLastVisitedTopic, getStudentNotifications, type StudentNotification } from './services/studentService';
-import { fetchServerNotifications, mergeServerNotifications } from './services/assignmentSubmissionService';
-import { getStudentAssignments } from './services/studentPlanService';
+import { flushProgressOutbox, getLastVisitedTopic } from './services/studentService';
 
 function navClass(active: boolean) {
   return `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
@@ -93,7 +90,6 @@ export function Header() {
 
   const [courseSidebarOpen, setCourseSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [menuNotifs, setMenuNotifs] = useState<StudentNotification[]>([]);
 
   const isLoggedIn = Boolean(user);
   const showPublicNav = !isLoggedIn;
@@ -136,25 +132,6 @@ export function Header() {
     setMobileMenuOpen(false);
     setCourseSidebarOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (!mobileMenuOpen || !user?.id) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const assignments = await getStudentAssignments(user.id);
-        const local = getStudentNotifications(user.id, profile, [], assignments);
-        const server = await fetchServerNotifications(user.id);
-        const notifs = mergeServerNotifications(local, server);
-        if (!cancelled) setMenuNotifs(notifs.filter((n) => !n.isRead).slice(0, 3));
-      } catch {
-        if (!cancelled) setMenuNotifs([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [mobileMenuOpen, user?.id, profile]);
 
   const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico';
   const resumeTopic = user ? getLastVisitedTopic(user.id) : null;
@@ -266,6 +243,21 @@ export function Header() {
           </nav>
           )}
 
+          {isAdmin && !studentMode && (
+            <nav className="hidden lg:flex items-center" aria-label="Temas">
+              <button
+                type="button"
+                onClick={openCourseSidebar}
+                className={navClass(courseActive)}
+                aria-label="Abrir navegación de temas"
+                title="Navegación de temas y edición rápida del temario"
+              >
+                <PanelLeft className="w-4 h-4" />
+                <span>Temas</span>
+              </button>
+            </nav>
+          )}
+
           <div className="hidden lg:flex items-center gap-2">
             {/* Buscador Rápido Global (Cmd+K / Ctrl+K) */}
             <button
@@ -282,6 +274,8 @@ export function Header() {
             </button>
 
             <OfflineIndicator />
+
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && <TeacherCommentBell />}
 
             {isSupabaseConfigured && user && isAdmin && !studentMode && (
               <Link
@@ -345,6 +339,12 @@ export function Header() {
 
             <OfflineIndicator />
 
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && (
+              <div className="scale-90">
+                <TeacherCommentBell />
+              </div>
+            )}
+
             {isSupabaseConfigured && user && (
               <div className="scale-90">
                 <UserMenu />
@@ -353,13 +353,10 @@ export function Header() {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
               aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú de cuenta'}
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              {!mobileMenuOpen && isLoggedIn && (pendingCount > 0 || menuNotifs.length > 0) && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500" />
-              )}
             </button>
           </div>
         </div>
@@ -412,53 +409,22 @@ export function Header() {
                     </Link>
                   ) : null}
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Notificaciones</span>
-                      {(menuNotifs.length > 0 || pendingCount > 0) && (
-                        <span className="min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
-                          {menuNotifs.length || pendingCount}
-                        </span>
-                      )}
-                    </div>
-                    {menuNotifs.length === 0 ? (
-                      <p className="text-xs text-slate-500 px-1">No tienes avisos sin leer.</p>
-                    ) : (
-                      <div className="space-y-1">
-                        {menuNotifs.map((notif) => (
-                          <Link
-                            key={notif.id}
-                            to={notif.linkUrl || '/portal?tab=notifications'}
-                            onClick={closeMobileMenu}
-                            className="block p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
-                          >
-                            <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{notif.title}</p>
-                            <p className="text-[11px] text-slate-500 truncate">{notif.message}</p>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    <Link
-                      to="/portal?tab=notifications"
-                      onClick={closeMobileMenu}
-                      className="mt-1 flex items-center justify-between p-2.5 rounded-xl text-sm font-semibold text-indigo-600 dark:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Bell className="w-4 h-4" />
-                        Ver todas
-                      </span>
-                      <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={openCourseSidebar}
+                    className="w-full flex items-center gap-3 p-3 rounded-2xl bg-blue-600 text-white text-left shadow-md shadow-blue-500/20"
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                      <BookOpen className="w-4 h-4" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[10px] font-bold uppercase tracking-wide text-blue-100">Temario</span>
+                      <span className="block text-sm font-semibold">Ver temas del curso</span>
+                    </span>
+                  </button>
 
                   <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Cuenta</span>
-                    <MobileNavRow
-                      to="/perfil"
-                      onClick={closeMobileMenu}
-                      icon={<UserCircle className="w-4 h-4 text-indigo-500" />}
-                      label="Configurar perfil"
-                    />
                     <MobileNavRow
                       to="/cuenta"
                       onClick={closeMobileMenu}

@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import { ContributionBanner, ContributorContentActions, ProposeQuizLink } from '../editorial/TopicContribution';
 import { QuizGate } from '../quiz/QuizGate';
 import { TopicStudyTools } from '../student/TopicStudyTools';
+import { TopicDiscussion } from '../student/TopicDiscussion';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { OfflineTopicBadge } from '../OfflineTopicBadge';
 import { getQuizFlagForTopic } from '../../services/quizService';
@@ -278,12 +279,16 @@ function NestedTopicSections({
   parentIndex,
   registerRef,
   headingLevel = 3,
+  moduleId,
+  topicHasQuiz,
 }: {
   topics: Topic[];
   lang: 'es' | 'en';
   parentIndex: string;
   registerRef: (id: string, el: HTMLElement | null) => void;
   headingLevel?: 3 | 4;
+  moduleId?: string;
+  topicHasQuiz?: (topicId: string) => boolean;
 }) {
   const Heading = headingLevel === 3 ? 'h3' : 'h4';
   return (
@@ -313,6 +318,19 @@ function NestedTopicSections({
             <div className="mt-3">
               <TopicBody topic={child} lang={lang} headingLevel={headingLevel === 3 ? 4 : 5} />
             </div>
+            {!nested && moduleId && topicHasQuiz && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/40 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {topicHasQuiz(child.id) ? 'Este tema ya tiene cuestionario' : 'Este tema aún no tiene cuestionario'}
+                </p>
+                <ProposeQuizLink
+                  moduleId={moduleId}
+                  topicId={child.id}
+                  hasQuiz={topicHasQuiz(child.id)}
+                  prominent
+                />
+              </div>
+            )}
             {nested && (
               <div className="mt-4 ml-3 sm:ml-4 pl-3 sm:pl-4 border-l border-slate-200/70 dark:border-slate-700/50">
                 <NestedTopicSections
@@ -321,6 +339,8 @@ function NestedTopicSections({
                   parentIndex={`${parentIndex}.${i + 1}`}
                   registerRef={registerRef}
                   headingLevel={4}
+                  moduleId={moduleId}
+                  topicHasQuiz={topicHasQuiz}
                 />
               </div>
             )}
@@ -340,6 +360,7 @@ function TocTopicTree({
   depth = 0,
   canProposeContent,
   moduleId,
+  topicHasQuiz,
 }: {
   topics: Topic[];
   lang: 'es' | 'en';
@@ -349,6 +370,7 @@ function TocTopicTree({
   depth?: number;
   canProposeContent?: boolean;
   moduleId?: string;
+  topicHasQuiz?: (topicId: string) => boolean;
 }) {
   return (
     <nav className={depth === 0 ? 'space-y-1' : 'mt-0.5 ml-3 space-y-0.5 border-l border-slate-200/70 dark:border-slate-700/40 pl-2'}>
@@ -388,8 +410,12 @@ function TocTopicTree({
               )}
             </button>
             {canProposeContent && moduleId && !hasKids && (
-              <div className="pl-7 pr-1">
-                <ProposeQuizLink moduleId={moduleId} topicId={child.id} />
+              <div className="pl-7 pr-1 pb-1">
+                <ProposeQuizLink
+                  moduleId={moduleId}
+                  topicId={child.id}
+                  hasQuiz={topicHasQuiz?.(child.id)}
+                />
               </div>
             )}
             {hasKids && (
@@ -402,6 +428,7 @@ function TocTopicTree({
                 depth={depth + 1}
                 canProposeContent={canProposeContent}
                 moduleId={moduleId}
+                topicHasQuiz={topicHasQuiz}
               />
             )}
           </div>
@@ -675,6 +702,10 @@ export default function TopicPage() {
     return { title: nextAcross.topicTitle, url: nextAcross.url };
   }, [allFlat, currentIndex, completedTopicIds, lang, mod, pathParts, quizGate, topic]);
 
+  const topicHasQuiz = useCallback(
+    (topicId: string) => quizGate.quizTopicIds.has(topicId),
+    [quizGate]
+  );
   const hasEvaluation = Boolean(quizFlag && quizFlag.question_count > 0);
   const evaluationPassed = Boolean(
     quizFlag && quizGate.passedQuizTopicIds.has(quizFlag.topic_id)
@@ -891,16 +922,7 @@ export default function TopicPage() {
 
               {hasChildContent && (
                 <p className="text-xs text-violet-600 dark:text-violet-400 mb-2">
-                  Los cuestionarios se crean por subtema. Usa &quot;Proponer cuestionario&quot; en cada sección numerada abajo,
-                  o ve a{' '}
-                  <Link
-                    to="/colaborador/cuestionario"
-                    state={{ from: location.pathname + location.search }}
-                    className="underline font-medium"
-                  >
-                    Colaborar → Nuevo cuestionario
-                  </Link>
-                  .
+                  Al final de cada subtema puedes agregar o modificar su cuestionario.
                 </p>
               )}
               <ContributorContentActions
@@ -910,6 +932,7 @@ export default function TopicPage() {
                 parentId={pathParts.length > 1 ? pathParts[pathParts.length - 2] : null}
                 isLeafTopic={isLeafTopic}
                 showSubtopic={!isLeafTopic || !hasChildContent}
+                showQuiz={false}
               />
             </div>
           )}
@@ -942,6 +965,20 @@ export default function TopicPage() {
               )}
               {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
               {topicPdfList(topic).length > 0 && <PdfDocumentsSection topic={topic} />}
+            </div>
+          )}
+
+          {canProposeContent && mod && isLeafTopic && (
+            <div className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/60 dark:border-slate-700/40 bg-white/70 dark:bg-slate-800/40 px-4 py-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {topicHasQuiz(topic.id) ? 'Este tema ya tiene cuestionario' : 'Este tema aún no tiene cuestionario'}
+              </p>
+              <ProposeQuizLink
+                moduleId={mod.id}
+                topicId={topic.id}
+                hasQuiz={topicHasQuiz(topic.id)}
+                prominent
+              />
             </div>
           )}
 
@@ -1005,6 +1042,7 @@ export default function TopicPage() {
                             parentId={topic.id}
                             isLeafTopic
                             showSubtopic={false}
+                            showQuiz={false}
                             compact
                           />
                         </div>
@@ -1025,9 +1063,24 @@ export default function TopicPage() {
                                 lang={lang}
                                 parentIndex={String(i + 1)}
                                 registerRef={registerRef}
+                                moduleId={canProposeContent && mod ? mod.id : undefined}
+                                topicHasQuiz={canProposeContent ? topicHasQuiz : undefined}
                               />
                             )}
                           </div>
+                        </div>
+                      )}
+                      {canProposeContent && mod && !hasGrandchildren && (
+                        <div className="px-5 sm:px-6 pb-5 pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700/40">
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {topicHasQuiz(child.id) ? 'Este tema ya tiene cuestionario' : 'Este tema aún no tiene cuestionario'}
+                          </p>
+                          <ProposeQuizLink
+                            moduleId={mod.id}
+                            topicId={child.id}
+                            hasQuiz={topicHasQuiz(child.id)}
+                            prominent
+                          />
                         </div>
                       )}
                     </div>
@@ -1043,14 +1096,17 @@ export default function TopicPage() {
           )}
 
           {user && mod && topic && (
-            <TopicStudyTools
-              moduleId={mod.id}
-              topicId={topic.id}
-              url={location.pathname}
-              title={lt.title}
-              pearls={lt.clinicalPearls}
-              keyPoints={lt.keyPoints}
-            />
+            <>
+              <TopicDiscussion moduleId={mod.id} topicId={topic.id} />
+              <TopicStudyTools
+                moduleId={mod.id}
+                topicId={topic.id}
+                url={location.pathname}
+                title={lt.title}
+                pearls={lt.clinicalPearls}
+                keyPoints={lt.keyPoints}
+              />
+            </>
           )}
 
           {quizFlag && quizFlag.question_count > 0 && mod && (
@@ -1238,6 +1294,7 @@ export default function TopicPage() {
                         scrollToSection={scrollToSection}
                         canProposeContent={canProposeContent}
                         moduleId={mod?.id}
+                        topicHasQuiz={topicHasQuiz}
                       />
                     </>
                   );

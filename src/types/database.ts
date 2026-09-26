@@ -492,6 +492,7 @@ export interface Database {
           body: string;
           status: 'open' | 'answered' | 'closed';
           visibility?: 'private' | 'cohort';
+          page_url?: string | null;
           created_at: string;
         };
         Insert: {
@@ -501,8 +502,14 @@ export interface Database {
           module_id?: string | null;
           topic_id?: string | null;
           visibility?: 'private' | 'cohort';
+          page_url?: string | null;
         };
-        Update: { status?: 'open' | 'answered' | 'closed'; visibility?: 'private' | 'cohort' };
+        Update: {
+          status?: 'open' | 'answered' | 'closed';
+          visibility?: 'private' | 'cohort';
+          page_url?: string | null;
+          updated_at?: string;
+        };
       };
       student_qa_replies: {
         Row: { id: string; thread_id: string; author_id: string; body: string; created_at: string };
@@ -836,6 +843,10 @@ export interface Database {
       get_exam_gap_analysis: { Args: { p_user_id?: string | null }; Returns: unknown };
       issue_my_certificate: { Args: { p_course_id?: string | null }; Returns: unknown };
       verify_certificate: { Args: { p_folio: string }; Returns: unknown };
+      topic_discussion_directory: {
+        Args: { p_topic_id: string };
+        Returns: { user_id: string; display_name: string; is_staff: boolean }[];
+      };
     };
     Views: {
       public_specialist_profiles: {

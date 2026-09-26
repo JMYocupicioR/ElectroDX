@@ -29,7 +29,8 @@ WITH expected_functions AS (
       ('submit_exam_session', 'uuid, jsonb, integer'),
       ('get_exam_session_review', 'uuid'),
       ('get_exam_gap_analysis', 'uuid'),
-      ('mark_portal_guide_seen', 'smallint')
+      ('mark_portal_guide_seen', 'smallint'),
+      ('topic_discussion_directory', 'text')
   ) AS t(proname, args)
 ),
 actual_functions AS (

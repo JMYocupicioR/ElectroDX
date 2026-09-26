@@ -294,7 +294,7 @@ function ModuleTopicRow({
 
             {canProposeContent && isLeaf && (
               <div className="mt-2" onClick={(e) => e.stopPropagation()}>
-                <ProposeQuizLink moduleId={moduleId} topicId={topic.id} />
+                <ProposeQuizLink moduleId={moduleId} topicId={topic.id} hasQuiz={hasQuiz(topic.id)} />
               </div>
             )}
             {canProposeContent && depth === 0 && (

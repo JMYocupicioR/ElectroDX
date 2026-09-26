@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Bookmark, NotebookPen, RefreshCw, FileText, MessageCircle, Calendar, Target, AlertTriangle, BarChart3 } from 'lucide-react';
 import {
   buildCalendarUrls,
@@ -7,14 +8,17 @@ import {
   listBookmarks,
   listDueFlashcards,
   listEmgReports,
+  listMyLessonNotes,
   listQaReplies,
   listQaThreads,
   replyQaThread,
   reviewFlashcard,
   submitEmgReport,
+  upsertLessonNote,
   type EmgReportSubmission,
   type Flashcard,
   type LessonBookmark,
+  type LessonNote,
   type QaReply,
   type QaThread,
 } from '../../services/studentToolsService';
@@ -22,7 +26,7 @@ import { portalCopy } from '../../i18n/portal';
 import { useSettingsStore } from '../../stores/settingsStore';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { StudentLearningPlan } from '../../types/studentPlan';
-import { getTopicPublicUrl } from '../../utils/adminUtils';
+import { getTopicLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 
 export function StudentStudyHub({
   attempts = [],
@@ -45,7 +49,9 @@ export function StudentStudyHub({
   const [reportUrl, setReportUrl] = useState('');
   const [qaTitle, setQaTitle] = useState('');
   const [qaBody, setQaBody] = useState('');
-  const [qaCohort, setQaCohort] = useState(false);
+  const [notes, setNotes] = useState<LessonNote[]>([]);
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const [noteSaved, setNoteSaved] = useState<string | null>(null);
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [revealedCard, setRevealedCard] = useState<string | null>(null);
@@ -56,16 +62,19 @@ export function StudentStudyHub({
   const reload = async () => {
     setError(null);
     try {
-      const [b, c, t, r] = await Promise.all([
+      const [b, c, t, r, n] = await Promise.all([
         listBookmarks(),
         listDueFlashcards(),
         listQaThreads(),
         listEmgReports(),
+        listMyLessonNotes(),
       ]);
       setBookmarks(b);
       setCards(c);
-      setThreads(t);
+      setThreads(t.filter((row) => row.visibility !== 'cohort' || !row.topic_id));
       setReports(r);
+      setNotes(n);
+      setNoteDrafts(Object.fromEntries(n.map((row) => [row.id, row.body])));
     } catch (e) {
       setError(e instanceof Error ? e.message : copy.loadError);
     }
@@ -346,7 +355,7 @@ export function StudentStudyHub({
               await createQaThread({
                 title: qaTitle,
                 body: qaBody,
-                visibility: qaCohort ? 'cohort' : 'private',
+                visibility: 'private',
               });
               setQaTitle('');
               setQaBody('');
@@ -357,11 +366,7 @@ export function StudentStudyHub({
           }}
         >
           <input className="w-full min-h-[44px] rounded-lg border px-3 dark:bg-slate-800" placeholder="Asunto" value={qaTitle} onChange={(e) => setQaTitle(e.target.value)} required />
-          <textarea className="w-full rounded-lg border px-3 py-2 dark:bg-slate-800" rows={3} placeholder="Pregunta clínica (será moderada por el docente)" value={qaBody} onChange={(e) => setQaBody(e.target.value)} required />
-          <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={qaCohort} onChange={(e) => setQaCohort(e.target.checked)} />
-            Visible para la cohorte
-          </label>
+          <textarea className="w-full rounded-lg border px-3 py-2 dark:bg-slate-800" rows={3} placeholder="Pregunta privada para el docente" value={qaBody} onChange={(e) => setQaBody(e.target.value)} required />
           <button type="submit" className="min-h-[44px] px-4 rounded-xl bg-blue-600 text-white font-semibold">
             Enviar pregunta
           </button>
@@ -443,10 +448,53 @@ export function StudentStudyHub({
         </div>
       </section>
 
-      <p className="text-xs text-slate-400 flex items-center gap-1">
-        <NotebookPen className="w-3.5 h-3.5" />
-        Los apuntes por lección se guardan dentro de cada tema del temario.
-      </p>
+      <section className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <h3 className="font-bold flex items-center gap-2 mb-3">
+          <NotebookPen className="w-4 h-4" /> {copy.notes}
+        </h3>
+        {notes.length === 0 ? (
+          <p className="text-sm text-slate-500">{copy.empty}</p>
+        ) : (
+          <ul className="space-y-3">
+            {notes.map((note) => (
+              <li key={note.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800 space-y-2">
+                <Link
+                  className="text-sm font-semibold text-blue-600 dark:text-cyan-400"
+                  to={getTopicPublicUrl(note.module_id, note.topic_id) ?? '#'}
+                >
+                  {getTopicLabel(note.module_id, note.topic_id)}
+                </Link>
+                <textarea
+                  className="w-full min-h-[72px] rounded-lg border px-3 py-2 text-sm dark:bg-slate-900"
+                  value={noteDrafts[note.id] ?? note.body}
+                  onChange={(e) => setNoteDrafts((prev) => ({ ...prev, [note.id]: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  className="min-h-[40px] px-3 rounded-lg bg-blue-600 text-white text-xs font-semibold"
+                  onClick={async () => {
+                    try {
+                      const savedNote = await upsertLessonNote({
+                        topicId: note.topic_id,
+                        moduleId: note.module_id,
+                        body: noteDrafts[note.id] ?? note.body,
+                      });
+                      setNotes((prev) => prev.map((row) => (row.id === note.id ? savedNote : row)));
+                      setNoteSaved(note.id);
+                      setError(null);
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : copy.submitError);
+                    }
+                  }}
+                >
+                  Guardar apunte
+                </button>
+                {noteSaved === note.id && <span className="ml-2 text-xs text-emerald-600">Guardado</span>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

@@ -170,7 +170,7 @@ export function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 mt-2 w-84 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-300/40 dark:shadow-black/60 overflow-hidden z-[60]"
+          className="absolute right-0 mt-2 w-84 max-h-[calc(var(--app-height,100dvh)-env(safe-area-inset-bottom,0px)-5.75rem)] overflow-x-hidden overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-300/40 dark:shadow-black/60 z-[60]"
         >
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/40">
             <div className="flex items-center gap-3">
