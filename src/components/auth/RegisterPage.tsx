@@ -20,6 +20,7 @@ import {
   FileCheck,
   Plus,
   X,
+  AlertCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { postLoginPath } from '../../utils/postLoginPath';
@@ -98,8 +99,14 @@ export default function RegisterPage() {
   const [residencyYear, setResidencyYear] = useState('R2');
   const [institution, setInstitution] = useState('');
   const [academicInstitution, setAcademicInstitution] = useState('');
+  const fullNameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
   const institutionInputRef = useRef<HTMLInputElement>(null);
   const academicInputRef = useRef<HTMLInputElement>(null);
+  const termsInputRef = useRef<HTMLInputElement>(null);
+  const termsContainerRef = useRef<HTMLLabelElement>(null);
+  const [highlightField, setHighlightField] = useState<string | null>(null);
   const [cedula, setCedula] = useState('');
   const [comefyrId, setComefyrId] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -136,8 +143,97 @@ export default function RegisterPage() {
     return score; // 0 a 4
   }, [password]);
 
-  const canProceedStep1 = fullName.trim().length >= 3 && email.includes('@') && password.length >= 8;
-  const canProceedStep2 = institution.trim().length >= 3;
+  // Detección detallada de qué campos faltan por completar
+  const missingStep1 = useMemo(() => {
+    const list: { key: string; label: string; ref: React.RefObject<HTMLInputElement> }[] = [];
+    if (fullName.trim().length < 3) {
+      list.push({
+        key: 'fullName',
+        label: fullName.trim().length === 0 ? 'Nombre completo' : 'Nombre completo (mín. 3 letras)',
+        ref: fullNameInputRef,
+      });
+    }
+    if (!email.trim() || !email.includes('@')) {
+      list.push({
+        key: 'email',
+        label: !email.trim() ? 'Correo electrónico' : 'Correo electrónico válido',
+        ref: emailInputRef,
+      });
+    }
+    if (password.length < 8) {
+      list.push({
+        key: 'password',
+        label: password.length === 0 ? 'Contraseña (mín. 8 caracteres)' : `Contraseña (${password.length}/8 caracteres)`,
+        ref: passwordInputRef,
+      });
+    }
+    return list;
+  }, [fullName, email, password]);
+
+  const canProceedStep1 = missingStep1.length === 0;
+
+  const missingStep2 = useMemo(() => {
+    const list: { key: string; label: string; ref: React.RefObject<HTMLInputElement> }[] = [];
+    if (institution.trim().length < 3) {
+      list.push({
+        key: 'institution',
+        label: institution.trim().length === 0 ? 'Sede Hospitalaria (Hospital / Clínica)' : 'Sede Hospitalaria (mín. 3 caracteres)',
+        ref: institutionInputRef,
+      });
+    }
+    return list;
+  }, [institution]);
+
+  const canProceedStep2 = missingStep2.length === 0;
+
+  const missingStep3 = useMemo(() => {
+    const list: { key: string; label: string; ref: React.RefObject<HTMLInputElement> }[] = [];
+    if (!acceptTerms) {
+      list.push({
+        key: 'acceptTerms',
+        label: 'Aceptar confirmación de términos',
+        ref: termsInputRef,
+      });
+    }
+    return list;
+  }, [acceptTerms]);
+
+  const canProceedStep3 = missingStep3.length === 0 && !loading;
+
+  const currentMissing = useMemo(() => {
+    if (step === 1) return missingStep1;
+    if (step === 2) return missingStep2;
+    if (step === 3) return missingStep3;
+    return [];
+  }, [step, missingStep1, missingStep2, missingStep3]);
+
+  const canProceedCurrentStep = currentMissing.length === 0 && !loading;
+
+  // Texto resumido para mostrar a un lado del botón
+  const missingSummaryText = useMemo(() => {
+    if (currentMissing.length === 0) return '';
+    if (currentMissing.length === 1) return currentMissing[0].label;
+    if (currentMissing.length === 2) return `${currentMissing[0].label} y ${currentMissing[1].label}`;
+    return `${currentMissing[0].label}, ${currentMissing[1].label} (+${currentMissing.length - 2} más)`;
+  }, [currentMissing]);
+
+  // Enfocar y resaltar el primer campo faltante
+  const focusFirstMissingField = () => {
+    if (currentMissing.length > 0) {
+      const first = currentMissing[0];
+      setHighlightField(first.key);
+      if (first.key === 'acceptTerms' && termsContainerRef.current) {
+        termsContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        termsInputRef.current?.focus();
+      } else if (first.ref && first.ref.current) {
+        first.ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        first.ref.current.focus();
+      }
+      setTimeout(() => {
+        setHighlightField(null);
+      }, 2500);
+    }
+  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -359,42 +455,83 @@ export default function RegisterPage() {
                     onSubmit={(e) => {
                       e.preventDefault();
                       if (canProceedStep1) setStep(2);
+                      else focusFirstMissingField();
                     }}
                   >
                   {/* Nombre Completo */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Nombre completo con título profesional *
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                        Nombre completo con título profesional *
+                      </label>
+                      {fullName.trim().length >= 3 ? (
+                        <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-400" /> Completo
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400/90 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-amber-400" /> Requerido (mín. 3 letras)
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
-                      <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <User className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition pointer-events-none ${
+                        fullName.trim().length >= 3 ? 'text-emerald-400' : 'text-slate-500'
+                      }`} />
                       <input
+                        ref={fullNameInputRef}
                         type="text"
                         required
                         autoComplete="name"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder="ej. Dr. Juan Pablo Morales Ruiz"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border text-white placeholder-slate-500 text-sm outline-none transition ${
+                          highlightField === 'fullName'
+                            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20 animate-pulse'
+                            : fullName.trim().length >= 3
+                            ? 'border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400'
+                            : 'border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+                        }`}
                       />
                     </div>
                   </div>
 
                   {/* Correo Electrónico */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Correo electrónico *
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                        Correo electrónico *
+                      </label>
+                      {email.trim().length > 0 && email.includes('@') ? (
+                        <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-400" /> Válido
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400/90 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-amber-400" /> Correo válido requerido
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
-                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition pointer-events-none ${
+                        email.trim().length > 0 && email.includes('@') ? 'text-emerald-400' : 'text-slate-500'
+                      }`} />
                       <input
+                        ref={emailInputRef}
                         type="email"
                         required
                         autoComplete="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="tu_correo@hospital.com.mx"
-                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
+                        className={`w-full pl-10 pr-4 py-3 rounded-xl bg-slate-950 border text-white placeholder-slate-500 text-sm outline-none transition ${
+                          highlightField === 'email'
+                            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20 animate-pulse'
+                            : email.trim().length > 0 && email.includes('@')
+                            ? 'border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400'
+                            : 'border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+                        }`}
                       />
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">
@@ -404,19 +541,39 @@ export default function RegisterPage() {
 
                   {/* Contraseña Segura */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                      Contraseña *
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                        Contraseña *
+                      </label>
+                      {password.length >= 8 ? (
+                        <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-400" /> Longitud válida
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-400/90 font-medium bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-amber-400" /> Mín. 8 caracteres ({password.length}/8)
+                        </span>
+                      )}
+                    </div>
                     <div className="relative">
-                      <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition pointer-events-none ${
+                        password.length >= 8 ? 'text-emerald-400' : 'text-slate-500'
+                      }`} />
                       <input
+                        ref={passwordInputRef}
                         type={showPassword ? 'text' : 'password'}
                         required
                         autoComplete="new-password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Mínimo 8 caracteres, números y mayúsculas"
-                        className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
+                        className={`w-full pl-10 pr-10 py-3 rounded-xl bg-slate-950 border text-white placeholder-slate-500 text-sm outline-none transition ${
+                          highlightField === 'password'
+                            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20 animate-pulse'
+                            : password.length >= 8
+                            ? 'border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400'
+                            : 'border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+                        }`}
                       />
                       <button
                         type="button"
@@ -545,23 +702,36 @@ export default function RegisterPage() {
                   {/* Sede Hospitalaria */}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                        Sede Hospitalaria (Hospital / Clínica) *
+                      <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>Sede Hospitalaria (Hospital / Clínica) *</span>
                       </label>
-                      {institution && (
-                        <button
-                          type="button"
-                          onClick={() => setInstitution('')}
-                          className="text-[11px] text-slate-400 hover:text-rose-400 transition flex items-center gap-1 cursor-pointer"
-                          title="Limpiar sede"
-                        >
-                          <X className="w-3 h-3" /> Limpiar
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {institution.trim().length >= 3 ? (
+                          <span className="text-[10px] text-emerald-400 font-medium bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-400" /> Sede registrada
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-amber-400 font-medium bg-amber-500/10 border border-amber-500/25 px-2 py-0.5 rounded-md flex items-center gap-1 animate-pulse">
+                            <AlertCircle className="w-3 h-3 text-amber-400" /> Obligatorio para continuar
+                          </span>
+                        )}
+                        {institution && (
+                          <button
+                            type="button"
+                            onClick={() => setInstitution('')}
+                            className="text-[11px] text-slate-400 hover:text-rose-400 transition flex items-center gap-1 cursor-pointer"
+                            title="Limpiar sede"
+                          >
+                            <X className="w-3 h-3" /> Limpiar
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <div className="relative">
-                      <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                      <Building2 className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 transition pointer-events-none ${
+                        institution.trim().length >= 3 ? 'text-emerald-400' : 'text-slate-500'
+                      }`} />
                       <input
                         ref={institutionInputRef}
                         type="text"
@@ -570,7 +740,13 @@ export default function RegisterPage() {
                         value={institution}
                         onChange={(e) => setInstitution(e.target.value)}
                         placeholder={'ej. T1: "Ignacio García Téllez" IMSS Mérida, INR, CMN Siglo XXI...'}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition"
+                        className={`w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border text-white placeholder-slate-500 text-sm outline-none transition ${
+                          highlightField === 'institution'
+                            ? 'border-amber-400 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20 animate-pulse'
+                            : institution.trim().length >= 3
+                            ? 'border-emerald-500/40 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400'
+                            : 'border-slate-700/80 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500'
+                        }`}
                       />
                     </div>
 
@@ -584,7 +760,14 @@ export default function RegisterPage() {
                     {/* Sugerencias Rápidas compactas */}
                     <div className="mt-1.5">
                       <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
-                        <span>Sedes frecuentes (un solo clic):</span>
+                        <span className="flex items-center gap-1">
+                          <span>Sedes frecuentes (un solo clic):</span>
+                          {!institution.trim() && (
+                            <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">
+                              ← Elige tu sede aquí
+                            </span>
+                          )}
+                        </span>
                         {institution && !POPULAR_HOSPITALS.includes(institution) && institution.trim().length >= 3 && (
                           <span className="text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
                             <Check className="w-2.5 h-2.5" /> Sede personalizada
@@ -644,6 +827,9 @@ export default function RegisterPage() {
                         Institución Académica / Universidad de Egreso
                       </label>
                       <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          Opcional
+                        </span>
                         {academicInstitution && (
                           <button
                             type="button"
@@ -772,16 +958,37 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Aceptación de Términos */}
-                  <label className="flex items-start gap-3 pt-3 cursor-pointer">
+                  <label
+                    ref={termsContainerRef}
+                    className={`flex items-start gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                      highlightField === 'acceptTerms'
+                        ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/50 shadow-lg shadow-amber-500/20 animate-pulse'
+                        : !acceptTerms
+                        ? 'border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50'
+                        : 'border-emerald-500/40 bg-emerald-500/5'
+                    }`}
+                  >
                     <input
+                      ref={termsInputRef}
                       type="checkbox"
                       checked={acceptTerms}
                       onChange={(e) => setAcceptTerms(e.target.checked)}
-                      className="mt-1 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
+                      className="mt-0.5 rounded bg-slate-900 border-slate-700 text-cyan-500 focus:ring-cyan-500"
                     />
-                    <span className="text-xs text-slate-400 leading-relaxed">
-                      Confirmo que soy personal médico o residente en formación y acepto que el contenido de {BRAND.name} es exclusivo para fines de educación y consulta profesional médica.
-                    </span>
+                    <div className="space-y-1">
+                      <span className="text-xs text-slate-300 leading-relaxed block">
+                        Confirmo que soy personal médico o residente en formación y acepto que el contenido de {BRAND.name} es exclusivo para fines de educación y consulta profesional médica.
+                      </span>
+                      {!acceptTerms ? (
+                        <span className="text-[10px] text-amber-400 font-medium flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3 text-amber-400" /> Casilla obligatoria para completar tu registro
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                          <Check className="w-3 h-3 text-emerald-400" /> Términos aceptados
+                        </span>
+                      )}
+                    </div>
                   </label>
                 </motion.div>
               )}
@@ -858,52 +1065,113 @@ export default function RegisterPage() {
 
           {/* Botones de Navegación del Wizard (Pasos 1, 2, 3) */}
           {step < 4 && (
-            <div className="pt-8 mt-6 border-t border-slate-800 flex items-center justify-between">
-              {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={() => setStep((s) => (s - 1) as any)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Anterior
-                </button>
-              ) : (
-                <div />
-              )}
+            <div className="pt-8 mt-6 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+              <div>
+                {step > 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => setStep((s) => (s - 1) as any)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Anterior
+                  </button>
+                ) : (
+                  <div />
+                )}
+              </div>
 
-              {step === 1 && (
-                <button
-                  type="button"
-                  disabled={!canProceedStep1}
-                  onClick={() => setStep(2)}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 disabled:pointer-events-none transition shadow-lg shadow-blue-500/20"
-                >
-                  Continuar <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
+              {/* Contenedor derecho: Recordatorio al lado del botón de Continuar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
+                {/* Recordatorio visual de lo que falta llenar */}
+                {!canProceedCurrentStep ? (
+                  <button
+                    type="button"
+                    onClick={focusFirstMissingField}
+                    className="group flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 text-left transition-all duration-200 cursor-pointer shadow-sm shadow-amber-950/30 max-w-sm"
+                    title="Haz clic para ubicar el campo que falta llenar"
+                  >
+                    <div className="p-1 rounded-lg bg-amber-500/20 text-amber-400 shrink-0 group-hover:scale-110 transition-transform">
+                      <AlertCircle className="w-4 h-4 animate-pulse" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90 leading-tight">
+                        Te falta llenar:
+                      </p>
+                      <p className="text-xs font-semibold text-slate-200 group-hover:text-white truncate max-w-[220px] sm:max-w-[260px] leading-tight mt-0.5">
+                        {missingSummaryText}
+                      </p>
+                    </div>
+                  </button>
+                ) : (
+                  <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Listo para avanzar</span>
+                  </div>
+                )}
 
-              {step === 2 && (
-                <button
-                  type="button"
-                  disabled={!canProceedStep2}
-                  onClick={() => setStep(3)}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 disabled:pointer-events-none transition shadow-lg shadow-blue-500/20"
-                >
-                  Continuar <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
+                {/* Botón Continuar / Completar Registro */}
+                {step === 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (canProceedStep1) {
+                        setStep(2);
+                      } else {
+                        focusFirstMissingField();
+                      }
+                    }}
+                    className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-lg ${
+                      canProceedStep1
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20 cursor-pointer'
+                        : 'bg-slate-800 text-slate-400 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 hover:text-slate-300'
+                    }`}
+                  >
+                    Continuar <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
 
-              {step === 3 && (
-                <button
-                  type="button"
-                  disabled={loading || !acceptTerms}
-                  onClick={handleSubmit}
-                  className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider disabled:opacity-50 transition shadow-lg shadow-cyan-500/25"
-                >
-                  {loading ? 'Creando cuenta...' : 'Completar Registro Médico'}
-                  <Check className="w-4 h-4" />
-                </button>
-              )}
+                {step === 2 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (canProceedStep2) {
+                        setStep(3);
+                      } else {
+                        focusFirstMissingField();
+                      }
+                    }}
+                    className={`inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-lg ${
+                      canProceedStep2
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20 cursor-pointer'
+                        : 'bg-slate-800 text-slate-400 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 hover:text-slate-300'
+                    }`}
+                  >
+                    Continuar <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+
+                {step === 3 && (
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      if (canProceedStep3) {
+                        handleSubmit();
+                      } else {
+                        focusFirstMissingField();
+                      }
+                    }}
+                    className={`inline-flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition shadow-lg ${
+                      canProceedStep3
+                        ? 'bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:opacity-95 text-white shadow-cyan-500/25 cursor-pointer'
+                        : 'bg-slate-800 text-slate-400 border border-slate-700/60 cursor-pointer hover:border-amber-500/40 hover:text-slate-300'
+                    }`}
+                  >
+                    {loading ? 'Creando cuenta...' : 'Completar Registro Médico'}
+                    <Check className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
