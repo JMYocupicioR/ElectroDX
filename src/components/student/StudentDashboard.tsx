@@ -32,6 +32,7 @@ import {
   X,
   Smartphone,
   GraduationCap,
+  Scale,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
@@ -39,6 +40,8 @@ import {
   getUpcomingWorkshops,
   getLiveSessionUrgency,
 } from '../../services/courseService';
+import { getCourseTeachers } from '../../services/editorialService';
+import EditorialCommitteeModal from '../editorial/EditorialCommitteeModal';
 import PendingTasksAlertModal from './PendingTasksAlertModal';
 import { StudentPortalGuide } from './StudentPortalGuide';
 import type { PortalGuideCourseState } from './portalGuideSteps';
@@ -50,7 +53,7 @@ import {
   slideToGuideStep,
   PORTAL_GUIDE_VERSION,
 } from '../../services/portalGuideService';
-import type { PortalWelcomeSlide } from '../../types/database';
+import type { PortalWelcomeSlide, Profile } from '../../types/database';
 import {
   getNotificationPermission,
   requestNotificationPermission,
@@ -63,6 +66,8 @@ import {
   calculateStudentMetrics,
   checkCertificationEligibility,
   getLastVisitedTopic,
+  fetchLastVisitedTopic,
+  setLastVisitedTopic,
   getStudentNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
@@ -215,7 +220,9 @@ export default function StudentDashboard() {
   const [submitNotes, setSubmitNotes] = useState('');
   const [submitAttachmentCount, setSubmitAttachmentCount] = useState(0);
   const [savingSubmission, setSavingSubmission] = useState(false);
-  const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
+  const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(() =>
+    user ? getLastVisitedTopic(user.id) : null
+  );
 
   const selectTab = (tab: typeof activeTab) => {
     setActiveTab(tab);
@@ -269,12 +276,35 @@ export default function StudentDashboard() {
   const [retakeReason, setRetakeReason] = useState('');
   const [sendingRetake, setSendingRetake] = useState(false);
   const [searchModuleQuery, setSearchModuleQuery] = useState('');
+  const [moduleCourseFilter, setModuleCourseFilter] = useState<string>('todos');
   const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
   const [quizFilter, setQuizFilter] = useState<'all' | 'pending' | 'passed'>('all');
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [completedTopicsSet, setCompletedTopicsSet] = useState<Set<string>>(() =>
     user ? getCompletedTopics(user.id) : new Set()
   );
+  const [teachers, setTeachers] = useState<Profile[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [committeeModalOpen, setCommitteeModalOpen] = useState(false);
+
+  // Cargar docentes del curso (colaboradores docentes)
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingTeachers(true);
+    getCourseTeachers()
+      .then((data) => {
+        if (!cancelled) setTeachers(data);
+      })
+      .catch((err) => {
+        console.warn('[StudentDashboard] Error cargando docentes del curso:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingTeachers(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Load user data & sync cloud topics
   useEffect(() => {
@@ -293,8 +323,9 @@ export default function StudentDashboard() {
       settleWithTimeout(getStudentActivityAndStreak(user.id), EMPTY_STREAK, 'streak'),
       settleWithTimeout(fetchStudentCompletedTopics(user.id), getCompletedTopics(user.id), 'completedTopics'),
       settleWithTimeout(getStudentLearningPlans(user.id), [], 'plans'),
+      settleWithTimeout(fetchLastVisitedTopic(user.id), getLastVisitedTopic(user.id), 'lastVisited'),
     ])
-      .then(async ([att, modProg, ws, asgs, stk, syncedTopics, plans]) => {
+      .then(async ([att, modProg, ws, asgs, stk, syncedTopics, plans, lastCloud]) => {
         if (cancelled) return;
         setAttempts(att);
         setModuleProgress(modProg);
@@ -304,7 +335,36 @@ export default function StudentDashboard() {
         setPlanCount(Array.isArray(plans) ? plans.length : 0);
         setLearningPlans(Array.isArray(plans) ? plans : []);
         if (syncedTopics) {
-          setCompletedTopicsSet(syncedTopics);
+          setCompletedTopicsSet((prev) => {
+            if (prev.size === syncedTopics.size && [...prev].every((id) => syncedTopics.has(id))) {
+              return prev;
+            }
+            return syncedTopics;
+          });
+        }
+        if (lastCloud) {
+          setLastVisited((prev) => {
+            if (
+              prev?.topicId === lastCloud.topicId &&
+              prev?.moduleId === lastCloud.moduleId &&
+              prev?.url === lastCloud.url
+            ) {
+              return prev;
+            }
+            return lastCloud;
+          });
+        } else {
+          const localLast = getLastVisitedTopic(user.id);
+          setLastVisited((prev) => {
+            if (
+              prev?.topicId === localLast?.topicId &&
+              prev?.moduleId === localLast?.moduleId &&
+              prev?.url === localLast?.url
+            ) {
+              return prev;
+            }
+            return localLast;
+          });
         }
 
         // Calcular kardex con los datos ya obtenidos en memoria (elimina 5 consultas redundantes a Supabase)
@@ -333,10 +393,6 @@ export default function StudentDashboard() {
         if (pendingList.length > 0) {
           void checkAndNotifyPendingAssignments(user.id, asgs);
         }
-
-        // Last visited
-        const last = getLastVisitedTopic(user.id);
-        setLastVisited(last);
       })
       .catch((err) => {
         if (cancelled) return;
@@ -703,10 +759,30 @@ export default function StudentDashboard() {
   };
 
   useEffect(() => {
-    const handleProgress = () => {
+    const handleProgress = (event: Event) => {
+      const customEvt = event as CustomEvent<{ userId?: string }>;
+      if (customEvt?.detail?.userId && customEvt.detail.userId !== user?.id) {
+        return;
+      }
       if (user?.id) {
-        setCompletedTopicsSet(getCompletedTopics(user.id));
-        setLastVisited(getLastVisitedTopic(user.id));
+        const nextCompleted = getCompletedTopics(user.id);
+        setCompletedTopicsSet((prev) => {
+          if (prev.size === nextCompleted.size && [...prev].every((id) => nextCompleted.has(id))) {
+            return prev;
+          }
+          return nextCompleted;
+        });
+        const nextLast = getLastVisitedTopic(user.id);
+        setLastVisited((prev) => {
+          if (
+            prev?.topicId === nextLast?.topicId &&
+            prev?.moduleId === nextLast?.moduleId &&
+            prev?.url === nextLast?.url
+          ) {
+            return prev;
+          }
+          return nextLast;
+        });
       }
       setRefreshTrigger((prev) => prev + 1);
     };
@@ -730,8 +806,8 @@ export default function StudentDashboard() {
           setRemainingActiveSeconds(0);
         }
       } else {
-        setActiveExamLock(null);
-        setRemainingActiveSeconds(null);
+        setActiveExamLock((prev) => (prev !== null ? null : prev));
+        setRemainingActiveSeconds((prev) => (prev !== null ? null : prev));
       }
     };
     checkLock();
@@ -800,7 +876,9 @@ export default function StudentDashboard() {
     );
   }
 
-  const displayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico Residente';
+  const rawDisplayName = profile?.display_name || user?.email?.split('@')[0] || 'Médico Residente';
+  const cleanDisplayName = rawDisplayName.replace(/^((dr\(a\)|dr|dra)\.?\s*)+/i, '');
+  const displayName = rawDisplayName;
 
   return (
     <div id="contenido-principal" className="min-h-screen pt-20 pb-20 px-4 sm:px-6 max-w-7xl mx-auto">
@@ -897,7 +975,7 @@ export default function StudentDashboard() {
             )}
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
-              Hola, Dr(a). {displayName}
+              Hola, Dr(a). {cleanDisplayName}
             </h1>
 
             <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs sm:text-sm text-slate-300">
@@ -923,14 +1001,16 @@ export default function StudentDashboard() {
                   const cId = course.id;
                   const title = course.title;
                   return (
-                    <span
+                    <Link
                       key={cId}
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/25 text-emerald-300 border border-emerald-400/50 shadow-xs"
-                      title="Estás formalmente admitido y cursando este programa"
+                      to={`/portal/curso/${cId}`}
+                      className="group inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/25 hover:bg-emerald-500/40 text-emerald-300 hover:text-white border border-emerald-400/50 hover:border-emerald-300/80 shadow-xs hover:shadow-emerald-500/20 hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95"
+                      title={`Ir al portal y temario de ${title}`}
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
                       <span>{title} (Cursando)</span>
-                    </span>
+                      <ArrowRight className="w-3 h-3 text-emerald-400/70 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                    </Link>
                   );
                 })
               ) : (
@@ -978,6 +1058,66 @@ export default function StudentDashboard() {
                   <span className="w-2 h-2 rounded-full bg-blue-400 ring-2 ring-blue-600 animate-pulse" />
                 )}
               </button>
+
+              {/* Botoncito Comité Editorial */}
+              <button
+                type="button"
+                onClick={() => setCommitteeModalOpen(true)}
+                title="Ver la lista del comité editorial y dirección académica"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-200 hover:text-white border border-indigo-400/40 hover:border-indigo-300/80 transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <Scale className="w-3.5 h-3.5 text-indigo-300" />
+                <span>Comité editorial</span>
+              </button>
+            </div>
+
+            {/* ─── Docentes del Curso (Colaboradores Docentes) ─── */}
+            <div className="pt-3 mt-1 border-t border-white/10 flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-200">
+                    <GraduationCap className="w-4 h-4 text-blue-400 shrink-0" />
+                    Docentes del curso:
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                    Colaborador Docente
+                  </span>
+                </div>
+                <Link
+                  to="/especialistas"
+                  className="text-[11px] font-semibold text-blue-300 hover:text-white hover:underline flex items-center gap-1 transition"
+                >
+                  <span>Ver directorio docente</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {loadingTeachers ? (
+                  <span className="text-xs text-slate-400 italic">Cargando docentes…</span>
+                ) : teachers.length === 0 ? (
+                  <span className="text-xs text-slate-400 italic">Docentes en asignación</span>
+                ) : (
+                  teachers.map((t) => (
+                    <Link
+                      key={t.id}
+                      to={`/especialistas/${t.id}`}
+                      className="group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-semibold bg-white/10 hover:bg-blue-500/30 text-slate-200 hover:text-white border border-white/15 hover:border-blue-400/50 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer active:scale-95"
+                      title={`${t.display_name}${t.specialty ? ` · ${t.specialty}` : ''}${t.institution ? ` · ${t.institution}` : ''}`}
+                    >
+                      <div className="w-4 h-4 rounded-full bg-blue-500/30 text-blue-300 flex items-center justify-center shrink-0">
+                        <GraduationCap className="w-3 h-3 text-blue-300 group-hover:scale-110 transition-transform" />
+                      </div>
+                      <span className="truncate max-w-[200px]">{t.display_name}</span>
+                      {t.cedula_verified && (
+                        <span title="Cédula verificada SEP" className="inline-flex">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        </span>
+                      )}
+                    </Link>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -1008,6 +1148,18 @@ export default function StudentDashboard() {
                 </p>
                 <Link
                   to={resumeLesson.url}
+                  onClick={() => {
+                    if (user && resumeLesson) {
+                      setLastVisitedTopic(user.id, {
+                        moduleId: resumeLesson.moduleId,
+                        moduleTitle: resumeLesson.moduleTitle,
+                        topicId: resumeLesson.firstIncompleteChildId || resumeLesson.topicId,
+                        topicTitle: resumeLesson.firstIncompleteChildTitle || resumeLesson.topicTitle,
+                        url: resumeLesson.url,
+                        updatedAt: new Date().toISOString(),
+                      });
+                    }
+                  }}
                   className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 transition-all"
                 >
                   {hasStartedCurriculum ? 'Continuar lección' : 'Empezar curso'}
@@ -1404,6 +1556,18 @@ export default function StudentDashboard() {
                   {resumeLesson ? (
                     <Link
                       to={resumeLesson.url}
+                      onClick={() => {
+                        if (user && resumeLesson) {
+                          setLastVisitedTopic(user.id, {
+                            moduleId: resumeLesson.moduleId,
+                            moduleTitle: resumeLesson.moduleTitle,
+                            topicId: resumeLesson.firstIncompleteChildId || resumeLesson.topicId,
+                            topicTitle: resumeLesson.firstIncompleteChildTitle || resumeLesson.topicTitle,
+                            url: resumeLesson.url,
+                            updatedAt: new Date().toISOString(),
+                          });
+                        }
+                      }}
                       className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl text-sm font-black bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 hover:from-blue-700 hover:via-indigo-700 hover:to-cyan-700 text-white shadow-lg shadow-blue-600/30 hover:shadow-xl transition-all cursor-pointer"
                     >
                       <Play className="w-4 h-4 fill-white" />
@@ -1569,7 +1733,13 @@ export default function StudentDashboard() {
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                          {courseId === 'principiante' ? 'Nivel 1' : courseId === 'intermedio' ? 'Nivel 2' : 'Nivel 3'}
+                          {courseId === 'principiante'
+                            ? 'Nivel 1'
+                            : courseId === 'intermedio'
+                            ? 'Nivel 2'
+                            : courseId === 'avanzado'
+                            ? 'Nivel 3'
+                            : `Nivel ${course.sort_order || 4}`}
                         </span>
                         {unlocked ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-600 text-white shadow-2xs">
@@ -1586,9 +1756,21 @@ export default function StudentDashboard() {
                         )}
                       </div>
 
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
-                        {title}
-                      </h3>
+                      {unlocked ? (
+                        <Link
+                          to={`/portal/curso/${courseId}`}
+                          className="group block"
+                          title={`Ir al panel de ${title}`}
+                        >
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                            {title}
+                          </h3>
+                        </Link>
+                      ) : (
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+                          {title}
+                        </h3>
+                      )}
                       <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-4">
                         {course.description || 'Programa de especialización clínica.'}
                       </p>
@@ -1625,14 +1807,13 @@ export default function StudentDashboard() {
 
                     <div className="pt-2">
                       {unlocked ? (
-                        <button
-                          type="button"
-                          onClick={() => selectTab('modules')}
+                        <Link
+                          to={`/portal/curso/${courseId}`}
                           className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-sm hover:shadow-md transition cursor-pointer"
                         >
                           <span>{coursePct === 100 ? 'Repasar curso' : coursePct > 0 ? 'Continuar clases' : 'Empezar clases'}</span>
                           <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        </Link>
                       ) : isPending ? (
                         <button
                           type="button"
@@ -1656,6 +1837,101 @@ export default function StudentDashboard() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+
+          {/* ─── Cuerpo Docente del Curso y Dirección Académica ─── */}
+          <section className="p-6 sm:p-7 rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-sm backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20">
+                  <GraduationCap className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                      Cuerpo Docente y Comité Editorial
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-300/60">
+                      Colaboradores Docentes
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Profesores titulares, médicos evaluadores y consejo editorial que dictan y validan el contenido formativo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => setCommitteeModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition cursor-pointer"
+                >
+                  <Scale className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Ver Comité Editorial</span>
+                </button>
+                <Link
+                  to="/especialistas"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-cyan-400 hover:underline shrink-0"
+                >
+                  <span>Directorio completo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {teachers.map((teacher) => (
+                <Link
+                  key={teacher.id}
+                  to={`/especialistas/${teacher.id}`}
+                  className="group p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-gradient-to-br from-slate-50/50 via-white to-white dark:from-slate-800/30 dark:via-slate-900/60 dark:to-slate-900/60 hover:border-blue-300 dark:hover:border-cyan-500/40 hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0 overflow-hidden group-hover:scale-105 transition-transform">
+                        {teacher.avatar_url ? (
+                          <img src={teacher.avatar_url} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span>{teacher.display_name?.charAt(0)?.toUpperCase() || 'Dr'}</span>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-300/40">
+                          <GraduationCap className="w-3 h-3" /> Colaborador Docente
+                        </span>
+                        {teacher.cedula_verified && (
+                          <span className="ml-1 inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                            <CheckCircle2 className="w-2.5 h-2.5 text-emerald-500" /> SEP
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors line-clamp-1">
+                      {teacher.display_name}
+                    </h3>
+                    {teacher.specialty && (
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-1 truncate">
+                        <Stethoscope className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{teacher.specialty}</span>
+                      </p>
+                    )}
+                    {teacher.institution && (
+                      <p className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5 truncate">
+                        <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="truncate">{teacher.institution}</span>
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] font-semibold text-blue-600 dark:text-cyan-400">
+                    <span>Ver expediente docente</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </Link>
+              ))}
             </div>
           </section>
 
@@ -2272,7 +2548,20 @@ export default function StudentDashboard() {
                     <div className="h-full bg-blue-600" style={{ width: `${pct}%` }} />
                   </div>
 
-                  {!unlocked && (
+                  {unlocked ? (
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-500 font-medium">
+                        {ids.length} {ids.length === 1 ? 'módulo' : 'módulos'}
+                      </span>
+                      <Link
+                        to={`/portal/curso/${courseId}`}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                      >
+                        <span>Ir a clases</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  ) : !unlocked && (
                     <div className="mt-3 pt-2.5 border-t border-slate-200/70 dark:border-slate-800 flex items-center justify-between text-xs">
                       {isPending ? (
                         <>
@@ -2309,14 +2598,49 @@ export default function StudentDashboard() {
             })}
           </div>
 
+          {/* Filtro rápido por curso / nivel */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 shrink-0">Filtrar por nivel:</span>
+            <button
+              type="button"
+              onClick={() => setModuleCourseFilter('todos')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                moduleCourseFilter === 'todos'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-slate-700'
+              }`}
+            >
+              Todos los módulos
+            </button>
+            {sellable.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setModuleCourseFilter(c.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+                  moduleCourseFilter === c.id
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/80 dark:border-slate-700'
+                }`}
+              >
+                {c.title}
+              </button>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {metrics?.moduleStats
-              .filter(
-                (m) =>
+              .filter((m) => {
+                if (moduleCourseFilter !== 'todos') {
+                  const allowedIds = moduleIdsForCourse(courseAssignments, moduleCourseFilter);
+                  if (!allowedIds.includes(m.moduleId)) return false;
+                }
+                return (
                   !searchModuleQuery ||
                   m.title.toLowerCase().includes(searchModuleQuery.toLowerCase()) ||
                   m.moduleId.toLowerCase().includes(searchModuleQuery.toLowerCase())
-              )
+                );
+              })
               .map((mod) => {
                 const isExpanded = expandedModuleId === mod.moduleId;
                 const fullModule = allModules.find((m) => m.id === mod.moduleId);
@@ -3808,6 +4132,11 @@ export default function StudentDashboard() {
         saving={guideSaving}
         saveError={guideError}
         steps={guideSteps}
+      />
+
+      <EditorialCommitteeModal
+        isOpen={committeeModalOpen}
+        onClose={() => setCommitteeModalOpen(false)}
       />
     </div>
   );

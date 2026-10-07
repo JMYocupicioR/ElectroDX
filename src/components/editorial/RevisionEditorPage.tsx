@@ -14,6 +14,7 @@ import { slugify } from '../../utils/slugify';
 import type { Topic } from '../../types/content';
 import type { RevisionAction, RevisionPayload } from '../../types/database';
 import {
+  extractVideosFromContent,
   externalListToVideoMedia,
   resolveExternalVideos,
   validateMediaPayload,
@@ -183,7 +184,14 @@ export default function RevisionEditorPage() {
 
     setLoading(true);
     try {
-      const videoMedia = externalListToVideoMedia(resolveExternalVideos(payload));
+      const fromContent = extractVideosFromContent(payload.content);
+      const combinedVideos = [...resolveExternalVideos(payload)];
+      for (const fc of fromContent) {
+        if (!combinedVideos.some((v) => v.url === fc.url)) {
+          combinedVideos.push(fc);
+        }
+      }
+      const videoMedia = externalListToVideoMedia(combinedVideos);
       const { externalVideos: _discard, ...rest } = payload;
       const slug = payload.slug?.trim() || slugify(payload.title);
       const references = normalizeReferences(payload.references);

@@ -120,6 +120,42 @@ describe('resolveResumeLesson', () => {
     ]);
     expect(resolveResumeLesson(completed, null, fakeModules)).toBeNull();
   });
+
+  it('advances to the next module lesson after the last visited lesson is fully completed', () => {
+    // Student finished both lessons in module 1, last visited electricity-basics
+    const completed = new Set([
+      'intro-neurodiagnostics',
+      'history',
+      'clinical-role',
+      'laboratory',
+      'ethics',
+      'electricity-basics',
+      'voltage-current',
+      'filters',
+    ]);
+    const resume = resolveResumeLesson(
+      completed,
+      {
+        moduleId: 'fundamentals',
+        topicId: 'electricity-basics',
+        url: '/modulo/fundamentals/electricity-basics',
+      },
+      fakeModules
+    );
+
+    expect(resume?.topicId).toBe('ncs-intro');
+    expect(resume?.moduleId).toBe('nerve-conduction');
+    expect(resume?.url).toBe('/modulo/nerve-conduction/ncs-intro');
+  });
+
+  it('infers next pending lesson from completed topics even when lastVisited is null', () => {
+    // When lastVisited is null on a new device, it should NOT jump back to module 1 lesson 1 if lesson 1 is done
+    const completed = new Set(['intro-neurodiagnostics', 'history', 'clinical-role', 'laboratory', 'ethics']);
+    const resume = resolveResumeLesson(completed, null, fakeModules);
+
+    expect(resume?.topicId).toBe('electricity-basics');
+    expect(resume?.url).toBe('/modulo/fundamentals/electricity-basics#section-voltage-current');
+  });
 });
 
 describe('listPendingCurriculumLessons', () => {

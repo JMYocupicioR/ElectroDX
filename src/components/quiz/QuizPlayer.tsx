@@ -65,6 +65,8 @@ export function QuizPlayer({
   } | null>(null);
   const [attemptBlocked, setAttemptBlocked] = useState<string | null>(null);
 
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   // Timer interval
   useEffect(() => {
     if (submitted || loading) return;
@@ -81,6 +83,7 @@ export function QuizPlayer({
     setStep(0);
     setElapsedSeconds(0);
     setSubmitted(null);
+    setShowConfirmModal(false);
 
     try {
       const data = await getQuizWithQuestions(topicId);
@@ -94,11 +97,14 @@ export function QuizPlayer({
         return;
       }
 
-      const maxAllowed = data.max_attempts ?? 1;
+      // For topic formative quizzes, max_attempts null = unlimited attempts.
+      // If an author explicitly configured an attempt limit, allow at least 3 attempts for reading quizzes.
+      const isUnlimited = data.max_attempts === null;
+      const maxAllowed = isUnlimited ? null : Math.max(data.max_attempts ?? 3, 3);
       if (user) {
         const count = await getAttemptCountForQuiz(data.id, user.id);
         setAttemptsCount(count);
-        if (count >= maxAllowed) {
+        if (maxAllowed !== null && count >= maxAllowed) {
           setAttemptBlocked(
             lang === 'en'
               ? `Maximum of ${maxAllowed} attempt(s) reached for this evaluation.`
@@ -152,7 +158,7 @@ export function QuizPlayer({
     });
   };
 
-  const handleSubmit = async () => {
+  const handleRequestSubmit = () => {
     if (!quiz || !user || isSubmitting) return;
 
     const unanswered = displayQuestions.filter((q) => !(responses[q.id]?.length));
@@ -165,7 +171,15 @@ export function QuizPlayer({
       return;
     }
 
+    setError(null);
+    setShowConfirmModal(true);
+  };
+
+  const executeSubmit = async () => {
+    if (!quiz || !user || isSubmitting) return;
+
     setIsSubmitting(true);
+    setShowConfirmModal(false);
     setError(null);
 
     try {
@@ -234,8 +248,9 @@ export function QuizPlayer({
   }
 
   if (submitted) {
-    const effectiveMax = quiz.max_attempts ?? 1;
-    const canRetry = (attemptsCount + 1) < effectiveMax;
+    const isUnlimited = quiz.max_attempts === null;
+    const effectiveMax = isUnlimited ? null : Math.max(quiz.max_attempts ?? 3, 3);
+    const canRetry = isUnlimited || (attemptsCount + 1) < (effectiveMax ?? Infinity);
     return (
       <QuizResults
         quiz={quiz}
@@ -247,7 +262,7 @@ export function QuizPlayer({
         onRetry={loadQuizData}
         canRetry={canRetry}
         attemptCount={attemptsCount + 1}
-        maxAttempts={effectiveMax}
+        maxAttempts={effectiveMax ?? undefined}
       />
     );
   }
@@ -437,7 +452,7 @@ export function QuizPlayer({
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={handleSubmit}
+            onClick={handleRequestSubmit}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-cyan-500/25 transition-all active:scale-95 disabled:opacity-50"
           >
             {isSubmitting ? (
@@ -455,6 +470,58 @@ export function QuizPlayer({
           </button>
         )}
       </div>
+
+      {/* ─── Modal de Confirmación de Envío ───────────────────────────── */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-6 sm:p-7 shadow-2xl space-y-4">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-cyan-500/20">
+                <Send className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  {lang === 'en' ? 'Confirm Examination Submission' : '¿Confirmas enviar tu evaluación?'}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {lang === 'en'
+                    ? `${displayQuestions.length} of ${displayQuestions.length} questions answered · Time: ${formatTime(elapsedSeconds)}`
+                    : `${displayQuestions.length} de ${displayQuestions.length} reactivos respondidos · Tiempo: ${formatTime(elapsedSeconds)}`}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              {lang === 'en'
+                ? 'Your answers will be officially graded and your attempt score recorded in your academic curriculum.'
+                : 'Tus respuestas serán evaluadas y se registrará tu calificación en tu expediente académico para acreditar este tema.'}
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+              >
+                {lang === 'en' ? 'Review questions' : 'Volver a revisar'}
+              </button>
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={executeSubmit}
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white text-xs font-bold shadow-md shadow-cyan-500/25 transition active:scale-95 disabled:opacity-50"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+                <span>{lang === 'en' ? 'Yes, grade examination' : 'Sí, calificar evaluación'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   Check,
   FolderInput,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthProvider';
 import { useAllModules } from '../../../hooks/useAllModules';
@@ -65,12 +66,16 @@ interface AdminQuizEditorProps {
   initialTopicId?: string;
   initialModuleId?: string;
   onBackToCatalog?: () => void;
+  onSaved?: () => void;
+  isModal?: boolean;
 }
 
 export function AdminQuizEditor({
   initialTopicId,
   initialModuleId,
   onBackToCatalog,
+  onSaved,
+  isModal,
 }: AdminQuizEditorProps) {
   const { user } = useAuth();
   const goBack = useGoBack('/admin/quizzes');
@@ -385,6 +390,7 @@ export function AdminQuizEditor({
       setDataSource('database');
       setVersion((v) => v + 1);
       setSuccessToast('¡Cuestionario publicado en vivo exitosamente! Los alumnos ya pueden resolverlo.');
+      onSaved?.();
       setTimeout(() => setSuccessToast(null), 5000);
     } catch (e) {
       console.error(e);
@@ -423,6 +429,7 @@ export function AdminQuizEditor({
       });
 
       setSuccessToast('Borrador guardado en la cola editorial.');
+      onSaved?.();
       setTimeout(() => setSuccessToast(null), 4000);
     } catch (e) {
       console.error(e);
@@ -437,13 +444,23 @@ export function AdminQuizEditor({
       {/* Top Header & Breadcrumbs */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onBackToCatalog || (() => goBack('/admin/quizzes'))}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Volver al Catálogo
-          </button>
+          {!isModal ? (
+            <button
+              type="button"
+              onClick={onBackToCatalog || (() => goBack('/admin/quizzes'))}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Volver al Catálogo
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onBackToCatalog}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" /> Cerrar Editor
+            </button>
+          )}
 
           <div>
             <div className="flex items-center gap-2">

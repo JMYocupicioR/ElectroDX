@@ -1,6 +1,11 @@
 import type { Module, Topic } from '../types/content';
 import type { PublishedTopic, RevisionPayload } from '../types/database';
 import { getLessonExpansion } from '../content/lessonExpansions';
+import {
+  extractVideosFromContent,
+  externalListToVideoMedia,
+  resolveExternalVideos,
+} from '../utils/mediaValidation';
 
 function extractLegacyPdfs(content?: string | null): { title: string; url: string; description?: string; author?: string }[] {
   if (!content) return [];
@@ -28,6 +33,15 @@ export function publishedTopicToTopic(pt: PublishedTopic): Topic {
     }
   }
 
+  const extractedVideos = extractVideosFromContent(pt.content);
+  const directVideo = pt.video_url?.trim() ? [{ title: pt.title, url: pt.video_url.trim() }] : [];
+  const existingExternal = (media as any)?.externalVideos ?? [];
+  const combinedVideos = resolveExternalVideos({
+    ...media,
+    externalVideos: [...existingExternal, ...directVideo, ...extractedVideos],
+  });
+  const videoMedia = externalListToVideoMedia(combinedVideos);
+
   return {
     id: pt.id,
     title: pt.title,
@@ -36,10 +50,10 @@ export function publishedTopicToTopic(pt: PublishedTopic): Topic {
     descriptionEn: pt.description_en ?? undefined,
     content: pt.content ?? undefined,
     contentEn: pt.content_en ?? undefined,
-    videoUrls: media.videoUrls?.length ? media.videoUrls : undefined,
-    youtubeUrls: media.youtubeUrls?.length ? media.youtubeUrls : undefined,
-    vimeoUrls: media.vimeoUrls?.length ? media.vimeoUrls : undefined,
-    embedUrls: media.embedUrls?.length ? media.embedUrls : undefined,
+    videoUrls: (videoMedia.videoUrls && videoMedia.videoUrls.length > 0) ? videoMedia.videoUrls : undefined,
+    youtubeUrls: (videoMedia.youtubeUrls && videoMedia.youtubeUrls.length > 0) ? videoMedia.youtubeUrls : undefined,
+    vimeoUrls: (videoMedia.vimeoUrls && videoMedia.vimeoUrls.length > 0) ? videoMedia.vimeoUrls : undefined,
+    embedUrls: (videoMedia.embedUrls && videoMedia.embedUrls.length > 0) ? videoMedia.embedUrls : undefined,
     imageUrls: media.imageUrls?.length ? media.imageUrls : undefined,
     pdfUrls: combinedPdfs.length ? combinedPdfs : undefined,
     clinicalPearls: pt.clinical_pearls?.length ? pt.clinical_pearls : undefined,

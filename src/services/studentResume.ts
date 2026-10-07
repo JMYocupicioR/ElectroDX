@@ -142,12 +142,60 @@ export function resolveResumeLesson(
   );
   if (pending.length === 0) return null;
 
-  const fromLastVisited = lastVisited
-    ? pending.find((lesson) => lessonMatchesVisited(lesson, lastVisited))
-    : undefined;
+  // 1. If student has a last-visited hint:
+  if (lastVisited) {
+    // 1A. Is the last-visited lesson still in pending (e.g., subtopics in progress)?
+    const inProgressLesson = pending.find((lesson) => lessonMatchesVisited(lesson, lastVisited));
+    if (inProgressLesson) {
+      return toResumeLesson(inProgressLesson, completed, pending.length, quizGate);
+    }
 
-  const target = fromLastVisited ?? pending[0];
-  return toResumeLesson(target, completed, pending.length, quizGate);
+    // 1B. The student completed the last-visited lesson.
+    // Advance to the next incomplete lesson in curriculum order AFTER lastVisited:
+    const lastVisitedIndex = lessons.findIndex((lesson) =>
+      lessonMatchesVisited(lesson, lastVisited)
+    );
+    if (lastVisitedIndex >= 0) {
+      const nextPendingAfterVisited = pending.find((lesson) => {
+        const idx = lessons.findIndex(
+          (l) => l.moduleId === lesson.moduleId && l.topic.id === lesson.topic.id
+        );
+        return idx > lastVisitedIndex;
+      });
+      if (nextPendingAfterVisited) {
+        return toResumeLesson(nextPendingAfterVisited, completed, pending.length, quizGate);
+      }
+    }
+  }
+
+  // 2. If lastVisited was null/empty or all lessons after it are done:
+  // Infer progress from the highest lesson index the student has completed:
+  if (completed.size > 0) {
+    let highestCompletedIndex = -1;
+    lessons.forEach((lesson, idx) => {
+      if (
+        completed.has(lesson.topic.id) ||
+        getLeafTopicIds(lesson.topic).some((id) => completed.has(id))
+      ) {
+        if (idx > highestCompletedIndex) highestCompletedIndex = idx;
+      }
+    });
+
+    if (highestCompletedIndex >= 0) {
+      const nextPendingFromProgress = pending.find((lesson) => {
+        const idx = lessons.findIndex(
+          (l) => l.moduleId === lesson.moduleId && l.topic.id === lesson.topic.id
+        );
+        return idx >= highestCompletedIndex;
+      });
+      if (nextPendingFromProgress) {
+        return toResumeLesson(nextPendingFromProgress, completed, pending.length, quizGate);
+      }
+    }
+  }
+
+  // 3. Fallback: first pending lesson historically
+  return toResumeLesson(pending[0], completed, pending.length, quizGate);
 }
 
 export function listPendingCurriculumLessons(

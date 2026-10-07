@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { StudentPortalGuide } from './StudentPortalGuide';
+import EditorialCommitteeModal from '../editorial/EditorialCommitteeModal';
 import { getLiveSessionUrgency } from '../../services/courseService';
 import { shouldShowPortalGuide } from '../../services/portalGuideService';
 import type { LiveWorkshop, Profile } from '../../types/database';
@@ -125,5 +126,17 @@ describe('StudentDashboard UX & Fast-Track Architecture', () => {
     expect(bannerHtml).toContain('Taller de Bloqueos de Conducción en Vivo');
     expect(bannerHtml).toContain('Entrar al Stream Directo');
     expect(bannerHtml).toContain('https://meet.google.com/test-live-stream');
+  });
+
+  it('Caso E: EditorialCommitteeModal renderiza la lista y título del comité editorial', () => {
+    const modalHtml = renderToStaticMarkup(
+      <MemoryRouter>
+        <EditorialCommitteeModal isOpen={true} onClose={() => undefined} />
+      </MemoryRouter>
+    );
+
+    expect(modalHtml).toContain('Comité Editorial y Dirección Académica');
+    expect(modalHtml).toContain('comite-editorial');
+    expect(modalHtml).toContain('Aval Oficial');
   });
 });

@@ -9,12 +9,39 @@ import { TopicStudyTools } from '../student/TopicStudyTools';
 import { TopicDiscussion } from '../student/TopicDiscussion';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { OfflineTopicBadge } from '../OfflineTopicBadge';
-import { getQuizFlagForTopic } from '../../services/quizService';
+import {
+  getQuizFlagForTopic,
+  getAttemptCountForQuiz,
+  getBestAttempt,
+  getQuizWithQuestions,
+  deleteQuizAttempt,
+} from '../../services/quizService';
 import { CourseGate } from '../CourseGate';
 import { QuizCatalogReturnBar } from '../admin/quiz/QuizCatalogReturnBar';
 import type { QuizTopicFlag } from '../../types/quiz';
 import { Topic } from '../../types/content';
-import { ChevronRight, Home, ArrowLeft, ArrowRight, List, X, ChevronUp, BookMarked, ExternalLink, Play, Lightbulb, Target, ImageIcon, CheckCircle2, Clock, ClipboardList, Sparkles, FileText } from 'lucide-react';
+import {
+  ChevronRight,
+  Home,
+  ArrowLeft,
+  ArrowRight,
+  List,
+  X,
+  ChevronUp,
+  BookMarked,
+  ExternalLink,
+  Play,
+  Lightbulb,
+  Target,
+  ImageIcon,
+  CheckCircle2,
+  Clock,
+  ClipboardList,
+  Sparkles,
+  FileText,
+  ShieldAlert,
+  RotateCcw,
+} from 'lucide-react';
 import { QuickTopicMaterialModal } from '../editorial/QuickTopicMaterialModal';
 import { isAppendixModule } from '../../content/appendixModules';
 import { resolveTopicReferences, type Reference } from '../../content/topicReferences';
@@ -36,7 +63,7 @@ import {
 import { sectionHasBeenRead } from '../../utils/readingProgress';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { localizedTopic } from '../../hooks/useLocalizedContent';
-import { getVideoEmbedSrc, parseVideoUrl, videoMediaToExternalList } from '../../utils/mediaValidation';
+import { getVideoEmbedSrc, parseVideoUrl, resolveAllTopicVideos } from '../../utils/mediaValidation';
 import { useTopicProgress } from '../../hooks/useTopicProgress';
 import { RichContent, renderInline, type RichHeadingLevel } from '../content/RichContent';
 import { stripLegacyPdfMarkdown, topicPdfList } from '../../utils/topicPrintables';
@@ -99,11 +126,11 @@ function PdfDocumentsSection({ topic }: { topic: Topic }) {
 
 /* ─── Video Section ─── */
 function topicHasVideos(topic: Topic): boolean {
-  return videoMediaToExternalList(topic).length > 0;
+  return resolveAllTopicVideos(topic).length > 0;
 }
 
 function ExternalVideosSection({ topic }: { topic: Topic }) {
-  const videos = videoMediaToExternalList(topic);
+  const videos = resolveAllTopicVideos(topic);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
 
   if (videos.length === 0) return null;
@@ -555,13 +582,12 @@ function TopicBibliography({
   );
 }
 
-/* ─── Main Component ─── */
 export default function TopicPage() {
   const { moduleId } = useParams<{ moduleId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const lang = useSettingsStore((s) => s.language);
-  const { canProposeContent, user } = useAuth();
+  const { canProposeContent, user, isAdmin, isEditor } = useAuth();
   const homeHref = user ? '/portal' : '/';
   const homeLabel = lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio';
   const { module: mod, loading: moduleLoading, refresh: refreshModule } = useMergedModule(moduleId);
@@ -576,6 +602,13 @@ export default function TopicPage() {
   const [activeSection, setActiveSection] = useState('');
   const [quizFlag, setQuizFlag] = useState<QuizTopicFlag | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [topicQuizAttempt, setTopicQuizAttempt] = useState<{
+    attemptCount: number;
+    bestScore: number | null;
+    isPassed: boolean;
+    maxAttempts: number | null;
+    hasExhaustedAttempts: boolean;
+  } | null>(null);
   const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
   const mainRef = useRef<HTMLElement>(null);
 
@@ -652,19 +685,22 @@ export default function TopicPage() {
     let attempts = 0;
     let timer = 0;
     const tryScroll = () => {
-      const el = sectionRefs.current.get(sectionId);
+      const el =
+        sectionRefs.current.get(sectionId) ||
+        document.getElementById(`section-${sectionId}`) ||
+        document.getElementById(sectionId);
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
-      if (attempts < 12) {
+      if (attempts < 20) {
         attempts += 1;
-        timer = window.setTimeout(tryScroll, 80);
+        timer = window.setTimeout(tryScroll, 60);
       }
     };
     timer = window.setTimeout(tryScroll, 50);
     return () => window.clearTimeout(timer);
-  }, [location.hash, location.pathname]);
+  }, [location.hash, location.pathname, moduleLoading]);
 
   useEffect(() => {
     if (location.hash || !highlightQuery || moduleLoading) return;
@@ -809,6 +845,56 @@ export default function TopicPage() {
   );
   const quizTargetTopicId = quizFlag?.topic_id || topic?.id || '';
 
+  const loadTopicAttemptStatus = useCallback(async () => {
+    if (!user || !quizFlag || !hasEvaluation) {
+      setTopicQuizAttempt(null);
+      return;
+    }
+
+    try {
+      const [count, best, published] = await Promise.all([
+        getAttemptCountForQuiz(quizFlag.topic_id, user.id).catch(() => 0),
+        getBestAttempt(quizFlag.topic_id, user.id).catch(() => null),
+        getQuizWithQuestions(quizFlag.topic_id).catch(() => null),
+      ]);
+      const isUnlimited = published?.max_attempts == null;
+      const maxAttempts = isUnlimited ? null : Math.max(published?.max_attempts ?? 3, 3);
+      const isPassed = Boolean(best?.passed || evaluationPassed);
+      const hasExhaustedAttempts = maxAttempts !== null && count >= maxAttempts && !isPassed;
+
+      setTopicQuizAttempt({
+        attemptCount: count,
+        bestScore: best?.score ?? null,
+        isPassed,
+        maxAttempts,
+        hasExhaustedAttempts,
+      });
+    } catch {
+      // ignore
+    }
+  }, [user, quizFlag, hasEvaluation, evaluationPassed]);
+
+  useEffect(() => {
+    loadTopicAttemptStatus();
+  }, [loadTopicAttemptStatus]);
+
+  const handleResetAttemptAsTeacher = useCallback(async () => {
+    if (!user || !quizFlag) return;
+    const confirmed = window.confirm(
+      '¿Deseas restablecer el intento registrado para esta evaluación?\n\nEsta acción borrará el intento y permitirá al alumno volver a responder de inmediato.'
+    );
+    if (!confirmed) return;
+    try {
+      const best = await getBestAttempt(quizFlag.topic_id, user.id);
+      if (best) {
+        await deleteQuizAttempt(best.id, user.id);
+      }
+      await loadTopicAttemptStatus();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error al restablecer intento');
+    }
+  }, [user, quizFlag, loadTopicAttemptStatus]);
+
   useEffect(() => {
     if (user && mod && topic) {
       setLastVisitedTopic(user.id, {
@@ -816,7 +902,7 @@ export default function TopicPage() {
         moduleTitle: mod.title,
         topicId: topic.id,
         topicTitle: localizedTopic(topic, lang).title,
-        url: location.pathname,
+        url: location.pathname + (location.hash || ''),
         updatedAt: new Date().toISOString(),
       });
       if (hasEvaluation) {
@@ -825,7 +911,7 @@ export default function TopicPage() {
         setIsCompleted(isLessonRead(topic, getCompletedTopics(user.id)));
       }
     }
-  }, [user, mod, topic, location.pathname, lang, quizGate, hasEvaluation, evaluationPassed]);
+  }, [user, mod, topic, location.pathname, location.hash, lang, quizGate, hasEvaluation, evaluationPassed]);
 
   useEffect(() => {
     const handleProgress = () => {
@@ -835,10 +921,11 @@ export default function TopicPage() {
       } else {
         setIsCompleted(isLessonRead(topic, getCompletedTopics(user.id)));
       }
+      loadTopicAttemptStatus();
     };
     window.addEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
     return () => window.removeEventListener(TOPIC_PROGRESS_EVENT, handleProgress);
-  }, [user, topic, quizGate, hasEvaluation, quizFlag]);
+  }, [user, topic, quizGate, hasEvaluation, quizFlag, loadTopicAttemptStatus]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -1229,6 +1316,16 @@ export default function TopicPage() {
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                       {lang === 'en' ? 'Lesson Completed' : 'Lección Completada'}
                     </span>
+                  ) : hasEvaluation && topicQuizAttempt?.hasExhaustedAttempts ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300/70 dark:border-rose-800">
+                      <ShieldAlert className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                      {lang === 'en' ? 'Attempts Exhausted · Assessment Required' : 'Intentos Agotados · Evaluación No Acreditada'}
+                    </span>
+                  ) : hasEvaluation && topicQuizAttempt && topicQuizAttempt.attemptCount > 0 ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/70 dark:border-amber-800">
+                      <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      {lang === 'en' ? 'Assessment Pending · Retry Available' : 'Evaluación Pendiente · Reintento Disponible'}
+                    </span>
                   ) : hasEvaluation ? (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/70 dark:border-amber-800">
                       <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
@@ -1244,6 +1341,10 @@ export default function TopicPage() {
                 <p className="text-base font-bold text-slate-900 dark:text-white">
                   {isCompleted
                     ? (lang === 'en' ? 'Lesson registered in your curriculum' : 'Lección registrada en tu progreso académico')
+                    : hasEvaluation && topicQuizAttempt?.hasExhaustedAttempts
+                    ? (lang === 'en' ? `Assessment not passed (${topicQuizAttempt.bestScore ?? 0}%)` : `Evaluación no acreditada (${topicQuizAttempt.bestScore ?? 0}%)`)
+                    : hasEvaluation && topicQuizAttempt && topicQuizAttempt.attemptCount > 0
+                    ? (lang === 'en' ? 'Would you like to retry the evaluation?' : '¿Deseas volver a presentar la evaluación?')
                     : hasEvaluation
                     ? (lang === 'en' ? 'Have you finished studying this topic?' : '¿Concluiste la lectura de este tema?')
                     : (lang === 'en' ? 'Finished studying this lesson?' : '¿Terminaste de estudiar esta lección?')}
@@ -1253,6 +1354,14 @@ export default function TopicPage() {
                     ? nextPendingTarget
                       ? (lang === 'en' ? `Next pending topic: ${nextPendingTarget.title}` : `Siguiente tema pendiente: ${nextPendingTarget.title}`)
                       : (lang === 'en' ? 'This lesson counts towards your course completion and CME credits.' : 'Esta lección ya suma a tu porcentaje de avance y créditos CME en tu portal de alumno.')
+                    : hasEvaluation && topicQuizAttempt?.hasExhaustedAttempts
+                    ? (lang === 'en'
+                      ? `You have reached the maximum allowed attempts (${topicQuizAttempt.attemptCount} of ${topicQuizAttempt.maxAttempts}) with a score of ${topicQuizAttempt.bestScore ?? 0}% (passing threshold: 70%). Please contact your instructor to request an attempt reset.`
+                      : `Has completado el límite de intentos permitidos (${topicQuizAttempt.attemptCount} de ${topicQuizAttempt.maxAttempts}) con calificación de ${topicQuizAttempt.bestScore ?? 0}% (mínimo aprobatorio: 70%). Si requieres una nueva oportunidad de examen, solicita a tu profesor o administrador académico un reintento.`)
+                    : hasEvaluation && topicQuizAttempt && topicQuizAttempt.attemptCount > 0
+                    ? (lang === 'en'
+                      ? `Your previous score was ${topicQuizAttempt.bestScore ?? 0}% (passing threshold: 70%). You have attempts remaining to pass and credit this lesson.`
+                      : `Tu calificación previa es ${topicQuizAttempt.bestScore ?? 0}% (mínimo aprobatorio: 70%). Tienes oportunidad disponible para volver a contestar el examen y acreditar este tema.`)
                     : hasEvaluation
                     ? (lang === 'en' ? 'To credit this lesson in your curriculum, you must complete and pass the topic evaluation.' : 'Para acreditar esta lección en tu historial académico, debes realizar y aprobar el cuestionario de evaluación.')
                     : (lang === 'en' ? 'Mark as completed when you finish studying to register your progress in the portal.' : 'Márcala como completada al concluir tu lectura para registrar tu avance en el portal de alumno.')}
@@ -1261,15 +1370,41 @@ export default function TopicPage() {
 
               <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
                 {hasEvaluation && !isCompleted ? (
-                  <Link
-                    to={`/modulo/${mod.id}/evaluacion/${quizTargetTopicId}`}
-                    onClick={resetScrollToTop}
-                    className="px-5 py-3 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/25 flex items-center gap-2 transition-all active:scale-95"
-                  >
-                    <ClipboardList className="w-4 h-4" />
-                    {lang === 'en' ? 'Take Topic Assessment' : 'Realizar evaluación del tema'}
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
+                  topicQuizAttempt?.hasExhaustedAttempts ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to={`/modulo/${mod.id}/evaluacion/${quizTargetTopicId}`}
+                        onClick={resetScrollToTop}
+                        className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 hover:bg-rose-100 transition-colors flex items-center gap-1.5"
+                      >
+                        <ClipboardList className="w-4 h-4" />
+                        {lang === 'en' ? 'View assessment status' : 'Ver estado de la evaluación'}
+                      </Link>
+                      {(isAdmin || isEditor) && (
+                        <button
+                          type="button"
+                          onClick={handleResetAttemptAsTeacher}
+                          className="px-4 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/20 transition-all flex items-center gap-1.5"
+                          title="Borrar intento anterior del servidor"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>{lang === 'en' ? 'Reset attempt (Teacher)' : 'Restablecer intento (Profesor)'}</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <Link
+                      to={`/modulo/${mod.id}/evaluacion/${quizTargetTopicId}`}
+                      onClick={resetScrollToTop}
+                      className="px-5 py-3 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-700 text-white shadow-md shadow-cyan-600/25 flex items-center gap-2 transition-all active:scale-95"
+                    >
+                      <ClipboardList className="w-4 h-4" />
+                      {topicQuizAttempt && topicQuizAttempt.attemptCount > 0
+                        ? (lang === 'en' ? 'Retry Topic Assessment' : 'Reintentar evaluación del tema')
+                        : (lang === 'en' ? 'Take Topic Assessment' : 'Realizar evaluación del tema')}
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
+                  )
                 ) : hasEvaluation && isCompleted ? (
                   <div className="flex items-center gap-2">
                     <span className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 flex items-center gap-1.5 border border-emerald-300/60 dark:border-emerald-800">
@@ -1338,7 +1473,7 @@ export default function TopicPage() {
               </Link>
             ) : <div className="hidden sm:block flex-1" />}
 
-            {hasEvaluation && !isCompleted ? (
+            {hasEvaluation && !isCompleted && !topicQuizAttempt?.hasExhaustedAttempts ? (
               <Link
                 to={`/modulo/${mod.id}/evaluacion/${quizTargetTopicId}`}
                 onClick={resetScrollToTop}
@@ -1349,7 +1484,9 @@ export default function TopicPage() {
                     {lang === 'en' ? 'Next step' : 'Siguiente paso'}
                   </span>
                   <span className="block truncate text-cyan-950 dark:text-cyan-100 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors font-bold">
-                    {lang === 'en' ? 'Topic Assessment' : 'Evaluación del tema'}
+                    {topicQuizAttempt && topicQuizAttempt.attemptCount > 0
+                      ? (lang === 'en' ? 'Retry Assessment' : 'Reintentar evaluación')
+                      : (lang === 'en' ? 'Topic Assessment' : 'Evaluación del tema')}
                   </span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-cyan-600 group-hover:text-cyan-700 transition-colors flex-shrink-0" />

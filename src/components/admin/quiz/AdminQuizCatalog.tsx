@@ -28,6 +28,7 @@ import {
 
 interface AdminQuizCatalogProps {
   onSelectTopic: (topicId: string, moduleId: string) => void;
+  isModal?: boolean;
 }
 
 type CatalogTopic = {
@@ -38,7 +39,7 @@ type CatalogTopic = {
   listKey: string;
 };
 
-export function AdminQuizCatalog({ onSelectTopic }: AdminQuizCatalogProps) {
+export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogProps) {
   const { modules, loading: modulesLoading } = useAllModules();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -46,16 +47,26 @@ export function AdminQuizCatalog({ onSelectTopic }: AdminQuizCatalogProps) {
   const [flags, setFlags] = useState<QuizTopicFlag[]>([]);
   const [loadingFlags, setLoadingFlags] = useState(true);
 
-  const searchQuery = searchParams.get('q') ?? '';
-  const selectedModuleFilter = searchParams.get('modulo') ?? 'all';
-  const statusFilter = parseQuizCatalogStatus(searchParams.get('estado'));
-  const focusedRowId = location.hash.replace(/^#/, '');
+  const [localSearch, setLocalSearch] = useState('');
+  const [localModule, setLocalModule] = useState('all');
+  const [localStatus, setLocalStatus] = useState<QuizCatalogStatus>('all');
+
+  const searchQuery = isModal ? localSearch : (searchParams.get('q') ?? '');
+  const selectedModuleFilter = isModal ? localModule : (searchParams.get('modulo') ?? 'all');
+  const statusFilter = isModal ? localStatus : parseQuizCatalogStatus(searchParams.get('estado'));
+  const focusedRowId = isModal ? '' : location.hash.replace(/^#/, '');
 
   const writeFilters = (patch: {
     q?: string;
     modulo?: string;
     estado?: QuizCatalogStatus;
   }) => {
+    if (isModal) {
+      if (patch.q !== undefined) setLocalSearch(patch.q);
+      if (patch.modulo !== undefined) setLocalModule(patch.modulo);
+      if (patch.estado !== undefined) setLocalStatus(patch.estado);
+      return;
+    }
     navigate(
       buildQuizCatalogPath({
         q: patch.q !== undefined ? patch.q : searchQuery,
@@ -198,6 +209,8 @@ export function AdminQuizCatalog({ onSelectTopic }: AdminQuizCatalogProps) {
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <Link
             to="/admin/evaluaciones"
+            target={isModal ? '_blank' : undefined}
+            rel={isModal ? 'noreferrer' : undefined}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white text-xs sm:text-sm font-semibold transition"
           >
             <ClipboardList className="w-4 h-4 text-emerald-400" />
@@ -338,6 +351,7 @@ export function AdminQuizCatalog({ onSelectTopic }: AdminQuizCatalogProps) {
                   })}
                   onSelectTopic={onSelectTopic}
                   onPreview={() => handleQuickPreview(item.topic.id, item.topic.title)}
+                  isModal={isModal}
                 />
               );
             })}
@@ -393,6 +407,7 @@ function CatalogTopicRow({
   returnTo,
   onSelectTopic,
   onPreview,
+  isModal,
 }: {
   item: CatalogTopic;
   hasQuiz: boolean;
@@ -404,6 +419,7 @@ function CatalogTopicRow({
   returnTo: string;
   onSelectTopic: (topicId: string, moduleId: string) => void;
   onPreview: () => void;
+  isModal?: boolean;
 }) {
   const publicUrl = getTopicPublicUrl(item.moduleId, item.topic.id);
   const openLesson = (event: MouseEvent<HTMLAnchorElement>) => {
@@ -434,6 +450,8 @@ function CatalogTopicRow({
             {publicUrl ? (
               <Link
                 to={publicUrl}
+                target={isModal ? '_blank' : undefined}
+                rel={isModal ? 'noreferrer' : undefined}
                 state={{ from: returnTo }}
                 onClick={openLesson}
                 className="group inline-flex items-start gap-1 text-left font-bold text-slate-900 dark:text-white leading-snug hover:text-indigo-600 dark:hover:text-indigo-300"
@@ -447,6 +465,8 @@ function CatalogTopicRow({
             <p className="text-[11px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-x-1 gap-y-0.5">
               <Link
                 to={`/modulo/${item.moduleId}`}
+                target={isModal ? '_blank' : undefined}
+                rel={isModal ? 'noreferrer' : undefined}
                 state={{ from: returnTo }}
                 onClick={openLesson}
                 className="hover:text-indigo-500 hover:underline underline-offset-2"

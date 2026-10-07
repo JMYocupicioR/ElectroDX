@@ -252,11 +252,11 @@ export default function QuizEditorPage() {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium">Intentos permitidos (por defecto = 1 intento)</span>
+            <span className="text-sm font-medium">Intentos permitidos (vacío = sin límite / formativo)</span>
             <input
               type="number"
               min={1}
-              placeholder="1"
+              placeholder="Sin límite (formativo)"
               value={payload.maxAttempts ?? ''}
               onChange={(e) =>
                 setPayload({

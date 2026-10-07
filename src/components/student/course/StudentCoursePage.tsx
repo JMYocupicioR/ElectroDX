@@ -33,6 +33,8 @@ import {
 } from '../../../content/courseCatalog';
 import {
   getLastVisitedTopic,
+  setLastVisitedTopic,
+  fetchLastVisitedTopic,
   fetchStudentCompletedTopics,
   type LastVisitedTopic,
 } from '../../../services/studentService';
@@ -70,12 +72,13 @@ export default function StudentCoursePage() {
   const { hasQuiz } = useQuizTopicFlags();
 
   const [activeTab, setActiveTab] = useState<CourseTab>('temario');
-  const [courseSwitcherOpen, setCourseSwitcherOpen] = useState(false);
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [attempts, setAttempts] = useState<QuizAttempt[]>([]);
   const [kardex, setKardex] = useState<StudentKardexData | null>(null);
-  const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(null);
+  const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(() =>
+    user ? getLastVisitedTopic(user.id) : null
+  );
   const [enrollModalCourse, setEnrollModalCourse] = useState<Course | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -83,7 +86,12 @@ export default function StudentCoursePage() {
   // 1. Identificar el curso activo
   const currentCourse = useMemo(() => {
     if (!courseId) return null;
-    return courses.find((c) => c.id.toLowerCase() === courseId.toLowerCase()) ?? null;
+    const cleanId = decodeURIComponent(courseId).trim().toLowerCase();
+    return (
+      courses.find((c) => c.id.trim().toLowerCase() === cleanId) ??
+      courses.find((c) => c.title.trim().toLowerCase() === cleanId) ??
+      null
+    );
   }, [courses, courseId]);
 
   // 2. Cursos en los que el alumno está inscrito (para el switcher)
@@ -123,13 +131,18 @@ export default function StudentCoursePage() {
       getMyAttempts(user.id),
       calculateStudentKardex(user.id),
       fetchStudentCompletedTopics(user.id),
+      fetchLastVisitedTopic(user.id),
     ])
-      .then(([wsRes, attRes, kdxRes]) => {
+      .then(([wsRes, attRes, kdxRes, _compRes, lastRes]) => {
         if (!isMounted) return;
         if (wsRes.status === 'fulfilled') setWorkshops(wsRes.value);
         if (attRes.status === 'fulfilled') setAttempts(attRes.value);
         if (kdxRes.status === 'fulfilled') setKardex(kdxRes.value);
-        setLastVisited(getLastVisitedTopic(user.id));
+        if (lastRes && lastRes.status === 'fulfilled' && lastRes.value) {
+          setLastVisited(lastRes.value);
+        } else {
+          setLastVisited(getLastVisitedTopic(user.id));
+        }
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -315,44 +328,38 @@ export default function StudentCoursePage() {
           <span>Volver a Mi Portal</span>
         </Link>
 
-        {/* Switcher de curso activo */}
+        {/* Switcher rápido de niveles y cursos */}
         {enrolledCourses.length > 1 && (
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setCourseSwitcherOpen(!courseSwitcherOpen)}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
-            >
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 shrink-0">
               <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Cambiar Curso: {currentCourse?.title}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-
-            {courseSwitcherOpen && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xl p-1.5 z-40 animate-fadeIn">
-                <p className="text-[10px] uppercase font-bold text-slate-400 px-3 py-1.5">
-                  Tus Cursos Inscritos
-                </p>
-                {enrolledCourses.map((c) => (
+              <span>Niveles:</span>
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {enrolledCourses.map((c) => {
+                const isSelected = c.id.toLowerCase() === currentCourse?.id.toLowerCase();
+                return (
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => {
-                      setCourseSwitcherOpen(false);
-                      navigate(`/portal/curso/${c.id}`);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-left transition ${
-                      c.id === currentCourse?.id
-                        ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-cyan-400'
-                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    onClick={() => navigate(`/portal/curso/${c.id}`)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 ring-2 ring-emerald-500/20'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 border border-slate-200/80 dark:border-slate-700 shadow-2xs hover:shadow-xs'
                     }`}
+                    title={`Cambiar a ${c.title}`}
                   >
-                    <span className="truncate">{c.title}</span>
-                    {c.id === currentCourse?.id && <Check className="w-3.5 h-3.5 shrink-0" />}
+                    {isSelected ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                    ) : (
+                      <BookOpen className="w-3.5 h-3.5 text-slate-400" />
+                    )}
+                    <span>{c.title}</span>
                   </button>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -487,6 +494,20 @@ export default function StudentCoursePage() {
 
             <Link
               to={resumeLesson.url}
+              onClick={() => {
+                if (user && resumeLesson) {
+                  const targetVisited: LastVisitedTopic = {
+                    moduleId: resumeLesson.moduleId,
+                    moduleTitle: resumeLesson.moduleTitle,
+                    topicId: resumeLesson.firstIncompleteChildId || resumeLesson.topicId,
+                    topicTitle: resumeLesson.firstIncompleteChildTitle || resumeLesson.topicTitle,
+                    url: resumeLesson.url,
+                    updatedAt: new Date().toISOString(),
+                  };
+                  setLastVisitedTopic(user.id, targetVisited);
+                  setLastVisited(targetVisited);
+                }
+              }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition active:scale-95 shrink-0"
             >
               <span>Continuar lección actual</span>
@@ -672,6 +693,20 @@ export default function StudentCoursePage() {
                                   {hasQuiz(t.id) && (
                                     <Link
                                       to={`/modulo/${mod.id}/evaluacion/${t.id}`}
+                                      onClick={() => {
+                                        if (user) {
+                                          const targetVisited: LastVisitedTopic = {
+                                            moduleId: mod.id,
+                                            moduleTitle: mod.title,
+                                            topicId: t.id,
+                                            topicTitle: t.title,
+                                            url: `/modulo/${mod.id}/evaluacion/${t.id}`,
+                                            updatedAt: new Date().toISOString(),
+                                          };
+                                          setLastVisitedTopic(user.id, targetVisited);
+                                          setLastVisited(targetVisited);
+                                        }
+                                      }}
                                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
                                     >
                                       <Award className="w-3 h-3" />
@@ -680,6 +715,20 @@ export default function StudentCoursePage() {
                                   )}
                                   <Link
                                     to={`/modulo/${mod.id}/${t.id}`}
+                                    onClick={() => {
+                                      if (user) {
+                                        const targetVisited: LastVisitedTopic = {
+                                          moduleId: mod.id,
+                                          moduleTitle: mod.title,
+                                          topicId: t.id,
+                                          topicTitle: t.title,
+                                          url: `/modulo/${mod.id}/${t.id}`,
+                                          updatedAt: new Date().toISOString(),
+                                        };
+                                        setLastVisitedTopic(user.id, targetVisited);
+                                        setLastVisited(targetVisited);
+                                      }
+                                    }}
                                     className={`inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold transition ${
                                       done
                                         ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'

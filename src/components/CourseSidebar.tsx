@@ -503,11 +503,23 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                     const courseLocked = !hasCourseAccess(course.id);
                     return (
                       <div key={course.id}>
-                        <div className="px-3 py-1.5 mb-1 flex items-center gap-2">
+                        <div className="px-3 py-1.5 mb-1 flex items-center justify-between gap-2">
                           <p className="text-[0.65rem] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                             {course.title}
                           </p>
-                          {courseLocked && <Lock className="w-3 h-3 text-amber-500" />}
+                          <div className="flex items-center gap-1.5">
+                            {!courseLocked && (
+                              <Link
+                                to={`/portal/curso/${course.id}`}
+                                onClick={onClose}
+                                className="text-[10px] font-bold text-blue-600 dark:text-cyan-400 hover:underline"
+                                title={`Abrir panel de ${course.title}`}
+                              >
+                                Ir al curso →
+                              </Link>
+                            )}
+                            {courseLocked && <Lock className="w-3 h-3 text-amber-500" />}
+                          </div>
                         </div>
                         <div className="space-y-1">
                   {modules.map((mod) => {

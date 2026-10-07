@@ -312,6 +312,47 @@ export async function getCommitteeMembers(): Promise<Profile[]> {
   }
 }
 
+/**
+ * Obtiene la nómina de todos los docentes del curso (colaboradores docentes y miembros académicos).
+ * Intenta consultar el RPC get_course_teachers y tiene fallback automático a los especialistas públicos y comité.
+ */
+export async function getCourseTeachers(): Promise<Profile[]> {
+  try {
+    const { data: rpcData, error: rpcError } = await (sb.rpc as any)('get_course_teachers');
+    if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
+      const seen = new Set<string>();
+      return (rpcData as Profile[]).filter((p) => {
+        if (!p.display_name || p.display_name.toLowerCase() === 'neurosafemx') return false;
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+    }
+  } catch {
+    // ignorar y proceder al fallback
+  }
+
+  try {
+    const { data, error } = await sb
+      .from('public_specialist_profiles')
+      .select('*')
+      .order('display_name', { ascending: true });
+    if (!error && Array.isArray(data) && data.length > 0) {
+      const seen = new Set<string>();
+      return (data as Profile[]).filter((p) => {
+        if (!p.display_name || p.display_name.toLowerCase() === 'neurosafemx') return false;
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+    }
+  } catch (e) {
+    console.warn('[getCourseTeachers] fallback error:', e);
+  }
+
+  return getCommitteeMembers();
+}
+
 export async function getMyRevisions(authorId: string): Promise<ContentRevision[]> {
   const { data, error } = await supabase
     .from('content_revisions')

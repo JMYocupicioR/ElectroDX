@@ -24,6 +24,7 @@ import {
   getQuizWithQuestions,
   getAttemptCountForQuiz,
   getBestAttempt,
+  deleteQuizAttempt,
 } from '../../services/quizService';
 import { recordQuizPassed } from '../../services/quizCompletionGate';
 import { markTopicCompleted } from '../../services/studentService';
@@ -35,7 +36,7 @@ export default function TopicQuizPage() {
   const { moduleId, topicId } = useParams<{ moduleId: string; topicId: string }>();
   const navigate = useNavigate();
   const lang = useSettingsStore((s) => s.language);
-  const { user } = useAuth();
+  const { user, isAdmin, isEditor } = useAuth();
   const homeHref = user ? '/portal' : '/';
   const homeLabel = lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio';
 
@@ -128,6 +129,22 @@ export default function TopicQuizPage() {
     }
     navigate(nextTopicUrl);
   }, [user, topic, navigate, nextTopicUrl]);
+
+  const handleResetAttemptAsTeacher = useCallback(async () => {
+    if (!bestAttempt && !user) return;
+    const confirmed = window.confirm(
+      '¿Deseas restablecer el intento registrado para esta evaluación?\n\nEsta acción borrará el intento y permitirá responder la evaluación nuevamente.'
+    );
+    if (!confirmed) return;
+    try {
+      if (bestAttempt) {
+        await deleteQuizAttempt(bestAttempt.id, user?.id);
+      }
+      await loadQuizInfo();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Error al restablecer intento');
+    }
+  }, [bestAttempt, user, loadQuizInfo]);
 
   if (moduleLoading || loading) {
     return (
@@ -235,10 +252,13 @@ export default function TopicQuizPage() {
     );
   }
 
-  const effectiveMaxAttempts = quizData.max_attempts ?? 1;
+  // Topic formative quizzes: max_attempts === null means unlimited attempts.
+  // If explicitly limited, guarantee at least 3 attempts for formative lesson quizzes.
+  const isUnlimitedAttempts = quizData.max_attempts === null;
+  const effectiveMaxAttempts = isUnlimitedAttempts ? null : Math.max(quizData.max_attempts ?? 3, 3);
   const isAlreadyPassed = Boolean(bestAttempt?.passed || isTopicDoneHook(topic.id));
-  const hasExhaustedAttempts = attemptCount >= effectiveMaxAttempts;
-  const canAttempt = !hasExhaustedAttempts || (!isAlreadyPassed && effectiveMaxAttempts > attemptCount);
+  const hasExhaustedAttempts = effectiveMaxAttempts !== null && attemptCount >= effectiveMaxAttempts;
+  const canAttempt = !hasExhaustedAttempts && !isAlreadyPassed;
 
   const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
   const topicTitle = (lang === 'en' && topic.titleEn) || topic.title;
@@ -306,13 +326,16 @@ export default function TopicQuizPage() {
             <span>•</span>
             <span>
               <strong>{lang === 'en' ? 'Allowed attempts:' : 'Intentos permitidos:'}</strong>{' '}
-              {effectiveMaxAttempts === 1 ? '1 único intento' : `${effectiveMaxAttempts} intentos`}
+              {isUnlimitedAttempts
+                ? (lang === 'en' ? 'Unlimited (formative)' : 'Sin límite (Formativo)')
+                : `${effectiveMaxAttempts} intentos`}
             </span>
             {user && (
               <>
                 <span>•</span>
-                <span className={attemptCount >= effectiveMaxAttempts ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}>
-                  <strong>{lang === 'en' ? 'Attempts used:' : 'Intentos realizados:'}</strong> {attemptCount} / {effectiveMaxAttempts}
+                <span className={hasExhaustedAttempts ? 'text-amber-600 dark:text-amber-400 font-semibold' : ''}>
+                  <strong>{lang === 'en' ? 'Attempts used:' : 'Intentos realizados:'}</strong>{' '}
+                  {isUnlimitedAttempts ? attemptCount : `${attemptCount} / ${effectiveMaxAttempts}`}
                 </span>
               </>
             )}
@@ -354,6 +377,18 @@ export default function TopicQuizPage() {
                     <BookOpen className="w-3.5 h-3.5 text-slate-500" />
                     <span>{lang === 'en' ? 'Re-read topic' : 'Volver a leer el tema'}</span>
                   </Link>
+
+                  {(isAdmin || isEditor) && bestAttempt && (
+                    <button
+                      type="button"
+                      onClick={handleResetAttemptAsTeacher}
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-600 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-semibold transition"
+                      title="Eliminar intento registrado (docente)"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>Restablecer intento (Profesor)</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -395,9 +430,52 @@ export default function TopicQuizPage() {
                     <ArrowLeft className="w-3.5 h-3.5 text-slate-500" />
                     <span>{lang === 'en' ? 'Back to module index' : 'Volver al índice del módulo'}</span>
                   </Link>
+
+                  {(isAdmin || isEditor) && bestAttempt && (
+                    <button
+                      type="button"
+                      onClick={handleResetAttemptAsTeacher}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>{lang === 'en' ? 'Reset attempt (Teacher Mode)' : 'Restablecer intento (Profesor)'}</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
+          </motion.div>
+        )}
+
+        {/* ── Notice when retrying an evaluation ── */}
+        {canAttempt && !isAlreadyPassed && attemptCount > 0 && bestAttempt && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 sm:p-5 rounded-2xl bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-800/50 flex items-start gap-3.5 shadow-sm"
+          >
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200 mb-0.5">
+                {lang === 'en' ? 'Previous attempt:' : 'Calificación de intento previo:'} {bestAttempt.score}% ({lang === 'en' ? 'Minimum to pass:' : 'Mínimo requerido:'} {quizData.pass_score}%)
+              </h3>
+              <p className="text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                {lang === 'en'
+                  ? 'You can retake this evaluation now. Review the topic lesson if needed before submitting.'
+                  : 'Tienes la oportunidad de volver a presentar esta evaluación para acreditar el tema. Analiza con cuidado la pregunta antes de confirmar tu envío.'}
+              </p>
+            </div>
+            {(isAdmin || isEditor) && (
+              <button
+                type="button"
+                onClick={handleResetAttemptAsTeacher}
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-white/80 dark:bg-slate-800 text-amber-800 dark:text-amber-200 text-[11px] font-bold hover:bg-amber-100 dark:hover:bg-amber-900/40 transition flex items-center gap-1"
+                title="Borrar intento anterior del servidor"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Restablecer</span>
+              </button>
+            )}
           </motion.div>
         )}
 

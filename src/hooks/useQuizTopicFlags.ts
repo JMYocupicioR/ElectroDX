@@ -41,14 +41,39 @@ export function useQuizTopicFlags() {
     let cancelled = false;
     fetchPassedQuizTopicIds(user.id)
       .then((ids) => {
-        if (!cancelled) setPassedTopicIds(ids);
+        if (!cancelled) {
+          setPassedTopicIds((prev) => {
+            if (prev.size === ids.size && [...prev].every((id) => ids.has(id))) {
+              return prev;
+            }
+            return ids;
+          });
+        }
       })
       .catch(() => {
-        if (!cancelled) setPassedTopicIds(getPassedQuizTopicIdsSync(user.id));
+        if (!cancelled) {
+          const fallback = getPassedQuizTopicIdsSync(user.id);
+          setPassedTopicIds((prev) => {
+            if (prev.size === fallback.size && [...prev].every((id) => fallback.has(id))) {
+              return prev;
+            }
+            return fallback;
+          });
+        }
       });
 
-    const reloadPassed = () => {
-      setPassedTopicIds(getPassedQuizTopicIdsSync(user.id));
+    const reloadPassed = (event?: Event) => {
+      const customEvt = event as CustomEvent<{ userId?: string }>;
+      if (customEvt?.detail?.userId && customEvt.detail.userId !== user.id) {
+        return;
+      }
+      const next = getPassedQuizTopicIdsSync(user.id);
+      setPassedTopicIds((prev) => {
+        if (prev.size === next.size && [...prev].every((id) => next.has(id))) {
+          return prev;
+        }
+        return next;
+      });
     };
     window.addEventListener(TOPIC_PROGRESS_EVENT, reloadPassed);
     return () => {
@@ -94,12 +119,14 @@ export function useQuizTopicFlags() {
     return map;
   }, [flags]);
 
+  const quizTopicIds = useMemo(() => new Set(byTopicId.keys()), [byTopicId]);
+
   const quizGate: QuizCompletionGate = useMemo(
     () => ({
-      quizTopicIds: new Set(byTopicId.keys()),
+      quizTopicIds,
       passedQuizTopicIds: passedTopicIds,
     }),
-    [byTopicId, passedTopicIds]
+    [quizTopicIds, passedTopicIds]
   );
 
   const hasQuiz = (topicId: string) => byTopicId.has(topicId);

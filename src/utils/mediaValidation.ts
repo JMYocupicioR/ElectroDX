@@ -219,6 +219,212 @@ export function externalListToVideoMedia(videos: ExternalVideoInput[]): VideoMed
   return { videoUrls, youtubeUrls, vimeoUrls, embedUrls };
 }
 
+export type TopicVideoItem = {
+  title: string;
+  url: string;
+  sourceKind: 'youtube' | 'drive' | 'vimeo' | 'embed';
+  sourceLabel: string;
+  embedSrc: string;
+  thumbnailUrl: string | null;
+};
+
+/**
+ * Derives a reliable video thumbnail image URL for YouTube, Vimeo, Google Drive, or Loom.
+ */
+export function getVideoThumbnailUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const parsed = parseVideoUrl(url);
+  if (!parsed) return null;
+
+  switch (parsed.kind) {
+    case 'youtube':
+      return `https://img.youtube.com/vi/${parsed.videoId}/hqdefault.jpg`;
+    case 'vimeo':
+      return `https://vumbnail.com/${parsed.videoId}.jpg`;
+    case 'drive':
+      return `https://drive.google.com/thumbnail?id=${parsed.driveId}&sz=w640`;
+    case 'embed': {
+      const loomMatch = url.match(/loom\.com\/(?:share|embed)\/([a-zA-Z0-9]+)/);
+      if (loomMatch) {
+        return `https://cdn.loom.com/sessions/thumbnails/${loomMatch[1]}-with-play.gif`;
+      }
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
+/**
+ * Automatically extracts embedded videos from free text, Markdown links, and iframes.
+ * Ensures videos pasted directly into content appear in the platform's Library and players.
+ */
+export function extractVideosFromContent(content?: string | null): ExternalVideoInput[] {
+  if (!content) return [];
+  const results: ExternalVideoInput[] = [];
+  const seenVideoKeys = new Set<string>();
+
+  // 1. Markdown links: [Title](https://...)
+  const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = mdLinkRegex.exec(content)) !== null) {
+    const rawTitle = match[1].trim();
+    const url = match[2].trim();
+    const parsed = parseVideoUrl(url);
+    if (parsed) {
+      const key =
+        parsed.kind === 'drive'
+          ? `drive:${parsed.driveId}`
+          : parsed.kind === 'youtube'
+          ? `youtube:${parsed.videoId}`
+          : parsed.kind === 'vimeo'
+          ? `vimeo:${parsed.videoId}`
+          : `embed:${parsed.embedUrl}`;
+
+      if (!seenVideoKeys.has(key)) {
+        seenVideoKeys.add(key);
+        results.push({
+          title: rawTitle || 'Video de la lección',
+          url,
+        });
+      }
+    }
+  }
+
+  // 2. HTML iframes: <iframe ... src="https://..." ...>
+  const iframeRegex = /<iframe[^>]*\ssrc=["']([^"']+)["'][^>]*>/gi;
+  while ((match = iframeRegex.exec(content)) !== null) {
+    const fullTag = match[0];
+    const url = match[1].trim();
+    const parsed = parseVideoUrl(url);
+    if (parsed) {
+      const key =
+        parsed.kind === 'drive'
+          ? `drive:${parsed.driveId}`
+          : parsed.kind === 'youtube'
+          ? `youtube:${parsed.videoId}`
+          : parsed.kind === 'vimeo'
+          ? `vimeo:${parsed.videoId}`
+          : `embed:${parsed.embedUrl}`;
+
+      if (!seenVideoKeys.has(key)) {
+        seenVideoKeys.add(key);
+        const titleMatch = fullTag.match(/title=["']([^"']+)["']/i);
+        const title = titleMatch ? titleMatch[1].trim() : 'Video integrado';
+        results.push({ title, url });
+      }
+    }
+  }
+
+  // 3. Raw URLs in content (e.g. https://www.youtube.com/watch?v=...)
+  const rawUrlRegex = /(https?:\/\/[^\s<>"')]+)/gi;
+  while ((match = rawUrlRegex.exec(content)) !== null) {
+    const url = match[1].trim();
+    const parsed = parseVideoUrl(url);
+    if (parsed) {
+      const key =
+        parsed.kind === 'drive'
+          ? `drive:${parsed.driveId}`
+          : parsed.kind === 'youtube'
+          ? `youtube:${parsed.videoId}`
+          : parsed.kind === 'vimeo'
+          ? `vimeo:${parsed.videoId}`
+          : `embed:${parsed.embedUrl}`;
+
+      if (!seenVideoKeys.has(key)) {
+        seenVideoKeys.add(key);
+        results.push({
+          title: 'Video complementario',
+          url,
+        });
+      }
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Resolves all videos associated with a topic, whether declared in structured media
+ * properties (videoUrls, youtubeUrls, vimeoUrls), the direct video_url field, or
+ * embedded in the markdown/HTML content. Deduplicates and generates embed-ready details.
+ */
+export function resolveAllTopicVideos(topic?: {
+  title?: string | null;
+  videoUrls?: { title: string; driveId: string }[];
+  youtubeUrls?: { title: string; videoId: string; startTime?: number }[];
+  vimeoUrls?: { title: string; videoId: string }[];
+  embedUrls?: { title: string; embedUrl: string }[];
+  video_url?: string | null;
+  content?: string | null;
+  media?: (VideoMediaPayload & { externalVideos?: ExternalVideoInput[] }) | null;
+}): TopicVideoItem[] {
+  if (!topic) return [];
+
+  const rawList: ExternalVideoInput[] = [];
+
+  // 1. Structured videos from media payload or topic direct properties
+  const structured = resolveExternalVideos({
+    videoUrls: topic.media?.videoUrls ?? topic.videoUrls,
+    youtubeUrls: topic.media?.youtubeUrls ?? topic.youtubeUrls,
+    vimeoUrls: topic.media?.vimeoUrls ?? topic.vimeoUrls,
+    embedUrls: topic.media?.embedUrls ?? topic.embedUrls,
+    externalVideos: topic.media?.externalVideos,
+  });
+  rawList.push(...structured);
+
+  // 2. Direct topic video_url if defined
+  if (topic.video_url?.trim()) {
+    rawList.push({
+      title: topic.title ? `Video: ${topic.title}` : 'Video principal',
+      url: topic.video_url.trim(),
+    });
+  }
+
+  // 3. Auto-extracted videos from text/markdown content
+  const fromContent = extractVideosFromContent(topic.content);
+  rawList.push(...fromContent);
+
+  // 4. Normalize, deduplicate and compute embed details
+  const seenKeys = new Set<string>();
+  const items: TopicVideoItem[] = [];
+
+  for (const item of rawList) {
+    if (!item.url?.trim()) continue;
+    const parsed = parseVideoUrl(item.url);
+    if (!parsed) continue;
+
+    const key =
+      parsed.kind === 'drive'
+        ? `drive:${parsed.driveId}`
+        : parsed.kind === 'youtube'
+        ? `youtube:${parsed.videoId}`
+        : parsed.kind === 'vimeo'
+        ? `vimeo:${parsed.videoId}`
+        : `embed:${parsed.embedUrl}`;
+
+    if (seenKeys.has(key)) continue;
+    seenKeys.add(key);
+
+    let sourceLabel = 'Video Web';
+    if (parsed.kind === 'youtube') sourceLabel = 'YouTube';
+    else if (parsed.kind === 'drive') sourceLabel = 'Google Drive';
+    else if (parsed.kind === 'vimeo') sourceLabel = 'Vimeo';
+
+    items.push({
+      title: item.title?.trim() || 'Video de la lección',
+      url: item.url.trim(),
+      sourceKind: parsed.kind,
+      sourceLabel,
+      embedSrc: getVideoEmbedSrc(parsed),
+      thumbnailUrl: getVideoThumbnailUrl(item.url),
+    });
+  }
+
+  return items;
+}
+
+
 function isSupabasePublicImage(parsed: URL): boolean {
   return (
     parsed.hostname.endsWith('.supabase.co') &&

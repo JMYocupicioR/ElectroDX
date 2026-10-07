@@ -97,11 +97,13 @@ export function TopicAdoptionInbox({
   isOpen: controlledIsOpen,
   onToggle: controlledOnToggle,
   onSummaryChange,
+  onOpenQuizEditor,
 }: {
   onChanged?: () => void | Promise<void>;
   isOpen?: boolean;
   onToggle?: () => void;
   onSummaryChange?: (summary: TopicAdoptionSummary) => void;
+  onOpenQuizEditor?: (topicId: string, moduleId?: string) => void;
 }) {
   const { user, isAdmin, isEditor } = useAuth();
   const canAdopt = isAdmin || isEditor;
@@ -1136,14 +1138,26 @@ export function TopicAdoptionInbox({
                                   <span>Planear Clase (En vivo / Presencial)</span>
                                 </button>
 
-                                <Link
-                                  to={`/admin/quizzes/${row.topic_id}`}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300 text-xs transition"
-                                  title="Validar o editar preguntas de evaluación para este tema"
-                                >
-                                  <FileQuestion className="w-3.5 h-3.5 text-purple-500" />
-                                  <span>Quiz del Tema</span>
-                                </Link>
+                                {onOpenQuizEditor ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => onOpenQuizEditor(row.topic_id, row.module_id)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300 text-xs transition cursor-pointer"
+                                    title="Validar o editar preguntas de evaluación para este tema en el modal editor"
+                                  >
+                                    <FileQuestion className="w-3.5 h-3.5 text-purple-500" />
+                                    <span>Quiz del Tema</span>
+                                  </button>
+                                ) : (
+                                  <Link
+                                    to={`/admin/quizzes/${row.topic_id}`}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-slate-700 dark:text-slate-300 text-xs transition"
+                                    title="Validar o editar preguntas de evaluación para este tema"
+                                  >
+                                    <FileQuestion className="w-3.5 h-3.5 text-purple-500" />
+                                    <span>Quiz del Tema</span>
+                                  </Link>
+                                )}
 
                                 <Link
                                   to="/admin/ejercicios"

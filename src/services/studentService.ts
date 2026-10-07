@@ -596,6 +596,91 @@ export function setLastVisitedTopic(userId: string, data: LastVisitedTopic): voi
   } catch (e) {
     console.warn('[StudentService] Error saving last visited topic:', e);
   }
+
+  // Sincronizar en la nube en background (student_activity_logs) para persistencia cross-device
+  if (userId && userId !== 'anonymous_student') {
+    sb.from('student_activity_logs')
+      .insert({
+        user_id: userId,
+        action: 'last_visited_topic',
+        details: data,
+        created_at: data.updatedAt || new Date().toISOString(),
+      })
+      .then(() => {})
+      .catch((err: any) => {
+        console.warn('[StudentService] Error syncing last visited topic to Supabase:', err);
+      });
+  }
+}
+
+/**
+ * Recupera el último tema visitado por el alumno, combinando el almacenamiento local
+ * con Supabase (student_activity_logs y student_completed_topics) para sincronización
+ * inmediata entre distintos dispositivos (PC, móvil, tablet).
+ */
+export async function fetchLastVisitedTopic(userId: string): Promise<LastVisitedTopic | null> {
+  const local = getLastVisitedTopic(userId);
+  if (!userId || userId === 'anonymous_student') return local;
+
+  try {
+    // 1. Consultar el último registro de visita explícita en student_activity_logs
+    const { data: activityRow, error: actError } = await sb
+      .from('student_activity_logs')
+      .select('details, created_at')
+      .eq('user_id', userId)
+      .eq('action', 'last_visited_topic')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!actError && activityRow?.details && typeof activityRow.details === 'object') {
+      const cloudData = activityRow.details as LastVisitedTopic;
+      if (cloudData.topicId && cloudData.moduleId) {
+        // Si el registro de la nube es más reciente que el local o no había local
+        if (!local || !local.updatedAt || cloudData.updatedAt > local.updatedAt) {
+          try {
+            localStorage.setItem(`${KEY_LAST_TOPIC}${userId}`, JSON.stringify(cloudData));
+          } catch {}
+          return cloudData;
+        }
+        return local;
+      }
+    }
+
+    // 2. Si no hay registro explícito de última visita pero el alumno tiene temas completados en Supabase
+    if (!local) {
+      const { data: latestCompleted, error: compError } = await sb
+        .from('student_completed_topics')
+        .select('topic_id, module_id, completed_at')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!compError && latestCompleted?.topic_id) {
+        const mod = allModules.find((m) => m.id === latestCompleted.module_id);
+        const topic = mod ? findTopicInTree(mod.topics, latestCompleted.topic_id) : null;
+        if (mod && topic) {
+          const inferred: LastVisitedTopic = {
+            moduleId: mod.id,
+            moduleTitle: mod.title,
+            topicId: topic.id,
+            topicTitle: topic.title,
+            url: `/modulo/${mod.id}/${topic.id}`,
+            updatedAt: latestCompleted.completed_at || new Date().toISOString(),
+          };
+          try {
+            localStorage.setItem(`${KEY_LAST_TOPIC}${userId}`, JSON.stringify(inferred));
+          } catch {}
+          return inferred;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[StudentService] Error fetching last visited topic from cloud:', err);
+  }
+
+  return local;
 }
 
 // ─── Global & Module Metrics ────────────────────────────────────────────────
