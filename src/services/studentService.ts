@@ -380,6 +380,67 @@ export async function fetchCohortCompletedTopics(
   return result;
 }
 
+export async function fetchStudentCompletedTopicTimes(
+  userId: string
+): Promise<Map<string, string | null>> {
+  const result = new Map<string, string | null>();
+  if (!userId || userId === 'anonymous_student') return result;
+
+  try {
+    const { data, error } = await sb
+      .from('student_completed_topics')
+      .select('topic_id, completed_at')
+      .eq('user_id', userId);
+
+    if (error || !Array.isArray(data)) return result;
+    for (const row of data as Array<{ topic_id: string; completed_at?: string | null }>) {
+      if (!row.topic_id) continue;
+      result.set(row.topic_id, row.completed_at ?? null);
+    }
+  } catch {
+    return result;
+  }
+
+  return result;
+}
+
+export async function fetchCohortCompletedTopicTimes(
+  userIds: string[]
+): Promise<Map<string, Map<string, string | null>>> {
+  const result = new Map<string, Map<string, string | null>>();
+  const validIds = Array.from(new Set(userIds.filter((id) => id && id !== 'anonymous_student')));
+  for (const uid of userIds) {
+    result.set(uid, new Map());
+  }
+  if (validIds.length === 0) return result;
+
+  try {
+    const { data, error } = await sb
+      .from('student_completed_topics')
+      .select('user_id, topic_id, completed_at')
+      .in('user_id', validIds);
+
+    if (error || !Array.isArray(data)) return result;
+    for (const row of data as Array<{
+      user_id: string;
+      topic_id: string;
+      completed_at?: string | null;
+    }>) {
+      if (!row.user_id || !row.topic_id) continue;
+      let map = result.get(row.user_id);
+      if (!map) {
+        map = new Map();
+        result.set(row.user_id, map);
+      }
+      map.set(row.topic_id, row.completed_at ?? null);
+    }
+  } catch {
+    return result;
+  }
+
+  return result;
+}
+
 /**
  * Background helper to persist topic completions/deletions to Supabase.
  * Writes to a local outbox first so offline / failed upserts are not lost.

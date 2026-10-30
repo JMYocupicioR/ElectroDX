@@ -7,6 +7,7 @@ import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from './quiz/QuizTopicBadge';
 import { useAuth } from '../contexts/AuthProvider';
 import { useCourseStore } from '../stores/courseStore';
+import { isTopicOpenToRegistered, moduleHasRegisteredTopics } from '../utils/topicOpenAccess';
 import { useTopicProgress } from '../hooks/useTopicProgress';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useSyllabusCatalog } from '../hooks/useSyllabusCatalog';
@@ -526,9 +527,11 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                     const isExpanded = expandedModules.has(mod.id);
                     const isCurrent = currentModuleId === mod.id;
                     const access = moduleAccess.get(mod.id);
-                    const isFree = access?.required_tier === 'free';
                     const assignedCourse = getCourseIdForModule(assignmentsEff, mod.id);
-                    const isLocked = !isFree && !(assignedCourse ? hasCourseAccess(assignedCourse as CourseId) : hasPremiumAccess);
+                    const courseUnlocked = assignedCourse
+                      ? hasCourseAccess(assignedCourse as CourseId)
+                      : hasPremiumAccess;
+                    const isLocked = !courseUnlocked && !moduleHasRegisteredTopics(access);
 
                     return (
                       <div key={mod.id}>
@@ -575,6 +578,8 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                   const topicUrl = `/modulo/${mod.id}/${topic.id}`;
                                   const isActive = location.pathname.startsWith(topicUrl);
                                   const done = isCompleted(topic.id);
+                                  const topicLocked =
+                                    !courseUnlocked && !isTopicOpenToRegistered(access, [topic.id]);
 
                                   return (
                                     <Link
@@ -594,6 +599,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                       <span className={`leading-snug flex-1 ${done ? 'font-medium text-slate-800 dark:text-slate-200' : ''}`}>
                                         {topic.title}
                                       </span>
+                                      {topicLocked && <Lock className="w-3 h-3 text-amber-500 flex-shrink-0" />}
                                       {topicTreeHasQuiz(topic, hasQuiz) && <QuizTopicBadge compact />}
                                     </Link>
                                   );

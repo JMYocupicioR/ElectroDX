@@ -258,6 +258,14 @@ export async function assignTopicsToTeacher(input: {
 
       if (!rpcErr && rpcData) {
         remoteRows = (Array.isArray(rpcData) ? rpcData : [rpcData]) as TopicTeachingCommitment[];
+        if (input.workshopId) {
+          await sb
+            .from(COMMITMENTS_TABLE)
+            .update({ workshop_id: input.workshopId })
+            .eq('cohort_id', cohortId)
+            .eq('teacher_id', input.teacherId)
+            .in('topic_id', cleanIds);
+        }
       } else {
         // Fallback: upsert directo en la tabla topic_teaching_commitments
         const upsertPayload = cleanIds.map((topicId) => ({

@@ -433,7 +433,17 @@ export default function StudentKardexModal({
                   </div>
 
                   <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                    {kardex.milestoneAudits.map((m) => (
+                    {(kardex.riskReasons?.length ?? 0) > 0 ? (
+                      <p className="text-[10px] text-rose-700 dark:text-rose-300 px-1">
+                        {kardex.riskReasons.join(' · ')}
+                      </p>
+                    ) : null}
+                    {kardex.milestoneAudits.length === 0 ? (
+                      <p className="text-[10px] text-slate-400 px-1">
+                        Aún no hay cortes propios en el calendario.
+                      </p>
+                    ) : (
+                      kardex.milestoneAudits.map((m) => (
                       <div
                         key={m.milestoneId}
                         className="p-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 text-[11px] flex items-center justify-between"
@@ -448,7 +458,7 @@ export default function StudentKardexModal({
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span className="font-mono text-[10px] text-slate-500">
-                            {m.completedTopics}/{m.totalTopics}
+                            {m.totalTopics > 0 ? `${m.completedTopics}/${m.totalTopics}` : 'Sin temas'}
                           </span>
                           <span
                             className={`font-black text-[10px] px-1.5 py-0.5 rounded ${
@@ -461,7 +471,8 @@ export default function StudentKardexModal({
                           </span>
                         </div>
                       </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
               </div>

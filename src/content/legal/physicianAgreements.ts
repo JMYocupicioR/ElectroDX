@@ -237,9 +237,9 @@ export function validatePhysicianEditionForPublish(
       return `Quedó un corchete del prestador sin sustituir en ${PHYSICIAN_AGREEMENT_META[type].stepLabel}.`;
     }
     if (type === 'anexo') {
-      const missingRate = REQUIRED_GENERATION_PLACEHOLDERS.find((token) => filled.includes(token));
-      if (missingRate) {
-        return `Sustituye ${missingRate} en el anexo antes de publicar.`;
+      const missing = REQUIRED_GENERATION_PLACEHOLDERS.filter((token) => filled.includes(token));
+      if (missing.length > 0) {
+        return `Abre la pestaña Anexo y, en el texto, cambia ${missing.join(', ')} por el nombre, la edición y las tasas de esta generación.`;
       }
     }
     const parsed = parseAgreementMarkdown(type, filled, PHYSICIAN_AGREEMENT_META[type].title);

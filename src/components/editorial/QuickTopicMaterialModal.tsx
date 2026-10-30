@@ -10,6 +10,7 @@ import {
   AlertCircle,
   UploadCloud,
   Sparkles,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import type { Topic } from '../../types/content';
@@ -17,10 +18,11 @@ import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
 import { uploadTeachingFile } from '../../services/teachingStorage';
+import { CLINICAL_PRESETS } from '../simulator/traceEngine/defaultPresets';
 
 type SourceMode = 'file' | 'link';
 
-type MaterialType = 'video' | 'pdf' | 'image' | 'pearl';
+type MaterialType = 'video' | 'pdf' | 'image' | 'pearl' | 'trace';
 
 interface QuickTopicMaterialModalProps {
   isOpen: boolean;
@@ -102,6 +104,15 @@ export function QuickTopicMaterialModal({
 
   // Pearl
   const [pearlText, setPearlText] = useState('');
+
+  // Trace Simulator
+  const [tracePresetId, setTracePresetId] = useState('median-cts');
+  const [traceCustomTitle, setTraceCustomTitle] = useState('');
+  const [traceNerve, setTraceNerve] = useState('');
+  const [traceLatency, setTraceLatency] = useState(5.4);
+  const [traceAmplitude, setTraceAmplitude] = useState(4.2);
+  const [traceVelocity, setTraceVelocity] = useState(38);
+  const [traceIsCustom, setTraceIsCustom] = useState(false);
 
   const targetTopic = useMemo(() => {
     if (selectedTargetId === topic.id) return topic;
@@ -214,6 +225,14 @@ export function QuickTopicMaterialModal({
           ...(payload.clinicalPearls ?? []),
           `${pearlText.trim()} *(Aporte: ${authorName})*`,
         ];
+      } else if (activeTab === 'trace') {
+        let snippet = '';
+        if (!traceIsCustom) {
+          snippet = `\n\n:::emg-trace{preset="${tracePresetId}" mode="comparison"}:::\n\n`;
+        } else {
+          snippet = `\n\n:::emg-trace{type="motor" nerve="${traceNerve.trim() || 'Nervio Motor'}" title="${traceCustomTitle.trim() || 'Trazado Clínico'}" latency=${traceLatency} amplitude=${traceAmplitude} velocity=${traceVelocity} pathologic=true}:::\n\n`;
+        }
+        payload.content = (payload.content ? payload.content.trim() + '\n\n' : '') + snippet;
       }
 
       // Ensure media object is also populated for Supabase media JSONB persistence
@@ -295,7 +314,7 @@ export function QuickTopicMaterialModal({
           </div>
 
           {/* Type Selector Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-2 bg-slate-100 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-xs font-semibold">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-1 p-2 bg-slate-100 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setActiveTab('video')}
@@ -346,6 +365,19 @@ export function QuickTopicMaterialModal({
             >
               <Lightbulb className="w-4 h-4" />
               Perla <span className="hidden sm:inline">Clínica</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('trace')}
+              className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all col-span-2 sm:col-span-1 ${
+                activeTab === 'trace'
+                  ? 'bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              <span>⚡ Trazo <span className="hidden sm:inline">EMG</span></span>
             </button>
           </div>
 
@@ -580,6 +612,108 @@ export function QuickTopicMaterialModal({
                 </div>
               </div>
             )}
+
+            {/* Tab: Trace Simulator */}
+            {activeTab === 'trace' && (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Selecciona una Plantilla Electrodiagnóstica *
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-cyan-600 dark:text-cyan-400 font-medium cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={traceIsCustom}
+                        onChange={(e) => setTraceIsCustom(e.target.checked)}
+                        className="rounded border-slate-300 dark:border-slate-700 text-cyan-600 focus:ring-0"
+                      />
+                      <span>Personalizar valores</span>
+                    </label>
+                  </div>
+
+                  {!traceIsCustom ? (
+                    <select
+                      value={tracePresetId}
+                      onChange={(e) => setTracePresetId(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none dark:text-white"
+                    >
+                      {CLINICAL_PRESETS.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.title} ({p.studyType === 'motor' ? 'Motor' : p.studyType === 'sensory' ? 'Sensitivo' : 'Aguja'})
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="space-y-3 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                            Título / Diagnóstico
+                          </label>
+                          <input
+                            type="text"
+                            value={traceCustomTitle}
+                            onChange={(e) => setTraceCustomTitle(e.target.value)}
+                            placeholder="Ej. Túnel Carpiano Severo"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                            Nervio Evaluado
+                          </label>
+                          <input
+                            type="text"
+                            value={traceNerve}
+                            onChange={(e) => setTraceNerve(e.target.value)}
+                            placeholder="Ej. N. Mediano (APB)"
+                            className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-1">Latencia (ms)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={traceLatency}
+                            onChange={(e) => setTraceLatency(parseFloat(e.target.value) || 0)}
+                            className="w-full px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-1">Amplitud (mV)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={traceAmplitude}
+                            onChange={(e) => setTraceAmplitude(parseFloat(e.target.value) || 0)}
+                            className="w-full px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-slate-500 mb-1">Velocidad (m/s)</label>
+                          <input
+                            type="number"
+                            step="1"
+                            value={traceVelocity}
+                            onChange={(e) => setTraceVelocity(parseInt(e.target.value) || 0)}
+                            className="w-full px-2 py-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2">
+                    ⚡ Se insertará un osciloscopio interactivo calibrado en la lectura del tema con calibradores de latencia y amplitud.
+                  </p>
+                </div>
+              </div>
+            )}
+
 
             {/* Admin Publishing Mode Selection */}
             {(isAdmin || isEditor) && (

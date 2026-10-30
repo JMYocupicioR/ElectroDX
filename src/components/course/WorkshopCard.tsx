@@ -1,33 +1,39 @@
 import { useMemo } from 'react';
-import { Video, Clock, BookOpen, Lock } from 'lucide-react';
+import { Video, Clock, BookOpen, Lock, UserCheck, MapPin } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
 import { allModules } from '../../content/modules';
 import { canAccessLiveWorkshop } from '../../utils/liveSessionUtils';
+import { buildLiveClassTopicCatalog } from '../admin/LiveClassTopicQuickPicker';
+import {
+  briefForWorkshop,
+  sessionModalityLabel,
+  sessionSummaryText,
+  type SessionBrief,
+} from '../../utils/liveSessionBrief';
 
 interface WorkshopCardProps {
   workshop: LiveWorkshop;
+  brief?: SessionBrief | null;
 }
 
-export function WorkshopCard({ workshop }: WorkshopCardProps) {
+export function WorkshopCard({ workshop, brief }: WorkshopCardProps) {
   const date = new Date(workshop.scheduled_at);
   const now = new Date();
   const isPast = date < now;
   const isLive = Math.abs(date.getTime() - now.getTime()) < 2 * 60 * 60 * 1000; // within 2 hours
   const canAccess = canAccessLiveWorkshop(workshop, now);
 
-  const topicTitle = useMemo(() => {
-    if (!workshop.topic_id) return null;
-    for (const m of allModules) {
-      for (const t of m.topics) {
-        if (t.id === workshop.topic_id) return t.title;
-        if (t.children) {
-          const found = t.children.find((c) => c.id === workshop.topic_id);
-          if (found) return found.title;
-        }
-      }
-    }
-    return workshop.topic_id;
-  }, [workshop.topic_id]);
+  const catalog = useMemo(() => buildLiveClassTopicCatalog(allModules), []);
+  const resolved = briefForWorkshop(workshop, brief);
+  const summary = sessionSummaryText(workshop.description);
+  const teacherLabel = resolved.teachers.map((teacher) => teacher.name).slice(0, 2).join(', ');
+  const extraTeachers = Math.max(0, resolved.teachers.length - 2);
+  const topicCount = resolved.topics.length;
+  const singleTopicTitle =
+    topicCount === 1
+      ? catalog.find((entry) => entry.topicId === resolved.topics[0]?.topicId)?.title
+      : null;
+  const inPerson = workshop.session_modality === 'in_person';
 
   return (
     <div className="group flex flex-col p-5 sm:p-6 rounded-2xl bg-white/70 dark:bg-slate-800/50 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/40 shadow-sm hover:shadow-xl hover:shadow-blue-100/50 dark:hover:shadow-blue-900/20 transition-all duration-300">
@@ -61,18 +67,35 @@ export function WorkshopCard({ workshop }: WorkshopCardProps) {
         {workshop.title}
       </h3>
 
-      {topicTitle && (
+      {topicCount > 0 && (
         <div className="mb-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50/90 dark:bg-indigo-950/60 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-medium w-fit max-w-full">
           <BookOpen className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-          <span className="truncate">Tema: {topicTitle}</span>
+          <span className="truncate">
+            {singleTopicTitle ?? (topicCount === 1 ? '1 tema' : `${topicCount} temas`)}
+          </span>
         </div>
       )}
-      
-      {workshop.description && (
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
-          {workshop.description}
+
+      {teacherLabel ? (
+        <p className="mb-2 flex items-start gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+          <UserCheck className="w-3.5 h-3.5 shrink-0 text-indigo-500" />
+          <span className="truncate">
+            {teacherLabel}
+            {extraTeachers > 0 ? ` +${extraTeachers}` : ''}
+          </span>
         </p>
-      )}
+      ) : null}
+
+      <p className="mb-3 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+        {inPerson ? <MapPin className="w-3.5 h-3.5" /> : <Video className="w-3.5 h-3.5" />}
+        {sessionModalityLabel(workshop.session_modality)}
+      </p>
+      
+      {summary ? (
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-2">
+          {summary}
+        </p>
+      ) : null}
 
       <div className="mt-auto space-y-2">
         <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">

@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ChevronRight,
   Lock,
+  Unlock,
   Sparkles,
   Award,
   Zap,
@@ -37,6 +38,8 @@ import { BRAND } from '../../config/brand';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { getCourseIdForModule } from '../../content/courseCatalog';
 import type { CourseId } from '../../types/database';
+import { useCourseStore } from '../../stores/courseStore';
+import { isTopicOpenToRegistered, moduleHasRegisteredTopics } from '../../utils/topicOpenAccess';
 import { DownloadSyllabusBrochureButton } from './DownloadSyllabusBrochureButton';
 import type { AcademicMilestone } from '../../types/academicGradebook';
 import { getAcademicMilestones } from '../../services/academicScheduleService';
@@ -210,6 +213,7 @@ const SIMPLIFIED_PILLARS = [
 
 export default function SyllabusPage() {
   const { isEnrolledPhysician, user, hasCourseAccess, hasPremiumAccess } = useAuth();
+  const { moduleAccess, load: loadCourseAccess } = useCourseStore();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
   const { isCompleted, getParentTopicStats, getModuleStats } = useTopicProgress();
   const { grouped, unassigned, modulesWithOverrides, assignments, loading } = useSyllabusCatalog();
@@ -246,6 +250,10 @@ export default function SyllabusPage() {
     if (selectedCourseFilter === 'todos') return grouped;
     return grouped.filter((g) => g.course.id === selectedCourseFilter);
   }, [grouped, selectedCourseFilter]);
+
+  useEffect(() => {
+    void loadCourseAccess();
+  }, [loadCourseAccess]);
 
   useEffect(() => {
     let cancelled = false;
@@ -536,7 +544,14 @@ export default function SyllabusPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {searchResults.map((item, idx) => (
+                  {searchResults.map((item, idx) => {
+                    const assigned = getCourseIdForModule(assignments, item.moduleId);
+                    const courseUnlocked = assigned
+                      ? hasCourseAccess(assigned as CourseId)
+                      : hasPremiumAccess;
+                    const topicOpen = isTopicOpenToRegistered(moduleAccess.get(item.moduleId), item.path);
+                    const topicLocked = !courseUnlocked && !topicOpen;
+                    return (
                     <Link
                       key={idx}
                       to={`/modulo/${item.moduleId}/${item.path.join('/')}`}
@@ -545,6 +560,11 @@ export default function SyllabusPage() {
                       <div className="min-w-0">
                         <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
                           {item.moduleTitle}
+                          {topicOpen && !courseUnlocked && (
+                            <span className="ml-2 normal-case tracking-normal text-emerald-700 dark:text-emerald-300">
+                              Con registro
+                            </span>
+                          )}
                         </span>
                         <h4 className="font-semibold text-slate-900 dark:text-white text-base mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {item.title}
@@ -555,11 +575,13 @@ export default function SyllabusPage() {
                         )}
                       </div>
                       <div className="flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-xl border border-blue-200/60 dark:border-blue-800/40 group-hover:bg-blue-600 group-hover:text-white transition-all">
-                        <span>Estudiar tema</span>
+                        {topicLocked && <Lock className="w-3.5 h-3.5" />}
+                        <span>{topicLocked ? 'Requiere el nivel' : 'Estudiar tema'}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
                     </Link>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -672,7 +694,12 @@ export default function SyllabusPage() {
                 const modStats = getModuleStats(mod.topics);
                 const isModDone = modStats.isFullyCompleted;
                 const assignedCourse = getCourseIdForModule(assignments, mod.id);
-                const isLocked = assignedCourse ? !hasCourseAccess(assignedCourse as CourseId) : !hasPremiumAccess;
+                const moduleAccessRow = moduleAccess.get(mod.id);
+                const courseUnlocked = assignedCourse
+                  ? hasCourseAccess(assignedCourse as CourseId)
+                  : hasPremiumAccess;
+                const moduleOpenToRegistered = moduleHasRegisteredTopics(moduleAccessRow);
+                const isLocked = !courseUnlocked && !moduleOpenToRegistered;
 
                 return (
                   <div
@@ -759,6 +786,8 @@ export default function SyllabusPage() {
                               const isDone = isCompleted(t.id);
                               const parentStats = t.children?.length ? getParentTopicStats(t) : null;
                               const topicUrl = `/modulo/${mod.id}/${t.id}`;
+                              const topicOpen = isTopicOpenToRegistered(moduleAccessRow, [t.id]);
+                              const topicLocked = !courseUnlocked && !topicOpen;
 
                               return (
                                 <div
@@ -780,7 +809,14 @@ export default function SyllabusPage() {
                                         </span>
                                         <h4 className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200 group-hover/topic:text-blue-600 dark:group-hover/topic:text-blue-400 transition-colors">
                                           {t.title}
+                                          {topicLocked && <Lock className="inline w-3.5 h-3.5 ml-1.5 text-amber-500 align-text-top" />}
                                         </h4>
+                                        {topicOpen && !courseUnlocked && (
+                                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                            <Unlock className="w-3 h-3" />
+                                            Con registro
+                                          </span>
+                                        )}
                                         {hasQuiz(t.id) && <QuizTopicBadge compact />}
                                         {isDone ? (
                                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300/70 dark:border-emerald-800">
@@ -817,6 +853,9 @@ export default function SyllabusPage() {
                                     <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-700/30 grid sm:grid-cols-2 gap-1.5">
                                       {t.children.map((sub, sIdx) => {
                                         const subDone = isCompleted(sub.id);
+                                        const subLocked =
+                                          !courseUnlocked &&
+                                          !isTopicOpenToRegistered(moduleAccessRow, [t.id, sub.id]);
                                         return (
                                           <Link
                                             key={sub.id}
@@ -832,6 +871,7 @@ export default function SyllabusPage() {
                                                 {mod.number}.{idx + 1}.{sIdx + 1}
                                               </span>
                                               <span className="truncate group-hover/sub:font-medium transition-all">{sub.title}</span>
+                                              {subLocked && <Lock className="w-3 h-3 text-amber-500 shrink-0" />}
                                             </div>
                                             <div className="flex items-center gap-1 flex-shrink-0">
                                               {subDone ? (
@@ -853,13 +893,29 @@ export default function SyllabusPage() {
                           {/* Footer Action for Module */}
                           <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/40 flex flex-wrap items-center justify-between gap-3 text-xs">
                             <span className="text-slate-500 dark:text-slate-400">
-                              Lecciones completas, perlas clínicas y evaluaciones disponibles para alumnos inscritos.
+                              {moduleOpenToRegistered && !courseUnlocked
+                                ? 'Los temas marcados con registro se abren al iniciar sesión. El resto pertenece a este nivel.'
+                                : 'Lecciones completas, perlas clínicas y evaluaciones disponibles para alumnos inscritos.'}
                             </span>
                             <Link
-                              to={isEnrolledPhysician ? `/modulo/${mod.id}` : '/auth/registro'}
+                              to={
+                                courseUnlocked || moduleOpenToRegistered
+                                  ? user
+                                    ? `/modulo/${mod.id}`
+                                    : `/auth/login?next=${encodeURIComponent(`/modulo/${mod.id}`)}`
+                                  : user
+                                    ? '/cursos'
+                                    : '/auth/registro'
+                              }
                               className="inline-flex items-center gap-1.5 font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                             >
-                              {isEnrolledPhysician ? 'Entrar a este módulo' : 'Inscribirme para cursar este módulo'}
+                              {courseUnlocked
+                                ? 'Entrar a este módulo'
+                                : moduleOpenToRegistered
+                                  ? 'Ver temas abiertos con tu cuenta'
+                                  : user
+                                    ? 'Solicitar este nivel'
+                                    : 'Inscribirme para cursar este módulo'}
                               <ArrowRight className="w-3.5 h-3.5" />
                             </Link>
                           </div>

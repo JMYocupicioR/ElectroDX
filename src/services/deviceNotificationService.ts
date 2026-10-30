@@ -361,6 +361,21 @@ export function subscribeToRealtimeAssignments(
  * Subscribes teachers/admins to Realtime submissions from all students
  * Sends a native device notification when any student submits an assignment or exam
  */
+export function notifyStaffInboxDecision(input: {
+  sourceKey: string;
+  title: string;
+  body: string;
+  url: string;
+}): void {
+  void sendDeviceNotification({
+    title: input.title,
+    body: input.body,
+    url: input.url,
+    tag: `staff-p0-${input.sourceKey}`,
+    requireInteraction: true,
+  });
+}
+
 export function subscribeToAdminRealtimeSubmissions(
   onSubmissionChange: (assignment: StudentAssignment) => void
 ): () => void {

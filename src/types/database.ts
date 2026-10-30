@@ -809,10 +809,11 @@ interface RawDatabase {
           title: string;
           message: string;
           type: string;
-          severity: 'info' | 'success' | 'warning';
+          severity: 'info' | 'success' | 'warning' | 'urgent';
           link_url: string | null;
           source_key: string;
           is_read: boolean;
+          action_required: boolean;
           created_at: string;
         };
         Insert: {
@@ -821,8 +822,9 @@ interface RawDatabase {
           message: string;
           source_key: string;
           type?: string;
-          severity?: 'info' | 'success' | 'warning';
+          severity?: 'info' | 'success' | 'warning' | 'urgent';
           link_url?: string | null;
+          action_required?: boolean;
         };
         Update: { is_read?: boolean };
       };
@@ -1213,6 +1215,26 @@ interface RawDatabase {
         Args: { p_topic_id: string };
         Returns: { user_id: string; display_name: string; is_staff: boolean }[];
       };
+      list_staff_inbox: {
+        Args: Record<string, never>;
+        Returns: {
+          source_key: string;
+          kind: string;
+          title: string;
+          message: string;
+          actor_name: string | null;
+          context_label: string | null;
+          link_url: string;
+          action_required: boolean;
+          waiting_since: string;
+          due_at: string | null;
+          assignment_priority: string | null;
+          is_resubmission: boolean;
+          topic_has_session_soon: boolean;
+          is_read: boolean;
+          notification_id: string | null;
+        }[];
+      };
       propose_topic_commitments: {
         Args: { p_topic_ids: string[]; p_module_id: string; p_cohort_id?: string };
         Returns: TopicTeachingCommitment[];
@@ -1238,6 +1260,18 @@ interface RawDatabase {
       admin_delete_live_workshop: {
         Args: { p_workshop_id: string };
         Returns: { success?: boolean } | boolean;
+      };
+      get_published_session_briefs: {
+        Args: { p_workshop_ids: string[] };
+        Returns: {
+          workshop_id: string;
+          kind: string;
+          teacher_id: string | null;
+          teacher_name: string | null;
+          topic_id: string | null;
+          module_id: string | null;
+          teacher_specialty: string | null;
+        }[];
       };
       admin_delete_course: {
         Args: { p_course_id: string };

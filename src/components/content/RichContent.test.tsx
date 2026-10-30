@@ -108,4 +108,15 @@ describe('RichContent', () => {
     expect(markup).toContain('<ol');
     expect(markup).not.toContain('## ');
   });
+
+  it('renders embedded emg-trace simulator directive in screen and print mode', () => {
+    const snippet = 'Texto previo.\n\n:::emg-trace{preset="median-cts"}:::\n\nTexto posterior.';
+    const screenMarkup = html(snippet);
+    expect(screenMarkup).toContain('Simulador Interactivo de Trazo');
+    expect(screenMarkup).toContain('Nervio Mediano Motor');
+
+    const printMarkup = renderToStaticMarkup(<RichContent text={snippet} tone="print" />);
+    expect(printMarkup).toContain('[Trazado Electrofisiológico Integrado');
+    expect(printMarkup).toContain('median-cts');
+  });
 });

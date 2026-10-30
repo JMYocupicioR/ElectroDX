@@ -36,7 +36,11 @@ export default function AdminStudentsListPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterResidency, setFilterResidency] = useState<string>('all');
-  const [filterCompliance, setFilterCompliance] = useState<string>('all');
+  const [filterCompliance, setFilterCompliance] = useState<string>(() => {
+    const raw = new URLSearchParams(location.search).get('cumplimiento');
+    if (raw === 'riesgo' || raw === 'at_risk' || raw === 'lagging' || raw === 'on_track') return raw;
+    return 'all';
+  });
 
   // Modals state
   const [showRubricsModal, setShowRubricsModal] = useState(false);
@@ -64,6 +68,13 @@ export default function AdminStudentsListPage() {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const raw = new URLSearchParams(location.search).get('cumplimiento');
+    if (raw === 'riesgo' || raw === 'at_risk' || raw === 'lagging' || raw === 'on_track') {
+      setFilterCompliance(raw);
+    }
+  }, [location.search]);
+
   const filtered = useMemo(() => {
     return profiles.filter((p) => {
       const q = search.toLowerCase();
@@ -82,7 +93,9 @@ export default function AdminStudentsListPage() {
       const matchCompliance =
         filterCompliance === 'all'
           ? true
-          : sSummary?.complianceStatus === filterCompliance;
+          : filterCompliance === 'riesgo'
+            ? sSummary?.complianceStatus === 'at_risk' || sSummary?.complianceStatus === 'lagging'
+            : sSummary?.complianceStatus === filterCompliance;
 
       return matchSearch && matchResidency && matchCompliance;
     });
@@ -301,6 +314,7 @@ export default function AdminStudentsListPage() {
               className="w-full sm:w-auto px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300"
             >
               <option value="all">Todo cumplimiento</option>
+              <option value="riesgo">En riesgo o rezagados</option>
               <option value="on_track">Al corriente</option>
               <option value="at_risk">En riesgo</option>
               <option value="lagging">Rezagado</option>
@@ -392,7 +406,8 @@ export default function AdminStudentsListPage() {
                       <div className="flex items-center gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
                         {sSummary && (
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold shrink-0 ${
+                            title={(sSummary.riskReasons ?? []).join(' · ') || sSummary.complianceLabel}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] font-bold shrink-0 max-w-[18rem] truncate ${
                               sSummary.complianceStatus === 'on_track'
                                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
                                 : sSummary.complianceStatus === 'at_risk'
@@ -407,7 +422,10 @@ export default function AdminStudentsListPage() {
                             ) : (
                               <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
                             )}
-                            <span>{sSummary.complianceLabel}</span>
+                            <span>
+                              {sSummary.complianceLabel}
+                              {sSummary.riskReasons?.[0] ? ` · ${sSummary.riskReasons[0]}` : ''}
+                            </span>
                           </span>
                         )}
 

@@ -61,7 +61,6 @@ const AdminAuditPage = lazy(() => import('./components/admin/AdminAuditPage'));
 const AdminQuizAttemptsPage = lazy(() => import('./components/admin/AdminQuizAttemptsPage'));
 const AdminQuizzesPage = lazy(() => import('./components/admin/AdminQuizzesPage'));
 const AdminWorkshopsPage = lazy(() => import('./components/admin/AdminWorkshopsPage'));
-const AdminModuleAccessPage = lazy(() => import('./components/admin/AdminModuleAccessPage'));
 const AccountPage = lazy(() => import('./components/user/AccountPage'));
 const SettingsPage = lazy(() => import('./components/user/SettingsPage'));
 const ExamConfigPage = lazy(() => import('./components/exam/ExamConfigPage'));
@@ -73,6 +72,7 @@ const AdminExamAnalyticsPage = lazy(() => import('./components/admin/AdminExamAn
 const AdminAssignmentsAnalyticsPage = lazy(() => import('./components/admin/AdminAssignmentsAnalyticsPage'));
 const AdminAttendanceAnalyticsPage = lazy(() => import('./components/admin/AdminAttendanceAnalyticsPage'));
 const AdminExerciseCasesPage = lazy(() => import('./components/admin/AdminExerciseCasesPage'));
+const AdminTraceSimulatorPage = lazy(() => import('./components/admin/AdminTraceSimulatorPage'));
 const AdminSyllabusPage = lazy(() => import('./components/admin/AdminSyllabusPage'));
 const AdminCourseWaitlistPage = lazy(() => import('./components/admin/AdminCourseWaitlistPage'));
 const AdminAcademicCalendarPage = lazy(() => import('./components/admin/AdminAcademicCalendarPage'));
@@ -132,10 +132,10 @@ function App() {
               <Route path="/programa" element={<SyllabusPage />} />
               <Route path="/cursos" element={<CoursesCatalogPage />} />
 
-              {/* Contenido formativo exclusivo para alumnos con suscripción */}
-              <Route path="/modulo/:moduleId" element={<ProtectedRoute mode="enrolled"><ModulePage /></ProtectedRoute>} />
+              {/* Lecciones: la cuenta basta si el tema está abierto al registro. El resto exige el nivel. */}
+              <Route path="/modulo/:moduleId" element={<ProtectedRoute><ModulePage /></ProtectedRoute>} />
               <Route path="/modulo/:moduleId/evaluacion/:topicId" element={<ProtectedRoute mode="enrolled"><TopicQuizPage /></ProtectedRoute>} />
-              <Route path="/modulo/:moduleId/*" element={<ProtectedRoute mode="enrolled"><TopicPage /></ProtectedRoute>} />
+              <Route path="/modulo/:moduleId/*" element={<ProtectedRoute><TopicPage /></ProtectedRoute>} />
               
               {/* Simuladores y herramientas con candado exclusivo Premium */}
               <Route path="/simuladores/publico" element={<ExerciseMode publicMode />} />
@@ -221,11 +221,12 @@ function App() {
               <Route path="/admin/evaluaciones" element={<ProtectedRoute mode="editor"><AdminQuizAttemptsPage /></ProtectedRoute>} />
               <Route path="/admin/auditoria" element={<ProtectedRoute mode="admin"><AdminAuditPage /></ProtectedRoute>} />
               <Route path="/admin/talleres" element={<ProtectedRoute mode="editor"><AdminWorkshopsPage /></ProtectedRoute>} />
-              <Route path="/admin/acceso" element={<ProtectedRoute mode="admin"><AdminModuleAccessPage /></ProtectedRoute>} />
+              <Route path="/admin/acceso" element={<Navigate to="/admin/temario" replace />} />
               <Route path="/admin/temario" element={<ProtectedRoute mode="editor"><AdminSyllabusPage /></ProtectedRoute>} />
               <Route path="/admin/exportacion" element={<ProtectedRoute mode="editor"><AdminTextbookExportPage /></ProtectedRoute>} />
               <Route path="/admin/induccion" element={<ProtectedRoute mode="editor"><AdminPortalWelcomePage /></ProtectedRoute>} />
               <Route path="/admin/ejercicios" element={<ProtectedRoute mode="editor"><AdminExerciseCasesPage /></ProtectedRoute>} />
+              <Route path="/admin/trazos" element={<ProtectedRoute mode="editor"><AdminTraceSimulatorPage /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </Router>

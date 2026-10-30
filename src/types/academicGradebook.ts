@@ -158,6 +158,9 @@ export interface StudentKardexData {
     }[];
   };
   milestoneAudits: StudentMilestoneAudit[];
+  complianceStatus: 'on_track' | 'at_risk' | 'lagging';
+  complianceLabel: string;
+  riskReasons: string[];
 }
 
 export interface StudentCohortSummary {
@@ -178,4 +181,5 @@ export interface StudentCohortSummary {
   isOfficial: boolean;
   complianceStatus: 'on_track' | 'at_risk' | 'lagging';
   complianceLabel: string;
+  riskReasons: string[];
 }

@@ -108,9 +108,11 @@ import { AssignmentReadingChecklist } from './AssignmentReadingChecklist';
 import { assignmentRequiresDelivery, describeReadingAssignment } from '../../utils/readingAssignments';
 import { fetchServerNotifications, markAllServerNotificationsRead, markServerNotificationRead, mergeServerNotifications } from '../../services/assignmentSubmissionService';
 import { StudentStudyHub } from './StudentStudyHub';
+import { StudentAgenda } from './StudentAgenda';
 import { StudentCertificatePanel } from './StudentCertificatePanel';
 import { StudentPerformancePanel } from './StudentPerformancePanel';
 import { StudentPortalTabBar, type StudentPortalTab } from './StudentPortalTabBar';
+import { StudentAlertCodeLegend } from './StudentAlertCodeLegend';
 import {
   StudentQuickControlHub,
   getNotificationTypeLabel,
@@ -244,7 +246,7 @@ export default function StudentDashboard() {
   // Sync tab with URL search param ?tab=...
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['summary', 'performance', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
+    if (tabParam && ['summary', 'performance', 'modules', 'agenda', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
       setActiveTab(tabParam as typeof activeTab);
     }
   }, [searchParams]);
@@ -922,7 +924,7 @@ export default function StudentDashboard() {
       const targetTab = params.get('tab');
       if (
         targetTab &&
-        ['summary', 'performance', 'modules', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(
+        ['summary', 'performance', 'modules', 'agenda', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(
           targetTab
         )
       ) {
@@ -1644,9 +1646,17 @@ export default function StudentDashboard() {
           notifications: unreadCount,
           quizzes: quizzesList.filter((q) => !q.passed).length,
         }}
+        trailing={
+          <StudentAlertCodeLegend
+            notifications={notifications}
+            assignments={assignments}
+            onSelectNotifications={() => selectTab('notifications')}
+          />
+        }
       />
 
       <div role="tabpanel" id={`panel-${activeTab}`} aria-labelledby={`tab-${activeTab}`}>
+      {activeTab === 'agenda' && <StudentAgenda studentId={user?.id ?? null} />}
       {/* ─── TAB 1: Resumen General ─── */}
       {activeTab === 'summary' && (
         <div className="space-y-8">

@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router-dom';
 import { StudentPortalGuide } from './StudentPortalGuide';
 import { StudentPortalTabBar } from './StudentPortalTabBar';
+import { StudentAlertCodeLegend } from './StudentAlertCodeLegend';
 import { StudentQuickControlHub } from './StudentQuickControlHub';
 import EditorialCommitteeModal from '../editorial/EditorialCommitteeModal';
 import { getLiveSessionUrgency } from '../../services/courseService';
@@ -171,6 +172,43 @@ describe('StudentDashboard UX & Fast-Track Architecture', () => {
     expect(attendedHtml).toContain('text-slate-600');
   });
 
+  it('Caso F2: el código de alertas va a la derecha de las pestañas y arranca cerrado', () => {
+    const legendHtml = renderToStaticMarkup(
+      <StudentAlertCodeLegend
+        notifications={[
+          {
+            id: 'notif-unread-1',
+            title: 'Nueva tarea: Análisis de Miopatías',
+            message: 'Revisa los trazos de aguja antes del viernes.',
+            type: 'academic',
+            createdAt: new Date().toISOString(),
+            isRead: false,
+            linkUrl: '/portal?tab=assignments',
+          },
+        ]}
+        assignments={[]}
+        onSelectNotifications={() => undefined}
+      />
+    );
+    expect(legendHtml).toContain('Código de alertas');
+    expect(legendHtml).toContain('aria-expanded="false"');
+    expect(legendHtml).toContain('id="student-alert-code-legend"');
+    expect(legendHtml).toContain('Mostrar código de alertas, 1 por atender');
+
+    const barHtml = renderToStaticMarkup(
+      <StudentPortalTabBar
+        activeTab="summary"
+        onSelect={() => undefined}
+        counts={{ notifications: 1 }}
+        trailing={<span>Código de alertas</span>}
+      />
+    );
+    const estudioIndex = barHtml.indexOf('Estudio');
+    const legendIndex = barHtml.indexOf('Código de alertas');
+    expect(estudioIndex).toBeGreaterThan(-1);
+    expect(legendIndex).toBeGreaterThan(estudioIndex);
+  });
+
   it('Caso G: StudentQuickControlHub muestra avisos en rojo/normal, clases pendientes, tareas enviadas y radar de acreditación en la primera página', () => {
     const mockNotifications: StudentNotification[] = [
       {
@@ -311,6 +349,7 @@ describe('StudentDashboard UX & Fast-Track Architecture', () => {
     expect(hubHtml).toContain('Radar de Acreditación y Pendientes Clave');
     expect(hubHtml).toContain('Cédula Profesional SEP');
     expect(hubHtml).toContain('Asistencia a Sesiones (20% del Kardex)');
+    expect(hubHtml).not.toContain('Código de alertas');
   });
 
   it('Caso H: clasifica las notificaciones en 4 colores semánticos (Rojo: examen/tarea <24h/clase <=5min, Amarillo: clase >5min/tarea en tiempo, Azul claro: sistema, Verde: logros)', () => {

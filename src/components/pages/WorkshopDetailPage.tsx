@@ -3,42 +3,52 @@ import { useParams, Link } from 'react-router-dom';
 import { Calendar, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthProvider';
-import { useCourseStore } from '../../stores/courseStore';
 import { BackButton } from '../common/BackButton';
 import { LiveClassCountdown } from '../course/LiveClassCountdown';
+import { LiveSessionRoster } from '../course/LiveSessionRoster';
+import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
+import type { SessionBrief } from '../../utils/liveSessionBrief';
 import type { LiveWorkshop } from '../../types/database';
 
 export default function WorkshopDetailPage() {
   const { workshopId } = useParams();
   const { user, isEnrolledPhysician } = useAuth();
-  const { upcomingWorkshops, load: loadCourse } = useCourseStore();
   const [workshop, setWorkshop] = useState<LiveWorkshop | null>(null);
+  const [brief, setBrief] = useState<SessionBrief | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [loadingReg, setLoadingReg] = useState(false);
 
   useEffect(() => {
-    loadCourse();
-  }, [loadCourse]);
+    if (!workshopId) return;
+    let cancelled = false;
+    supabase
+      .from('live_workshops')
+      .select('*')
+      .eq('id', workshopId)
+      .single()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error(error);
+          return;
+        }
+        if (data) setWorkshop(data as unknown as LiveWorkshop);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [workshopId]);
 
   useEffect(() => {
     if (!workshopId) return;
-    const found = upcomingWorkshops.find(w => w.id === workshopId);
-    if (found) {
-      setWorkshop(found);
-    } else {
-      // Fallback to fetch if not in upcoming
-      const fetchWorkshop = async () => {
-        try {
-          const { data, error } = await supabase.from('live_workshops').select('*').eq('id', workshopId).single();
-          if (error) throw error;
-          if (data) setWorkshop(data as unknown as LiveWorkshop);
-        } catch (e) {
-          console.error(e);
-        }
-      };
-      fetchWorkshop();
-    }
-  }, [workshopId, upcomingWorkshops]);
+    let cancelled = false;
+    fetchSessionBriefs([workshopId]).then((map) => {
+      if (!cancelled) setBrief(map.get(workshopId) ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [workshopId]);
 
   useEffect(() => {
     if (!workshopId || !user) return;
@@ -92,13 +102,11 @@ export default function WorkshopDetailPage() {
           </div>
         </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-4 text-slate-900 dark:text-white">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 text-slate-900 dark:text-white">
           {workshop.title}
         </h1>
 
-        <div className="prose dark:prose-invert max-w-none mb-10 text-slate-600 dark:text-slate-400">
-          <p>{workshop.description || 'Sin descripción detallada.'}</p>
-        </div>
+        <LiveSessionRoster workshop={workshop} brief={brief} />
 
         {isEnrolledPhysician ? (
           <LiveClassCountdown

@@ -7,6 +7,8 @@ import {
 } from './tableAvailability';
 import type { AcademicMilestone, StudentMilestoneAudit, MilestoneTopicCheckItem } from '../types/academicGradebook';
 import type { Topic } from '../types/content';
+import { auditMilestoneProgress, mexicoDateKey } from '../utils/academicRisk';
+import { canonicalTopicId, canonicalTopicIds } from '../utils/topicIdAliases';
 
 export const KEY_LOCAL_MILESTONES = 'neurosafe_academic_milestones_';
 const KEY_ADMIN_BACKUP = 'neurosafe_academic_milestones_admin_';
@@ -23,15 +25,15 @@ export const DEFAULT_ACADEMIC_MILESTONES: AcademicMilestone[] = [
     target_topic_ids: [
       'history',
       'clinical-role',
-      'ethical-aspects',
-      'safety-patient',
-      'resting-potential',
-      'action-potential',
-      'nerve-structure',
+      'ethics',
+      'laboratory',
+      'axonal-membrane',
+      'action-potential-generation',
+      'peripheral-nerve-anatomy',
       'motor-conduction',
       'sensory-conduction',
-      'mixed-nerve',
-      'temperature-effects',
+      'mixed-conduction',
+      'temperature-effect',
     ],
     passing_grade: 80,
     order_index: 1,
@@ -46,16 +48,16 @@ export const DEFAULT_ACADEMIC_MILESTONES: AcademicMilestone[] = [
     start_date: '2026-09-16T00:00:00Z',
     due_date: '2026-10-15T23:59:59Z',
     target_topic_ids: [
-      'f-waves',
+      'f-wave',
       'h-reflex',
       'axon-reflex',
       'blink-reflex',
-      'emg-electrodes',
-      'insertional-activity',
+      'electrode-types',
+      'insertion-activity',
       'spontaneous-activity',
-      'fibrillations-psws',
-      'fasciculations',
-      'mup-parameters',
+      'fibrillations',
+      'fasciculaciones',
+      'mup-amplitude-duration',
       'recruitment-pattern',
     ],
     passing_grade: 80,
@@ -71,14 +73,13 @@ export const DEFAULT_ACADEMIC_MILESTONES: AcademicMilestone[] = [
     start_date: '2026-10-16T00:00:00Z',
     due_date: '2026-11-15T23:59:59Z',
     target_topic_ids: [
-      'repetitive-stimulation-basics',
-      'myasthenia-protocol',
-      'lambert-eaton-protocol',
-      'cervical-radiculopathy',
-      'lumbosacral-radiculopathy',
-      'brachial-plexus-anatomy',
+      'repetitive-stimulation',
+      'myasthenia',
+      'cervical-radic',
+      'lumbosacral-radic',
+      'brachial-plexus',
       'lumbosacral-plexus',
-      'als-gold-coast-criteria',
+      'gold-coast',
     ],
     passing_grade: 80,
     order_index: 3,
@@ -93,14 +94,13 @@ export const DEFAULT_ACADEMIC_MILESTONES: AcademicMilestone[] = [
     start_date: '2026-11-16T00:00:00Z',
     due_date: '2026-12-15T23:59:59Z',
     target_topic_ids: [
-      'cidp-criteria-2021',
+      'cidp-criteria',
       'gbs-subtypes',
       'diabetic-neuropathy',
       'inflammatory-myopathies',
-      'dystrophies',
-      'qc-standards',
-      'safety-electrical',
-      'report-writing-standards',
+      'muscular-dystrophies',
+      'aanem-ndtf',
+      'patient-safety',
     ],
     passing_grade: 80,
     order_index: 4,
@@ -111,10 +111,11 @@ export const DEFAULT_ACADEMIC_MILESTONES: AcademicMilestone[] = [
 
 // Mapeo auxiliar de temas para resolver títulos rápidamente
 function findTopicMetadata(topicId: string): { topicTitle: string; moduleId: string; moduleTitle: string } {
+  const resolvedId = canonicalTopicId(topicId);
   for (const mod of allModules) {
     const searchRecursive = (topics: Topic[]): Topic | null => {
       for (const t of topics) {
-        if (t.id === topicId) return t;
+        if (t.id === resolvedId) return t;
         if (t.children && t.children.length > 0) {
           const found = searchRecursive(t.children);
           if (found) return found;
@@ -134,7 +135,7 @@ function findTopicMetadata(topicId: string): { topicTitle: string; moduleId: str
   }
 
   return {
-    topicTitle: `Tema ${topicId}`,
+    topicTitle: `Tema ${resolvedId}`,
     moduleId: 'general',
     moduleTitle: 'Temario General',
   };
@@ -159,6 +160,7 @@ export function normalizeMilestone(milestone: AcademicMilestone): AcademicMilest
     ...milestone,
     start_date: start ? toMilestoneTimestamp(start, false) : milestone.start_date,
     due_date: due ? toMilestoneTimestamp(due, true) : milestone.due_date,
+    target_topic_ids: canonicalTopicIds(milestone.target_topic_ids),
   };
 }
 
@@ -195,6 +197,11 @@ export function hasCustomAdminDates(list: AcademicMilestone[]): boolean {
 export function usableAdminSchedule(list: AcademicMilestone[]): AcademicMilestone[] {
   const normalized = list.map(normalizeMilestone);
   return hasCustomAdminDates(normalized) ? normalized : [];
+}
+
+/** Cortes that can raise academic alerts: saved admin dates, never the August seed. */
+export function selectRiskMilestones(list: AcademicMilestone[]): AcademicMilestone[] {
+  return usableAdminSchedule(list).filter((item) => !isDefaultSeedMilestone(item));
 }
 
 function sortMilestones(list: AcademicMilestone[]): AcademicMilestone[] {
@@ -404,50 +411,42 @@ export async function deleteMilestone(milestoneId: string): Promise<void> {
 export async function getStudentMilestoneAudits(
   _studentId: string,
   completedTopicSet: Set<string>,
-  providedMilestones?: AcademicMilestone[]
+  providedMilestones?: AcademicMilestone[],
+  completedAtByTopic?: Map<string, string | null | undefined>
 ): Promise<StudentMilestoneAudit[]> {
-  const milestones = providedMilestones || (await getAcademicMilestones());
-  const now = new Date();
+  const milestones = selectRiskMilestones(providedMilestones || (await getAcademicMilestones()));
+  const todayKey = mexicoDateKey(new Date());
 
   return milestones.map((milestone) => {
-    const dueDate = new Date(milestone.due_date);
-    const isPastDue = now > dueDate;
+    const progress = auditMilestoneProgress(
+      milestone,
+      completedTopicSet,
+      completedAtByTopic,
+      todayKey
+    );
 
     const topicChecks: MilestoneTopicCheckItem[] = (milestone.target_topic_ids || []).map((tid) => {
       const meta = findTopicMetadata(tid);
-      const isCompleted = completedTopicSet.has(tid);
-
-      let status: 'on_time' | 'late' | 'pending' = 'pending';
-      if (isCompleted) {
-        // En una implementación con timestamp guardado, se compararía completion_date con due_date
-        status = 'on_time';
-      } else if (isPastDue) {
-        status = 'late';
-      }
-
+      const completedAt = completedAtByTopic?.get(tid);
       return {
         topicId: tid,
         topicTitle: meta.topicTitle,
         moduleId: meta.moduleId,
         moduleTitle: meta.moduleTitle,
-        completed: isCompleted,
-        status,
+        completed: completedTopicSet.has(tid),
+        completedAt: completedAt ?? undefined,
+        status: progress.statusByTopic.get(tid) ?? 'pending',
       };
     });
-
-    const totalTopics = topicChecks.length;
-    const completedTopics = topicChecks.filter((t) => t.completed).length;
-    const progressPct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 100;
-    const isOnTrack = !isPastDue || progressPct >= 80;
 
     return {
       milestoneId: milestone.id,
       milestoneTitle: milestone.title,
       dueDate: milestone.due_date,
-      totalTopics,
-      completedTopics,
-      progressPct,
-      isOnTrack,
+      totalTopics: progress.totalTopics,
+      completedTopics: progress.completedOnTime,
+      progressPct: progress.progressPct,
+      isOnTrack: progress.isOnTrack,
       topics: topicChecks,
     };
   });

@@ -22,7 +22,12 @@ import {
 import { allModules } from '../../content/modules';
 import type { AcademicMilestone } from '../../types/academicGradebook';
 import type { AdminProfileRow } from '../../types/admin';
-import type { Topic } from '../../types/content';
+import {
+  LiveClassTopicQuickPicker,
+  buildLiveClassTopicCatalog,
+  findTopicCatalogEntry,
+  topicCatalogLine,
+} from './LiveClassTopicQuickPicker';
 
 interface AcademicScheduleManagerModalProps {
   isOpen: boolean;
@@ -61,30 +66,7 @@ export default function AcademicScheduleManagerModal({
     }
   }, [isOpen]);
 
-  // Lista aplanada de hojas del temario. Algunos IDs se reutilizan entre módulos
-  // (p. ej. fiber-types), así que cada fila lleva una clave de lista única.
-  const allPlatformTopics = useMemo(() => {
-    const list: { listKey: string; id: string; title: string; moduleId: string; moduleTitle: string }[] = [];
-    for (const m of allModules) {
-      const extractLeafs = (topics: Topic[]) => {
-        for (const t of topics) {
-          if (!t.children || t.children.length === 0) {
-            list.push({
-              listKey: `${m.id}:${t.id}:${list.length}`,
-              id: t.id,
-              title: t.title,
-              moduleId: m.id,
-              moduleTitle: m.title,
-            });
-          } else {
-            extractLeafs(t.children);
-          }
-        }
-      };
-      extractLeafs(m.topics);
-    }
-    return list;
-  }, []);
+  const topicCatalog = useMemo(() => buildLiveClassTopicCatalog(allModules), []);
 
   if (!isOpen) return null;
 
@@ -96,7 +78,7 @@ export default function AcademicScheduleManagerModal({
       description: 'Checklist de temas y metas para esta fecha de evaluación',
       start_date: new Date().toISOString().slice(0, 10),
       due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      target_topic_ids: allPlatformTopics.slice(0, 5).map((t) => t.id),
+      target_topic_ids: [],
       passing_grade: 80,
       order_index: milestones.length + 1,
       created_at: new Date().toISOString(),
@@ -126,14 +108,6 @@ export default function AcademicScheduleManagerModal({
     const updated = await getAcademicMilestones();
     setMilestones(updated);
     if (onUpdated) onUpdated();
-  };
-
-  const toggleTopicInEditing = (topicId: string) => {
-    if (!editingMilestone) return;
-    const current = editingMilestone.target_topic_ids || [];
-    const exists = current.includes(topicId);
-    const updated = exists ? current.filter((id) => id !== topicId) : [...current, topicId];
-    setEditingMilestone({ ...editingMilestone, target_topic_ids: updated });
   };
 
   return (
@@ -313,21 +287,26 @@ export default function AcademicScheduleManagerModal({
                           <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2">
                             Checklist de Temas Requeridos para este Corte:
                           </label>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 gap-2">
                             {m.target_topic_ids?.map((tid, topicIndex) => {
-                              const tMeta = allPlatformTopics.find((t) => t.id === tid);
+                              const entry = findTopicCatalogEntry(topicCatalog, tid);
                               return (
                                 <div
                                   key={`${m.id}:${tid}:${topicIndex}`}
-                                  className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs"
+                                  className="flex items-start gap-2 p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-xs"
                                 >
-                                  <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
-                                    {tMeta?.title || tid}
-                                  </span>
-                                  <span className="text-[10px] text-slate-400 ml-auto font-mono shrink-0">
-                                    {tMeta?.moduleTitle?.slice(0, 12)}…
-                                  </span>
+                                  <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                                  <div className="min-w-0">
+                                    <p
+                                      className="font-semibold text-slate-800 dark:text-slate-200 leading-snug line-clamp-2"
+                                      title={entry?.title ?? tid}
+                                    >
+                                      {entry?.title ?? 'Tema no encontrado'}
+                                    </p>
+                                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug mt-0.5 line-clamp-2">
+                                      {entry ? topicCatalogLine(entry) : tid}
+                                    </p>
+                                  </div>
                                 </div>
                               );
                             })}
@@ -535,39 +514,23 @@ export default function AcademicScheduleManagerModal({
                   </div>
                 </div>
 
-                {/* Seleccionar temas del checklist */}
                 <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                      Temas Requeridos en este Corte ({editingMilestone.target_topic_ids?.length || 0})
-                    </label>
-                    <span className="text-[11px] text-slate-400">
-                      Haz clic para seleccionar o desmarcar temas
-                    </span>
-                  </div>
-
-                  <div className="max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 p-2 space-y-1.5 bg-slate-50/50 dark:bg-slate-800/50">
-                    {allPlatformTopics.map((t) => {
-                      const isSelected = editingMilestone.target_topic_ids?.includes(t.id);
-                      return (
-                        <button
-                          key={t.listKey}
-                          type="button"
-                          onClick={() => toggleTopicInEditing(t.id)}
-                          className={`w-full flex items-center justify-between p-2 rounded-lg text-left text-xs transition cursor-pointer ${
-                            isSelected
-                              ? 'bg-indigo-100 dark:bg-indigo-950 text-indigo-900 dark:text-indigo-200 font-bold border border-indigo-300 dark:border-indigo-700'
-                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                          }`}
-                        >
-                          <span className="truncate pr-2">{t.title}</span>
-                          <span className="text-[10px] text-slate-400 shrink-0">
-                            {t.moduleTitle?.slice(0, 14)}…
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <LiveClassTopicQuickPicker
+                    catalog={topicCatalog}
+                    selectedAdditionalIds={editingMilestone.target_topic_ids ?? []}
+                    onSelectedAdditionalIdsChange={(ids) =>
+                      setEditingMilestone({ ...editingMilestone, target_topic_ids: ids })
+                    }
+                    suggestedEntries={topicCatalog.slice(0, 12)}
+                    title={`Temas requeridos en este corte (${editingMilestone.target_topic_ids?.length || 0})`}
+                    hint="Busca la lección por su nombre. Un tema general no arrastra subtemas; usa «+ subtemas» si quieres incluir la rama."
+                    showPrimaryChip={false}
+                    includeDescendants={false}
+                    selectedLayout="list"
+                    searchPlaceholder="Buscar lección, módulo o subtema…"
+                    suggestionsLabel="Temas del temario"
+                    maxResults={8}
+                  />
                 </div>
 
                 {saveError ? (

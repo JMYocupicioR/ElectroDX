@@ -1,40 +1,67 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Lock, Sparkles, Check, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
 import { useCourseStore } from '../stores/courseStore';
+import { LoadingSpinner } from './LoadingSpinner';
 import { useSyllabusCatalog } from '../hooks/useSyllabusCatalog';
 import { getCourseIdForModule, getCourseById } from '../content/courseCatalog';
 import type { CourseId } from '../types/database';
+import { isTopicOpenToRegistered, moduleHasRegisteredTopics } from '../utils/topicOpenAccess';
 
 interface CourseGateProps {
   moduleId?: string;
   topicId?: string;
+  topicPathIds?: string[];
   children?: ReactNode;
 }
 
-export function CourseGate({ moduleId, topicId, children }: CourseGateProps) {
+export function CourseGate({ moduleId, topicId, topicPathIds, children }: CourseGateProps) {
   const { user, isAdmin, isEditor, hasPremiumAccess, hasCourseAccess, isEnrolledPhysician } = useAuth();
   const { moduleAccess, load } = useCourseStore();
   const { assignments, courses } = useSyllabusCatalog();
+  const [accessReady, setAccessReady] = useState(false);
 
   useEffect(() => {
-    void load();
+    let cancelled = false;
+    void load().finally(() => {
+      if (!cancelled) setAccessReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   const access = moduleId ? moduleAccess.get(moduleId) : undefined;
   const courseId = moduleId ? getCourseIdForModule(assignments, moduleId) : null;
   const course = courseId ? getCourseById(courses, courseId) : undefined;
-  const isFreeModule = access?.required_tier === 'free';
-  const isPreviewTopic = Boolean(topicId && access?.preview_topic_ids?.includes(topicId));
+  const pathIds = topicPathIds?.length ? topicPathIds : topicId ? [topicId] : [];
+  const openToRegistered =
+    Boolean(user) &&
+    (pathIds.length > 0
+      ? isTopicOpenToRegistered(access, pathIds)
+      : moduleHasRegisteredTopics(access));
 
   const canAccess =
     isAdmin ||
     isEditor ||
     hasPremiumAccess ||
-    isFreeModule ||
-    isPreviewTopic ||
+    openToRegistered ||
     (courseId ? hasCourseAccess(courseId as CourseId) : false);
+
+  const canEnterWithoutRegistry =
+    isAdmin ||
+    isEditor ||
+    hasPremiumAccess ||
+    (courseId ? hasCourseAccess(courseId as CourseId) : false);
+
+  if (!accessReady && !canEnterWithoutRegistry) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-24 flex justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   if (canAccess && children) {
     return <>{children}</>;

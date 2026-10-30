@@ -41,8 +41,12 @@ import {
   FileText,
   ShieldAlert,
   RotateCcw,
+  Activity,
 } from 'lucide-react';
 import { QuickTopicMaterialModal } from '../editorial/QuickTopicMaterialModal';
+import { TeacherTraceBuilderModal } from '../simulator/TeacherTraceBuilderModal';
+import { topicToRevisionPayload } from '../../services/contentMerge';
+import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { isAppendixModule } from '../../content/appendixModules';
 import { resolveTopicReferences, type Reference } from '../../content/topicReferences';
 import {
@@ -596,6 +600,30 @@ export default function TopicPage() {
     [location.search],
   );
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
+  const [isTraceBuilderOpen, setIsTraceBuilderOpen] = useState(false);
+
+  const handleInsertTraceToTopic = async (snippet: string) => {
+    if (!user || !mod || !topic) return;
+    try {
+      const payload = topicToRevisionPayload(topic);
+      payload.content = (payload.content ? payload.content.trim() + '\n\n' : '') + snippet.trim() + '\n';
+      const authorName = (user as any)?.user_metadata?.full_name || 'Especialista Docente';
+      const saved = await saveRevision({
+        targetTopicId: topic.id,
+        moduleId: mod.id,
+        action: 'update',
+        payload,
+        authorId: user.id,
+      });
+      await submitRevision(saved.id);
+      if (isAdmin || isEditor) {
+        await reviewRevision(saved.id, 'approved', `Simulador de trazo integrado por ${authorName}`);
+      }
+      refreshModule();
+    } catch (e) {
+      console.error('Error al insertar trazo en tema:', e);
+    }
+  };
 
   const [showTOC, setShowTOC] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -1020,7 +1048,11 @@ export default function TopicPage() {
   const modTitle = (lang === 'en' && mod.titleEn) || mod.title;
 
   return (
-    <CourseGate moduleId={moduleId!} topicId={topic.id}>
+    <CourseGate
+      moduleId={moduleId!}
+      topicId={topic.id}
+      topicPathIds={breadcrumbs.length ? breadcrumbs.map((item) => item.id) : [topic.id]}
+    >
       <main ref={mainRef} id="contenido-principal" className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 xl:px-16 pt-20 sm:pt-24 pb-24">
         <QuizCatalogReturnBar kind="topic" />
         {/* Grid layout: content + sidebar */}
@@ -1097,6 +1129,14 @@ export default function TopicPage() {
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   ⚡ Agregar Material al Tema (Video, PDF, Imagen, Perla)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsTraceBuilderOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
+                >
+                  <Activity className="w-3.5 h-3.5" />
+                  ⚡ Insertar Simulador de Trazo EMG
                 </button>
               </div>
 
@@ -1685,6 +1725,16 @@ export default function TopicPage() {
           moduleId={mod.id}
           topic={topic}
           onSuccess={refreshModule}
+        />
+      )}
+
+      {/* ── Advanced Trace Simulator Studio for Teachers ── */}
+      {mod && topic && (
+        <TeacherTraceBuilderModal
+          isOpen={isTraceBuilderOpen}
+          onClose={() => setIsTraceBuilderOpen(false)}
+          onInsertTrace={handleInsertTraceToTopic}
+          topicTitle={topic.title}
         />
       )}
     </CourseGate>

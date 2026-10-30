@@ -1,5 +1,7 @@
 import { useMemo, type JSX, type ReactNode } from 'react';
 import { splitHighlightedParts } from '../../search/searchText';
+import { EmbeddedTraceWidget } from '../simulator/EmbeddedTraceWidget';
+import type { TraceStudyType } from '../simulator/traceEngine/types';
 
 export type RichHeadingLevel = 2 | 3 | 4 | 5;
 export type RichContentTone = 'screen' | 'print';
@@ -30,6 +32,7 @@ type ClassifiedLine =
   | { kind: 'ordered'; start: number; text: string }
   | { kind: 'table'; raw: string }
   | { kind: 'blockquote'; text: string }
+  | { kind: 'trace'; raw: string }
   | { kind: 'paragraph'; text: string };
 
 function classifyLine(line: string): ClassifiedLine | null {
@@ -52,6 +55,9 @@ function classifyLine(line: string): ClassifiedLine | null {
   }
   if (trimmed.startsWith('>')) {
     return { kind: 'blockquote', text: trimmed.replace(/^>\s*/, '') };
+  }
+  if (trimmed.startsWith(':::emg-trace') || trimmed === ':::') {
+    return { kind: 'trace', raw: trimmed };
   }
   return { kind: 'paragraph', text: trimmed };
 }
@@ -245,6 +251,56 @@ function renderHeading(
   );
 }
 
+interface ParsedTraceDirective {
+  presetId?: string;
+  title?: string;
+  nerve?: string;
+  studyType?: TraceStudyType;
+  latency?: number;
+  amplitude?: number;
+  velocity?: number;
+  duration?: number;
+  isPathologicInitial?: boolean;
+}
+
+function parseTraceDirective(lines: string[]): ParsedTraceDirective {
+  const combined = lines.join(' ');
+  const result: ParsedTraceDirective = {};
+
+  const braceMatch = combined.match(/\{([^}]+)\}/);
+  const textToScan = braceMatch ? braceMatch[1] : combined.replace(/:::emg-trace/g, '').replace(/:::/g, '');
+
+  const regex = /([a-zA-Z0-9_-]+)\s*[:=]\s*(?:"([^"]*)"|'([^']*)'|([^\s,]+))/g;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(textToScan)) !== null) {
+    const key = match[1].toLowerCase();
+    const val = match[2] ?? match[3] ?? match[4];
+
+    if (key === 'preset' || key === 'presetid' || key === 'id') {
+      result.presetId = val;
+    } else if (key === 'title') {
+      result.title = val;
+    } else if (key === 'nerve' || key === 'muscle') {
+      result.nerve = val;
+    } else if (key === 'type' || key === 'studytype') {
+      result.studyType = val as TraceStudyType;
+    } else if (key === 'latency') {
+      result.latency = parseFloat(val);
+    } else if (key === 'amplitude' || key === 'amp') {
+      result.amplitude = parseFloat(val);
+    } else if (key === 'velocity' || key === 'vcn') {
+      result.velocity = parseFloat(val);
+    } else if (key === 'duration' || key === 'dur') {
+      result.duration = parseFloat(val);
+    } else if (key === 'pathologic' || key === 'ispathologic') {
+      result.isPathologicInitial = val === 'true' || val === '1';
+    }
+  }
+
+  return result;
+}
+
 function renderBlockLines(
   lines: string[],
   keyBase: string,
@@ -316,6 +372,52 @@ function renderBlockLines(
       }
       const table = renderTable(tableLines, gKey, tone);
       if (table) parts.push(table);
+      continue;
+    }
+
+    if (classified.kind === 'trace') {
+      const traceLines: string[] = [classified.raw];
+      i += 1;
+      if (!classified.raw.endsWith(':::') || classified.raw === ':::emg-trace') {
+        while (i < lines.length) {
+          const rawLine = lines[i];
+          traceLines.push(rawLine);
+          i += 1;
+          if (rawLine.trim().endsWith(':::')) break;
+        }
+      }
+
+      const parsed = parseTraceDirective(traceLines);
+      if (tone === 'print') {
+        parts.push(
+          <div
+            key={gKey}
+            className="my-3 p-3 border border-slate-300 rounded bg-slate-50 text-[10pt] font-mono leading-relaxed"
+          >
+            <div className="font-bold text-slate-900">
+              [Trazado Electrofisiológico Integrado: {parsed.title || parsed.presetId || 'Caso Clínico'}]
+            </div>
+            <div className="text-slate-600 text-[9pt] mt-0.5">
+              Nervio/Músculo: {parsed.nerve || 'Calibrado'} · Tipo: {parsed.studyType || 'motor'}
+            </div>
+          </div>
+        );
+      } else {
+        parts.push(
+          <EmbeddedTraceWidget
+            key={gKey}
+            presetId={parsed.presetId}
+            title={parsed.title}
+            nerve={parsed.nerve}
+            studyType={parsed.studyType}
+            latency={parsed.latency}
+            amplitude={parsed.amplitude}
+            velocity={parsed.velocity}
+            duration={parsed.duration}
+            isPathologicInitial={parsed.isPathologicInitial}
+          />
+        );
+      }
       continue;
     }
 

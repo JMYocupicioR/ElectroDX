@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { Search, X, Plus, Check, Layers } from 'lucide-react';
+import { Search, X, Plus, Check, Layers, BookOpen } from 'lucide-react';
 import type { Module, Topic } from '../../types/content';
+import { canonicalTopicId } from '../../utils/topicIdAliases';
 
 export interface LiveClassTopicEntry {
   topicId: string;
@@ -78,6 +79,57 @@ export function topicIdsIncludedBySelection(
   return descendants.length > 0 ? [topicId, ...descendants] : [topicId];
 }
 
+/** El tema principal de la clase siempre incluye su rama; los extras se guardan tal cual. */
+export function sessionTopicIdsForLiveClass(
+  catalog: LiveClassTopicEntry[],
+  primaryTopicId: string | null | undefined,
+  additionalIds: string[] = [],
+): string[] {
+  const primary = primaryTopicId?.trim() ?? '';
+  const extras = additionalIds.map((id) => id.trim()).filter(Boolean);
+  if (!primary) return [...new Set(extras)];
+  return [...new Set([primary, ...descendantTopicIds(catalog, primary), ...extras])];
+}
+
+/** Temas que ya están en la clase: el principal, los elegidos y los subtemas que cada uno arrastra. */
+export function coveredLiveClassTopicIds(
+  catalog: LiveClassTopicEntry[],
+  primaryTopicId: string,
+  selectedAdditionalIds: string[],
+  includeDescendants = true,
+): Set<string> {
+  const covered = new Set<string>();
+  for (const topicId of [primaryTopicId, ...selectedAdditionalIds]) {
+    if (!topicId) continue;
+    if (includeDescendants) {
+      for (const includedId of topicIdsIncludedBySelection(catalog, topicId)) {
+        covered.add(includedId);
+      }
+    } else {
+      covered.add(topicId);
+    }
+  }
+  return covered;
+}
+
+export function findTopicCatalogEntry(
+  catalog: LiveClassTopicEntry[],
+  topicId: string,
+): LiveClassTopicEntry | undefined {
+  const resolvedId = canonicalTopicId(topicId);
+  return (
+    catalog.find((entry) => entry.topicId === resolvedId) ??
+    catalog.find((entry) => entry.topicId === topicId)
+  );
+}
+
+export function topicCatalogLine(entry: LiveClassTopicEntry): string {
+  if (entry.isSubtopic && entry.parentTitle) {
+    return `${entry.parentTitle} · ${entry.moduleTitle}`;
+  }
+  return entry.moduleTitle;
+}
+
 export interface SelectedTopicGroup {
   entry: LiveClassTopicEntry;
   children: LiveClassTopicEntry[];
@@ -120,8 +172,8 @@ function subtopicCountLabel(count: number): string {
 
 interface LiveClassTopicQuickPickerProps {
   catalog: LiveClassTopicEntry[];
-  primaryTopicId: string;
-  primaryTopicTitle: string;
+  primaryTopicId?: string;
+  primaryTopicTitle?: string;
   selectedAdditionalIds: string[];
   onSelectedAdditionalIdsChange: (ids: string[]) => void;
   disabled?: boolean;
@@ -132,12 +184,16 @@ interface LiveClassTopicQuickPickerProps {
   hint?: string;
   showPrimaryChip?: boolean;
   searchPlaceholder?: string;
+  suggestionsLabel?: string;
+  /** En cortes se guarda solo el id elegido. En clase en vivo el tema general arrastra subtemas. */
+  includeDescendants?: boolean;
+  selectedLayout?: 'chips' | 'list';
 }
 
 export function LiveClassTopicQuickPicker({
   catalog,
-  primaryTopicId,
-  primaryTopicTitle,
+  primaryTopicId = '',
+  primaryTopicTitle = '',
   selectedAdditionalIds,
   onSelectedAdditionalIdsChange,
   disabled = false,
@@ -147,6 +203,9 @@ export function LiveClassTopicQuickPicker({
   hint = 'El docente asignado arriba se vinculará oficialmente a cada tema al guardar.',
   showPrimaryChip = true,
   searchPlaceholder = 'Buscar tema o subtema para sumar a la clase…',
+  suggestionsLabel = 'Sugeridos en este módulo',
+  includeDescendants = true,
+  selectedLayout = 'chips',
 }: LiveClassTopicQuickPickerProps) {
   const [query, setQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
@@ -156,13 +215,18 @@ export function LiveClassTopicQuickPicker({
     [catalog, selectedAdditionalIds],
   );
 
+  const coveredTopicIds = useMemo(
+    () =>
+      coveredLiveClassTopicIds(catalog, primaryTopicId, selectedAdditionalIds, includeDescendants),
+    [catalog, primaryTopicId, selectedAdditionalIds, includeDescendants],
+  );
+
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return catalog
       .filter((entry) => {
-        if (entry.topicId === primaryTopicId) return false;
-        if (selectedAdditionalIds.includes(entry.topicId)) return false;
+        if (coveredTopicIds.has(entry.topicId)) return false;
         const haystack = [
           entry.title,
           entry.moduleTitle,
@@ -174,26 +238,15 @@ export function LiveClassTopicQuickPicker({
         return haystack.includes(q);
       })
       .slice(0, maxResults);
-  }, [catalog, query, primaryTopicId, selectedAdditionalIds, maxResults]);
+  }, [catalog, query, coveredTopicIds, maxResults]);
 
   const visibleSuggestions = useMemo(() => {
     if (query.trim()) return searchResults;
     if (!searchFocused) return [];
     return suggestedEntries
-      .filter(
-        (entry) =>
-          entry.topicId !== primaryTopicId && !selectedAdditionalIds.includes(entry.topicId),
-      )
+      .filter((entry) => !coveredTopicIds.has(entry.topicId))
       .slice(0, maxResults);
-  }, [
-    query,
-    searchFocused,
-    searchResults,
-    suggestedEntries,
-    primaryTopicId,
-    selectedAdditionalIds,
-    maxResults,
-  ]);
+  }, [query, searchFocused, searchResults, suggestedEntries, coveredTopicIds, maxResults]);
 
   const visibleIds = useMemo(
     () => new Set(visibleSuggestions.map((entry) => entry.topicId)),
@@ -203,11 +256,12 @@ export function LiveClassTopicQuickPicker({
   const showResultsPanel =
     !disabled && (query.trim().length > 0 || (searchFocused && visibleSuggestions.length > 0));
 
-  const addEntry = (topicId: string) => {
-    if (disabled || topicId === primaryTopicId) return;
-    const incoming = topicIdsIncludedBySelection(catalog, topicId).filter(
-      (id) => id !== primaryTopicId,
-    );
+  const addEntry = (topicId: string, withDescendants = includeDescendants) => {
+    if (disabled || coveredTopicIds.has(topicId)) return;
+    const incoming = (withDescendants
+      ? topicIdsIncludedBySelection(catalog, topicId)
+      : [topicId]
+    ).filter((id) => id !== primaryTopicId);
     onSelectedAdditionalIdsChange([...new Set([...selectedAdditionalIds, ...incoming])]);
     setQuery('');
     setSearchFocused(false);
@@ -228,8 +282,14 @@ export function LiveClassTopicQuickPicker({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap gap-1.5 items-center">
-        {showPrimaryChip ? (
+      <div
+        className={
+          selectedLayout === 'list'
+            ? 'space-y-1.5'
+            : 'flex flex-wrap gap-1.5 items-center'
+        }
+      >
+        {showPrimaryChip && primaryTopicTitle ? (
           <span
             className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-600 text-white border border-blue-600"
             title="Tema desde el que abriste esta ficha"
@@ -239,7 +299,40 @@ export function LiveClassTopicQuickPicker({
             <span className="text-[9px] font-black uppercase opacity-80">Principal</span>
           </span>
         ) : null}
-        {selectedGroups.map((group) =>
+        {selectedLayout === 'list'
+          ? selectedAdditionalIds.map((topicId, index) => {
+              const entry = findTopicCatalogEntry(catalog, topicId);
+              return (
+                <div
+                  key={`${topicId}:${index}`}
+                  className="flex items-start gap-2 p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
+                >
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-snug line-clamp-2"
+                      title={entry?.title ?? topicId}
+                    >
+                      {entry?.title ?? 'Tema no encontrado'}
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-snug mt-0.5 line-clamp-2">
+                      {entry ? topicCatalogLine(entry) : topicId}
+                    </p>
+                  </div>
+                  {!disabled && (
+                    <button
+                      type="button"
+                      onClick={() => removeIds([topicId])}
+                      className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer shrink-0"
+                      aria-label={`Quitar ${entry?.title ?? topicId}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              );
+            })
+          : selectedGroups.map((group) =>
           group.children.length > 0 ? (
             <div
               key={group.entry.topicId}
@@ -348,7 +441,7 @@ export function LiveClassTopicQuickPicker({
         >
           {!query.trim() && visibleSuggestions.length > 0 ? (
             <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 border-b border-slate-100 dark:border-slate-800">
-              Sugeridos en este módulo
+              {suggestionsLabel}
             </p>
           ) : null}
           {visibleSuggestions.length === 0 ? (
@@ -362,11 +455,9 @@ export function LiveClassTopicQuickPicker({
                   Boolean(entry.parentTopicId) &&
                   visibleIds.has(entry.parentTopicId as string);
                 return (
-                  <li key={entry.topicId}>
-                    <button
-                      type="button"
-                      onClick={() => addEntry(entry.topicId)}
-                      className={`w-full text-left py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition flex items-start gap-2 cursor-pointer ${
+                  <li key={`${entry.moduleId}:${entry.topicId}`}>
+                    <div
+                      className={`w-full py-2 flex items-start gap-2 ${
                         descendantCount > 0
                           ? 'px-3 bg-slate-50/80 dark:bg-slate-800/50'
                           : nested
@@ -374,24 +465,40 @@ export function LiveClassTopicQuickPicker({
                             : 'px-3'
                       }`}
                     >
-                      <Plus className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">
-                          {entry.title}
+                      <button
+                        type="button"
+                        onClick={() => addEntry(entry.topicId)}
+                        className="min-w-0 flex-1 text-left hover:text-indigo-700 dark:hover:text-indigo-300 transition flex items-start gap-2 cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-indigo-500 shrink-0 mt-0.5" />
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100 leading-snug line-clamp-2">
+                            {entry.title}
+                          </span>
+                          {descendantCount > 0 ? (
+                            <span className="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-300 leading-snug line-clamp-2">
+                              {includeDescendants
+                                ? `Tema general · se incluyen sus ${subtopicCountLabel(descendantCount)}`
+                                : `Tema general · ${subtopicCountLabel(descendantCount)}`}
+                            </span>
+                          ) : (
+                            <span className="block text-[10px] text-slate-500 leading-snug line-clamp-2">
+                              {topicCatalogLine(entry)}
+                            </span>
+                          )}
                         </span>
-                        {descendantCount > 0 ? (
-                          <span className="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-300 truncate">
-                            Tema general · se incluyen sus {subtopicCountLabel(descendantCount)}
-                          </span>
-                        ) : (
-                          <span className="block text-[10px] text-slate-500 truncate">
-                            {entry.isSubtopic && entry.parentTitle
-                              ? `${entry.parentTitle} · ${entry.moduleTitle}`
-                              : entry.moduleTitle}
-                          </span>
-                        )}
-                      </span>
-                    </button>
+                      </button>
+                      {!includeDescendants && descendantCount > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => addEntry(entry.topicId, true)}
+                          className="shrink-0 mt-0.5 px-2 py-1 rounded-lg text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200/80 dark:border-indigo-800/60 cursor-pointer"
+                          title={`Sumar este tema y sus ${subtopicCountLabel(descendantCount)}`}
+                        >
+                          + subtemas
+                        </button>
+                      ) : null}
+                    </div>
                   </li>
                 );
               })}

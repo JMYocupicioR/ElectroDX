@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import {
   Activity,
   Award,
@@ -5,6 +6,7 @@ import {
   BookOpen,
   CheckCircle2,
   ClipboardList,
+  CalendarDays,
   FileText,
   GraduationCap,
 } from 'lucide-react';
@@ -14,6 +16,7 @@ export type StudentPortalTab =
   | 'summary'
   | 'performance'
   | 'modules'
+  | 'agenda'
   | 'quizzes'
   | 'assignments'
   | 'notifications'
@@ -30,6 +33,7 @@ const TABS: TabSpec[] = [
   { id: 'summary', label: 'Resumen', icon: Activity },
   { id: 'performance', label: 'Desempeño', icon: GraduationCap },
   { id: 'modules', label: 'Clases', icon: BookOpen },
+  { id: 'agenda', label: 'Agenda', icon: CalendarDays },
   { id: 'quizzes', label: 'Quizzes', icon: CheckCircle2 },
   { id: 'assignments', label: 'Tareas', icon: ClipboardList },
   { id: 'notifications', label: 'Avisos', icon: Bell },
@@ -42,18 +46,21 @@ export function StudentPortalTabBar({
   onSelect,
   counts,
   notificationTone = 'urgent',
+  trailing,
 }: {
   activeTab: StudentPortalTab;
   onSelect: (tab: StudentPortalTab) => void;
   counts: Partial<Record<StudentPortalTab, number>>;
   notificationTone?: NotificationColorTone;
+  trailing?: ReactNode;
 }) {
   return (
-    <div
-      role="tablist"
-      aria-label="Portal del alumno"
-      className="flex items-center gap-2 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-2.5 mb-6"
-    >
+    <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2.5 mb-6">
+      <div
+        role="tablist"
+        aria-label="Portal del alumno"
+        className="flex items-center gap-2 overflow-x-auto min-w-0 flex-1"
+      >
       {TABS.map((tab) => {
         const Icon = tab.icon;
         const count = counts[tab.id];
@@ -131,6 +138,8 @@ export function StudentPortalTabBar({
           </button>
         );
       })}
+      </div>
+      {trailing}
     </div>
   );
 }

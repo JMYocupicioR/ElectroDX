@@ -43,7 +43,7 @@ export function ProtectedRoute({
 
   // Si es un médico en espera de admisión o rechazado intentando entrar al curso o portal
   if (!isAdmin && !isEditor && (isPendingApproval || isRejected)) {
-    if (mode === 'enrolled' || mode === 'student' || mode === 'premium' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/estudiante') || location.pathname.startsWith('/modulo') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes') || location.pathname.startsWith('/herramientas')) {
+    if (mode === 'enrolled' || mode === 'student' || mode === 'premium' || location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/portal') || location.pathname.startsWith('/estudiante') || location.pathname.startsWith('/ejercicios') || location.pathname.startsWith('/examenes') || location.pathname.startsWith('/herramientas')) {
       return <PendingApprovalGate />;
     }
   }

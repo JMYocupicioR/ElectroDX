@@ -1,17 +1,13 @@
 import {
-  ClassSetupWizardModal,
-  type ClassSetupWizardModalProps,
-} from './ClassSetupWizardModal';
+  LiveClassCreateDrawer,
+  type LiveClassCreateDrawerProps,
+} from './LiveClassCreateDrawer';
 
-export type CreateLiveClassModalProps = ClassSetupWizardModalProps;
+export type CreateLiveClassModalProps = LiveClassCreateDrawerProps;
 
-/**
- * Gestor de Clases en Vivo y Asistente Guiado (Wizard) para NeuroSAFE / ElectroDx.
- * Soporta de forma transparente el "Modo Guiado (Fácil)" paso a paso y el "Modo Avanzado (Técnico)",
- * permitiendo alternar entre ambos sin pérdida de datos.
- */
+/** Panel lateral para crear o editar una clase en vivo. */
 export function CreateLiveClassModal(props: CreateLiveClassModalProps) {
-  return <ClassSetupWizardModal {...props} />;
+  return <LiveClassCreateDrawer {...props} />;
 }
 
 export default CreateLiveClassModal;

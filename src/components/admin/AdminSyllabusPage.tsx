@@ -24,6 +24,8 @@ import {
   SlidersHorizontal,
   Zap,
   Loader2,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
@@ -42,16 +44,22 @@ import {
 import AssignExamModal from './AssignExamModal';
 import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
 import { AdminQuizEditorModal } from './quiz/AdminQuizEditorModal';
-import { CreateLiveClassModal } from './CreateLiveClassModal';
+import { withSessionTopicIds } from '../../utils/liveSessionBrief';
+import {
+  buildLiveClassTopicCatalog,
+  sessionTopicIdsForLiveClass,
+} from './LiveClassTopicQuickPicker';
 import { SortableList } from '../common/SortableList';
 import {
   assignModuleToCourse,
   createCourse,
   createWorkshop,
   deleteCourse,
+  getModuleAccessMap,
   getWorkshops,
   reorderCourseModules,
   setCourseModuleVisible,
+  setModuleAccess,
   setSyllabusTopicOverrides,
   updateCourseMetadata,
   updateWorkshop,
@@ -77,6 +85,7 @@ import type {
   Course,
   CourseId,
   LiveWorkshop,
+  ModuleAccess,
   TopicTeachingCommitment,
 } from '../../types/database';
 import type { Module, Topic } from '../../types/content';
@@ -88,6 +97,12 @@ import {
   nextCourseSortOrder,
 } from '../../content/courseCatalog';
 import { moveItem, siblingOverrideInputs } from '../../utils/syllabusTree';
+import {
+  accessWriteForOpenTopics,
+  isTopicOpenToRegistered,
+  nextOpenTopicIds,
+} from '../../utils/topicOpenAccess';
+import { useCourseStore } from '../../stores/courseStore';
 
 type TopicFilterMode = 'all' | 'mine' | 'unassigned' | 'assigned' | 'scheduled' | 'hidden';
 
@@ -152,6 +167,38 @@ function getShortDoctorName(name: string): string {
   return `${prefix}${parts[0][0]}. ${parts[parts.length - 2] || parts[1]}`;
 }
 
+function RegistrationAccessButton({
+  open,
+  disabled,
+  onToggle,
+}: {
+  open: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onToggle}
+      aria-pressed={open}
+      title={
+        open
+          ? 'Abierto para quien tenga cuenta. No hace falta inscribirlo en el nivel. Clic para reservarlo al curso.'
+          : 'Reservado al nivel. Clic para abrirlo a quien se registre, sin darle el curso.'
+      }
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold border transition cursor-pointer disabled:opacity-50 ${
+        open
+          ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60'
+          : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-emerald-300 hover:text-emerald-700 dark:hover:text-emerald-300'
+      }`}
+    >
+      {open ? <Unlock className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+      <span>{open ? 'Registro' : 'Nivel'}</span>
+    </button>
+  );
+}
+
 function collectTopicAndChildrenIds(topic: Topic): string[] {
   const ids = [topic.id];
   if (topic.children?.length) {
@@ -163,7 +210,7 @@ function collectTopicAndChildrenIds(topic: Topic): string[] {
 }
 
 export default function AdminSyllabusPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
   const {
     courses,
     assignments,
@@ -194,6 +241,7 @@ export default function AdminSyllabusPage() {
   const [teacherOptions, setTeacherOptions] = useState<TeacherOption[]>([]);
   const [adminProfiles, setAdminProfiles] = useState<AdminProfileRow[]>([]);
   const [quizTopicIds, setQuizTopicIds] = useState<Set<string>>(new Set());
+  const [accessMap, setAccessMap] = useState<Map<string, ModuleAccess>>(new Map());
 
   // Minimalist Filters, Quick Teacher Assignment & Auto-Schedule Bar
   const [searchQuery, setSearchQuery] = useState('');
@@ -266,17 +314,8 @@ export default function AdminSyllabusPage() {
     isOpen: false,
   });
 
-  const [classWizardState, setClassWizardState] = useState<{
-    isOpen: boolean;
-    moduleId?: string;
-    topicId?: string | null;
-    workshop?: LiveWorkshop | null;
-  }>({
-    isOpen: false,
-  });
-
   const loadAuxiliaryData = async () => {
-    const [workshopRows, commitmentRows, milestoneRows, courseTeachers, profilesList, quizzesList] =
+    const [workshopRows, commitmentRows, milestoneRows, courseTeachers, profilesList, quizzesList, moduleAccessRows] =
       await Promise.all([
         getWorkshops({ limit: 150 }).catch(() => [] as LiveWorkshop[]),
         listTopicTeachingCommitments().catch(() => [] as TopicTeachingCommitment[]),
@@ -284,9 +323,11 @@ export default function AdminSyllabusPage() {
         getCourseTeachers().catch(() => []),
         getAdminProfiles(false, 'all').catch(() => [] as AdminProfileRow[]),
         getAllPublishedQuizzes().catch(() => []),
+        getModuleAccessMap().catch(() => new Map<string, ModuleAccess>()),
       ]);
 
     setAdminWorkshops(workshopRows);
+    setAccessMap(moduleAccessRows);
     setCommitments(commitmentRows);
     setMilestones(milestoneRows.length ? milestoneRows : DEFAULT_ACADEMIC_MILESTONES);
     setAdminProfiles(profilesList);
@@ -423,6 +464,37 @@ export default function AdminSyllabusPage() {
     } finally {
       setBusyKey(null);
     }
+  };
+
+  const saveTopicRegistration = async (moduleId: string, tier: 'free' | 'premium', previewIds: string[]) => {
+    await setModuleAccess(moduleId, tier, previewIds);
+    const map = await getModuleAccessMap();
+    setAccessMap(map);
+    useCourseStore.setState({ moduleAccess: map });
+  };
+
+  const handleSetTopicRegistration = (mod: Module, topic: Topic, open: boolean) => {
+    const allIds = mod.topics.flatMap((item) => collectTopicAndChildrenIds(item));
+    const toggleIds = collectTopicAndChildrenIds(topic);
+    const openIds = nextOpenTopicIds(accessMap.get(mod.id), allIds, toggleIds, open);
+    const write = accessWriteForOpenTopics(openIds, allIds);
+    void run(
+      `access-${mod.id}-${topic.id}`,
+      () => saveTopicRegistration(mod.id, write.tier, write.previewTopicIds),
+      open
+        ? `"${topic.title}" queda abierto para quien se registre, sin el nivel.`
+        : `"${topic.title}" vuelve a exigir el nivel.`
+    );
+  };
+
+  const handleSetModuleRegistration = (mod: Module, open: boolean) => {
+    void run(
+      `access-mod-${mod.id}`,
+      () => saveTopicRegistration(mod.id, open ? 'free' : 'premium', []),
+      open
+        ? `Los temas de "${mod.title}" quedan abiertos al registro.`
+        : `Los temas de "${mod.title}" exigen el nivel.`
+    );
   };
 
   const rowsForCourse = (courseId: CourseId) =>
@@ -1667,15 +1739,22 @@ export default function AdminSyllabusPage() {
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/50 flex items-center justify-center text-blue-600 dark:text-cyan-400 shrink-0">
                       <ListTree className="w-4 h-4" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
-                        Temario del curso
-                      </h3>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-cyan-400" />
-                        {courseStats.moduleCount}{' '}
-                        {courseStats.moduleCount === 1 ? 'módulo' : 'módulos'}
-                      </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
+                          Temario del curso
+                        </h3>
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-cyan-400" />
+                          {courseStats.moduleCount}{' '}
+                          {courseStats.moduleCount === 1 ? 'módulo' : 'módulos'}
+                        </span>
+                      </div>
+                      {isAdmin && (
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                          Registro abre el tema a quien tenga cuenta, sin inscribirlo en este nivel.
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -1840,6 +1919,10 @@ export default function AdminSyllabusPage() {
                       const moduleAssignedCount = allModTopicRows.filter(
                         (r) => (commitmentsByTopicId.get(r.topic.id)?.length ?? 0) > 0
                       ).length;
+                      const moduleAccessRow = accessMap.get(mod.id);
+                      const openTopicCount = allModTopicRows.filter((row) =>
+                        isTopicOpenToRegistered(moduleAccessRow, [row.topic.id])
+                      ).length;
                       const moduleTeachers = Array.from(
                         new Set(
                           allModTopicRows.flatMap((r) =>
@@ -1883,6 +1966,12 @@ export default function AdminSyllabusPage() {
                                       <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-full px-2 py-0.5 shrink-0">
                                         <EyeOff className="w-2.5 h-2.5" />
                                         Oculto
+                                      </span>
+                                    )}
+                                    {openTopicCount > 0 && (
+                                      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-full px-2 py-0.5 shrink-0">
+                                        <Unlock className="w-2.5 h-2.5" />
+                                        {openTopicCount} al registro
                                       </span>
                                     )}
                                   </div>
@@ -1984,6 +2073,29 @@ export default function AdminSyllabusPage() {
                                       )}
                                       <span>{visible ? 'Ocultar módulo' : 'Mostrar módulo'}</span>
                                     </button>
+                                    {isAdmin && allModTopicRows.length > 0 && (
+                                      <button
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                                        disabled={busyKey !== null}
+                                        onClick={() => {
+                                          setModuleMenuId(null);
+                                          const allOpen = openTopicCount === allModTopicRows.length;
+                                          handleSetModuleRegistration(mod, !allOpen);
+                                        }}
+                                      >
+                                        {openTopicCount === allModTopicRows.length ? (
+                                          <Lock className="w-3.5 h-3.5 text-slate-400" />
+                                        ) : (
+                                          <Unlock className="w-3.5 h-3.5 text-emerald-600" />
+                                        )}
+                                        <span>
+                                          {openTopicCount === allModTopicRows.length
+                                            ? 'Reservar módulo al nivel'
+                                            : 'Abrir módulo al registro'}
+                                        </span>
+                                      </button>
+                                    )}
                                     {assignableCourses.map((course) => (
                                       <button
                                         key={course.id}
@@ -2195,6 +2307,24 @@ export default function AdminSyllabusPage() {
                                             className="flex items-center justify-end gap-1.5 shrink-0 flex-wrap"
                                             onClick={(e) => e.stopPropagation()}
                                           >
+                                            {isAdmin ? (
+                                              <RegistrationAccessButton
+                                                open={isTopicOpenToRegistered(moduleAccessRow, [topic.id])}
+                                                disabled={busyKey !== null}
+                                                onToggle={() =>
+                                                  handleSetTopicRegistration(
+                                                    mod,
+                                                    topic,
+                                                    !isTopicOpenToRegistered(moduleAccessRow, [topic.id])
+                                                  )
+                                                }
+                                              />
+                                            ) : isTopicOpenToRegistered(moduleAccessRow, [topic.id]) ? (
+                                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200/80 dark:border-emerald-800/60">
+                                                <Unlock className="w-3 h-3" />
+                                                Registro
+                                              </span>
+                                            ) : null}
                                             {/* Píldora minimalista de Profesor Asignado */}
                                             {quickAssignTeacher ? (
                                               <button
@@ -2603,32 +2733,49 @@ export default function AdminSyllabusPage() {
           scheduledAt,
           durationMinutes,
           streamUrl,
+          recordingUrl,
+          description,
+          sessionModality,
+          countsForKardex,
           teacherId,
           teacherName,
           additionalTopics = [],
         }) => {
           if (!drawerContext || !user) return;
+          const sessionTopicIds = sessionTopicIdsForLiveClass(
+            buildLiveClassTopicCatalog(allModules),
+            drawerContext.topic.id,
+            additionalTopics.map((topic) => topic.topicId),
+          );
+          const previousWorkshop = workshopId
+            ? adminWorkshops.find((workshop) => workshop.id === workshopId)
+            : null;
+          const sessionFields = {
+            title,
+            description: description ?? null,
+            scheduled_at: scheduledAt,
+            duration_minutes: durationMinutes,
+            stream_url: streamUrl || null,
+            recording_url: recordingUrl || null,
+            session_modality: sessionModality || 'online',
+            session_type:
+              sessionModality === 'in_person' ? 'hands_on_presencial' : 'masterclass',
+            counts_for_kardex: countsForKardex !== false,
+            clinical_case_json: withSessionTopicIds(
+              previousWorkshop?.clinical_case_json,
+              sessionTopicIds,
+            ),
+          };
           let savedWorkshop: LiveWorkshop;
           if (workshopId) {
-            savedWorkshop = await updateWorkshop(workshopId, {
-              title,
-              scheduled_at: scheduledAt,
-              duration_minutes: durationMinutes,
-              stream_url: streamUrl || null,
-            });
+            savedWorkshop = await updateWorkshop(workshopId, sessionFields);
           } else {
             savedWorkshop = await createWorkshop({
+              ...sessionFields,
               module_id: drawerContext.mod.id,
               topic_id: drawerContext.topic.id,
-              title,
-              description: drawerContext.topic.description ?? null,
-              scheduled_at: scheduledAt,
-              duration_minutes: durationMinutes,
-              stream_url: streamUrl || null,
-              recording_url: null,
               max_capacity: null,
               clinical_case_revision_id: null,
-              clinical_case_json: null,
               status: 'scheduled',
               created_by: user.id,
             });
@@ -2740,15 +2887,6 @@ export default function AdminSyllabusPage() {
               ? drawerContext.parentTopic.id
               : drawerContext.topic.id,
             subtopicId: drawerContext.parentTopic ? drawerContext.topic.id : undefined,
-          });
-        }}
-        onOpenClassWizard={() => {
-          if (!drawerContext) return;
-          setClassWizardState({
-            isOpen: true,
-            moduleId: drawerContext.mod.id,
-            topicId: drawerContext.topic.id,
-            workshop: workshopByTopicId.get(drawerContext.topic.id) ?? null,
           });
         }}
       />
@@ -2950,19 +3088,6 @@ export default function AdminSyllabusPage() {
         onSaved={async () => {
           await loadAuxiliaryData();
           notifySuccess('Cuestionario (Quiz) del tema actualizado.');
-        }}
-      />
-
-      <CreateLiveClassModal
-        isOpen={classWizardState.isOpen}
-        onClose={() => setClassWizardState({ isOpen: false })}
-        initialModuleId={classWizardState.moduleId}
-        initialTopicId={classWizardState.topicId}
-        initialWorkshop={classWizardState.workshop}
-        onSuccess={async () => {
-          setClassWizardState({ isOpen: false });
-          await loadAuxiliaryData();
-          notifySuccess('Clase en vivo sincronizada con el calendario y el tema.');
         }}
       />
 

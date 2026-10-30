@@ -8,11 +8,11 @@ import {
   ScrollText,
   ClipboardList,
   Video,
-  Lock,
   Eye,
   CheckCircle2,
   GraduationCap,
   Stethoscope,
+  Activity,
   Calendar,
   UserCheck,
   Sparkles,
@@ -85,6 +85,7 @@ export function AdminLayout({
     pendingRevisions,
     pendingTeacherReviews,
     pendingQuizzes,
+    totalPending,
   } = useAdminPendingCounts();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -117,12 +118,7 @@ export function AdminLayout({
           label: 'Bandeja',
           icon: Inbox,
           exact: true,
-          badge:
-            pendingTeacherReviews +
-            pendingCourseEnrollments +
-            pendingEnrollments +
-            pendingQuizzes +
-            pendingRevisions,
+          badge: totalPending,
         },
         {
           to: '/admin/calendario',
@@ -181,6 +177,14 @@ export function AdminLayout({
           badge: 0,
         },
         {
+          to: '/admin/trazos',
+          label: 'Simulador de trazos',
+          shortLabel: 'Trazos',
+          icon: Activity,
+          exact: false,
+          badge: 0,
+        },
+        {
           to: '/admin/talleres',
           label: 'Clases en vivo',
           icon: Video,
@@ -212,14 +216,6 @@ export function AdminLayout({
           to: '/admin/usuarios',
           label: 'Médicos',
           icon: Users,
-          exact: false,
-          badge: 0,
-          adminOnly: true,
-        },
-        {
-          to: '/admin/acceso',
-          label: 'Acceso',
-          icon: Lock,
           exact: false,
           badge: 0,
           adminOnly: true,
@@ -268,8 +264,8 @@ export function AdminLayout({
       <TeacherQuickDock />
 
       {/* Mobile Sticky Horizontal Navigation */}
-      <div className="lg:hidden sticky top-14 sm:top-16 z-30 -mx-4 sm:-mx-6 mb-3 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl">
-        <div className="flex items-center gap-2 px-3 py-2">
+      <div className="lg:hidden sticky top-14 sm:top-16 z-30 -mx-4 sm:-mx-6 mb-2 border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-xl">
+        <div className="flex items-center gap-1.5 px-3 py-1.5">
           {location.pathname !== '/admin' && (
             <Link
               to="/admin"
@@ -432,7 +428,7 @@ export function AdminLayout({
         {/* Main Content Area */}
         <main id="contenido-principal" className="flex-1 min-w-0 w-full">
           {/* Unified Compact Executive Header Bar */}
-          <div className="mb-4 lg:mb-5 pb-3.5 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+          <div className="mb-2.5 lg:mb-4 pb-2.5 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div className="min-w-0 flex-1">
               {/* Compact Breadcrumb */}
               <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 mb-1">
@@ -457,12 +453,12 @@ export function AdminLayout({
               </div>
 
               {title && (
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-0.5 sm:gap-3 min-w-0">
+                  <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-tight">
                     {title}
                   </h1>
                   {subtitle && (
-                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">
+                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate leading-4">
                       {subtitle}
                     </p>
                   )}

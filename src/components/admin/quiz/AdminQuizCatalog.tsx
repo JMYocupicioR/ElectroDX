@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useAllModules } from '../../../hooks/useAllModules';
 import { getAllFlatTopics, topicListKey } from '../../../services/contentMerge';
+import { isQuizEligibleLeaf, topTopicsMissingQuiz } from '../../../utils/topicsMissingQuiz';
+import { TopicsMissingQuizQueue } from './TopicsMissingQuizQueue';
 import { getAllQuizFlags } from '../../../services/quizService';
 import { getTopicPublicUrl } from '../../../utils/adminUtils';
 import type { QuizTopicFlag, QuizQuestionDraft } from '../../../types/quiz';
@@ -107,7 +109,7 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
     return modules.flatMap((m) => {
       const seen = new Map<string, number>();
       return getAllFlatTopics(m.topics)
-        .filter(({ topic }) => !topic.children?.length && Boolean(topic.content?.trim() || topic.description?.trim()))
+        .filter(({ topic }) => isQuizEligibleLeaf(topic))
         .map(({ topic, path }) => {
           const pathKey = path.join('/');
           const occurrence = seen.get(pathKey) ?? 0;
@@ -130,6 +132,14 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
     flags.forEach((f) => map.set(f.topic_id, f));
     return map;
   }, [flags]);
+
+  const topicsMissingQuiz = useMemo(() => {
+    if (loadingFlags) return { topics: [], total: 0 };
+    const withQuiz = new Set(
+      flags.filter((flag) => flag.question_count > 0).map((flag) => flag.topic_id),
+    );
+    return topTopicsMissingQuiz(modules, withQuiz);
+  }, [flags, loadingFlags, modules]);
 
   // Filtered topics list
   const filteredTopics = useMemo(() => {
@@ -270,6 +280,12 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
           </div>
         </div>
       </div>
+
+      <TopicsMissingQuizQueue
+        topics={topicsMissingQuiz.topics}
+        total={topicsMissingQuiz.total}
+        onAddQuiz={(topic) => onSelectTopic(topic.topicId, topic.moduleId)}
+      />
 
       <div className="flex flex-col gap-3 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div className="grid gap-3 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">

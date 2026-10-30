@@ -5,6 +5,7 @@ import {
   calendarDayKey,
   normalizeMilestone,
   pickAuthoritativeMilestones,
+  selectRiskMilestones,
   toAcademicMilestoneRow,
   toMilestoneTimestamp,
   usableAdminSchedule,
@@ -38,11 +39,36 @@ describe('academicScheduleService dates', () => {
     expect(usableAdminSchedule(edited)[0].start_date.startsWith('2026-11-02')).toBe(true);
   });
 
+  it('drops seed cortes from the risk calendar even when mixed with a saved corte', () => {
+    expect(selectRiskMilestones(DEFAULT_ACADEMIC_MILESTONES)).toEqual([]);
+    const mixed = [
+      ...DEFAULT_ACADEMIC_MILESTONES,
+      normalizeMilestone({
+        ...DEFAULT_ACADEMIC_MILESTONES[0],
+        id: 'mls_custom_saved',
+        start_date: '2026-11-02',
+        due_date: '2026-12-30',
+      }),
+    ];
+    const risk = selectRiskMilestones(mixed);
+    expect(risk).toHaveLength(1);
+    expect(risk[0].id).toBe('mls_custom_saved');
+  });
+
   it('keeps the calendar day the admin typed, from date inputs or ISO timestamps', () => {
     expect(calendarDayKey('2026-11-01')).toBe('2026-11-01');
     expect(calendarDayKey('2026-11-30T23:59:59.000Z')).toBe('2026-11-30');
     expect(toMilestoneTimestamp('2026-11-01', false)).toBe('2026-11-01T00:00:00.000Z');
     expect(toMilestoneTimestamp('2026-11-30', true)).toBe('2026-11-30T23:59:59.000Z');
+  });
+
+  it('rewrites lesson ids that no longer exist in the temario', () => {
+    const normalized = normalizeMilestone(
+      milestone({
+        target_topic_ids: ['ethical-aspects', 'ethics', 'f-waves', 'history'],
+      })
+    );
+    expect(normalized.target_topic_ids).toEqual(['ethics', 'f-wave', 'history']);
   });
 
   it('normalizes admin date-input values so the brochure and calendar share the same day', () => {

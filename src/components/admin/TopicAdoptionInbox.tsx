@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
+  Calendar,
+  Clock,
   AlertTriangle,
   BookOpen,
   Check,
@@ -16,14 +18,14 @@ import {
   Users,
   Video,
   X,
-  Sparkles,
   Trash2,
   ArrowRight,
 } from 'lucide-react';
 import { allModules } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
+import { sb } from '../../lib/supabase';
 import { getTopicPublicUrl } from '../../utils/adminUtils';
-import { getSyllabusTopicOverrides } from '../../services/courseService';
+import { getSyllabusTopicOverrides, getWorkshops } from '../../services/courseService';
 import {
   DEFAULT_ACADEMIC_MILESTONES,
   getAcademicMilestones,
@@ -36,7 +38,7 @@ import {
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 import type { Topic } from '../../types/content';
 import type { AcademicMilestone } from '../../types/academicGradebook';
-import type { SyllabusTopicOverride, TopicTeachingCommitment } from '../../types/database';
+import type { SyllabusTopicOverride, TopicTeachingCommitment, LiveWorkshop } from '../../types/database';
 import {
   ADOPT_SCOPE_CONFIRM_AT,
   assignedCoverageNodes,
@@ -88,6 +90,23 @@ type ScopePrompt = {
 
 
 
+
+function formatWorkshopDate(isoString: string): string {
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return isoString;
+    return d.toLocaleDateString('es-MX', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return isoString;
+  }
+}
+
 function teacherLabel(row: TopicTeachingCommitment): string {
   return row.teacher_name?.trim() || 'Profesor';
 }
@@ -111,6 +130,7 @@ export function TopicAdoptionInbox({
 
   const [overrides, setOverrides] = useState<SyllabusTopicOverride[]>([]);
   const [commitments, setCommitments] = useState<TopicTeachingCommitment[]>([]);
+  const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [, setMilestones] = useState<AcademicMilestone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,25 +163,28 @@ export function TopicAdoptionInbox({
     moduleId: string;
     topicIds: string[];
   } | null>(null);
-  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isClassDrawerOpen, setIsClassDrawerOpen] = useState(false);
   const [freeTopicSearch, setFreeTopicSearch] = useState('');
   const [selectedPedagogicalModuleId, setSelectedPedagogicalModuleId] = useState<string>(
     allModules[0]?.id || 'fundamentals'
   );
   const [isPedagogicalSelectorOpen, setIsPedagogicalSelectorOpen] = useState(true);
+  const [pedagogicalFilter, setPedagogicalFilter] = useState<'all' | 'pending' | 'mine' | 'collab'>('all');
 
   const load = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [overrideRows, commitmentRows, milestoneRows] = await Promise.all([
+      const [overrideRows, commitmentRows, milestoneRows, workshopRows] = await Promise.all([
         getSyllabusTopicOverrides().catch(() => []),
         listTopicTeachingCommitments(),
         getAcademicMilestones().catch(() => []),
+        getWorkshops().catch(() => [] as LiveWorkshop[]),
       ]);
       setOverrides(overrideRows);
       setCommitments(commitmentRows);
       setMilestones(milestoneRows.length ? milestoneRows : DEFAULT_ACADEMIC_MILESTONES);
+      setWorkshops(workshopRows);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron cargar los temas.');
     } finally {
@@ -387,8 +410,46 @@ export function TopicAdoptionInbox({
       sectionId: string;
       description?: string;
       isAdoptedByMe: boolean;
+      otherTeachers: { id: string; name: string; status: string }[];
+      allTeachers: { id: string; name: string; isMe: boolean; status: string }[];
+      linkedWorkshop: LiveWorkshop | null;
+      isCollabOpen: boolean;
+      isSharedWithMe: boolean;
+      isFree: boolean;
       isClosed: boolean;
     }[] => {
+      const myCommitment = commitments.find(
+        (c) => c.topic_id === top.id && c.teacher_id === userId && c.status !== 'withdrawn'
+      );
+      const isAdoptedByMe = Boolean(myCommitment);
+      const subCommitments = commitments.filter(
+        (c) => c.topic_id === top.id && c.status !== 'withdrawn'
+      );
+      const otherTeachers = subCommitments
+        .filter((c) => c.teacher_id !== userId)
+        .map((c) => ({
+          id: c.teacher_id,
+          name: c.teacher_name?.trim() || 'Colega docente',
+          status: c.status,
+        }));
+      const allTeachers = subCommitments.map((c) => {
+        const isMe = c.teacher_id === userId;
+        const name = isMe
+          ? (user?.user_metadata?.full_name || c.teacher_name?.trim() || 'Tú')
+          : (c.teacher_name?.trim() || 'Profesor');
+        return { id: c.teacher_id, name, isMe, status: c.status };
+      });
+      const subWorkshop = workshops.find((w) => {
+        if (w.status === 'cancelled') return false;
+        const hasCommitmentWs = subCommitments.some((c) => c.workshop_id === w.id);
+        if (hasCommitmentWs) return true;
+        return w.topic_id === top.id;
+      }) || null;
+
+      const isCollabOpen = !isAdoptedByMe && otherTeachers.length > 0;
+      const isSharedWithMe = isAdoptedByMe && otherTeachers.length > 0;
+      const isFree = !isAdoptedByMe && otherTeachers.length === 0;
+
       if (!top.children || top.children.length === 0) {
         return [
           {
@@ -397,7 +458,13 @@ export function TopicAdoptionInbox({
             sectionTitle: secTitle,
             sectionId: secId,
             description: top.description,
-            isAdoptedByMe: holdsTopic(top.id),
+            isAdoptedByMe,
+            otherTeachers,
+            allTeachers,
+            linkedWorkshop: subWorkshop,
+            isCollabOpen,
+            isSharedWithMe,
+            isFree,
             isClosed: isClosedTopic(currentPedagogicalModule.id, top.id),
           },
         ];
@@ -409,6 +476,12 @@ export function TopicAdoptionInbox({
         sectionId: string;
         description?: string;
         isAdoptedByMe: boolean;
+        otherTeachers: { id: string; name: string; status: string }[];
+        allTeachers: { id: string; name: string; isMe: boolean; status: string }[];
+        linkedWorkshop: LiveWorkshop | null;
+        isCollabOpen: boolean;
+        isSharedWithMe: boolean;
+        isFree: boolean;
         isClosed: boolean;
       }[] = [];
       for (const ch of top.children) {
@@ -417,22 +490,61 @@ export function TopicAdoptionInbox({
       return list;
     };
 
-    return currentPedagogicalModule.topics.map((sec) => {
+    return currentPedagogicalModule.topics.map((sec, secIdx) => {
       const subtopics = extractSubs(sec, sec.title, sec.id);
       const allSubtopicIds = subtopics.map((s) => s.id);
-      const adoptedCount = allSubtopicIds.filter((id) => holdsTopic(id)).length;
+      const allSectionTopicIds = [sec.id, ...allSubtopicIds];
+      const adoptedCount = subtopics.filter((s) => s.isAdoptedByMe).length;
+      const freeCount = subtopics.filter((s) => s.isFree).length;
+      const collabCount = subtopics.filter((s) => s.isCollabOpen).length;
       const isSectionComplete = allSubtopicIds.length > 0 && adoptedCount === allSubtopicIds.length;
+      const isSectionAdoptedByMe = holdsTopic(sec.id) || (allSubtopicIds.length > 0 && adoptedCount === allSubtopicIds.length);
+
+      // Compromisos para este Tema (padre o cualquiera de sus subtemas)
+      const secCommitments = commitments.filter(
+        (c) => allSectionTopicIds.includes(c.topic_id) && c.status !== 'withdrawn'
+      );
+
+      // Profesores únicos del Tema completo
+      const sectionTeachers = Array.from(
+        new Map(
+          secCommitments.map((c) => {
+            const isMe = c.teacher_id === userId;
+            const name = isMe
+              ? (user?.user_metadata?.full_name || c.teacher_name?.trim() || 'Tú')
+              : (c.teacher_name?.trim() || 'Profesor');
+            return [c.teacher_id, { id: c.teacher_id, name, isMe, status: c.status }];
+          })
+        ).values()
+      );
+
+      // Taller / Clase en vivo asociada al Tema o sus subtemas
+      const linkedWorkshop = workshops.find((w) => {
+        if (w.status === 'cancelled') return false;
+        const hasCommitmentWs = secCommitments.some((c) => c.workshop_id === w.id);
+        if (hasCommitmentWs) return true;
+        if (w.topic_id === sec.id || allSubtopicIds.includes(w.topic_id || '')) return true;
+        return false;
+      }) || null;
 
       return {
+        sectionIndex: secIdx,
         sectionId: sec.id,
         sectionTitle: sec.title,
+        description: sec.description,
         subtopics,
         allSubtopicIds,
+        allSectionTopicIds,
         adoptedCount,
+        freeCount,
+        collabCount,
         isSectionComplete,
+        isSectionAdoptedByMe,
+        sectionTeachers,
+        linkedWorkshop,
       };
     });
-  }, [currentPedagogicalModule, commitments, userId]);
+  }, [currentPedagogicalModule, commitments, workshops, userId, user]);
 
   const currentModuleAllSubtopicIds = useMemo(() => {
     return currentPedagogicalSections.flatMap((s) => s.allSubtopicIds);
@@ -441,6 +553,14 @@ export function TopicAdoptionInbox({
   const currentModuleAdoptedCount = useMemo(() => {
     return currentModuleAllSubtopicIds.filter((id) => holdsTopic(id)).length;
   }, [currentModuleAllSubtopicIds, commitments, userId]);
+
+  const currentModuleFreeCount = useMemo(() => {
+    return currentPedagogicalSections.reduce((acc, s) => acc + s.freeCount, 0);
+  }, [currentPedagogicalSections]);
+
+  const currentModuleCollabCount = useMemo(() => {
+    return currentPedagogicalSections.reduce((acc, s) => acc + s.collabCount, 0);
+  }, [currentPedagogicalSections]);
 
   const isCurrentModuleComplete =
     currentModuleAllSubtopicIds.length > 0 &&
@@ -474,7 +594,11 @@ export function TopicAdoptionInbox({
     });
   }, [commitments, userId, currentPedagogicalModule.id]);
 
-  const handleTogglePedagogicalSubtopic = (topicId: string, moduleId: string) => {
+  const handleTogglePedagogicalSubtopic = (
+    topicId: string,
+    moduleId: string,
+    existingWorkshopId?: string | null
+  ) => {
     if (holdsTopic(topicId)) {
       const myCommitment = commitments.find(
         (c) => c.topic_id === topicId && c.teacher_id === userId && c.status !== 'withdrawn'
@@ -483,7 +607,26 @@ export function TopicAdoptionInbox({
         withdrawIds([myCommitment.id], `withdraw-${topicId}`);
       }
     } else {
-      proposeIds(moduleId, [topicId], `adopt-${topicId}`);
+      void runAction(`adopt-${topicId}`, async () => {
+        await proposeTopicCommitments([topicId], moduleId);
+        if (existingWorkshopId && userId) {
+          try {
+            await sb
+              .from('topic_teaching_commitments')
+              .update({ workshop_id: existingWorkshopId, status: 'confirmed' })
+              .eq('teacher_id', userId)
+              .eq('topic_id', topicId);
+            await sb
+              .from('workshop_instructors')
+              .upsert(
+                { workshop_id: existingWorkshopId, teacher_id: userId },
+                { onConflict: 'workshop_id,teacher_id' }
+              );
+          } catch (e) {
+            console.warn('[TopicAdoptionInbox] No se pudo vincular instructor al workshop:', e);
+          }
+        }
+      });
     }
   };
 
@@ -511,27 +654,51 @@ export function TopicAdoptionInbox({
     }
   };
 
-  const handleTogglePedagogicalSection = (sectionSubtopicIds: string[]) => {
-    const allAdopted = sectionSubtopicIds.every((id) => holdsTopic(id));
+  const handleTogglePedagogicalSection = (
+    sectionId: string,
+    sectionSubtopicIds: string[],
+    existingWorkshopId?: string | null
+  ) => {
+    const allIds = [sectionId, ...sectionSubtopicIds];
+    const allAdopted = allIds.every((id) => holdsTopic(id));
     if (allAdopted) {
       const myCommitmentIds = commitments
         .filter(
           (c) =>
             c.module_id === currentPedagogicalModule.id &&
-            sectionSubtopicIds.includes(c.topic_id) &&
+            allIds.includes(c.topic_id) &&
             c.teacher_id === userId &&
             c.status !== 'withdrawn'
         )
         .map((c) => c.id);
       if (myCommitmentIds.length > 0) {
-        withdrawIds(myCommitmentIds, `withdraw-sec-${currentPedagogicalModule.id}`);
+        withdrawIds(myCommitmentIds, `withdraw-sec-${currentPedagogicalModule.id}-${sectionId}`);
       }
     } else {
-      const toAdopt = sectionSubtopicIds.filter(
+      const toAdopt = allIds.filter(
         (id) => !holdsTopic(id) && !isClosedTopic(currentPedagogicalModule.id, id)
       );
       if (toAdopt.length > 0) {
-        proposeIds(currentPedagogicalModule.id, toAdopt, `adopt-sec-${currentPedagogicalModule.id}`);
+        void runAction(`adopt-sec-${sectionId}`, async () => {
+          await proposeTopicCommitments(toAdopt, currentPedagogicalModule.id);
+          if (existingWorkshopId && userId) {
+            try {
+              await sb
+                .from('topic_teaching_commitments')
+                .update({ workshop_id: existingWorkshopId, status: 'confirmed' })
+                .eq('teacher_id', userId)
+                .in('topic_id', toAdopt);
+              await sb
+                .from('workshop_instructors')
+                .upsert(
+                  { workshop_id: existingWorkshopId, teacher_id: userId },
+                  { onConflict: 'workshop_id,teacher_id' }
+                );
+            } catch (e) {
+              console.warn('[TopicAdoptionInbox] No se pudo vincular instructor al workshop:', e);
+            }
+          }
+        });
       }
     }
   };
@@ -584,12 +751,12 @@ export function TopicAdoptionInbox({
                 moduleId: currentPedagogicalModule.id,
                 topicIds: myIdsInMod.length > 0 ? myIdsInMod : currentModuleAllSubtopicIds.slice(0, 4),
               });
-              setIsWizardOpen(true);
+              setIsClassDrawerOpen(true);
             }}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-bold shadow-sm transition cursor-pointer"
-            title="Abrir Asistente de Clases con los temas de este módulo"
+            title="Abrir el panel para crear la clase en vivo con los temas de este módulo"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Video className="w-3.5 h-3.5" />
             <span>Planear clase con este módulo</span>
           </button>
 
@@ -729,66 +896,329 @@ export function TopicAdoptionInbox({
               </div>
             </div>
 
-            {/* Lista de Secciones y Subtemas */}
-            <div className="space-y-3 pt-1">
-              {currentPedagogicalSections.map((sec) => (
-                <div
-                  key={sec.sectionId}
-                  className="p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2"
+            {/* ── Barra de Guía Visual & Filtros Rápidos para el Médico ── */}
+            <div className="p-3 rounded-2xl bg-slate-50/90 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800/90 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+              {/* Leyenda Visual Interactiva */}
+              <div className="flex items-center gap-2 text-[11px] flex-wrap">
+                <span className="font-bold text-slate-500 dark:text-slate-400">Guía visual:</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-bold shadow-2xs">
+                  <Check className="w-3 h-3 text-emerald-500" />
+                  En tus clases (minimizado)
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200 font-bold shadow-2xs">
+                  <Plus className="w-3 h-3 text-indigo-500" />
+                  Pendiente / Libre (para elegir)
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-800 dark:text-amber-300 font-bold shadow-2xs">
+                  <Users className="w-3 h-3 text-amber-500" />
+                  Con colega (clic para co-docencia)
+                </span>
+              </div>
+
+              {/* Filtro Rápido de Vista */}
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700/80 text-xs font-bold shrink-0 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setPedagogicalFilter('all')}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    pedagogicalFilter === 'all'
+                      ? 'bg-indigo-600 text-white shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                      <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                        {sec.sectionTitle}
-                      </h5>
-                      <span className="text-[10px] text-slate-400">
-                        ({sec.adoptedCount}/{sec.allSubtopicIds.length} seleccionados)
-                      </span>
+                  Todos ({currentModuleAllSubtopicIds.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPedagogicalFilter('pending')}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    pedagogicalFilter === 'pending'
+                      ? 'bg-indigo-600 text-white shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Pendientes ({currentModuleFreeCount})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPedagogicalFilter('mine')}
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    pedagogicalFilter === 'mine'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  Míos ({currentModuleAdoptedCount})
+                </button>
+                {currentModuleCollabCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setPedagogicalFilter('collab')}
+                    className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                      pedagogicalFilter === 'collab'
+                        ? 'bg-amber-600 text-white shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    Colaborables ({currentModuleCollabCount})
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Lista de Temas y Subtemas Curriculares */}
+            <div className="space-y-4 pt-1">
+              {currentPedagogicalSections.map((sec) => {
+                const filteredPendingAndCollab = sec.subtopics.filter((sub) => {
+                  if (sub.isAdoptedByMe) return false;
+                  if (pedagogicalFilter === 'pending') return sub.isFree;
+                  if (pedagogicalFilter === 'collab') return sub.isCollabOpen;
+                  if (pedagogicalFilter === 'mine') return false;
+                  return true;
+                });
+
+                const filteredMyAdopted = sec.subtopics.filter((sub) => {
+                  if (!sub.isAdoptedByMe) return false;
+                  if (pedagogicalFilter === 'pending') return false;
+                  if (pedagogicalFilter === 'collab') return sub.isSharedWithMe;
+                  return true;
+                });
+
+                const hasVisibleItems = filteredPendingAndCollab.length > 0 || filteredMyAdopted.length > 0;
+                if (!hasVisibleItems && pedagogicalFilter !== 'all') return null;
+
+                const isTemaAdoptedByMe = sec.isSectionAdoptedByMe;
+                const hasColleaguesOnTema = sec.sectionTeachers.some((t) => !t.isMe);
+
+                return (
+                  <div
+                    key={sec.sectionId}
+                    className="p-4 sm:p-4.5 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/90 space-y-3.5 shadow-xs transition-all"
+                  >
+                    {/* ── Encabezado Principal del TEMA con Selector y Ficha de Clase ── */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0" />
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                            TEMA {sec.sectionIndex + 1}
+                          </span>
+                          <h5 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                            {sec.sectionTitle}
+                          </h5>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                              sec.isSectionComplete
+                                ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                : sec.adoptedCount > 0
+                                ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                            }`}
+                          >
+                            {sec.isSectionComplete
+                              ? `✓ Tema completo (${sec.adoptedCount}/${sec.allSubtopicIds.length} subtemas)`
+                              : `${sec.adoptedCount}/${sec.allSubtopicIds.length} elegidos • ${sec.allSubtopicIds.length - sec.adoptedCount} pendientes`}
+                          </span>
+                        </div>
+
+                        {sec.description && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                            {sec.description}
+                          </p>
+                        )}
+
+                        {/* Ficha de Profesores Asignados y Fecha de la Clase */}
+                        <div className="flex items-center gap-3 flex-wrap pt-0.5 text-xs">
+                          {/* Lista de Profesores del Tema */}
+                          <div className="inline-flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <Users className="w-3.5 h-3.5 text-slate-400" />
+                              Profesor(es):
+                            </span>
+                            {sec.sectionTeachers.length === 0 ? (
+                              <span className="text-[11px] italic text-slate-400 dark:text-slate-500">
+                                Sin profesor aún (¡Sé el primero en impartirlo!)
+                              </span>
+                            ) : (
+                              sec.sectionTeachers.map((teach) => (
+                                <span
+                                  key={teach.id}
+                                  className={`text-[11px] font-bold px-2 py-0.5 rounded-md inline-flex items-center gap-1 border ${
+                                    teach.isMe
+                                      ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 shadow-2xs'
+                                      : 'bg-amber-50 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-amber-200 dark:border-amber-800'
+                                  }`}
+                                >
+                                  {teach.isMe ? (
+                                    <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                                  ) : (
+                                    <Users className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                  )}
+                                  <span>{teach.name}</span>
+                                  {teach.isMe && (
+                                    <span className="text-[9px] uppercase tracking-wider font-black px-1 rounded bg-emerald-200/60 dark:bg-emerald-800/60">
+                                      Tú
+                                    </span>
+                                  )}
+                                </span>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Fecha de la Clase para este Tema */}
+                          <div className="inline-flex items-center gap-1.5">
+                            {sec.linkedWorkshop ? (
+                              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 inline-flex items-center gap-1 shadow-2xs">
+                                <Calendar className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                <span>Clase: {formatWorkshopDate(sec.linkedWorkshop.scheduled_at)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 dark:text-slate-500 inline-flex items-center gap-1">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                <span>Fecha de clase: Por agendar</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* ── Botón Selector del TEMA COMPLETO ── */}
+                      <div className="shrink-0 flex items-center gap-2">
+                        {isTemaAdoptedByMe ? (
+                          <button
+                            type="button"
+                            disabled={busyKey !== null}
+                            onClick={() => handleTogglePedagogicalSection(sec.sectionId, sec.allSubtopicIds, sec.linkedWorkshop?.id)}
+                            title="Ya estás asignado a este tema. Clic para desmarcar."
+                            className="group/btn px-3 py-1.5 rounded-xl text-xs font-bold border transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs bg-emerald-50 hover:bg-rose-50 text-emerald-800 hover:text-rose-700 border-emerald-300 hover:border-rose-300 dark:bg-emerald-950/40 dark:hover:bg-rose-950/40 dark:text-emerald-300 dark:hover:text-rose-300 dark:border-emerald-600/50 dark:hover:border-rose-500/50"
+                          >
+                            <Check className="w-3.5 h-3.5 text-emerald-500 group-hover/btn:hidden" />
+                            <X className="w-3.5 h-3.5 text-rose-500 hidden group-hover/btn:inline-block" />
+                            <span>✓ Tema en tus clases (Desmarcar)</span>
+                          </button>
+                        ) : hasColleaguesOnTema ? (
+                          <button
+                            type="button"
+                            disabled={busyKey !== null}
+                            onClick={() => handleTogglePedagogicalSection(sec.sectionId, sec.allSubtopicIds, sec.linkedWorkshop?.id)}
+                            title="Sumarme a este tema como co-docente con los demás profesores"
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white transform hover:scale-[1.01]"
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            <span>+ Participar en este Tema (Co-docencia)</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={busyKey !== null}
+                            onClick={() => handleTogglePedagogicalSection(sec.sectionId, sec.allSubtopicIds, sec.linkedWorkshop?.id)}
+                            title="Adoptar este tema completo para tus clases"
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs bg-indigo-600 hover:bg-indigo-500 text-white transform hover:scale-[1.01]"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Seleccionar Tema Completo ({sec.allSubtopicIds.length})</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
 
-                    <button
-                      type="button"
-                      disabled={busyKey !== null}
-                      onClick={() => handleTogglePedagogicalSection(sec.allSubtopicIds)}
-                      className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                    >
-                      {sec.isSectionComplete ? '✓ Sección completa (Desmarcar)' : '+ Seleccionar sección'}
-                    </button>
-                  </div>
+                    {/* ── 1. Bloque de Subtemas Pendientes por Seleccionar y Colaborables (PROMINENTES) ── */}
+                    {filteredPendingAndCollab.length > 0 && (
+                      <div className="space-y-1.5">
+                        {sec.adoptedCount > 0 && filteredMyAdopted.length > 0 && (
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                            Subtemas pendientes por elegir:
+                          </p>
+                        )}
+                        <div className="flex flex-wrap gap-2">
+                          {filteredPendingAndCollab.map((sub) => {
+                            if (sub.isCollabOpen) {
+                              const otherNames = sub.otherTeachers.map((t) => t.name).join(', ');
+                              return (
+                                <button
+                                  key={sub.id}
+                                  type="button"
+                                  disabled={busyKey !== null}
+                                  onClick={() => handleTogglePedagogicalSubtopic(sub.id, currentPedagogicalModule.id, sub.linkedWorkshop?.id || sec.linkedWorkshop?.id)}
+                                  title={`Asignado a Dr(a). ${otherNames}. Clic para sumarte en co-docencia y aparecer en la clase.`}
+                                  className="group/collab px-3 py-1.5 rounded-xl text-xs font-semibold border transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs bg-amber-500/10 hover:bg-amber-500/20 dark:bg-amber-950/30 dark:hover:bg-amber-900/50 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-500/40 hover:border-amber-400 transform hover:scale-[1.01]"
+                                >
+                                  <Users className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <span>{sub.title}</span>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-200 font-bold ml-0.5">
+                                    + Colaborar ({sub.otherTeachers[0]?.name.split(' ')[0]})
+                                  </span>
+                                  {sub.linkedWorkshop && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800">
+                                      📅 {formatWorkshopDate(sub.linkedWorkshop.scheduled_at)}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            }
 
-                  <div className="flex flex-wrap gap-1.5">
-                    {sec.subtopics.map((sub) => {
-                      const isTakenByOther = sub.isClosed && !sub.isAdoptedByMe;
-                      return (
-                        <button
-                          key={sub.id}
-                          type="button"
-                          disabled={busyKey !== null || isTakenByOther}
-                          onClick={() => !isTakenByOther && handleTogglePedagogicalSubtopic(sub.id, currentPedagogicalModule.id)}
-                          title={isTakenByOther ? 'Este tema ya fue adoptado por otro docente' : sub.title}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                            isTakenByOther
-                              ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800 cursor-not-allowed opacity-60'
-                              : sub.isAdoptedByMe
-                              ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
-                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:text-indigo-600'
-                          }`}
-                        >
-                          {sub.isAdoptedByMe ? (
-                            <Check className="w-3.5 h-3.5 text-white" />
-                          ) : isTakenByOther ? (
-                            <span className="w-3.5 h-3.5 flex items-center justify-center text-[10px]">🔒</span>
-                          ) : (
-                            <Plus className="w-3.5 h-3.5 text-slate-400" />
-                          )}
-                          <span>{sub.title}</span>
-                        </button>
-                      );
-                    })}
+                            return (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                disabled={busyKey !== null}
+                                onClick={() => handleTogglePedagogicalSubtopic(sub.id, currentPedagogicalModule.id, sec.linkedWorkshop?.id)}
+                                title="Subtema libre. Clic para seleccionarlo e impartirlo en tus clases."
+                                className="group/free px-3 py-1.5 rounded-xl text-xs font-semibold border transition inline-flex items-center gap-1.5 cursor-pointer shadow-xs bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-600/90 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-white dark:hover:bg-indigo-950/50 transform hover:scale-[1.01] ring-1 ring-black/5 dark:ring-white/5"
+                              >
+                                <Plus className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0 group-hover/free:scale-110 transition-transform" />
+                                <span>{sub.title}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── 2. Bloque de Subtemas YA Seleccionados por ti (MINIMIZADOS y en color ESMERALDA) ── */}
+                    {filteredMyAdopted.length > 0 && (
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 space-y-1.5">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-emerald-700 dark:text-emerald-400">
+                          <span className="flex items-center gap-1">
+                            <Check className="w-3 h-3 text-emerald-500" />
+                            Mis subtemas seleccionados en este tema ({sec.adoptedCount}):
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            (Clic en cualquiera para desmarcar)
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {filteredMyAdopted.map((sub) => (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              disabled={busyKey !== null}
+                              onClick={() => handleTogglePedagogicalSubtopic(sub.id, currentPedagogicalModule.id, sub.linkedWorkshop?.id || sec.linkedWorkshop?.id)}
+                              title="Seleccionado para tus clases. Haz clic si deseas desmarcarlo."
+                              className="group/adopted px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition inline-flex items-center gap-1.5 cursor-pointer shadow-2xs bg-emerald-50 hover:bg-rose-50 text-emerald-800 hover:text-rose-700 border-emerald-300 hover:border-rose-300 dark:bg-emerald-950/40 dark:hover:bg-rose-950/40 dark:text-emerald-300 dark:hover:text-rose-300 dark:border-emerald-600/50 dark:hover:border-rose-500/50"
+                            >
+                              <Check className="w-3 h-3 text-emerald-500 shrink-0 group-hover/adopted:hidden" />
+                              <X className="w-3 h-3 text-rose-500 shrink-0 hidden group-hover/adopted:inline-block" />
+                              <span className="truncate max-w-[240px] sm:max-w-none">{sub.title}</span>
+                              {sub.isSharedWithMe && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 font-bold inline-flex items-center gap-0.5">
+                                  <Users className="w-2.5 h-2.5" />
+                                  Co-docencia
+                                </span>
+                              )}
+                              {sub.linkedWorkshop && (
+                                <span className="text-[9px] px-1 rounded bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-semibold">
+                                  📅 {formatWorkshopDate(sub.linkedWorkshop.scheduled_at)}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Botón de Siguiente Módulo */}
@@ -814,13 +1244,12 @@ export function TopicAdoptionInbox({
 
   return (
     <section
-      className={`rounded-3xl border transition-colors bg-white dark:bg-slate-900 overflow-hidden shadow-xs ${
+      className={`rounded-2xl border transition-colors bg-white dark:bg-slate-900 overflow-hidden ${
         hasNoTopics && !loading
-          ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-500/20 hover:border-rose-400 dark:hover:border-rose-700'
+          ? 'border-rose-300 dark:border-rose-900/60 hover:border-rose-400 dark:hover:border-rose-700'
           : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
-      {/* ── Barra de Cabecera Colapsable Principal ── */}
       <div
         onClick={toggleOuter}
         role="button"
@@ -832,68 +1261,62 @@ export function TopicAdoptionInbox({
           }
         }}
         aria-expanded={isOuterOpen}
-        className="w-full p-4 flex flex-wrap items-center justify-between gap-3 text-left cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition select-none"
+        className="w-full px-3 py-2 flex items-start gap-2.5 text-left cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition select-none"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold shrink-0 transition-transform ${
-              isOuterOpen ? 'scale-105' : ''
-            } ${
-              hasNoTopics && !loading
-                ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
+        <div
+          className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            hasNoTopics && !loading
+              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+              : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+          }`}
+        >
+          <BookOpen className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-slate-900 dark:text-white">
+              Mis Temas y Asignación Docente
+            </h2>
+            <button
+              type="button"
+              className="shrink-0 p-1 -mr-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition"
+              aria-label={isOuterOpen ? 'Colapsar sección' : 'Expandir sección'}
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOuterOpen ? 'rotate-180' : ''}`} />
+            </button>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                Mis Temas y Asignación Docente
-              </h2>
-              {loading ? (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                  Cargando...
+          <div className="mt-0.5 flex items-center gap-1.5 min-w-0">
+            {loading ? (
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                Cargando…
+              </span>
+            ) : hasNoTopics ? (
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                Sin temas
+              </span>
+            ) : (
+              <>
+                <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  {mine.length} {mine.length === 1 ? 'tema' : 'temas'}
                 </span>
-              ) : hasNoTopics ? (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                  Alarma: Sin temas seleccionados (Agendar clases)
-                </span>
-              ) : (
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    Mis temas: {mine.length}
+                {withoutTeacher.length > 0 && (
+                  <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
+                    {withoutTeacher.length} libres
                   </span>
-                  {withoutTeacher.length > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
-                      {withoutTeacher.length} libres
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-              Clases en vivo y presenciales · Coordinación del temario
+                )}
+              </>
+            )}
+            <p className="min-w-0 flex-1 truncate text-[11px] leading-4 text-slate-500 dark:text-slate-400">
+              Clases en vivo y presenciales
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
-          <button
-            type="button"
-            className="p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-            aria-label={isOuterOpen ? 'Colapsar sección' : 'Expandir sección'}
-          >
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOuterOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
       </div>
 
-      {/* ── Contenido Expandido ── */}
       {isOuterOpen && (
-        <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-950/20 space-y-4">
+        <div className="px-3 py-2.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-950/25 space-y-2">
           {error && (
             <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
@@ -926,11 +1349,12 @@ export function TopicAdoptionInbox({
                 <div className="flex items-center gap-2 flex-wrap shrink-0">
                   <button
                     type="button"
-                    onClick={() => setIsWizardOpen(true)}
+                    onClick={() => setIsClassDrawerOpen(true)}
                     className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-sm transition cursor-pointer"
+                    title="Abrir el panel para crear una clase en vivo"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Planear Clase (Modo Fácil)</span>
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Crear clase en vivo</span>
                   </button>
                   <button
                     type="button"
@@ -967,13 +1391,13 @@ export function TopicAdoptionInbox({
               Cargando cobertura del temario…
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {/* ── Subsección 1: Mis Temas (AL INICIO, colapsable, colapsada por defecto) ── */}
               <div className="rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setSubsectionsOpen((prev) => ({ ...prev, mine: !prev.mine }))}
-                  className="w-full p-3.5 flex items-center justify-between gap-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
+                  className="w-full px-3 py-2 flex items-center justify-between gap-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
@@ -1017,10 +1441,10 @@ export function TopicAdoptionInbox({
                               })
                             }
                             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs shadow-2xs transition cursor-pointer"
-                            title="Abrir Asistente para agendar una clase agrupando varios o todos tus temas adoptados"
+                            title="Abrir el panel para crear una clase con tus temas adoptados"
                           >
-                            <Sparkles className="w-3.5 h-3.5" />
-                            <span>Planear Clase con Mis Temas (Modo Fácil)</span>
+                            <Video className="w-3.5 h-3.5" />
+                            <span>Crear clase con mis temas</span>
                           </button>
 
                           <button
@@ -1068,7 +1492,7 @@ export function TopicAdoptionInbox({
                           return (
                             <div
                               key={row.id}
-                              className="p-4 flex flex-col gap-2.5 text-xs hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition"
+                              className="px-3 py-2.5 flex flex-col gap-2 text-xs hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition"
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                 <div className="min-w-0">
@@ -1198,7 +1622,7 @@ export function TopicAdoptionInbox({
                 <button
                   type="button"
                   onClick={() => setSubsectionsOpen((prev) => ({ ...prev, free: !prev.free }))}
-                  className="w-full p-3.5 flex items-center justify-between gap-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
+                  className="w-full px-3 py-2 flex items-center justify-between gap-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
@@ -1663,7 +2087,7 @@ export function TopicAdoptionInbox({
                 <button
                   type="button"
                   onClick={() => setSubsectionsOpen((prev) => ({ ...prev, assigned: !prev.assigned }))}
-                  className="w-full p-3.5 flex items-center justify-between gap-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
+                  className="w-full px-3 py-2 flex items-center justify-between gap-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800/40 transition select-none cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 flex items-center justify-center font-bold">
@@ -1779,23 +2203,25 @@ export function TopicAdoptionInbox({
         />
       ) : null}
 
-      {(planningTopic || planningMultiTopics || isWizardOpen) && (
+      {(planningTopic || planningMultiTopics || isClassDrawerOpen) && (
         <CreateLiveClassModal
-          isOpen={Boolean(planningTopic || planningMultiTopics || isWizardOpen)}
+          isOpen={Boolean(planningTopic || planningMultiTopics || isClassDrawerOpen)}
           onClose={() => {
             setPlanningTopic(null);
             setPlanningMultiTopics(null);
-            setIsWizardOpen(false);
+            setIsClassDrawerOpen(false);
           }}
           initialModuleId={planningTopic?.moduleId || planningMultiTopics?.moduleId}
           initialTopicId={planningTopic?.topicId || null}
-          initialSelectedTopicIds={planningMultiTopics?.topicIds || (planningTopic ? [planningTopic.topicId] : undefined)}
+          initialSelectedTopicIds={
+            planningMultiTopics?.topicIds || (planningTopic ? [planningTopic.topicId] : undefined)
+          }
           onSuccess={async () => {
             await load();
             await onChanged?.();
             setPlanningTopic(null);
             setPlanningMultiTopics(null);
-            setIsWizardOpen(false);
+            setIsClassDrawerOpen(false);
             return true;
           }}
         />

@@ -287,7 +287,9 @@ export function Header() {
             <PWAUpdateButton />
             <OfflineIndicator />
 
-            {isSupabaseConfigured && user && (isAdmin || isEditor) && <TeacherCommentBell />}
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && (
+              <TeacherCommentBell placement="desktop" />
+            )}
 
             {isSupabaseConfigured && user && isAdmin && !studentMode && !location.pathname.startsWith('/admin') && (
               <Link
@@ -351,9 +353,7 @@ export function Header() {
             <OfflineIndicator />
 
             {isSupabaseConfigured && user && (isAdmin || isEditor) && (
-              <div className="scale-90">
-                <TeacherCommentBell />
-              </div>
+              <TeacherCommentBell placement="mobile" />
             )}
 
             {isSupabaseConfigured && user && (

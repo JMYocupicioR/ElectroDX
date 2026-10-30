@@ -3,7 +3,9 @@ import { isAppendixModule } from '../content/appendixModules';
 import { allModules } from '../content/modules';
 import {
   calculateStudentMetrics,
+  fetchCohortCompletedTopicTimes,
   fetchCohortCompletedTopics,
+  fetchStudentCompletedTopicTimes,
   fetchStudentCompletedTopics,
   getAllTopicIds,
 } from './studentService';
@@ -11,7 +13,12 @@ import { getCohortAttempts, getMyAttempts, getMyProgressByModule } from './quizS
 import { getAllStudentAssignments, getStudentAssignments } from './studentPlanService';
 import { calculateStudentAttendanceMetrics, getCohortAttendance } from './attendanceService';
 import { getWorkshops } from './courseService';
-import { getStudentMilestoneAudits, getAcademicMilestones } from './academicScheduleService';
+import {
+  getStudentMilestoneAudits,
+  getAcademicMilestones,
+  selectRiskMilestones,
+} from './academicScheduleService';
+import { evaluateAcademicRisk } from '../utils/academicRisk';
 import {
   isMissingRelationError,
   isTableMissingInSupabase,
@@ -151,6 +158,7 @@ export interface PreloadedStudentKardexData {
   moduleProgress?: ModuleQuizProgress[];
   assignments?: StudentAssignment[];
   completedTopicsSet?: Set<string>;
+  completedAtByTopic?: Map<string, string | null | undefined>;
   workshops?: LiveWorkshop[];
   attendanceRecords?: ClassAttendanceRecord[];
 }
@@ -188,6 +196,9 @@ export async function calculateStudentKardex(
   const completedTopicsSet =
     preloadedData?.completedTopicsSet ??
     (await fetchStudentCompletedTopics(studentId).catch(() => new Set<string>()));
+  const completedAtByTopic =
+    preloadedData?.completedAtByTopic ??
+    (await fetchStudentCompletedTopicTimes(studentId).catch(() => new Map<string, string | null>()));
   const moduleProgressList =
     preloadedData?.moduleProgress ??
     (await getMyProgressByModule(studentId).catch(() => []));
@@ -262,7 +273,22 @@ export async function calculateStudentKardex(
   });
 
   // 6. Auditoría de Hitos de Calendarización
-  const milestoneAudits = await getStudentMilestoneAudits(studentId, completedTopicsSet, providedMilestones);
+  const riskMilestones = selectRiskMilestones(
+    providedMilestones ?? (await getAcademicMilestones())
+  );
+  const milestoneAudits = await getStudentMilestoneAudits(
+    studentId,
+    completedTopicsSet,
+    riskMilestones,
+    completedAtByTopic
+  );
+  const academicRisk = evaluateAcademicRisk({
+    milestones: riskMilestones,
+    completedTopics: completedTopicsSet,
+    completedAtByTopic,
+    assignments: rawAssignments,
+    attendance: attendanceMetrics.records,
+  });
 
   const rubricsMap = new Map(rubricConfig.rubrics.map((r) => [r.id, r]));
   const examsRubric = rubricsMap.get('exams') || { weight: 30, name: 'Exámenes', enabled: true };
@@ -384,6 +410,9 @@ export async function calculateStudentKardex(
       modulesBreakdown,
     },
     milestoneAudits,
+    complianceStatus: academicRisk.status,
+    complianceLabel: academicRisk.label,
+    riskReasons: academicRisk.reasons,
   };
 }
 
@@ -405,14 +434,18 @@ export async function getCohortAcademicSummaries(
     allAttendance,
     completedTopicsByUser,
     attemptsByUser,
+    completedAtByUser,
   ] = await Promise.all([
     getGradebookRubrics(),
-    getAcademicMilestones(),
+    getAcademicMilestones().then(selectRiskMilestones),
     getWorkshops().catch(() => [] as LiveWorkshop[]),
     getAllStudentAssignments(profiles).catch(() => [] as StudentAssignment[]),
     getCohortAttendance(studentIds).catch(() => [] as ClassAttendanceRecord[]),
     fetchCohortCompletedTopics(studentIds).catch(() => new Map<string, Set<string>>()),
     getCohortAttempts(studentIds).catch(() => new Map<string, QuizAttempt[]>()),
+    fetchCohortCompletedTopicTimes(studentIds).catch(
+      () => new Map<string, Map<string, string | null>>()
+    ),
   ]);
 
   const assignmentsByUser = new Map<string, StudentAssignment[]>();
@@ -437,26 +470,10 @@ export async function getCohortAcademicSummaries(
           moduleProgress: [],
           assignments: assignmentsByUser.get(p.id) ?? [],
           completedTopicsSet: completedTopicsByUser.get(p.id) ?? new Set<string>(),
+          completedAtByTopic: completedAtByUser.get(p.id) ?? new Map<string, string | null>(),
           workshops,
           attendanceRecords: attendanceByUser.get(p.id) ?? [],
         });
-
-        // Evaluar estado de cumplimiento con el calendario
-        const now = new Date();
-        const overdueMilestones = kardex.milestoneAudits.filter(
-          (m) => new Date(m.dueDate) < now && m.progressPct < 70
-        );
-
-        let complianceStatus: 'on_track' | 'at_risk' | 'lagging' = 'on_track';
-        let complianceLabel = 'Al corriente';
-
-        if (overdueMilestones.length >= 2) {
-          complianceStatus = 'lagging';
-          complianceLabel = 'Rezagado en calendario';
-        } else if (overdueMilestones.length === 1) {
-          complianceStatus = 'at_risk';
-          complianceLabel = 'En riesgo de retraso';
-        }
 
         const summary: StudentCohortSummary = {
           studentId: p.id,
@@ -474,8 +491,9 @@ export async function getCohortAcademicSummaries(
           finalWeightedGrade: kardex.finalGrade,
           officialGrade: kardex.officialGrade,
           isOfficial: kardex.isOfficial,
-          complianceStatus,
-          complianceLabel,
+          complianceStatus: kardex.complianceStatus,
+          complianceLabel: kardex.complianceLabel,
+          riskReasons: kardex.riskReasons,
         };
 
         map.set(p.id, summary);

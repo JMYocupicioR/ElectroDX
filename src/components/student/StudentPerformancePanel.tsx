@@ -49,7 +49,7 @@ export function StudentPerformancePanel({
   const pendingAssignments = kardex.assignmentDetails.filter(
     (item) => item.status === 'pending' || item.status === 'submitted' || item.status === 'needs_revision'
   ).length;
-  const pendingMilestone = kardex.milestoneAudits.find((audit) => !audit.isOnTrack);
+  const firstRiskReason = kardex.riskReasons?.[0];
   const unmarkedSessions = Math.max(
     0,
     kardex.attendanceSummary.totalSessions - kardex.attendanceSummary.sessions.length
@@ -192,12 +192,11 @@ export function StudentPerformancePanel({
                 {unmarkedSessions} sesión(es) que cuentan y aún no tienen pase de lista.
               </li>
             ) : null}
-            {pendingMilestone ? (
+            {firstRiskReason ? (
               <li className="flex items-start gap-2">
                 <GraduationCap className="w-3.5 h-3.5 mt-0.5 text-violet-500" />
                 <button type="button" className="text-left font-semibold hover:underline" onClick={() => onSelectTab('modules')}>
-                  {pendingMilestone.milestoneTitle}: {pendingMilestone.completedTopics}/{pendingMilestone.totalTopics}{' '}
-                  temas del corte.
+                  {firstRiskReason}
                 </button>
               </li>
             ) : null}
@@ -209,7 +208,7 @@ export function StudentPerformancePanel({
                 </button>
               </li>
             ) : null}
-            {kardex.missingBuckets.length === 0 && pendingAssignments === 0 && !pendingMilestone ? (
+            {kardex.missingBuckets.length === 0 && pendingAssignments === 0 && !firstRiskReason ? (
               <li className="inline-flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
                 No hay huecos operativos. El dictamen usa el promedio Capa A.

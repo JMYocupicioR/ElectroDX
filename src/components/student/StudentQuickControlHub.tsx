@@ -221,7 +221,6 @@ export function StudentQuickControlHub({
   onOpenKardexModal,
   onRecordResumeClick,
 }: StudentQuickControlHubProps) {
-  // Prioritize unread notifications first, then by urgency tone, then by newest
   const nowMs = Date.now();
   const prioritizedNotifications = [...notifications]
     .sort((a, b) => {
@@ -240,12 +239,6 @@ export function StudentQuickControlHub({
   const headerToneStyle = getNotificationToneStyle(highestUnreadTone);
   const unreadUrgentCount = notifications.filter(
     (n) => !n.isRead && resolveNotificationTone(n, nowMs) === 'urgent'
-  ).length;
-  const unreadWarningCount = notifications.filter(
-    (n) => !n.isRead && resolveNotificationTone(n, nowMs) === 'warning'
-  ).length;
-  const unreadInfoCount = notifications.filter(
-    (n) => !n.isRead && resolveNotificationTone(n, nowMs) === 'info'
   ).length;
 
   // Categorize assignments
@@ -271,7 +264,7 @@ export function StudentQuickControlHub({
   // Kardex & accreditation checks
   const cedulaVerified = Boolean(profile?.cedula_verified);
   const hasCedulaNumber = Boolean(profile?.cedula_profesional?.trim());
-  const pendingMilestone = kardex?.milestoneAudits.find((audit) => !audit.isOnTrack) ?? null;
+  const firstRiskReason = kardex?.riskReasons?.[0] ?? null;
   const unmarkedSessions = kardex
     ? Math.max(0, kardex.attendanceSummary.totalSessions - kardex.attendanceSummary.sessions.length)
     : 0;
@@ -285,77 +278,6 @@ export function StudentQuickControlHub({
 
   return (
     <section aria-label="Centro de seguimiento rápido del alumno" className="space-y-4 sm:space-y-5">
-      {/* ─── BARRA DE CÓDIGO DE COLORES SEMÁNTICO (Visible en tablet/desktop para no ocupar espacio vertical en móvil) ─── */}
-      <div className="hidden md:flex p-3.5 sm:px-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
-            Código de Alertas:
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <button
-            type="button"
-            onClick={() => onSelectTab('notifications')}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold border transition cursor-pointer ${
-              unreadUrgentCount > 0
-                ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-200 border-rose-300 dark:border-rose-700'
-                : 'bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                unreadUrgentCount > 0 ? 'bg-rose-600 animate-pulse' : 'bg-rose-500'
-              }`}
-            />
-            <span>Rojo: Exámenes, Tareas (&lt;24h) y Clase (≤5 min)</span>
-            {unreadUrgentCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded bg-rose-600 text-white text-[11px] font-mono tabular-nums">
-                {unreadUrgentCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelectTab('notifications')}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-300/80 dark:border-amber-800/70 transition cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span>Amarillo: Clase futura (&gt;5 min) y Entregas en tiempo</span>
-            {(unreadWarningCount > 0 || actionRequiredAssignments.length > 0) && (
-              <span className="px-1.5 py-0.2 rounded bg-amber-500 text-white text-[11px] font-mono tabular-nums">
-                {unreadWarningCount || actionRequiredAssignments.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onSelectTab('notifications')}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-200 border border-sky-200 dark:border-sky-800/70 transition cursor-pointer"
-          >
-            <span className="w-2 h-2 rounded-full bg-sky-500" />
-            <span>Azul claro: Recordatorios y Sistema</span>
-            {unreadInfoCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded bg-sky-600 text-white text-[11px] font-mono tabular-nums">
-                {unreadInfoCount}
-              </span>
-            )}
-          </button>
-
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800/70">
-            <span className="w-2 h-2 rounded-full bg-emerald-600" />
-            <span>Verde: Acreditado</span>
-          </span>
-
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-            <span className="w-2 h-2 rounded-full bg-slate-400" />
-            <span>Gris: Atendido</span>
-          </span>
-        </div>
-      </div>
-
       {/* ─── GRID PRINCIPAL DE 4 PILARES EN LA PRIMERA PÁGINA ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
         {/* ══════════════════════════════════════════════════════════════════
@@ -1218,14 +1140,14 @@ export function StudentQuickControlHub({
               {/* 4. Dictamen Capa A, Cortes del Calendario y Planes de Estudio */}
               <div
                 className={`p-3 rounded-xl border ${
-                  pendingMilestone || missingBucketNames.length > 0
+                  firstRiskReason || missingBucketNames.length > 0
                     ? 'border-l-4 border-l-indigo-600 border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/40 dark:bg-indigo-950/20'
                     : 'border-l-4 border-l-emerald-600 border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/40 dark:bg-emerald-950/20'
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {pendingMilestone ? (
+                    {firstRiskReason ? (
                       <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                     ) : (
                       <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
@@ -1239,8 +1161,8 @@ export function StudentQuickControlHub({
                         (Mín. 80)
                       </p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {pendingMilestone
-                          ? `Corte pendiente: ${pendingMilestone.milestoneTitle} (${pendingMilestone.completedTopics}/${pendingMilestone.totalTopics} temas)`
+                        {firstRiskReason
+                          ? firstRiskReason
                           : missingBucketNames.length > 0
                             ? `Falta evidencia en: ${missingBucketNames.join(', ')}`
                             : learningPlans.length > 0

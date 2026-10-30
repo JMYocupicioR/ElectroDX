@@ -54,7 +54,7 @@ export interface TopicCommentNotification {
   title: string;
   message: string;
   type: string;
-  severity: 'info' | 'success' | 'warning';
+  severity: 'info' | 'success' | 'warning' | 'urgent';
   link_url: string | null;
   source_key: string;
   is_read: boolean;

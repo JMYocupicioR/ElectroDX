@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Video, Calendar, ArrowRight, CheckCircle, PlayCircle, Clock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { WorkshopCard } from '../course/WorkshopCard';
+import { StudentAgenda } from '../student/StudentAgenda';
 import { getWorkshops } from '../../services/courseService';
+import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
+import { allModules } from '../../content/modules';
 import type { LiveWorkshop } from '../../types/database';
+import type { SessionBrief } from '../../utils/liveSessionBrief';
+import { endOfWeekMonday, startOfWeekMonday } from '../../utils/academicCalendar';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,11 +23,13 @@ const itemVariants = {
 };
 
 export default function WorkshopsListPage() {
-  const { isEnrolledPhysician } = useAuth();
+  const { user, isEnrolledPhysician } = useAuth();
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
+  const [briefs, setBriefs] = useState<Map<string, SessionBrief>>(new Map());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'recordings'>('upcoming');
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'recordings' | 'calendar'>('upcoming');
+  const [moduleFilter, setModuleFilter] = useState<string>('all');
 
   useEffect(() => {
     async function fetchAllWorkshops() {
@@ -31,6 +38,8 @@ export default function WorkshopsListPage() {
         setLoadError(null);
         const data = await getWorkshops();
         setWorkshops(data);
+        const briefMap = await fetchSessionBriefs(data.map((workshop) => workshop.id));
+        setBriefs(briefMap);
       } catch (err) {
         console.error('Error loading workshops:', err);
         setLoadError(err instanceof Error && err.message ? err.message : 'No se pudieron cargar los talleres.');
@@ -42,10 +51,27 @@ export default function WorkshopsListPage() {
   }, []);
 
   const now = new Date();
+  const weekStart = startOfWeekMonday(now);
+  const weekEnd = endOfWeekMonday(now);
   const upcomingWorkshops = workshops.filter((w) => {
     const d = new Date(w.scheduled_at);
     return d >= now || w.status === 'live';
   }).sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+
+  const moduleOptions = useMemo(() => {
+    const ids = new Set(upcomingWorkshops.map((workshop) => workshop.module_id));
+    return allModules.filter((mod) => ids.has(mod.id));
+  }, [upcomingWorkshops]);
+
+  const visibleUpcoming = upcomingWorkshops.filter(
+    (workshop) => moduleFilter === 'all' || workshop.module_id === moduleFilter,
+  );
+  const thisWeek = visibleUpcoming.filter((workshop) => {
+    if (workshop.status === 'live') return true;
+    const when = new Date(workshop.scheduled_at);
+    return when >= weekStart && when <= weekEnd;
+  });
+  const later = visibleUpcoming.filter((workshop) => !thisWeek.some((item) => item.id === workshop.id));
 
   const recordedWorkshops = workshops.filter((w) => Boolean(w.recording_url));
 
@@ -99,6 +125,18 @@ export default function WorkshopsListPage() {
             <PlayCircle className="w-4 h-4" />
             Clases Grabadas ({recordedWorkshops.length})
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('calendar')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'calendar'
+                ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-300 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Calendario
+          </button>
         </div>
       </motion.div>
 
@@ -113,6 +151,8 @@ export default function WorkshopsListPage() {
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           <p className="mt-2 text-sm text-slate-500">Cargando catálogo de sesiones...</p>
         </div>
+      ) : activeTab === 'calendar' ? (
+        <StudentAgenda studentId={user?.id ?? null} showPrivateNote />
       ) : activeTab === 'upcoming' ? (
         upcomingWorkshops.length === 0 ? (
           <motion.div
@@ -139,20 +179,63 @@ export default function WorkshopsListPage() {
             )}
           </motion.div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          >
-            {upcomingWorkshops.map((ws) => (
-              <motion.div key={ws.id} variants={itemVariants}>
-                <Link to={`/taller/${ws.id}`} className="block h-full">
-                  <WorkshopCard workshop={ws} />
-                </Link>
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="space-y-8">
+            {moduleOptions.length > 1 ? (
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button
+                  type="button"
+                  onClick={() => setModuleFilter('all')}
+                  className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${
+                    moduleFilter === 'all'
+                      ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  Todos los módulos
+                </button>
+                {moduleOptions.map((mod) => (
+                  <button
+                    key={mod.id}
+                    type="button"
+                    onClick={() => setModuleFilter(mod.id)}
+                    className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold border cursor-pointer ${
+                      moduleFilter === mod.id
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {mod.title.split(':')[0]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+            {[{ title: 'Esta semana', rows: thisWeek }, { title: 'Después', rows: later }]
+              .filter((section) => section.rows.length > 0)
+              .map((section) => (
+                <section key={section.title}>
+                  <h2 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
+                    {section.title}
+                  </h2>
+                  <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                  >
+                    {section.rows.map((ws) => (
+                      <motion.div key={ws.id} variants={itemVariants}>
+                        <Link to={`/taller/${ws.id}`} className="block h-full">
+                          <WorkshopCard workshop={ws} brief={briefs.get(ws.id)} />
+                        </Link>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </section>
+              ))}
+            {visibleUpcoming.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center">No hay sesiones de ese módulo.</p>
+            ) : null}
+          </div>
         )
       ) : (
         /* Tab Recordings */

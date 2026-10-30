@@ -115,6 +115,8 @@ export function CalendarBoard({
   itemCount,
   loading,
   onRefresh,
+  dayIntent = 'plan',
+  showColorEditor = true,
 }: {
   view: CalendarBoardView;
   onViewChange: (view: CalendarBoardView) => void;
@@ -129,8 +131,12 @@ export function CalendarBoard({
   itemCount?: number;
   loading?: boolean;
   onRefresh?: () => void;
+  /** `plan` abre el menú de crear (docente). `view` solo consulta el día (alumno). */
+  dayIntent?: 'plan' | 'view';
+  showColorEditor?: boolean;
 }) {
   const todayKey = toLocalDateKey(new Date());
+  const dayVerb = dayIntent === 'view' ? 'Ver' : 'Planear';
   const title = view === 'week' ? formatWeekTitle(anchor) : formatMonthTitle(anchor);
   const [overflowKey, setOverflowKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
@@ -257,16 +263,20 @@ export function CalendarBoard({
               </button>
             );
           })}
-          <button
-            type="button"
-            onClick={() => setLegendOpen((open) => !open)}
-            aria-expanded={legendOpen}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 ml-auto"
-          >
-            <Palette className="w-3.5 h-3.5" />
-            Colores
-          </button>
-          <CalendarColorLabelsEditor open={legendOpen} onClose={() => setLegendOpen(false)} />
+          {showColorEditor ? (
+            <button
+              type="button"
+              onClick={() => setLegendOpen((open) => !open)}
+              aria-expanded={legendOpen}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold border border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 ml-auto"
+            >
+              <Palette className="w-3.5 h-3.5" />
+              Colores
+            </button>
+          ) : null}
+          {showColorEditor ? (
+            <CalendarColorLabelsEditor open={legendOpen} onClose={() => setLegendOpen(false)} />
+          ) : null}
         </div>
       </div>
 
@@ -286,7 +296,7 @@ export function CalendarBoard({
               const dayItems = itemsForDay(items, day);
               const visible = dayItems.slice(0, 3);
               const extra = dayItems.length - visible.length;
-              const planLabel = `Planear el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+              const planLabel = `${dayVerb} el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
               return (
                 <div
                   key={key}
@@ -368,7 +378,7 @@ export function CalendarBoard({
                         }}
                         className="mt-2 w-full text-[11px] font-bold text-indigo-600 dark:text-indigo-300 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
                       >
-                        Planear este día
+                        {dayVerb} este día
                       </button>
                     </div>
                   ) : null}
@@ -384,7 +394,7 @@ export function CalendarBoard({
           {getWeekDays(anchor).map((day) => {
             const key = toLocalDateKey(day);
             const dayItems = itemsForDay(items, day);
-            const planLabel = `Planear el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+            const planLabel = `${dayVerb} el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
             return (
               <div
                 key={key}

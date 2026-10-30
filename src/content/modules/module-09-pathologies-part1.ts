@@ -31,6 +31,8 @@ export const peripheralNeuropathies: Topic = {
 • Bloqueo de conducción: caída de amplitud/área CMAP > 50% entre estimulación proximal y distal.
 • Dispersión temporal anormal: duración del CMAP proximal > 130% del distal.
 
+:::emg-trace{preset="aidp-guillain-barre" mode="comparison"}:::
+
 **Criterios de Axonopatía:**
 • Amplitudes de CMAP y/o SNAP reducidas (< LIN) con velocidades de conducción normales o solo levemente reducidas (> 75-80% LIN).
 • Latencias distales normales o mínimamente prolongadas.
@@ -67,6 +69,8 @@ Patrón axonal sensitivo-motor longitud-dependiente (stocking-glove). Progresió
 • **Mononeuropatía diabética:** Usualmente isquémica. Craneal III (con preservación pupilar), femoral, mediano (STC — 2-4x más frecuente en diabéticos).
 • **Radiculoplexoneuropatía lumbosacra (amiotrofia diabética):** Entidad autoinmune separada (ver sección Plexopatías).
 • **Neuropatía de fibra fina diabética:** NCS normales con dolor quemante severo.
+
+:::emg-trace{preset="sural-sensory" mode="comparison"}:::
 
 **Estadificación EDX de DSPN:**
 | Estadio | Hallazgo NCS | SNAP Sural | CMAP Peroneo | EMG |

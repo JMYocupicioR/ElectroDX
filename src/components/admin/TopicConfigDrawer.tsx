@@ -13,7 +13,6 @@ import {
   Plus,
   GraduationCap,
   FileQuestion,
-  Sparkles,
   Check,
   ChevronUp,
   ChevronDown,
@@ -35,7 +34,12 @@ import type {
   LiveWorkshop,
   TopicTeachingCommitment,
 } from '../../types/database';
-import type { AcademicMilestone } from '../../types/academicGradebook';
+import type { AcademicMilestone, SessionModality } from '../../types/academicGradebook';
+import {
+  composeClassDescription,
+  splitIsoToLocalDateTime,
+  splitStoredDescription,
+} from './liveClassFormUtils';
 
 function tryShowNativePicker(input: HTMLInputElement | null) {
   if (!input) return;
@@ -94,6 +98,10 @@ interface TopicConfigDrawerProps {
     scheduledAt: string;
     durationMinutes: number;
     streamUrl: string;
+    recordingUrl?: string;
+    description?: string | null;
+    sessionModality?: SessionModality;
+    countsForKardex?: boolean;
     teacherId?: string;
     teacherName?: string;
     additionalTopics?: { topicId: string; moduleId: string }[];
@@ -108,7 +116,6 @@ interface TopicConfigDrawerProps {
   onSelectSubtopic?: (subtopic: Topic) => void;
   onOpenQuizEditor: () => void;
   onOpenAssignExam: () => void;
-  onOpenClassWizard: () => void;
 }
 
 function getInitials(name: string): string {
@@ -149,7 +156,6 @@ export function TopicConfigDrawer({
   onSelectSubtopic,
   onOpenQuizEditor,
   onOpenAssignExam,
-  onOpenClassWizard,
 }: TopicConfigDrawerProps) {
   const [activeTab, setActiveTab] = useState<TopicDrawerTab>(initialTab);
   const [teacherSearch, setTeacherSearch] = useState('');
@@ -165,6 +171,11 @@ export function TopicConfigDrawer({
   const [classTime, setClassTime] = useState('19:00');
   const [classDuration, setClassDuration] = useState(90);
   const [classStreamUrl, setClassStreamUrl] = useState('');
+  const [classRecordingUrl, setClassRecordingUrl] = useState('');
+  const [classModality, setClassModality] = useState<SessionModality>('online');
+  const [classLocation, setClassLocation] = useState('');
+  const [classDescription, setClassDescription] = useState('');
+  const [classCountsForKardex, setClassCountsForKardex] = useState(true);
   const [classTitle, setClassTitle] = useState('');
 
   // General metadata state
@@ -219,14 +230,18 @@ export function TopicConfigDrawer({
 
   useEffect(() => {
     if (!topic) return;
+    const stored = splitStoredDescription(
+      linkedWorkshop?.description || topic.description || '',
+    );
+    setClassDescription(stored.description);
+    setClassLocation(stored.location);
+    setClassModality(linkedWorkshop?.session_modality === 'in_person' ? 'in_person' : 'online');
+    setClassRecordingUrl(linkedWorkshop?.recording_url || '');
+    setClassCountsForKardex(linkedWorkshop?.counts_for_kardex !== false);
     if (linkedWorkshop) {
-      const dt = new Date(linkedWorkshop.scheduled_at);
-      if (!Number.isNaN(dt.getTime())) {
-        const tzOffset = dt.getTimezoneOffset() * 60000;
-        const localIso = new Date(dt.getTime() - tzOffset).toISOString();
-        setClassDate(localIso.slice(0, 10));
-        setClassTime(localIso.slice(11, 16));
-      }
+      const parts = splitIsoToLocalDateTime(linkedWorkshop.scheduled_at);
+      setClassDate(parts.date);
+      setClassTime(parts.time || '19:00');
       setClassDuration(linkedWorkshop.duration_minutes || 90);
       setClassStreamUrl(linkedWorkshop.stream_url || course?.live_meeting_url || '');
       setClassTitle(linkedWorkshop.title || `Clase: ${topic.title}`);
@@ -237,7 +252,7 @@ export function TopicConfigDrawer({
       setClassStreamUrl(course?.live_meeting_url || '');
       setClassTitle(`Clase: ${topic.title}`);
     }
-  }, [linkedWorkshop, topic?.id, course?.live_meeting_url]);
+  }, [linkedWorkshop, topic?.id, topic?.description, course?.live_meeting_url]);
 
   const liveClassTopicCatalog = useMemo(
     () => buildLiveClassTopicCatalog(courseModules),
@@ -484,6 +499,10 @@ export function TopicConfigDrawer({
         scheduledAt: isoDateTime,
         durationMinutes: classDuration || 90,
         streamUrl: classStreamUrl.trim(),
+        recordingUrl: classRecordingUrl.trim(),
+        description: composeClassDescription(classDescription, classLocation, classModality) || null,
+        sessionModality: classModality,
+        countsForKardex: classCountsForKardex,
         teacherId: primaryCommitment?.teacher_id,
         teacherName: primaryCommitment?.teacher_name ?? undefined,
         additionalTopics,
@@ -945,25 +964,26 @@ export function TopicConfigDrawer({
                 onSubmit={(e) => void persistLiveClass(e)}
                 className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 space-y-3.5"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
-                      Calendario de clase del tema
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                      Programa qué día y a qué hora se impartirá este tema en vivo.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onOpenClassWizard}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold border border-indigo-200/70 dark:border-indigo-800/60 hover:bg-indigo-100 transition cursor-pointer shrink-0"
-                    title="Abrir asistente completo de clases en vivo"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>Asistente completo</span>
-                  </button>
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Calendar className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
+                    Calendario de clase del tema
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Programa qué día y a qué hora se impartirá este tema en vivo.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Título de la sesión
+                  </label>
+                  <input
+                    type="text"
+                    value={classTitle}
+                    onChange={(e) => setClassTitle(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold"
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1017,7 +1037,7 @@ export function TopicConfigDrawer({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                  <label className="flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
                     <Video className="w-3 h-3 text-blue-500" />
                     <span>Enlace de Zoom / Google Meet (opcional)</span>
                   </label>
@@ -1027,6 +1047,70 @@ export function TopicConfigDrawer({
                     value={classStreamUrl}
                     onChange={(e) => setClassStreamUrl(e.target.value)}
                     className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Modalidad
+                  </label>
+                  <select
+                    value={classModality}
+                    onChange={(e) => setClassModality(e.target.value as SessionModality)}
+                    className="live-session-select w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 text-xs font-bold"
+                  >
+                    <option value="online">En línea (Zoom / Streaming)</option>
+                    <option value="in_person">Presencial (Aula / Laboratorio EMG)</option>
+                  </select>
+                </div>
+
+                {classModality === 'in_person' && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Sede o aula
+                    </label>
+                    <input
+                      type="text"
+                      value={classLocation}
+                      onChange={(e) => setClassLocation(e.target.value)}
+                      placeholder="Aula de electrodiagnóstico"
+                      className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Enlace de clase grabada (YouTube / Drive / Vimeo)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/... o https://youtube.com/..."
+                    value={classRecordingUrl}
+                    onChange={(e) => setClassRecordingUrl(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={classCountsForKardex}
+                    onChange={(e) => setClassCountsForKardex(e.target.checked)}
+                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                  />
+                  Computa para el 20% de asistencia en Kardex
+                </label>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Descripción del caso o temario del taller
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={classDescription}
+                    onChange={(e) => setClassDescription(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
                   />
                 </div>
 

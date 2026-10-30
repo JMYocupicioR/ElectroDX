@@ -16,7 +16,6 @@ import {
 import { AdminLayout } from './AdminLayout';
 import {
   getWorkshops,
-  createWorkshop,
   updateWorkshop,
   deleteWorkshop,
   setWorkshopAttendanceClosed,
@@ -32,7 +31,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import type { LiveWorkshop, WorkshopStatus } from '../../types/database';
 import type { Module } from '../../types/content';
 import type { AdminProfileRow } from '../../types/admin';
-import type { ClassAttendanceRecord, SessionModality } from '../../types/academicGradebook';
+import type { ClassAttendanceRecord } from '../../types/academicGradebook';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 
 export default function AdminWorkshopsPage() {
@@ -44,18 +43,8 @@ export default function AdminWorkshopsPage() {
   const [students, setStudents] = useState<AdminProfileRow[]>([]);
   const [cohortRecords, setCohortRecords] = useState<ClassAttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
-
-  // Form state
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [moduleId, setModuleId] = useState('');
-  const [scheduledAt, setScheduledAt] = useState('');
-  const [streamUrl, setStreamUrl] = useState('');
-  const [recordingUrl, setRecordingUrl] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
   const [editingWorkshop, setEditingWorkshop] = useState<LiveWorkshop | null>(null);
-  const [sessionModality, setSessionModality] = useState<SessionModality>('online');
-  const [countsForKardex, setCountsForKardex] = useState(true);
   const [pushTitle, setPushTitle] = useState('Aviso académico ElectroDx');
   const [pushBody, setPushBody] = useState('');
   const [pushStatus, setPushStatus] = useState<string | null>(null);
@@ -108,46 +97,6 @@ export default function AdminWorkshopsPage() {
     }
     return map;
   }, []);
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !scheduledAt || !moduleId) return;
-    if (!user?.id) {
-      alert('Debes iniciar sesión para programar una clase.');
-      return;
-    }
-
-    try {
-      await createWorkshop({
-        title,
-        description,
-        module_id: moduleId,
-        topic_id: null,
-        scheduled_at: new Date(scheduledAt).toISOString(),
-        duration_minutes: 90,
-        stream_url: streamUrl || null,
-        recording_url: recordingUrl || null,
-        clinical_case_revision_id: null,
-        clinical_case_json: null,
-        status: 'draft',
-        max_capacity: 100,
-        session_modality: sessionModality,
-        counts_for_kardex: countsForKardex,
-        created_by: user.id,
-      } as any);
-      setIsCreating(false);
-      setTitle('');
-      setDescription('');
-      setScheduledAt('');
-      setStreamUrl('');
-      setRecordingUrl('');
-      setSessionModality('online');
-      setCountsForKardex(true);
-      load();
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Error al crear');
-    }
-  };
 
   const setStatus = async (id: string, status: WorkshopStatus) => {
     // Si intenta finalizar, advertir si el pase de lista está incompleto
@@ -259,157 +208,16 @@ export default function AdminWorkshopsPage() {
           </p>
         </div>
         <button
-          onClick={() => setIsCreating(!isCreating)}
+          type="button"
+          onClick={() => {
+            setEditingWorkshop(null);
+            setCreateOpen(true);
+          }}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer self-start sm:self-auto"
         >
-          {isCreating ? (
-            'Cancelar'
-          ) : (
-            <>
-              <Plus className="w-4 h-4" /> Programar Taller
-            </>
-          )}
+          <Plus className="w-4 h-4" /> Programar Taller
         </button>
       </div>
-
-      {isCreating && (
-        <form
-          onSubmit={handleCreate}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 mb-8 shadow-xs"
-        >
-          <h3 className="text-sm font-black mb-4 uppercase tracking-wider text-slate-800 dark:text-slate-200">
-            Nuevo Taller Clínico o Clase en Vivo
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Título del Taller
-              </label>
-              <input
-                required
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej. Taller 1: Fundamentos de Neuroconducción"
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 text-xs font-semibold bg-transparent dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Módulo Académico
-              </label>
-              <select
-                required
-                value={moduleId}
-                onChange={(e) => setModuleId(e.target.value)}
-                className="live-session-select w-full rounded-xl border border-slate-200 dark:border-slate-600 p-2.5 text-xs font-semibold bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100"
-              >
-                <option value="">Selecciona un módulo...</option>
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Fecha y Hora de la Sesión
-              </label>
-              <input
-                required
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 text-xs font-semibold bg-transparent dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Modalidad
-              </label>
-              <select
-                value={sessionModality}
-                onChange={(e) => setSessionModality(e.target.value as SessionModality)}
-                className="live-session-select w-full rounded-xl border border-slate-200 dark:border-slate-600 p-2.5 text-xs font-semibold bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100"
-              >
-                <option value="online">En línea (Zoom / Streaming)</option>
-                <option value="in_person">Presencial (Aula / Laboratorio EMG)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Enlace de Transmisión (Zoom / Meet)
-              </label>
-              <input
-                type="url"
-                value={streamUrl}
-                onChange={(e) => setStreamUrl(e.target.value)}
-                placeholder="https://zoom.us/j/..."
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 text-xs font-semibold bg-transparent dark:text-white"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Enlace de Clase Grabada (YouTube / Drive / Vimeo)
-              </label>
-              <input
-                type="url"
-                value={recordingUrl}
-                onChange={(e) => setRecordingUrl(e.target.value)}
-                placeholder="https://drive.google.com/... o https://youtube.com/..."
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 text-xs font-semibold bg-transparent dark:text-white"
-              />
-            </div>
-
-            <div className="flex items-center gap-3 pt-6">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700 dark:text-slate-300">
-                <input
-                  type="checkbox"
-                  checked={countsForKardex}
-                  onChange={(e) => setCountsForKardex(e.target.checked)}
-                  className="rounded-sm text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-                />
-                <span>Computa para el 20% de asistencia en Kardex</span>
-              </label>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Descripción del caso o temario del taller
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 dark:border-slate-700 p-2.5 text-xs bg-transparent dark:text-white"
-                rows={2}
-              />
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setIsCreating(false)}
-              className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-            >
-              Guardar Taller
-            </button>
-          </div>
-        </form>
-      )}
 
       {loading ? (
         <p className="text-sm text-slate-500 text-center py-12">Cargando talleres...</p>
@@ -623,10 +431,17 @@ export default function AdminWorkshopsPage() {
 
       {/* Modal de Enlaces y Grabaciones */}
       <CreateLiveClassModal
-        isOpen={Boolean(editingWorkshop)}
-        onClose={() => setEditingWorkshop(null)}
+        isOpen={createOpen || Boolean(editingWorkshop)}
+        onClose={() => {
+          setCreateOpen(false);
+          setEditingWorkshop(null);
+        }}
         initialWorkshop={editingWorkshop}
-        onSuccess={load}
+        onSuccess={async () => {
+          setCreateOpen(false);
+          setEditingWorkshop(null);
+          await load();
+        }}
       />
     </AdminLayout>
   );

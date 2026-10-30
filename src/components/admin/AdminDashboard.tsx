@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Pencil,
   GraduationCap,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -38,6 +39,10 @@ import {
   listQuizzesForValidation,
   setQuizValidationStatus,
 } from '../../services/quizValidationService';
+import { getAllQuizFlags } from '../../services/quizService';
+import { useAllModules } from '../../hooks/useAllModules';
+import { topTopicsMissingQuiz } from '../../utils/topicsMissingQuiz';
+import { TopicsMissingQuizQueue } from './quiz/TopicsMissingQuizQueue';
 import { findDuplicateStems } from '../../utils/quizDuplicates';
 import { allModules } from '../../content/modules';
 import { getCohortAcademicSummaries } from '../../services/gradebookService';
@@ -46,7 +51,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import type { AdminProfileRow } from '../../types/admin';
 import type { CourseWaitlistRow, ContentRevision } from '../../types/database';
 import type { TeacherPendingReviewItem } from '../../types/studentPlan';
-import type { QuizValidationItem } from '../../types/quiz';
+import type { QuizTopicFlag, QuizValidationItem } from '../../types/quiz';
 import type { StudentCohortSummary } from '../../types/academicGradebook';
 import type { CalendarItem } from '../../types/academicCalendar';
 import { loadAcademicCalendarFeed } from '../../services/academicCalendarService';
@@ -66,7 +71,12 @@ import {
   hasAutoOpenClassWizardBeenSeenThisSession,
   markAutoOpenClassWizardSessionSeen,
 } from '../../utils/classWizardPreferences';
-import { subscribeToAdminRealtimeSubmissions } from '../../services/deviceNotificationService';
+import { invalidateStaffInbox, useStaffInbox } from '../../hooks/useStaffInbox';
+import {
+  orderStaffInboxSections,
+  sectionInboxLevel,
+  type StaffInboxLevel,
+} from '../../utils/staffInboxRank';
 
 interface CollapsibleDashboardSectionProps {
   id: string;
@@ -95,16 +105,21 @@ function CollapsibleDashboardSection({
   children,
 }: CollapsibleDashboardSectionProps) {
   const isAlarm = badgeVariant === 'alarm';
+  const isWarning = badgeVariant === 'warning';
+  const isInfo = badgeVariant === 'info';
 
   return (
     <section
-      className={`rounded-3xl border transition-colors bg-white dark:bg-slate-900 overflow-hidden shadow-xs ${
+      className={`rounded-2xl border transition-colors bg-white dark:bg-slate-900 overflow-hidden ${
         isAlarm
-          ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-500/20 hover:border-rose-400 dark:hover:border-rose-700'
-          : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'border-rose-300 dark:border-rose-900/60 hover:border-rose-400 dark:hover:border-rose-700'
+          : isWarning
+            ? 'border-amber-300 dark:border-amber-900/60 hover:border-amber-400 dark:hover:border-amber-700'
+            : isInfo
+              ? 'border-sky-300 dark:border-sky-900/60 hover:border-sky-400 dark:hover:border-sky-700'
+              : 'border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
-      {/* ── Clickable Header Bar ── */}
       <div
         onClick={onToggle}
         role="button"
@@ -116,50 +131,44 @@ function CollapsibleDashboardSection({
           }
         }}
         aria-expanded={isOpen}
-        className="w-full p-4 flex flex-wrap items-center justify-between gap-3 text-left cursor-pointer hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition select-none"
+        className="w-full px-3 py-2 flex items-start gap-2.5 text-left cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition select-none"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold shrink-0 transition-transform ${
-              isOpen ? 'scale-105' : ''
-            } ${iconBgClass}`}
-          >
-            {icon}
+        <div
+          className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconBgClass}`}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-slate-900 dark:text-white">
+              {title}
+            </h2>
+            <button
+              type="button"
+              className="shrink-0 p-1 -mr-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition"
+              aria-label={isOpen ? 'Colapsar sección' : 'Expandir sección'}
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+            </button>
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white">
-                {title}
-              </h2>
-              {badgeContent}
-            </div>
+          <div className="mt-0.5 flex items-center gap-1.5 min-w-0">
+            <div className="shrink-0 min-w-0 max-w-[70%] overflow-hidden">{badgeContent}</div>
             {subtitle && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <p className="min-w-0 flex-1 truncate text-[11px] leading-4 text-slate-500 dark:text-slate-400">
                 {subtitle}
               </p>
             )}
+            {headerAction && (
+              <div className="ml-auto shrink-0" onClick={(e) => e.stopPropagation()}>
+                {headerAction}
+              </div>
+            )}
           </div>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0 ml-auto">
-          {headerAction && (
-            <div onClick={(e) => e.stopPropagation()}>
-              {headerAction}
-            </div>
-          )}
-          <button
-            type="button"
-            className="p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-            aria-label={isOpen ? 'Colapsar sección' : 'Expandir sección'}
-          >
-            <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
-          </button>
         </div>
       </div>
 
-      {/* ── Collapsible Content ── */}
       {isOpen && (
-        <div className="p-4 sm:p-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-950/20">
+        <div className="px-3 py-2.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-950/25">
           {children}
         </div>
       )}
@@ -167,8 +176,28 @@ function CollapsibleDashboardSection({
   );
 }
 
+function badgeVariantFromLevel(
+  level: StaffInboxLevel | null,
+  empty: boolean
+): 'alarm' | 'success' | 'warning' | 'info' | 'neutral' {
+  if (empty || level == null) return 'success';
+  if (level === 0) return 'alarm';
+  if (level === 1) return 'warning';
+  return 'info';
+}
+
+function sectionToneClass(level: StaffInboxLevel | null, empty: boolean): string {
+  if (empty || level == null) return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
+  if (level === 0) return 'bg-rose-500/15 text-rose-600 dark:text-rose-400';
+  if (level === 1) return 'bg-amber-500/15 text-amber-600 dark:text-amber-400';
+  return 'bg-sky-500/15 text-sky-600 dark:text-sky-400';
+}
+
 export default function AdminDashboard() {
   const { user, profile, isAdmin, isEditor, isLoading } = useAuth();
+  const { modules: syllabusModules } = useAllModules();
+  const inbox = useStaffInbox();
+  const openedPriority = useRef(false);
 
   // State for data
   const [waitlistItems, setWaitlistItems] = useState<CourseWaitlistRow[]>([]);
@@ -176,20 +205,21 @@ export default function AdminDashboard() {
   const [pendingSubmissions, setPendingSubmissions] = useState<TeacherPendingReviewItem[]>([]);
   const [pendingTopicRevisions, setPendingTopicRevisions] = useState<ContentRevision[]>([]);
   const [pendingQuizzes, setPendingQuizzes] = useState<QuizValidationItem[]>([]);
+  const [quizTopicIdsWithQuestions, setQuizTopicIdsWithQuestions] = useState<Set<string> | null>(null);
   const [pendingRetakes, setPendingRetakes] = useState<TeacherPendingReviewItem[]>([]);
   const [allProfiles, setAllProfiles] = useState<AdminProfileRow[]>([]);
   const [cohortSummaries, setCohortSummaries] = useState<Map<string, StudentCohortSummary>>(new Map());
   const [weekItems, setWeekItems] = useState<CalendarItem[]>([]);
 
   // Topic Adoption summary & collapsible sections state (all collapsed by default)
-  const [topicSummary, setTopicSummary] = useState<TopicAdoptionSummary | null>(null);
+  const [, setTopicSummary] = useState<TopicAdoptionSummary | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   const toggleSection = (id: string) => {
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const allSectionIds = ['topics', 'submissions', 'waitlist', 'quizzes', 'editorial', 'retakes', 'atRisk', 'calendar'];
+  const allSectionIds = ['retakes', 'submissions', 'questions', 'waitlist', 'quizzes', 'editorial', 'atRisk', 'calendar', 'topics'];
   const areAllOpen = allSectionIds.every((id) => openSections[id]);
   const toggleAllSections = () => {
     if (areAllOpen) {
@@ -240,7 +270,7 @@ export default function AdminDashboard() {
     }
   }, [showAssignDropdown]);
 
-  // Apertura automática del Asistente de Clase (Modo Fácil) al iniciar sesión según preferencia del usuario
+  // Abre el panel de clase en vivo al iniciar sesión si el docente dejó esa preferencia activa.
   useEffect(() => {
     if (isLoading || !user) return;
     if (!isAdmin && !isEditor) return;
@@ -254,20 +284,9 @@ export default function AdminDashboard() {
     }
   }, [isLoading, user, isAdmin, isEditor]);
 
-  // Alertas en tiempo real para docentes cuando un alumno envía una entrega
-  useEffect(() => {
-    if (!isAdmin && !isEditor) return;
-    const unsubscribe = subscribeToAdminRealtimeSubmissions(() => {
-      void loadData();
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, [isAdmin, isEditor]);
-
   const loadData = async () => {
     try {
-      const [allActiveProfiles, waitlistData, revisionsData, quizzesData] = await Promise.all([
+      const [allActiveProfiles, waitlistData, revisionsData, quizzesData, quizFlags] = await Promise.all([
         getAdminProfiles(false, 'all').catch(() => [] as AdminProfileRow[]),
         getAdminCourseWaitlist(null, 'pending')
           .then((rows) => {
@@ -281,6 +300,7 @@ export default function AdminDashboard() {
           }),
         getPendingRevisions().catch(() => []),
         listQuizzesForValidation().catch(() => []),
+        getAllQuizFlags().catch(() => [] as QuizTopicFlag[]),
       ]);
 
       setWaitlistItems(waitlistData);
@@ -297,6 +317,9 @@ export default function AdminDashboard() {
         (q) => (q.clinical_validation_status ?? 'pending_review') === 'pending_review'
       );
       setPendingQuizzes(pendingQ);
+      setQuizTopicIdsWithQuestions(
+        new Set(quizFlags.filter((flag) => flag.question_count > 0).map((flag) => flag.topic_id)),
+      );
 
       // Filter only real students
       const studentsOnly = filterGradeableStudents(allActiveProfiles, user?.id);
@@ -322,6 +345,7 @@ export default function AdminDashboard() {
       console.error('[AdminDashboard] Error loading data:', e);
     } finally {
       setLoading(false);
+      invalidateStaffInbox();
     }
   };
 
@@ -511,6 +535,23 @@ export default function AdminDashboard() {
     return showAllQuizzes ? sortedPendingQuizzes : sortedPendingQuizzes.slice(0, 6);
   }, [sortedPendingQuizzes, showAllQuizzes]);
 
+  const topicsMissingQuiz = useMemo(() => {
+    if (!quizTopicIdsWithQuestions) return { topics: [], total: 0 };
+    return topTopicsMissingQuiz(syllabusModules, quizTopicIdsWithQuestions);
+  }, [quizTopicIdsWithQuestions, syllabusModules]);
+
+  const missingQuizPreview = topicsMissingQuiz.topics
+    .map((topic) => `Tema ${topic.curriculumIndex}: ${topic.title}`)
+    .join(' · ');
+
+  const revealedQuizGaps = useRef(false);
+  useEffect(() => {
+    if (revealedQuizGaps.current || !quizTopicIdsWithQuestions) return;
+    revealedQuizGaps.current = true;
+    if (topicsMissingQuiz.total === 0) return;
+    setOpenSections((prev) => (prev.quizzes ? prev : { ...prev, quizzes: true }));
+  }, [quizTopicIdsWithQuestions, topicsMissingQuiz.total]);
+
   // Alumnos en riesgo
   const atRiskStudents = useMemo(() => {
     return allProfiles
@@ -520,11 +561,7 @@ export default function AdminDashboard() {
       })
       .filter(({ summary }) => {
         if (!summary) return false;
-        return (
-          summary.complianceStatus === 'at_risk' ||
-          summary.complianceStatus === 'lagging' ||
-          summary.finalWeightedGrade < 70
-        );
+        return summary.complianceStatus === 'at_risk' || summary.complianceStatus === 'lagging';
       });
   }, [allProfiles, cohortSummaries]);
 
@@ -536,26 +573,43 @@ export default function AdminDashboard() {
     return liveWorkshop || currentWeekItems[0] || null;
   }, [weekItems]);
 
-  // Total pending alarms calculation for visual guidance (red = action needed)
-  const totalPendingAlarms = useMemo(() => {
-    let count = 0;
-    if (topicSummary && topicSummary.myTopicsCount === 0) count++;
-    if (sortedSubmissions.length > 0) count += sortedSubmissions.length;
-    if (admissionCount > 0) count += admissionCount;
-    if (pendingQuizzes.length > 0) count += pendingQuizzes.length;
-    if (pendingTopicRevisions.length > 0) count += pendingTopicRevisions.length;
-    if (pendingRetakes.length > 0) count += pendingRetakes.length;
-    if (atRiskStudents.length > 0) count += atRiskStudents.length;
-    return count;
-  }, [
-    topicSummary,
-    sortedSubmissions.length,
-    admissionCount,
-    pendingQuizzes.length,
-    pendingTopicRevisions.length,
-    pendingRetakes.length,
-    atRiskStudents.length,
-  ]);
+  const questionItems = useMemo(
+    () => inbox.items.filter((item) => item.kind === 'question'),
+    [inbox.items]
+  );
+  const submissionLevel = sectionInboxLevel(inbox.items, ['submission']);
+  const retakeLevel = sectionInboxLevel(inbox.items, ['retake']);
+  const questionLevel = sectionInboxLevel(inbox.items, ['question']);
+  const admissionLevel = sectionInboxLevel(inbox.items, ['admission']);
+  const quizInboxLevel = sectionInboxLevel(inbox.items, ['quiz']);
+  const editorialLevel = sectionInboxLevel(inbox.items, ['editorial']);
+  const sectionOrder = useMemo(
+    () => orderStaffInboxSections(inbox.items, { atRiskCount: atRiskStudents.length }),
+    [inbox.items, atRiskStudents.length]
+  );
+  const sectionStyle = (id: string) => ({ order: Math.max(sectionOrder.indexOf(id), 0) + 1 });
+
+  useEffect(() => {
+    if (openedPriority.current) return;
+    const firstP0 = ['retakes', 'submissions', 'questions', 'waitlist', 'quizzes', 'editorial'].find(
+      (id) => {
+        const kinds: Record<string, Array<'retake' | 'submission' | 'question' | 'admission' | 'quiz' | 'editorial'>> = {
+          retakes: ['retake'],
+          submissions: ['submission'],
+          questions: ['question'],
+          waitlist: ['admission'],
+          quizzes: ['quiz'],
+          editorial: ['editorial'],
+        };
+        return inbox.items.some((item) => kinds[id].includes(item.kind as never) && item.level === 0);
+      }
+    );
+    if (!firstP0) return;
+    openedPriority.current = true;
+    setOpenSections((prev) => (prev[firstP0] ? prev : { ...prev, [firstP0]: true }));
+  }, [inbox.items]);
+
+  const totalPendingAlarms = inbox.counts.totalPending;
 
   return (
     <AdminLayout
@@ -567,7 +621,7 @@ export default function AdminDashboard() {
           <button
             type="button"
             onClick={() => setShowAttendanceModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition shadow-2xs cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-[11px] font-semibold transition cursor-pointer"
           >
             <UserCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Pase de lista</span>
@@ -578,7 +632,7 @@ export default function AdminDashboard() {
             <button
               type="button"
               onClick={() => setShowAssignDropdown(!showAssignDropdown)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition border border-indigo-200/80 dark:border-indigo-800/80 shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-[11px] font-semibold transition border border-indigo-200/80 dark:border-indigo-800/80 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Asignar</span>
@@ -624,15 +678,14 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          {/* 3. Asistente de Clase (Modo Fácil) */}
           <button
             type="button"
             onClick={() => setShowCreateLiveClassModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-rose-600 hover:from-indigo-500 hover:to-rose-500 text-white text-xs font-black transition shadow-sm shadow-indigo-600/20 cursor-pointer"
-            title="Abrir el Asistente Guiado para configurar una clase en 3 minutos"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold transition cursor-pointer"
+            title="Abrir el panel para crear una clase en vivo"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Asistente de Clase</span>
+            <span>Crear clase en vivo</span>
           </button>
         </div>
       }
@@ -640,8 +693,8 @@ export default function AdminDashboard() {
 
       {/* Success Notification Alert */}
       {successMessage && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center gap-2 shadow-xs">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+        <div className="mb-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           <span className="font-semibold">{successMessage}</span>
         </div>
       )}
@@ -651,72 +704,63 @@ export default function AdminDashboard() {
           ══════════════════════════════════════════════════════════════════════════ */}
       
       {/* ── Barra de Guía Visual y Resumen de Pendientes ── */}
-      <div className="mb-6 p-4 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shrink-0 ${
-              totalPendingAlarms > 0
-                ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-                : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-            }`}
-          >
-            {totalPendingAlarms > 0 ? (
-              <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
-            ) : (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                Guía de Pendientes de la Bandeja
-              </h3>
-              <span
-                className={`px-2.5 py-0.5 rounded-full text-xs font-black border inline-flex items-center gap-1.5 ${
-                  totalPendingAlarms > 0
-                    ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border-rose-300 dark:border-rose-800 shadow-2xs'
-                    : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                }`}
-              >
-                {totalPendingAlarms > 0 && <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />}
-                {totalPendingAlarms > 0
-                  ? `${totalPendingAlarms} ${totalPendingAlarms === 1 ? 'pendiente que resolver' : 'pendientes que resolver'}`
-                  : 'Todo al día (0 pendientes)'}
-              </span>
-            </div>
-            {/* Color coding legend as user requested */}
-            <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-rose-700 dark:text-rose-400 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-rose-500" />
-                Rojo = Alarma / Pendientes a resolver
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                Ámbar = En propuesta
-              </span>
-              <span>·</span>
-              <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Verde = Al día / Confirmado
-              </span>
-            </div>
-          </div>
+      <div className="mb-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 flex items-start gap-2.5">
+        <div
+          className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+            totalPendingAlarms > 0
+              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+          }`}
+        >
+          {totalPendingAlarms > 0 ? (
+            <AlertTriangle className="w-4 h-4" />
+          ) : (
+            <CheckCircle2 className="w-4 h-4" />
+          )}
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={toggleAllSections}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer shadow-2xs"
-          >
-            <span>{areAllOpen ? 'Colapsar todas las secciones' : 'Expandir todas las secciones'}</span>
-          </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <h3 className="min-w-0 flex-1 truncate text-[13px] font-semibold leading-5 text-slate-900 dark:text-white">
+              Guía de pendientes
+            </h3>
+            <button
+              type="button"
+              onClick={toggleAllSections}
+              title={areAllOpen ? 'Colapsar todas las secciones' : 'Expandir todas las secciones'}
+              className="shrink-0 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px] font-semibold leading-none transition cursor-pointer"
+            >
+              {areAllOpen ? 'Colapsar' : 'Expandir'}
+            </button>
+          </div>
+          <p className="mt-0.5 flex items-center gap-1.5 min-w-0 text-[10px] leading-4 overflow-x-auto scrollbar-none">
+            {totalPendingAlarms > 0 && (
+              <span className="shrink-0 px-1.5 py-px rounded-full font-semibold border inline-flex items-center gap-1 bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border-rose-300 dark:border-rose-800">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                {totalPendingAlarms} {totalPendingAlarms === 1 ? 'pendiente' : 'pendientes'}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1 shrink-0 text-rose-700 dark:text-rose-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              Decisión
+            </span>
+            <span className="inline-flex items-center gap-1 shrink-0 text-amber-700 dark:text-amber-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Respuesta
+            </span>
+            <span className="inline-flex items-center gap-1 shrink-0 text-sky-700 dark:text-sky-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+              Revisión
+            </span>
+            <span className="inline-flex items-center gap-1 shrink-0 text-emerald-700 dark:text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Al día
+            </span>
+          </p>
         </div>
       </div>
 
-      <div className="space-y-4">
-        {/* ── 1. Temas Docentes y Asignación de Clases (AL INICIO, colapsable, colapsado por defecto) ── */}
+      <div className="flex flex-col gap-1.5">
+        <div style={sectionStyle('topics')}>
         <TopicAdoptionInbox
           onChanged={loadData}
           isOpen={openSections['topics'] ?? false}
@@ -726,36 +770,33 @@ export default function AdminDashboard() {
             setQuizEditorModal({ isOpen: true, topicId, moduleId })
           }
         />
+        </div>
 
-        {/* ── 2. Entregas por calificar (colapsable, colapsada por defecto) ── */}
+        <div style={sectionStyle('submissions')}>
         <CollapsibleDashboardSection
           id="submissions"
           title="Entregas por calificar"
           subtitle="Tareas y casos clínicos que esperan tu evaluación"
           icon={<FileCheck className="w-4 h-4" />}
-          iconBgClass={
-            sortedSubmissions.length > 0
-              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-          }
-          badgeVariant={sortedSubmissions.length > 0 ? 'alarm' : 'success'}
+          iconBgClass={sectionToneClass(submissionLevel, sortedSubmissions.length === 0)}
+          badgeVariant={badgeVariantFromLevel(submissionLevel, sortedSubmissions.length === 0)}
           badgeContent={
             sortedSubmissions.length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                {sortedSubmissions.length} por calificar (Alarma)
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                {sortedSubmissions.length} por calificar
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · 0 por calificar
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
               </span>
             )
           }
           headerAction={
             <Link
               to="/admin/alumnos/tareas?nueva=1"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-2xs"
+              className="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold leading-none transition"
             >
               Nueva tarea
             </Link>
@@ -764,7 +805,7 @@ export default function AdminDashboard() {
           onToggle={() => toggleSection('submissions')}
         >
           {sortedSubmissions.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Al día: no hay tareas ni casos clínicos pendientes de calificación en este momento.</span>
             </div>
@@ -784,10 +825,10 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={assignment.id}
-                    className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                    className="px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
                   >
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0">
                         {studentProfile?.display_name?.charAt(0) || 'M'}
                       </div>
                       <div className="min-w-0">
@@ -837,42 +878,97 @@ export default function AdminDashboard() {
             </div>
           )}
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 3. Médicos en lista de espera (colapsable, colapsada por defecto) ── */}
+        <div style={sectionStyle('questions')}>
+        <CollapsibleDashboardSection
+          id="questions"
+          title="Dudas por responder"
+          subtitle="Hilos de la cohorte que siguen abiertos"
+          icon={<MessageCircle className="w-4 h-4" />}
+          iconBgClass={sectionToneClass(questionLevel, questionItems.length === 0)}
+          badgeVariant={badgeVariantFromLevel(questionLevel, questionItems.length === 0)}
+          badgeContent={
+            questionItems.length > 0 ? (
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-200 border border-amber-300 dark:border-amber-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                {questionItems.length} {questionItems.length === 1 ? 'duda' : 'dudas'}
+              </span>
+            ) : (
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
+              </span>
+            )
+          }
+          isOpen={openSections['questions'] ?? false}
+          onToggle={() => toggleSection('questions')}
+        >
+          {questionItems.length === 0 ? (
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>No hay dudas abiertas de la cohorte.</span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {questionItems.map((item) => (
+                <Link
+                  key={item.source_key}
+                  to={item.link_url || '/admin'}
+                  className="block p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                >
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">
+                    {item.actor_name || 'Médico cursista'}
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">{item.context_label}</p>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+                    {item.message}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CollapsibleDashboardSection>
+        </div>
+
+        <div style={sectionStyle('waitlist')}>
         <CollapsibleDashboardSection
           id="waitlist"
           title="Médicos en lista de espera"
           subtitle="Solicitudes de acceso y admisión pendientes de aprobación"
           icon={<Clock className="w-4 h-4" />}
           iconBgClass={
-            admissionCount > 0 || waitlistError
+            waitlistError
               ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+              : sectionToneClass(admissionLevel, admissionCount === 0)
           }
-          badgeVariant={admissionCount > 0 || waitlistError ? 'alarm' : 'success'}
+          badgeVariant={
+            waitlistError ? 'alarm' : badgeVariantFromLevel(admissionLevel, admissionCount === 0)
+          }
           badgeContent={
             waitlistError ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
                 Sin lectura
               </span>
             ) : admissionCount > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                {admissionCount} por admitir (Alarma)
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                {admissionCount} por admitir
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · 0 por admitir
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
               </span>
             )
           }
           headerAction={
             <Link
               to="/admin/admisiones"
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+              title="Ver todas las admisiones"
             >
-              Ver todas las admisiones →
+              Admisiones
             </Link>
           }
           isOpen={openSections['waitlist'] ?? false}
@@ -884,7 +980,7 @@ export default function AdminDashboard() {
               <span>No se pudo leer la lista de espera: {waitlistError}</span>
             </div>
           ) : admissionCount === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Al día: no hay solicitudes de médicos en lista de espera pendientes de admisión.</span>
             </div>
@@ -893,10 +989,10 @@ export default function AdminDashboard() {
               {profilePending.map((profile) => (
                 <div
                   key={profile.id}
-                  className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                  className="px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
                       {(profile.display_name || 'M').charAt(0)}
                     </div>
                     <div className="min-w-0">
@@ -930,10 +1026,10 @@ export default function AdminDashboard() {
               {waitlistItems.map((item) => (
                 <div
                   key={item.enrollment_id}
-                  className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                  className="px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold text-xs shrink-0">
                       {item.display_name.charAt(0)}
                     </div>
                     <div className="min-w-0">
@@ -974,49 +1070,80 @@ export default function AdminDashboard() {
             </div>
           )}
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 4. Cola de revisión de quizzes (Validación clínica) ── */}
+        <div style={sectionStyle('quizzes')}>
         <CollapsibleDashboardSection
           id="quizzes"
           title="Cola de revisión de quizzes"
-          subtitle="Evaluaciones pendientes de validación clínica de reactivos"
+          subtitle={
+            pendingQuizzes.length > 0 && topicsMissingQuiz.total > 0
+              ? `${topicsMissingQuiz.total} temas sin cuestionario`
+              : pendingQuizzes.length > 0
+                ? 'Validación clínica de reactivos'
+                : topicsMissingQuiz.total > 0
+                  ? 'Temas del temario sin evaluación'
+                  : missingQuizPreview || 'Cuestionarios del temario'
+          }
           icon={<GraduationCap className="w-4 h-4" />}
           iconBgClass={
             pendingQuizzes.length > 0
-              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+              ? sectionToneClass(quizInboxLevel, false)
+              : topicsMissingQuiz.total > 0
+                ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
           }
-          badgeVariant={pendingQuizzes.length > 0 ? 'alarm' : 'success'}
+          badgeVariant={
+            pendingQuizzes.length > 0
+              ? badgeVariantFromLevel(quizInboxLevel, false)
+              : topicsMissingQuiz.total > 0
+                ? 'warning'
+                : quizTopicIdsWithQuestions
+                  ? 'success'
+                  : 'neutral'
+          }
           badgeContent={
-            pendingQuizzes.length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                {pendingQuizzes.length} por validar (Alarma)
-              </span>
-            ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · 0 exámenes pendientes
-              </span>
-            )
+            <span className="inline-flex items-center gap-1">
+              {pendingQuizzes.length > 0 ? (
+                <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                  {pendingQuizzes.length} por validar
+                </span>
+              ) : topicsMissingQuiz.total === 0 && quizTopicIdsWithQuestions ? (
+                <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  Al día
+                </span>
+              ) : topicsMissingQuiz.total === 0 ? (
+                <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  Revisando temas…
+                </span>
+              ) : null}
+              {topicsMissingQuiz.total > 0 && pendingQuizzes.length === 0 && (
+                <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-amber-50 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200 border border-amber-200 dark:border-amber-800 inline-flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  {topicsMissingQuiz.total} sin cuestionario
+                </span>
+              )}
+            </span>
           }
           headerAction={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setQuizEditorModal({ isOpen: true })}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-2xs transition cursor-pointer"
-                title="Abrir editor de quizzes en modal"
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-[11px] leading-none transition cursor-pointer"
+                title="Abrir editor de quizzes"
               >
-                <FileQuestion className="w-3.5 h-3.5" />
-                <span>Editor de quizzes</span>
+                <FileQuestion className="w-3 h-3" />
+                <span>Editor</span>
               </button>
               {pendingQuizzes.length > 0 && (
                 <Link
                   to="/admin/revisiones?tab=clinical"
-                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  className="hidden sm:inline text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
                 >
-                  Validación clínica →
+                  Validar
                 </Link>
               )}
             </div>
@@ -1024,11 +1151,16 @@ export default function AdminDashboard() {
           isOpen={openSections['quizzes'] ?? false}
           onToggle={() => toggleSection('quizzes')}
         >
-          {pendingQuizzes.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-2">
+          {pendingQuizzes.length === 0 && topicsMissingQuiz.total === 0 ? (
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                <span>Al día: no hay exámenes ni cuestionarios pendientes de revisión clínica.</span>
+                <span>
+                  {quizTopicIdsWithQuestions
+                    ? 'Al día: no hay exámenes pendientes de revisión clínica y cada tema del temario ya tiene cuestionario.'
+                    : 'Revisando qué temas no tienen cuestionario…'}
+                </span>
               </div>
               <button
                 type="button"
@@ -1039,7 +1171,7 @@ export default function AdminDashboard() {
                 <span>Editar o crear quizzes de temas</span>
               </button>
             </div>
-          ) : (
+          ) : pendingQuizzes.length > 0 ? (
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-2xs">
               {displayedQuizzes.map((quiz) => {
                 const title = quiz.title || `Evaluación: ${quiz.topic_id}`;
@@ -1050,10 +1182,10 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={quiz.id}
-                    className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                    className="px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
                   >
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5 sm:mt-0">
                         Q
                       </div>
                       <div className="min-w-0">
@@ -1150,31 +1282,40 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
+          <TopicsMissingQuizQueue
+            topics={topicsMissingQuiz.topics}
+            total={topicsMissingQuiz.total}
+            onAddQuiz={(topic) =>
+              setQuizEditorModal({
+                isOpen: true,
+                topicId: topic.topicId,
+                moduleId: topic.moduleId,
+              })
+            }
+          />
+          </div>
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 5. Temas pendientes de aprobación (Cola editorial) ── */}
+        <div style={sectionStyle('editorial')}>
         <CollapsibleDashboardSection
           id="editorial"
           title="Temas pendientes de aprobación"
           subtitle="Propuestas curriculares y lecciones por aprobar en el temario"
           icon={<FileCheck className="w-4 h-4" />}
-          iconBgClass={
-            pendingTopicRevisions.length > 0
-              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-          }
-          badgeVariant={pendingTopicRevisions.length > 0 ? 'alarm' : 'success'}
+          iconBgClass={sectionToneClass(editorialLevel, pendingTopicRevisions.length === 0)}
+          badgeVariant={badgeVariantFromLevel(editorialLevel, pendingTopicRevisions.length === 0)}
           badgeContent={
             pendingTopicRevisions.length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 {pendingTopicRevisions.length} propuestas por aprobar
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · 0 propuestas pendientes
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
               </span>
             )
           }
@@ -1182,9 +1323,10 @@ export default function AdminDashboard() {
             pendingTopicRevisions.length > 0 ? (
               <Link
                 to="/admin/revisiones"
-                className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+                title="Abrir la cola editorial"
               >
-                Abrir cola editorial completa →
+                Revisar
               </Link>
             ) : undefined
           }
@@ -1192,7 +1334,7 @@ export default function AdminDashboard() {
           onToggle={() => toggleSection('editorial')}
         >
           {pendingTopicRevisions.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Al día: no hay temas ni propuestas editoriales pendientes de aprobación en el temario.</span>
             </div>
@@ -1204,10 +1346,10 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={rev.id}
-                    className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
+                    className="px-3 py-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition text-xs"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-xs shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/15 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold text-xs shrink-0">
                         {isQuiz ? 'Q' : 'T'}
                       </div>
                       <div className="min-w-0">
@@ -1251,29 +1393,26 @@ export default function AdminDashboard() {
             </div>
           )}
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 6. Reintentos de examen (colapsable, colapsado por defecto) ── */}
+        <div style={sectionStyle('retakes')}>
         <CollapsibleDashboardSection
           id="retakes"
           title="Reintentos de examen"
           subtitle="Solicitudes de alumnos que requieren aprobación o rechazo"
           icon={<RotateCcw className="w-4 h-4" />}
-          iconBgClass={
-            pendingRetakes.length > 0
-              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
-              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-          }
-          badgeVariant={pendingRetakes.length > 0 ? 'alarm' : 'success'}
+          iconBgClass={sectionToneClass(retakeLevel, pendingRetakes.length === 0)}
+          badgeVariant={badgeVariantFromLevel(retakeLevel, pendingRetakes.length === 0)}
           badgeContent={
             pendingRetakes.length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
-                {pendingRetakes.length} solicitudes (Alarma)
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                {pendingRetakes.length} solicitudes
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · 0 solicitudes
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
               </span>
             )
           }
@@ -1281,16 +1420,16 @@ export default function AdminDashboard() {
           onToggle={() => toggleSection('retakes')}
         >
           {pendingRetakes.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Sin solicitudes de reintento de examen pendientes.</span>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {pendingRetakes.map((ret) => (
                 <div
                   key={ret.assignment.id}
-                  className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between gap-3 text-xs"
+                  className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between gap-2 text-xs"
                 >
                   <div>
                     <div className="flex items-start justify-between gap-2 mb-1">
@@ -1341,54 +1480,61 @@ export default function AdminDashboard() {
             </div>
           )}
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 7. Alumnos en riesgo (colapsable, colapsado por defecto) ── */}
+        <div style={sectionStyle('atRisk')}>
         <CollapsibleDashboardSection
           id="atRisk"
           title="Alumnos en riesgo"
-          subtitle="Estudiantes con rezago académico o calificación menor a 70 pts"
+          subtitle="Obligaciones ya vencidas: corte, examen, tarea o falta"
           icon={<AlertTriangle className="w-4 h-4" />}
           iconBgClass={
             atRiskStudents.length > 0
-              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
               : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
           }
-          badgeVariant={atRiskStudents.length > 0 ? 'alarm' : 'success'}
+          badgeVariant={atRiskStudents.length > 0 ? 'warning' : 'success'}
           badgeContent={
             atRiskStudents.length > 0 ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1.5 shadow-2xs">
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-200 border border-rose-300 dark:border-rose-800 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 {atRiskStudents.length} en alerta académica
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Al día · Sin alumnos en riesgo
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" />
+                Al día
               </span>
             )
           }
           headerAction={
             <Link
-              to="/admin/alumnos"
-              className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              to="/admin/alumnos?cumplimiento=riesgo"
+              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+              title="Ver todos los alumnos"
             >
-              Ver todos los alumnos →
+              Alumnos
             </Link>
           }
           isOpen={openSections['atRisk'] ?? false}
           onToggle={() => toggleSection('atRisk')}
         >
           {atRiskStudents.length === 0 ? (
-            <div className="p-4 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-xs text-slate-500 flex items-center gap-2">
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>Excelente: ningún alumno de la cohorte se encuentra en estado de riesgo o rezago académico.</span>
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-2xs">
-              {atRiskStudents.slice(0, 5).map(({ profile: std, summary }) => (
+              {atRiskStudents.map(({ profile: std, summary }) => {
+                const reason = summary?.riskReasons?.[0] || summary?.complianceLabel || 'En riesgo';
+                const extra = (summary?.riskReasons?.length ?? 0) > 1
+                  ? ` +${(summary?.riskReasons.length ?? 1) - 1}`
+                  : '';
+                return (
                 <div
                   key={std.id}
-                  className="p-3.5 sm:px-4 flex items-center justify-between gap-3 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
+                  className="px-3 py-2 flex items-center justify-between gap-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-8 h-8 rounded-xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-xs shrink-0">
@@ -1405,8 +1551,11 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
-                      {summary?.finalWeightedGrade ?? 0} pts · {summary?.complianceLabel || 'En riesgo'}
+                    <span
+                      className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border border-rose-200 dark:border-rose-900 max-w-[16rem] truncate"
+                      title={summary?.riskReasons?.join(' · ') || reason}
+                    >
+                      {reason}{extra}
                     </span>
                     <button
                       type="button"
@@ -1417,12 +1566,14 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CollapsibleDashboardSection>
+        </div>
 
-        {/* ── 8. La clase de esta semana (colapsable, colapsado por defecto) ── */}
+        <div style={sectionStyle('calendar')}>
         <CollapsibleDashboardSection
           id="calendar"
           title="La clase de esta semana"
@@ -1432,7 +1583,7 @@ export default function AdminDashboard() {
           badgeVariant={thisWeekClass ? 'info' : 'neutral'}
           badgeContent={
             thisWeekClass ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                 {calendarItemStartDate(thisWeekClass.startsAt, thisWeekClass.allDay).toLocaleDateString('es-MX', {
                   weekday: 'short',
                   day: 'numeric',
@@ -1440,7 +1591,7 @@ export default function AdminDashboard() {
                 })}
               </span>
             ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+              <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                 Sin clase programada
               </span>
             )
@@ -1448,10 +1599,11 @@ export default function AdminDashboard() {
           headerAction={
             <Link
               to="/admin/calendario"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+              title={thisWeekClass ? 'Abrir calendario' : 'Programar en el calendario'}
             >
-              <span>{thisWeekClass ? 'Abrir calendario' : 'Programar en el calendario'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Calendario</span>
+              <ArrowRight className="w-3 h-3" />
             </Link>
           }
           isOpen={openSections['calendar'] ?? false}
@@ -1459,7 +1611,7 @@ export default function AdminDashboard() {
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                 <Calendar className="w-4 h-4" />
               </div>
               <div className="min-w-0">
@@ -1488,15 +1640,27 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <Link
-              to="/admin/calendario"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 font-bold text-xs text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
-            >
-              <span>{thisWeekClass ? 'Ver en calendario' : 'Programar clase'}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            {thisWeekClass ? (
+              <Link
+                to="/admin/calendario"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 font-bold text-xs text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0"
+              >
+                <span>Ver en calendario</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowCreateLiveClassModal(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 font-bold text-xs text-indigo-600 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition shrink-0 cursor-pointer"
+              >
+                <span>Programar clase</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </CollapsibleDashboardSection>
+        </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════════
@@ -1509,6 +1673,7 @@ export default function AdminDashboard() {
         item={gradingItem}
         onGraded={() => {
           setSuccessMessage('¡Calificación y retroalimentación guardadas con éxito!');
+          invalidateStaffInbox();
           loadData();
           setTimeout(() => setSuccessMessage(null), 4000);
         }}
