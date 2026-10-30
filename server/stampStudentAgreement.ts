@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 import QRCode from 'qrcode';
-import { agreementBodyPlain } from '../src/content/legal/agreementBody';
+import { parseAgreementBody, type AgreementBlock } from '../src/content/legal/agreementBody';
 import type { ParsedAgreement } from '../src/content/legal/agreements';
 
 export interface StampStudentAgreementInput {
@@ -50,6 +50,52 @@ function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): 
     if (current) lines.push(current);
   }
   return lines;
+}
+
+function plainInline(text: string): string {
+  return text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,;:]|$)/g, '$1$2')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim();
+}
+
+function wrapFitted(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const lines = wrapText(plainInline(text), font, size, Math.max(8, maxWidth));
+  const fitted: string[] = [];
+  for (const line of lines) {
+    if (!line || font.widthOfTextAtSize(line, size) <= maxWidth) {
+      fitted.push(line);
+      continue;
+    }
+    let chunk = '';
+    for (const char of line) {
+      const next = chunk + char;
+      if (font.widthOfTextAtSize(next, size) <= maxWidth) chunk = next;
+      else {
+        if (chunk) fitted.push(chunk);
+        chunk = char;
+      }
+    }
+    if (chunk) fitted.push(chunk);
+  }
+  return fitted.length ? fitted : [''];
+}
+
+function columnWidths(headers: string[], rows: string[][], total: number, font: PDFFont): number[] {
+  const weights = headers.map((header, index) => {
+    const cells = [header, ...rows.map((row) => row[index] ?? '')];
+    return cells.reduce((max, cell) => {
+      const width = font.widthOfTextAtSize(toWinAnsi(plainInline(cell) || ' '), 8) + 12;
+      return Math.max(max, Math.min(width, 240));
+    }, 36);
+  });
+  const sum = weights.reduce((totalWidth, width) => totalWidth + width, 0) || 1;
+  const scaled = weights.map((width) => (width / sum) * total);
+  const used = scaled.reduce((totalWidth, width) => totalWidth + width, 0);
+  if (used !== total && scaled.length > 0) scaled[scaled.length - 1] += total - used;
+  return scaled;
 }
 
 function drawLines(
@@ -124,20 +170,125 @@ export async function stampStudentAgreement(input: StampStudentAgreementInput): 
   });
   y -= 22;
 
+  const grid = rgb(0.73, 0.77, 0.84);
+  const headerBg = rgb(0.91, 0.94, 0.98);
+  const cellSize = 8;
+  const cellGap = 10;
+  const cellPadX = 5;
+  const cellPadY = 4;
+
+  const drawParagraph = (text: string, indent = 0) => {
+    const lines = wrapFitted(text, font, 9, maxWidth - indent);
+    for (const line of lines) {
+      ensureSpace(14);
+      if (line) page.drawText(line, { x: margin + indent, y, size: 9, font, color: muted });
+      y -= 12;
+    }
+  };
+
+  const drawTable = (headers: string[], rows: string[][]) => {
+    const colCount = Math.max(headers.length, ...rows.map((row) => row.length), 1);
+    const head = Array.from({ length: colCount }, (_, index) => headers[index] ?? '');
+    const body = rows.map((row) => Array.from({ length: colCount }, (_, index) => row[index] ?? ''));
+    const widths = columnWidths(head, body, maxWidth, bold);
+    y -= 6;
+    ensureSpace(56);
+
+    const paintRow = (cells: string[], isHeader: boolean) => {
+      const rowFont = isHeader ? bold : font;
+      const columns = cells.map((cell, index) =>
+        wrapFitted(cell, rowFont, cellSize, Math.max(8, widths[index] - cellPadX * 2))
+      );
+      const lineCount = Math.max(1, ...columns.map((lines) => lines.length));
+      const height = cellPadY * 2 + lineCount * cellGap;
+      const fitsFreshPage = height < pageHeight - 140;
+      if (y - height < 60 && fitsFreshPage) {
+        const next = addPage();
+        page = next.page;
+        y = next.y;
+        if (!isHeader) paintRow(head, true);
+      }
+      let x = margin;
+      columns.forEach((lines, index) => {
+        const width = widths[index];
+        page.drawRectangle({
+          x,
+          y: y - height,
+          width,
+          height,
+          color: isHeader ? headerBg : rgb(1, 1, 1),
+          borderColor: grid,
+          borderWidth: 0.6,
+        });
+        let textY = y - cellPadY - cellSize;
+        for (const line of lines) {
+          if (line) {
+            page.drawText(line, {
+              x: x + cellPadX,
+              y: textY,
+              size: cellSize,
+              font: rowFont,
+              color: ink,
+            });
+          }
+          textY -= cellGap;
+        }
+        x += width;
+      });
+      y -= height;
+    };
+
+    paintRow(head, true);
+    for (const row of body) paintRow(row, false);
+    y -= 8;
+  };
+
+  const drawBlocks = (blocks: AgreementBlock[]) => {
+    for (const block of blocks) {
+      if (block.type === 'heading') {
+        const size = block.level >= 4 ? 9.5 : 10;
+        ensureSpace(26);
+        y -= 6;
+        const lines = wrapFitted(block.text, bold, size, maxWidth);
+        y = drawLines(page, lines, { x: margin, y, font: bold, size, color: ink, gap: size + 3 });
+        y -= 2;
+        continue;
+      }
+      if (block.type === 'list') {
+        for (const item of block.items) {
+          const marker = '· ';
+          const markerWidth = font.widthOfTextAtSize(marker, 9);
+          const lines = wrapFitted(item, font, 9, maxWidth - 16 - markerWidth);
+          lines.forEach((line, index) => {
+            ensureSpace(14);
+            if (index === 0) {
+              page.drawText(marker, { x: margin + 12, y, size: 9, font, color: ink });
+            }
+            if (line) {
+              page.drawText(line, { x: margin + 12 + markerWidth, y, size: 9, font, color: muted });
+            }
+            y -= 12;
+          });
+        }
+        y -= 4;
+        continue;
+      }
+      if (block.type === 'table') {
+        drawTable(block.headers, block.rows);
+        continue;
+      }
+      drawParagraph(block.text);
+      y -= 4;
+    }
+  };
+
   for (const section of input.agreement.sections) {
     ensureSpace(48);
     const heading = wrapText(section.title, bold, 11, maxWidth);
     y = drawLines(page, heading, { x: margin, y, font: bold, size: 11, color: ink, gap: 14 });
     y -= 4;
-    const body = wrapText(agreementBodyPlain(section.content), font, 9, maxWidth);
-    for (const line of body) {
-      ensureSpace(14);
-      if (line) {
-        page.drawText(line, { x: margin, y, size: 9, font, color: muted });
-      }
-      y -= 12;
-    }
-    y -= 8;
+    drawBlocks(parseAgreementBody(section.content));
+    y -= 6;
   }
 
   const signatureImage = await pdf.embedPng(input.signaturePng);

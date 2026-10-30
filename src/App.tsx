@@ -46,6 +46,7 @@ const StudentDashboard = lazy(() => import('./components/student/StudentDashboar
 const StudentCoursePage = lazy(() => import('./components/student/course/StudentCoursePage'));
 const SimulatorsHubPage = lazy(() => import('./components/pages/SimulatorsHubPage'));
 const TraceSimulatorPage = lazy(() => import('./components/pages/TraceSimulatorPage'));
+const PumLabPage = lazy(() => import('./components/pages/PumLabPage'));
 const CertificateVerifyPage = lazy(() => import('./components/pages/CertificateVerifyPage'));
 const AgreementsPage = lazy(() => import('./components/agreements/AgreementsPage'));
 const AgreementVerifyPage = lazy(() => import('./components/agreements/AgreementVerifyPage'));
@@ -141,6 +142,7 @@ function App() {
               <Route path="/simuladores/publico" element={<ExerciseMode publicMode />} />
               <Route path="/simuladores" element={<ProtectedRoute mode="enrolled"><SimulatorsHubPage /></ProtectedRoute>} />
               <Route path="/simuladores/trazos" element={<ProtectedRoute mode="premium"><TraceSimulatorPage /></ProtectedRoute>} />
+              <Route path="/simuladores/pum" element={<ProtectedRoute mode="premium"><PumLabPage /></ProtectedRoute>} />
               <Route path="/ejercicios" element={<ProtectedRoute mode="premium"><ExerciseMode /></ProtectedRoute>} />
               <Route path="/herramientas/plexo-braquial" element={<ProtectedRoute mode="premium"><PlexoCalculatorPage /></ProtectedRoute>} />
 

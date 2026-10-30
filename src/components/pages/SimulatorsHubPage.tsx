@@ -7,6 +7,7 @@ import {
   ArrowRight,
   BookOpen,
   Video,
+  Crosshair,
 } from 'lucide-react';
 import { portalCopy } from '../../i18n/portal';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -48,6 +49,17 @@ export default function SimulatorsHubPage() {
       badge: 'Laboratorio',
       color: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50',
       icon: Activity,
+    },
+    {
+      to: '/simuladores/pum',
+      title: lang === 'en' ? 'MUAP morphology lab' : 'Laboratorio de morfología del PUM',
+      desc:
+        lang === 'en'
+          ? 'Place onset, offset and peaks. The score grades cursor bias, not diagnosis.'
+          : 'Coloca inicio, fin y picos. La nota califica el sesgo de cursor, no el diagnóstico.',
+      badge: lang === 'en' ? 'Needle' : 'Aguja',
+      color: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/50',
+      icon: Crosshair,
     },
     {
       to: '/herramientas/plexo-braquial',

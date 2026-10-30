@@ -1024,6 +1024,26 @@ interface RawDatabase {
         Args: { p_limit?: number };
         Returns: import('./admin').AdminQuizAttemptRow[];
       };
+      admin_platform_activity: {
+        Args: {
+          p_before?: string | null;
+          p_before_id?: string | null;
+          p_limit?: number;
+          p_kind?: string | null;
+        };
+        Returns: {
+          occurred_at: string;
+          actor_id: string;
+          kind: string;
+          topic_id: string | null;
+          module_id: string | null;
+          score: number | null;
+          passed: boolean | null;
+          excerpt: string | null;
+          entity_id: string;
+          detail: string | null;
+        }[];
+      };
       submit_quiz_attempt: {
         Args: {
           p_topic_id: string;

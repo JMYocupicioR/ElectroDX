@@ -31,6 +31,9 @@ import { TraceTelemetry } from '../simulator/traceEngine/TraceTelemetry';
 import { TraceImagesGallery } from '../simulator/traceEngine/TraceImagesGallery';
 import { TeacherTraceBuilderModal } from '../simulator/TeacherTraceBuilderModal';
 import { WaveformSculptorModal } from '../simulator/traceEngine/WaveformSculptorModal';
+import { PumCaseEditorModal } from '../simulator/pumLab/PumCaseEditorModal';
+import { TraceTopicLinkManager } from './TraceTopicLinkManager';
+import { Sliders } from 'lucide-react';
 
 const CATEGORIES: { id: DiagnosticCategory | 'all'; label: string }[] = [
   { id: 'all', label: 'Todos los Trazos' },
@@ -48,6 +51,7 @@ export default function AdminTraceSimulatorPage() {
   const [showProximal, setShowProximal] = useState(false);
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
   const [isSculptorOpen, setIsSculptorOpen] = useState(false);
+  const [isPumEditorOpen, setIsPumEditorOpen] = useState(false);
   const [sculptorInitialCase, setSculptorInitialCase] = useState<TraceCaseDefinition | undefined>(undefined);
   const [copiedPreset, setCopiedPreset] = useState(false);
   const [tracesVersion, setTracesVersion] = useState(0);
@@ -114,11 +118,22 @@ export default function AdminTraceSimulatorPage() {
       subtitle="Laboratorio electrofisiológico calibrado, banco de ondas y generador interactivo para temas"
       headerActions={
         <div className="flex flex-wrap items-center gap-2">
+          {/* Botón Calibrar Laboratorio PUM */}
+          <button
+            type="button"
+            onClick={() => setIsPumEditorOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 px-3.5 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 shadow-sm transition"
+            title="Configurar y calibrar casos del laboratorio de PUM (morfología, banda normativa, ruido)"
+          >
+            <Sliders className="h-3.5 w-3.5 text-indigo-500" />
+            <span>Calibrar Lab PUM</span>
+          </button>
+
           {/* Botón Esculpir Manualmente */}
           <button
             type="button"
             onClick={() => handleOpenSculptor()}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 px-3.5 py-2 text-xs font-bold text-purple-300 shadow-sm transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 px-3.5 py-2 text-xs font-bold text-purple-700 dark:text-purple-300 shadow-sm transition"
           >
             <Move className="h-3.5 w-3.5" />
             <span>Esculpir Morfología Manual</span>
@@ -367,6 +382,12 @@ export default function AdminTraceSimulatorPage() {
           </div>
         </div>
 
+        {/* Gestor de Vinculación con Temas del Diplomado */}
+        <TraceTopicLinkManager
+          presetId={currentCase.id}
+          presetTitle={currentCase.title}
+        />
+
         {/* Galería de Imágenes Complementarias con Selector de Patrón Normal vs Patológico */}
         <TraceImagesGallery
           images={currentCase.images || []}
@@ -400,6 +421,12 @@ export default function AdminTraceSimulatorPage() {
         onClose={() => setIsSculptorOpen(false)}
         initialCase={sculptorInitialCase}
         onTraceSaved={handleTraceSavedFromSculptor}
+      />
+
+      {/* Modal de Calibración del Laboratorio PUM */}
+      <PumCaseEditorModal
+        isOpen={isPumEditorOpen}
+        onClose={() => setIsPumEditorOpen(false)}
       />
 
       {/* Modal de Estudio Docente */}

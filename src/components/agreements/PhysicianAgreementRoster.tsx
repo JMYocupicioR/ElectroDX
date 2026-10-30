@@ -71,7 +71,9 @@ export function PhysicianAgreementRoster() {
         setError(res.error || 'No se pudo descargar el PDF.');
         return;
       }
-      startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+      await startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo descargar el PDF.');
     } finally {
       setDownloading(null);
     }

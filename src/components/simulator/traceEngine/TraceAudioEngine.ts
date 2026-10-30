@@ -22,6 +22,52 @@ class TraceAudioEngine {
     return this.isAudioPlaying;
   }
 
+  playMuapWindow(signal: number[], samplingRate: number, startIndex: number, endIndex: number): void {
+    this.stop();
+    if (!signal.length) return;
+    const ctx = this.getContext();
+    const from = Math.max(0, Math.min(startIndex, endIndex));
+    const to = Math.min(signal.length - 1, Math.max(startIndex, endIndex));
+    const slice = signal.slice(from, to + 1);
+    const duration = Math.max(0.02, slice.length / Math.max(1, samplingRate));
+    const outLen = Math.max(32, Math.floor(duration * ctx.sampleRate));
+    const buffer = ctx.createBuffer(1, outLen, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let peak = 1e-6;
+    for (const v of slice) peak = Math.max(peak, Math.abs(v));
+    for (let i = 0; i < outLen; i++) {
+      const src = (i / Math.max(1, outLen - 1)) * (slice.length - 1);
+      const i0 = Math.floor(src);
+      const i1 = Math.min(slice.length - 1, i0 + 1);
+      const f = src - i0;
+      const v = slice[i0] * (1 - f) + slice[i1] * f;
+      data[i] = (v / peak) * 0.6;
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const highpass = ctx.createBiquadFilter();
+    highpass.type = 'highpass';
+    highpass.frequency.setValueAtTime(20, ctx.currentTime);
+    const lowpass = ctx.createBiquadFilter();
+    lowpass.type = 'lowpass';
+    lowpass.frequency.setValueAtTime(10000, ctx.currentTime);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.85, ctx.currentTime);
+
+    source.connect(highpass);
+    highpass.connect(lowpass);
+    lowpass.connect(gain);
+    gain.connect(ctx.destination);
+
+    this.activeNodes.push(source, highpass, lowpass, gain);
+    this.isAudioPlaying = true;
+    source.onended = () => {
+      this.isAudioPlaying = false;
+    };
+    source.start();
+  }
+
   stop(): void {
     this.isAudioPlaying = false;
     if (this.loopTimer) {

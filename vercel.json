@@ -6,6 +6,12 @@
     "api/verify-cedula.ts": {
       "maxDuration": 20,
       "includeFiles": "server/**"
+    },
+    "api/sign-agreement.ts": {
+      "maxDuration": 20
+    },
+    "api/sign-physician-agreement.ts": {
+      "maxDuration": 20
     }
   },
   "rewrites": [

@@ -22,6 +22,22 @@ export async function listPhysicianAgreements(userId: string): Promise<Physician
   return (data ?? []) as PhysicianAgreement[];
 }
 
+async function postAgreement<T extends { success: boolean; error?: string }>(body: unknown): Promise<T> {
+  const response = await fetch('/api/sign-physician-agreement', {
+    method: 'POST',
+    headers: await authHeader(),
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  try {
+    const parsed = JSON.parse(text) as T;
+    if (parsed && typeof parsed === 'object') return parsed;
+  } catch {
+    return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
+  }
+  return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
+}
+
 export async function submitPhysicianAgreement(input: {
   documentType: PhysicianAgreementDocumentType;
   fullNameTyped: string;
@@ -32,48 +48,28 @@ export async function submitPhysicianAgreement(input: {
   bank?: string | null;
   markedRole?: PhysicianMarkedRole | null;
 }): Promise<{ success: boolean; folio?: string; hasCompletedAll?: boolean; error?: string }> {
-  const response = await fetch('/api/sign-physician-agreement', {
-    method: 'POST',
-    headers: await authHeader(),
-    body: JSON.stringify({
-      action: 'sign',
-      documentType: input.documentType,
-      fullNameTyped: input.fullNameTyped,
-      professionalLicense: input.professionalLicense ?? null,
-      signatureBase64: input.signatureBase64,
-      rfc: input.rfc ?? null,
-      clabe: input.clabe ?? null,
-      bank: input.bank ?? null,
-      markedRole: input.markedRole ?? null,
-    }),
+  return postAgreement({
+    action: 'sign',
+    documentType: input.documentType,
+    fullNameTyped: input.fullNameTyped,
+    professionalLicense: input.professionalLicense ?? null,
+    signatureBase64: input.signatureBase64,
+    rfc: input.rfc ?? null,
+    clabe: input.clabe ?? null,
+    bank: input.bank ?? null,
+    markedRole: input.markedRole ?? null,
   });
-  return (await response.json()) as {
-    success: boolean;
-    folio?: string;
-    hasCompletedAll?: boolean;
-    error?: string;
-  };
 }
 
 export async function downloadSignedPhysicianAgreement(input: {
   documentType: PhysicianAgreementDocumentType;
   physicianId?: string;
 }): Promise<{ success: boolean; downloadUrl?: string; fileName?: string; error?: string }> {
-  const response = await fetch('/api/sign-physician-agreement', {
-    method: 'POST',
-    headers: await authHeader(),
-    body: JSON.stringify({
-      action: 'download',
-      documentType: input.documentType,
-      physicianId: input.physicianId,
-    }),
+  return postAgreement({
+    action: 'download',
+    documentType: input.documentType,
+    physicianId: input.physicianId,
   });
-  return (await response.json()) as {
-    success: boolean;
-    downloadUrl?: string;
-    fileName?: string;
-    error?: string;
-  };
 }
 
 export async function verifyPhysicianAgreementFolio(folio: string): Promise<{

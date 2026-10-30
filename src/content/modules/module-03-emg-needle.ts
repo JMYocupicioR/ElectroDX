@@ -1759,7 +1759,11 @@ Se evalúa visualmente observando la variación entre trazados superpuestos. Con
 
 **Limitaciones:**
 • Requiere contracción estable (difícil en debilidad grave o mal tolerada).
-• El software puede confundir PUM superpuestos.`,
+• El software puede confundir PUM superpuestos.
+
+Antes de confiar en el análisis automático, calibra el ojo: un cursor de inicio en el ruido alarga la duración y finge un patrón neurogénico. Practica la colocación de cursores en el laboratorio (polaridad clínica: negativo arriba).
+
+:::pum-lab{case="biceps-normal" mode="guided"}:::`,
           keyPoints: [
             'Detecta y mide PUM automáticamente → elimina variabilidad interobservador.',
             'Permite análisis de >20 PUM rápidamente.',

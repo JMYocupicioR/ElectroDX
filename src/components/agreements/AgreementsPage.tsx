@@ -145,13 +145,16 @@ export default function AgreementsPage({ embedded = false }: { embedded?: boolea
 
   const handleDownload = async (type: StudentAgreementType) => {
     setDownloading(type);
+    setError(null);
     try {
       const res = await downloadSignedAgreement({ documentType: type });
       if (!res.success || !res.downloadUrl) {
         setError(res.error || 'No se pudo descargar el documento.');
         return;
       }
-      startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+      await startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo descargar el documento.');
     } finally {
       setDownloading(null);
     }

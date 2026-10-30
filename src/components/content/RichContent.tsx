@@ -1,6 +1,7 @@
 import { useMemo, type JSX, type ReactNode } from 'react';
 import { splitHighlightedParts } from '../../search/searchText';
 import { EmbeddedTraceWidget } from '../simulator/EmbeddedTraceWidget';
+import { PumMorphologyLab } from '../simulator/pumLab/PumMorphologyLab';
 import type { TraceStudyType } from '../simulator/traceEngine/types';
 
 export type RichHeadingLevel = 2 | 3 | 4 | 5;
@@ -33,6 +34,7 @@ type ClassifiedLine =
   | { kind: 'table'; raw: string }
   | { kind: 'blockquote'; text: string }
   | { kind: 'trace'; raw: string }
+  | { kind: 'pumLab'; raw: string }
   | { kind: 'paragraph'; text: string };
 
 function classifyLine(line: string): ClassifiedLine | null {
@@ -58,6 +60,9 @@ function classifyLine(line: string): ClassifiedLine | null {
   }
   if (trimmed.startsWith(':::emg-trace') || trimmed === ':::') {
     return { kind: 'trace', raw: trimmed };
+  }
+  if (trimmed.startsWith(':::pum-lab')) {
+    return { kind: 'pumLab', raw: trimmed };
   }
   return { kind: 'paragraph', text: trimmed };
 }
@@ -263,6 +268,27 @@ interface ParsedTraceDirective {
   isPathologicInitial?: boolean;
 }
 
+interface ParsedPumLabDirective {
+  caseId?: string;
+  mode?: 'guided' | 'challenge';
+}
+
+function parsePumLabDirective(lines: string[]): ParsedPumLabDirective {
+  const combined = lines.join(' ');
+  const result: ParsedPumLabDirective = {};
+  const braceMatch = combined.match(/\{([^}]+)\}/);
+  const textToScan = braceMatch ? braceMatch[1] : combined.replace(/:::pum-lab/g, '').replace(/:::/g, '');
+  const regex = /([a-zA-Z0-9_-]+)\s*[:=]\s*(?:"([^"]*)"|'([^']*)'|([^\s,]+))/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(textToScan)) !== null) {
+    const key = match[1].toLowerCase();
+    const val = match[2] ?? match[3] ?? match[4];
+    if (key === 'case' || key === 'caseid' || key === 'id') result.caseId = val;
+    if (key === 'mode') result.mode = val === 'challenge' ? 'challenge' : 'guided';
+  }
+  return result;
+}
+
 function parseTraceDirective(lines: string[]): ParsedTraceDirective {
   const combined = lines.join(' ');
   const result: ParsedTraceDirective = {};
@@ -372,6 +398,44 @@ function renderBlockLines(
       }
       const table = renderTable(tableLines, gKey, tone);
       if (table) parts.push(table);
+      continue;
+    }
+
+    if (classified.kind === 'pumLab') {
+      const pumLines: string[] = [classified.raw];
+      i += 1;
+      if (!classified.raw.endsWith(':::')) {
+        while (i < lines.length) {
+          const rawLine = lines[i];
+          pumLines.push(rawLine);
+          i += 1;
+          if (rawLine.trim().endsWith(':::')) break;
+        }
+      }
+      const parsed = parsePumLabDirective(pumLines);
+      if (tone === 'print') {
+        parts.push(
+          <div
+            key={gKey}
+            className="my-3 p-3 border border-slate-300 rounded bg-slate-50 text-[10pt] font-mono leading-relaxed"
+          >
+            <div className="font-bold text-slate-900">
+              [Laboratorio de morfología del PUM: {parsed.caseId || 'biceps-normal'}]
+            </div>
+            <div className="text-slate-600 text-[9pt] mt-0.5">Modo {parsed.mode || 'guided'} · polaridad clínica: negativo arriba</div>
+          </div>,
+        );
+      } else {
+        parts.push(
+          <PumMorphologyLab
+            key={gKey}
+            caseId={parsed.caseId}
+            mode={parsed.mode}
+            compact
+            className="my-4"
+          />,
+        );
+      }
       continue;
     }
 

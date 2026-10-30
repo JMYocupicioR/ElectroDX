@@ -111,6 +111,15 @@ export function GlobalCommandPalette() {
         badge: 'Interactivo',
       },
       {
+        id: 'sim-pum',
+        title: 'Laboratorio de morfología del PUM',
+        subtitle: 'Cursores de inicio, fin y picos; calificación de sesgo de medición',
+        category: 'Simuladores',
+        icon: Activity,
+        to: '/simuladores/pum',
+        badge: 'Aguja',
+      },
+      {
         id: 'sim-hub',
         title: 'Hub de Simuladores Clínicos',
         subtitle: 'Catálogo completo de simuladores y motores de práctica',

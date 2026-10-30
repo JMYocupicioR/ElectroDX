@@ -299,7 +299,7 @@ async function handleDownload(req: Request, body: SignBody): Promise<Response> {
     return json(403, { success: false, error: 'No autorizado para este expediente.' });
   }
 
-  const { data: agreement } = await supabase
+  const { data: agreement, error: agreementError } = await supabase
     .from('physician_agreements')
     .select('pdf_signed_path, full_name_typed')
     .eq('user_id', targetId)
@@ -308,6 +308,9 @@ async function handleDownload(req: Request, body: SignBody): Promise<Response> {
     .limit(1)
     .maybeSingle();
 
+  if (agreementError) {
+    return json(500, { success: false, error: 'No se pudo leer el expediente firmado.' });
+  }
   if (!agreement?.pdf_signed_path) {
     return json(404, { success: false, error: 'El documento firmado aún no está disponible.' });
   }

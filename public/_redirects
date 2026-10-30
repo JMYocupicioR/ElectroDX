@@ -1,3 +1,5 @@
-/api/verify-cedula  /.netlify/functions/verify-cedula  200
+/api/verify-cedula               /.netlify/functions/verify-cedula               200
+/api/sign-agreement             /.netlify/functions/sign-agreement             200
+/api/sign-physician-agreement   /.netlify/functions/sign-physician-agreement   200
 /assets/*           /assets/:splat                     404
 /*                  /index.html                        200

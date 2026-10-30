@@ -16,6 +16,7 @@ import type { StudentAgreement } from '../../types/database';
 export function StudentAgreementsCard({ userId }: { userId: string }) {
   const [agreements, setAgreements] = useState<StudentAgreement[]>([]);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,11 +32,16 @@ export function StudentAgreementsCard({ userId }: { userId: string }) {
 
   const handleDownload = async (type: StudentAgreementType) => {
     setDownloading(type);
+    setError(null);
     try {
       const res = await downloadSignedAgreement({ documentType: type });
-      if (res.success && res.downloadUrl) {
-        startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+      if (!res.success || !res.downloadUrl) {
+        setError(res.error || 'No se pudo descargar el PDF.');
+        return;
       }
+      await startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo descargar el PDF.');
     } finally {
       setDownloading(null);
     }
@@ -47,6 +53,7 @@ export function StudentAgreementsCard({ userId }: { userId: string }) {
         <ShieldCheck className="h-4 w-4 text-indigo-500" />
         <h2 className="font-semibold text-slate-900 dark:text-white">Acuerdos firmados</h2>
       </div>
+      {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {STUDENT_AGREEMENT_TYPES.map((type) => {
           const row = agreements.find((item) => item.document_type === type);

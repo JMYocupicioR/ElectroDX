@@ -1,5 +1,10 @@
 import { supabase, sb } from '../lib/supabase';
 import { slugify } from '../utils/slugify';
+import {
+  normalizeStudentActivityRow,
+  type StudentActivityFilter,
+  type StudentActivityRow,
+} from '../utils/studentActivityFeed';
 import type {
   AppRole,
   ContentRevision,
@@ -167,6 +172,24 @@ export async function revokePremiumAccess(userId: string) {
 export async function adminDeleteUser(userId: string): Promise<void> {
   const { error } = await supabase.rpc('admin_delete_user', { target_user_id: userId });
   if (error) throw error;
+}
+
+export async function getStudentActivityFeed(options: {
+  before?: string | null;
+  beforeId?: string | null;
+  limit?: number;
+  kind?: Exclude<StudentActivityFilter, 'all'> | null;
+} = {}): Promise<StudentActivityRow[]> {
+  const { data, error } = await supabase.rpc('admin_platform_activity', {
+    p_before: options.before ?? undefined,
+    p_before_id: options.beforeId ?? undefined,
+    p_limit: options.limit ?? 40,
+    p_kind: options.kind ?? undefined,
+  });
+  if (error) throw error;
+  return (data ?? [])
+    .map((row) => normalizeStudentActivityRow(row))
+    .filter((row): row is StudentActivityRow => row != null);
 }
 
 export async function getAuditLog(limit = 20) {

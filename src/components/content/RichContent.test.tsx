@@ -119,4 +119,14 @@ describe('RichContent', () => {
     expect(printMarkup).toContain('[Trazado Electrofisiológico Integrado');
     expect(printMarkup).toContain('median-cts');
   });
+
+  it('renders embedded pum-lab directive in screen and print mode', () => {
+    const snippet = 'Texto previo.\n\n:::pum-lab{case="biceps-normal" mode="guided"}:::\n\nTexto posterior.';
+    const screenMarkup = html(snippet);
+    expect(screenMarkup).toContain('Laboratorio de morfología del PUM');
+
+    const printMarkup = renderToStaticMarkup(<RichContent text={snippet} tone="print" />);
+    expect(printMarkup).toContain('[Laboratorio de morfología del PUM');
+    expect(printMarkup).toContain('biceps-normal');
+  });
 });

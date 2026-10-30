@@ -16,17 +16,23 @@ export function AdminStudentAgreementsPanel({
   agreements: StudentAgreement[];
 }) {
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const signedCount = STUDENT_AGREEMENT_TYPES.filter((type) =>
     agreements.some((row) => row.document_type === type)
   ).length;
 
   const handleDownload = async (type: StudentAgreementType) => {
     setDownloading(type);
+    setError(null);
     try {
       const res = await downloadSignedAgreement({ documentType: type, studentId });
-      if (res.success && res.downloadUrl) {
-        startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+      if (!res.success || !res.downloadUrl) {
+        setError(res.error || 'No se pudo descargar el PDF.');
+        return;
       }
+      await startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo descargar el PDF.');
     } finally {
       setDownloading(null);
     }
@@ -43,6 +49,7 @@ export function AdminStudentAgreementsPanel({
           {signedCount}/3
         </span>
       </div>
+      {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {STUDENT_AGREEMENT_TYPES.map((type) => {
           const row = agreements.find((item) => item.document_type === type);

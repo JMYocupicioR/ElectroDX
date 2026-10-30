@@ -14,6 +14,7 @@ export function AdminPhysicianAgreementsPanel({ physicianId }: { physicianId: st
   const [agreements, setAgreements] = useState<PhysicianAgreement[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const signedCount = PHYSICIAN_AGREEMENT_TYPES.filter((type) =>
     agreements.some((row) => row.document_type === type)
   ).length;
@@ -37,11 +38,16 @@ export function AdminPhysicianAgreementsPanel({ physicianId }: { physicianId: st
 
   const handleDownload = async (type: PhysicianAgreementType) => {
     setDownloading(type);
+    setError(null);
     try {
       const res = await downloadSignedPhysicianAgreement({ documentType: type, physicianId });
-      if (res.success && res.downloadUrl) {
-        startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+      if (!res.success || !res.downloadUrl) {
+        setError(res.error || 'No se pudo descargar el PDF.');
+        return;
       }
+      await startBrowserDownload(res.downloadUrl, res.fileName || 'acuerdo_firmado.pdf');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo descargar el PDF.');
     } finally {
       setDownloading(null);
     }
@@ -58,6 +64,7 @@ export function AdminPhysicianAgreementsPanel({ physicianId }: { physicianId: st
           {loading ? '…' : `${signedCount}/3`}
         </span>
       </div>
+      {error && <p className="mb-3 text-sm text-rose-600">{error}</p>}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {PHYSICIAN_AGREEMENT_TYPES.map((type) => {
           const row = agreements.find((item) => item.document_type === type);

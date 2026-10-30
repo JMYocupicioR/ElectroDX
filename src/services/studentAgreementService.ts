@@ -21,50 +21,46 @@ export async function listStudentAgreements(userId: string): Promise<StudentAgre
   return (data ?? []) as StudentAgreement[];
 }
 
+async function postAgreement<T extends { success: boolean; error?: string }>(body: unknown): Promise<T> {
+  const response = await fetch('/api/sign-agreement', {
+    method: 'POST',
+    headers: await authHeader(),
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  try {
+    const parsed = JSON.parse(text) as T;
+    if (parsed && typeof parsed === 'object') return parsed;
+  } catch {
+    return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
+  }
+  return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
+}
+
 export async function submitStudentAgreement(input: {
   documentType: StudentAgreementDocumentType;
   fullNameTyped: string;
   professionalLicense?: string | null;
   signatureBase64: string;
 }): Promise<{ success: boolean; folio?: string; hasCompletedAll?: boolean; error?: string }> {
-  const response = await fetch('/api/sign-agreement', {
-    method: 'POST',
-    headers: await authHeader(),
-    body: JSON.stringify({
-      action: 'sign',
-      documentType: input.documentType,
-      fullNameTyped: input.fullNameTyped,
-      professionalLicense: input.professionalLicense ?? null,
-      signatureBase64: input.signatureBase64,
-    }),
+  return postAgreement({
+    action: 'sign',
+    documentType: input.documentType,
+    fullNameTyped: input.fullNameTyped,
+    professionalLicense: input.professionalLicense ?? null,
+    signatureBase64: input.signatureBase64,
   });
-  return (await response.json()) as {
-    success: boolean;
-    folio?: string;
-    hasCompletedAll?: boolean;
-    error?: string;
-  };
 }
 
 export async function downloadSignedAgreement(input: {
   documentType: StudentAgreementDocumentType;
   studentId?: string;
 }): Promise<{ success: boolean; downloadUrl?: string; fileName?: string; error?: string }> {
-  const response = await fetch('/api/sign-agreement', {
-    method: 'POST',
-    headers: await authHeader(),
-    body: JSON.stringify({
-      action: 'download',
-      documentType: input.documentType,
-      studentId: input.studentId,
-    }),
+  return postAgreement({
+    action: 'download',
+    documentType: input.documentType,
+    studentId: input.studentId,
   });
-  return (await response.json()) as {
-    success: boolean;
-    downloadUrl?: string;
-    fileName?: string;
-    error?: string;
-  };
 }
 
 export async function verifyStudentAgreementFolio(folio: string): Promise<{
@@ -80,11 +76,19 @@ export async function verifyStudentAgreementFolio(folio: string): Promise<{
   return (data ?? { valid: false }) as { valid: boolean };
 }
 
-export function startBrowserDownload(url: string, fileName: string) {
+export async function startBrowserDownload(url: string, fileName: string) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('No se pudo descargar el PDF.');
+  const blob = await response.blob();
+  const header = new Uint8Array(await blob.slice(0, 5).arrayBuffer());
+  const magic = String.fromCharCode(...header);
+  if (!magic.startsWith('%PDF')) throw new Error('El archivo firmado no es un PDF.');
+  const objectUrl = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
-  anchor.href = url;
+  anchor.href = objectUrl;
   anchor.download = fileName;
   document.body.appendChild(anchor);
   anchor.click();
-  document.body.removeChild(anchor);
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
 }
