@@ -145,46 +145,91 @@ function ExternalVideosSection({ topic }: { topic: Topic }) {
         <Play className="w-3.5 h-3.5" />
         <span>Videos ({videos.length})</span>
       </div>
-      <div className={`grid gap-3 ${videos.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
+      <div className={`grid gap-3.5 ${videos.length === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
         {videos.map((video, idx) => {
           const parsed = parseVideoUrl(video.url);
           if (!parsed) return null;
+          const isActive = activeVideo === idx;
+
           return (
             <div key={idx} className="group">
-              {activeVideo === idx ? (
-                <div className="rounded-xl overflow-hidden border border-emerald-200/50 dark:border-emerald-700/30 shadow-lg shadow-emerald-500/5">
+              {isActive ? (
+                <div className="rounded-2xl overflow-hidden border border-emerald-300/70 dark:border-emerald-700/50 shadow-xl shadow-emerald-500/10 bg-slate-900">
                   <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                     <iframe
                       src={getVideoEmbedSrc(parsed)}
-                      className="absolute inset-0 w-full h-full"
+                      className="absolute inset-0 w-full h-full bg-black"
                       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                       allowFullScreen
                       title={video.title}
                     />
                   </div>
-                  <div className="px-3 py-2 bg-slate-50/80 dark:bg-slate-800/80 flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{video.title}</span>
-                    <button
-                      onClick={() => setActiveVideo(null)}
-                      className="text-xs text-slate-400 hover:text-red-500 transition-colors ml-2 flex-shrink-0"
-                    >
-                      Cerrar
-                    </button>
+                  <div className="px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800/90 flex items-center justify-between gap-3 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <div className="min-w-0 flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 flex-shrink-0">
+                        {video.sourceLabel}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                        {video.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <a
+                        href={video.url.startsWith('http') ? video.url : `https://${video.url}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+                        title="Abrir en pestaña nueva"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                      <button
+                        onClick={() => setActiveVideo(null)}
+                        className="text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors px-2 py-0.5 rounded hover:bg-slate-200/60 dark:hover:bg-slate-700"
+                      >
+                        Cerrar
+                      </button>
+                    </div>
                   </div>
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={() => setActiveVideo(idx)}
-                  className="w-full rounded-xl border border-slate-200/60 dark:border-slate-700/30 bg-gradient-to-br from-slate-50 to-emerald-50/30 dark:from-slate-800/60 dark:to-emerald-900/10 p-4 flex items-center gap-3 hover:border-emerald-300 dark:hover:border-emerald-600 hover:shadow-md hover:shadow-emerald-500/5 transition-all group text-left"
+                  className="w-full rounded-2xl border border-slate-200/80 dark:border-slate-700/50 bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-slate-800/70 dark:via-slate-800/40 dark:to-emerald-950/20 p-3.5 sm:p-4 flex items-center gap-3 hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-lg hover:shadow-emerald-500/10 transition-all group text-left"
                 >
-                  <span className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center group-hover:bg-emerald-500/20 dark:group-hover:bg-emerald-400/20 transition-colors">
-                    <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400 ml-0.5" />
-                  </span>
-                  <div className="min-w-0">
-                    <span className="block text-sm font-medium text-slate-700 dark:text-slate-200 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors">
+                  {video.thumbnailUrl ? (
+                    <div className="relative flex-shrink-0 w-16 h-11 sm:w-20 sm:h-13 rounded-xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xs">
+                      <img
+                        src={video.thumbnailUrl}
+                        alt={video.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 flex items-center justify-center transition-colors">
+                        <span className="w-6 h-6 rounded-full bg-emerald-500/90 text-white flex items-center justify-center shadow-md">
+                          <Play className="w-3 h-3 ml-0.5 fill-white" />
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="flex-shrink-0 w-11 h-11 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center group-hover:bg-emerald-500/20 dark:group-hover:bg-emerald-400/20 group-hover:scale-105 transition-all">
+                      <Play className="w-5 h-5 text-emerald-600 dark:text-emerald-400 ml-0.5" />
+                    </span>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+                        {video.sourceLabel}
+                      </span>
+                    </div>
+                    <span className="block text-sm font-semibold text-slate-800 dark:text-slate-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                       {video.title}
                     </span>
-                    <span className="block text-[0.7rem] text-slate-400 dark:text-slate-500 mt-0.5">Click para reproducir</span>
+                    <span className="block text-[0.7rem] text-slate-400 dark:text-slate-500 mt-0.5">
+                      Click para reproducir en lección
+                    </span>
                   </div>
                 </button>
               )}

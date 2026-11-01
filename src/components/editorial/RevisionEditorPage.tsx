@@ -20,6 +20,8 @@ import {
   validateMediaPayload,
 } from '../../utils/mediaValidation';
 import { MediaPreview } from './MediaPreview';
+import { TopicMarkdownEditor } from './TopicMarkdownEditor';
+import { TopicVideoEditorSection } from './TopicVideoEditorSection';
 
 const emptyPayload = (): RevisionPayload => ({
   title: '',
@@ -185,7 +187,8 @@ export default function RevisionEditorPage() {
     setLoading(true);
     try {
       const fromContent = extractVideosFromContent(payload.content);
-      const combinedVideos = [...resolveExternalVideos(payload)];
+      const activeVideos = payload.externalVideos ?? resolveExternalVideos(payload);
+      const combinedVideos = [...activeVideos];
       for (const fc of fromContent) {
         if (!combinedVideos.some((v) => v.url === fc.url)) {
           combinedVideos.push(fc);
@@ -201,6 +204,7 @@ export default function RevisionEditorPage() {
         slug: action === 'create' ? slug : payload.slug,
         revisionType: 'topic',
         references,
+        externalVideos: combinedVideos,
         ...videoMedia,
         media: {
           videoUrls: videoMedia.videoUrls,
@@ -363,15 +367,11 @@ export default function RevisionEditorPage() {
           />
         </label>
 
-        <label className="block">
-          <span className="text-sm font-medium">Contenido (texto / markdown)</span>
-          <textarea
-            rows={12}
-            value={payload.content ?? ''}
-            onChange={(e) => updatePayload({ content: e.target.value })}
-            className="mt-1.5 w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono text-sm"
-          />
-        </label>
+        <TopicMarkdownEditor
+          value={payload.content ?? ''}
+          onChange={(content) => updatePayload({ content })}
+          label="Contenido clínico del tema (Markdown)"
+        />
 
         <MediaEditorSection
           title="Imágenes externas"
@@ -384,17 +384,9 @@ export default function RevisionEditorPage() {
           ]}
         />
 
-        <MediaEditorSection
-          title="Videos externos"
-          items={resolveExternalVideos(payload)}
+        <TopicVideoEditorSection
+          items={payload.externalVideos ?? resolveExternalVideos(payload)}
           onChange={(externalVideos) => updatePayload({ externalVideos })}
-          fields={[
-            { key: 'title', label: 'Título del video' },
-            {
-              key: 'url',
-              label: 'URL del video (YouTube, Vimeo, Google Drive, Loom, Dailymotion, etc.)',
-            },
-          ]}
         />
 
         <div>

@@ -31,13 +31,176 @@ const ALLOWED_EMBED_HOSTS = [
 
 export type ExternalVideoInput = { title: string; url: string };
 
+export type VideoPlatformInfo = {
+  kind: 'drive' | 'youtube' | 'vimeo' | 'loom' | 'dailymotion' | 'embed' | 'unknown';
+  label: string;
+  badgeBg: string;
+  badgeText: string;
+  badgeBorder: string;
+  isPlayable: boolean;
+};
+
+/**
+ * Normaliza cualquier URL o ID de video a su URL completa canónica y legible.
+ * Evita que el editor recorte enlaces de Google Drive, YouTube o Vimeo a solo su ID.
+ */
+export function toCanonicalVideoUrl(
+  urlOrId: string,
+  fallbackKind?: 'drive' | 'youtube' | 'vimeo'
+): string {
+  const trimmed = (urlOrId ?? '').trim();
+  if (!trimmed) return '';
+
+  const parsed = parseVideoUrl(trimmed);
+  if (parsed) {
+    switch (parsed.kind) {
+      case 'drive':
+        return `https://drive.google.com/file/d/${parsed.driveId}/view`;
+      case 'youtube': {
+        const timeParam = parsed.startTime ? `?t=${parsed.startTime}` : '';
+        return `https://www.youtube.com/watch?v=${parsed.videoId}${timeParam}`;
+      }
+      case 'vimeo':
+        return `https://vimeo.com/${parsed.videoId}`;
+      case 'embed':
+        return parsed.embedUrl;
+    }
+  }
+
+  if (fallbackKind === 'drive' || /^[a-zA-Z0-9_-]{15,}$/.test(trimmed)) {
+    return `https://drive.google.com/file/d/${trimmed}/view`;
+  }
+  if (fallbackKind === 'youtube' || /^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return `https://www.youtube.com/watch?v=${trimmed}`;
+  }
+  if (fallbackKind === 'vimeo' || /^\d+$/.test(trimmed)) {
+    return `https://vimeo.com/${trimmed}`;
+  }
+
+  return trimmed;
+}
+
+/**
+ * Obtiene la clave de identidad única de un video para deduplicación exacta.
+ */
+export function getVideoDedupKey(url: string): string | null {
+  if (!url) return null;
+  const parsed = parseVideoUrl(url);
+  if (!parsed) {
+    const trimmed = url.trim();
+    if (/^[a-zA-Z0-9_-]{15,}$/.test(trimmed)) return `drive:${trimmed}`;
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return `youtube:${trimmed}`;
+    return null;
+  }
+  switch (parsed.kind) {
+    case 'drive':
+      return `drive:${parsed.driveId}`;
+    case 'youtube':
+      return `youtube:${parsed.videoId}`;
+    case 'vimeo':
+      return `vimeo:${parsed.videoId}`;
+    case 'embed':
+      return `embed:${parsed.embedUrl}`;
+  }
+}
+
+/**
+ * Detecta la plataforma de video para estilizar badges visuales y validación en vivo.
+ */
+export function detectVideoPlatform(url?: string | null): VideoPlatformInfo {
+  if (!url || !url.trim()) {
+    return {
+      kind: 'unknown',
+      label: 'Sin enlace',
+      badgeBg: 'bg-slate-100 dark:bg-slate-800',
+      badgeText: 'text-slate-500 dark:text-slate-400',
+      badgeBorder: 'border-slate-200 dark:border-slate-700',
+      isPlayable: false,
+    };
+  }
+
+  const parsed = parseVideoUrl(url.trim());
+  if (!parsed) {
+    return {
+      kind: 'unknown',
+      label: 'Enlace no reconocido',
+      badgeBg: 'bg-amber-50 dark:bg-amber-950/40',
+      badgeText: 'text-amber-700 dark:text-amber-300',
+      badgeBorder: 'border-amber-200 dark:border-amber-800/50',
+      isPlayable: false,
+    };
+  }
+
+  switch (parsed.kind) {
+    case 'drive':
+      return {
+        kind: 'drive',
+        label: 'Google Drive',
+        badgeBg: 'bg-blue-50 dark:bg-blue-950/40',
+        badgeText: 'text-blue-700 dark:text-blue-300',
+        badgeBorder: 'border-blue-200 dark:border-blue-800/50',
+        isPlayable: true,
+      };
+    case 'youtube':
+      return {
+        kind: 'youtube',
+        label: 'YouTube',
+        badgeBg: 'bg-red-50 dark:bg-red-950/40',
+        badgeText: 'text-red-700 dark:text-red-300',
+        badgeBorder: 'border-red-200 dark:border-red-800/50',
+        isPlayable: true,
+      };
+    case 'vimeo':
+      return {
+        kind: 'vimeo',
+        label: 'Vimeo',
+        badgeBg: 'bg-sky-50 dark:bg-sky-950/40',
+        badgeText: 'text-sky-700 dark:text-sky-300',
+        badgeBorder: 'border-sky-200 dark:border-sky-800/50',
+        isPlayable: true,
+      };
+    case 'embed': {
+      if (url.includes('loom.com')) {
+        return {
+          kind: 'loom',
+          label: 'Loom',
+          badgeBg: 'bg-purple-50 dark:bg-purple-950/40',
+          badgeText: 'text-purple-700 dark:text-purple-300',
+          badgeBorder: 'border-purple-200 dark:border-purple-800/50',
+          isPlayable: true,
+        };
+      }
+      if (url.includes('dailymotion.com') || url.includes('dai.ly')) {
+        return {
+          kind: 'dailymotion',
+          label: 'Dailymotion',
+          badgeBg: 'bg-indigo-50 dark:bg-indigo-950/40',
+          badgeText: 'text-indigo-700 dark:text-indigo-300',
+          badgeBorder: 'border-indigo-200 dark:border-indigo-800/50',
+          isPlayable: true,
+        };
+      }
+      return {
+        kind: 'embed',
+        label: 'Video Web',
+        badgeBg: 'bg-emerald-50 dark:bg-emerald-950/40',
+        badgeText: 'text-emerald-700 dark:text-emerald-300',
+        badgeBorder: 'border-emerald-200 dark:border-emerald-800/50',
+        isPlayable: true,
+      };
+    }
+  }
+}
+
 /** Accept legacy editor shapes (driveId, videoId, embedUrl) saved before unified url field */
 export function normalizeExternalVideoItem(
   item: Partial<ExternalVideoInput> & { driveId?: string; videoId?: string; embedUrl?: string }
 ): ExternalVideoInput {
+  const rawUrl = (item.url ?? item.driveId ?? item.videoId ?? item.embedUrl ?? '').trim();
+  const fallbackKind = item.driveId ? 'drive' : item.videoId ? 'youtube' : undefined;
   return {
     title: item.title ?? '',
-    url: (item.url ?? item.driveId ?? item.videoId ?? item.embedUrl ?? '').trim(),
+    url: toCanonicalVideoUrl(rawUrl, fallbackKind),
   };
 }
 
@@ -45,18 +208,46 @@ export function resolveExternalVideos(
   payload: VideoMediaPayload & { externalVideos?: ExternalVideoInput[] }
 ): ExternalVideoInput[] {
   const fromTyped = videoMediaToExternalList(payload);
-  const fromEditor = (payload.externalVideos ?? []).map(normalizeExternalVideoItem);
+  const fromEditor = (payload.externalVideos ?? [])
+    .map(normalizeExternalVideoItem)
+    .filter((v) => Boolean(v.url.trim() || v.title.trim()));
 
   if (fromEditor.length === 0) return fromTyped;
+  if (fromTyped.length === 0) return fromEditor;
 
-  const merged = fromEditor.map((item, i) => ({
-    title: item.title || fromTyped[i]?.title || '',
-    url: item.url || fromTyped[i]?.url || '',
-  }));
+  const seenKeys = new Map<string, ExternalVideoInput>();
+  const unkeyed: ExternalVideoInput[] = [];
 
-  if (merged.every((v) => !v.url) && fromTyped.length > 0) return fromTyped;
+  // Agregar fromTyped primero para conservar metadatos y títulos estructurados
+  for (const item of fromTyped) {
+    const key = getVideoDedupKey(item.url);
+    if (key) {
+      if (!seenKeys.has(key)) {
+        seenKeys.set(key, item);
+      }
+    } else if (item.url || item.title) {
+      unkeyed.push(item);
+    }
+  }
 
-  return merged;
+  // Superponer fromEditor respetando títulos específicos del editor
+  for (const item of fromEditor) {
+    const key = getVideoDedupKey(item.url);
+    if (key) {
+      const existing = seenKeys.get(key);
+      if (existing) {
+        if (!existing.title && item.title) {
+          seenKeys.set(key, { ...existing, title: item.title, url: item.url || existing.url });
+        }
+      } else {
+        seenKeys.set(key, item);
+      }
+    } else if (item.url || item.title) {
+      unkeyed.push(item);
+    }
+  }
+
+  return [...Array.from(seenKeys.values()), ...unkeyed];
 }
 
 export type ParsedVideo =
@@ -173,13 +364,17 @@ export function getVideoEmbedSrc(parsed: ParsedVideo): string {
 export function videoMediaToExternalList(media: VideoMediaPayload): ExternalVideoInput[] {
   const list: ExternalVideoInput[] = [];
   for (const v of media.videoUrls ?? []) {
-    list.push({ title: v.title, url: v.driveId });
+    list.push({ title: v.title, url: toCanonicalVideoUrl(v.driveId, 'drive') });
   }
   for (const v of media.youtubeUrls ?? []) {
-    list.push({ title: v.title, url: v.videoId });
+    const timeParam = v.startTime ? `?t=${v.startTime}` : '';
+    list.push({
+      title: v.title,
+      url: toCanonicalVideoUrl(`https://www.youtube.com/watch?v=${v.videoId}${timeParam}`, 'youtube'),
+    });
   }
   for (const v of media.vimeoUrls ?? []) {
-    list.push({ title: v.title, url: v.videoId });
+    list.push({ title: v.title, url: toCanonicalVideoUrl(`https://vimeo.com/${v.videoId}`, 'vimeo') });
   }
   for (const v of media.embedUrls ?? []) {
     list.push({ title: v.title, url: v.embedUrl });
