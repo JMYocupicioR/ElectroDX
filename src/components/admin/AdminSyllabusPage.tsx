@@ -2734,6 +2734,8 @@ export default function AdminSyllabusPage() {
           durationMinutes,
           streamUrl,
           recordingUrl,
+          minWatchPercent,
+          allowRecordingAttendance,
           description,
           sessionModality,
           countsForKardex,
@@ -2757,6 +2759,8 @@ export default function AdminSyllabusPage() {
             duration_minutes: durationMinutes,
             stream_url: streamUrl || null,
             recording_url: recordingUrl || null,
+            min_watch_percent: minWatchPercent ?? 85,
+            allow_recording_attendance: allowRecordingAttendance !== false,
             session_modality: sessionModality || 'online',
             session_type:
               sessionModality === 'in_person' ? 'hands_on_presencial' : 'masterclass',

@@ -22,17 +22,35 @@ export async function listStudentAgreements(userId: string): Promise<StudentAgre
 }
 
 async function postAgreement<T extends { success: boolean; error?: string }>(body: unknown): Promise<T> {
-  const response = await fetch('/api/sign-agreement', {
-    method: 'POST',
-    headers: await authHeader(),
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/sign-agreement', {
+      method: 'POST',
+      headers: await authHeader(),
+      body: JSON.stringify(body),
+    });
+  } catch (netErr) {
+    const msg = netErr instanceof Error ? netErr.message : 'Error de conexión con el servidor.';
+    return { success: false, error: `No se pudo contactar al servidor: ${msg}` } as T;
+  }
+
   const text = await response.text();
   try {
     const parsed = JSON.parse(text) as T;
-    if (parsed && typeof parsed === 'object') return parsed;
+    if (parsed && typeof parsed === 'object') {
+      if (!response.ok && !parsed.error) {
+        return { ...parsed, success: false, error: `Error del servidor (${response.status})` };
+      }
+      return parsed;
+    }
   } catch {
-    return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
+    const preview = text.length > 200 ? text.slice(0, 200) + '…' : text;
+    return {
+      success: false,
+      error: response.ok
+        ? 'Respuesta no válida del servidor.'
+        : `Error del servidor (${response.status}): ${preview || 'Sin detalle'}`,
+    } as T;
   }
   return { success: false, error: 'No se pudo preparar el PDF firmado.' } as T;
 }
@@ -68,7 +86,7 @@ export async function verifyStudentAgreementFolio(folio: string): Promise<{
   folio?: string;
   document_type?: StudentAgreementDocumentType;
   document_version?: string;
-  full_name?: string;
+  full_name_masked?: string;
   signed_at?: string;
 }> {
   const { data, error } = await supabase.rpc('verify_student_agreement', { p_folio: folio });

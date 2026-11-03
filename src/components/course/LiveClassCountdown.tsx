@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Video, Lock, Clock, Bell, CheckCircle, AlertCircle, Play } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
+import { TrackedLiveClassPlayer } from './TrackedLiveClassPlayer';
 import {
   getWorkshopAccessTiming,
   triggerLiveClassFiveMinuteAlert,
@@ -13,6 +14,23 @@ interface LiveClassCountdownProps {
   onRegister?: () => void;
   loadingReg?: boolean;
   className?: string;
+  userId?: string;
+}
+
+function recordingPlayerBlock(workshop: LiveWorkshop, userId: string) {
+  return (
+    <div className="mt-6 text-left">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] font-bold uppercase tracking-wide">
+          <Play className="w-3 h-3" /> Clase grabada lista
+        </span>
+        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+          Reproduce aquí para acreditar asistencia (mín. {workshop.min_watch_percent ?? 85}%).
+        </span>
+      </div>
+      <TrackedLiveClassPlayer workshop={workshop} userId={userId} />
+    </div>
+  );
 }
 
 export function LiveClassCountdown({
@@ -21,6 +39,7 @@ export function LiveClassCountdown({
   onRegister,
   loadingReg = false,
   className = '',
+  userId,
 }: LiveClassCountdownProps) {
   const [timing, setTiming] = useState<WorkshopAccessTiming>(() =>
     getWorkshopAccessTiming(workshop, new Date())
@@ -28,14 +47,26 @@ export function LiveClassCountdown({
   const [alertDismissed, setAlertDismissed] = useState(false);
   const previousCanAccessRef = useRef<boolean>(timing.canAccess);
 
-  // Intervalo de 1 segundo para la cuenta regresiva en tiempo real
+  const hasRecording = Boolean(workshop.recording_url?.trim());
+  const recordingAttendanceEnabled = workshop.allow_recording_attendance !== false;
+  const canOfferTrackedRecording = hasRecording && recordingAttendanceEnabled;
+  /** Grabación con acreditación: el alumno puede verla ya, sin esperar a que “termine” el horario en vivo. */
+  const showTrackedRecordingNow =
+    canOfferTrackedRecording && Boolean(userId) && (timing.isPast || isRegistered);
+  /** Si la asistencia va por grabación, no empujar la UX de “transmitiéndose en vivo”. */
+  const preferRecordingOverLive = canOfferTrackedRecording && hasRecording;
+
   useEffect(() => {
     const checkTiming = () => {
       const nextTiming = getWorkshopAccessTiming(workshop, new Date());
       setTiming(nextTiming);
 
-      // Si recién se activa el acceso a los 5 minutos (transición locked -> accessible)
-      if (!previousCanAccessRef.current && nextTiming.canAccess && !nextTiming.isPast) {
+      if (
+        !preferRecordingOverLive &&
+        !previousCanAccessRef.current &&
+        nextTiming.canAccess &&
+        !nextTiming.isPast
+      ) {
         triggerLiveClassFiveMinuteAlert(workshop);
       }
       previousCanAccessRef.current = nextTiming.canAccess;
@@ -44,17 +75,16 @@ export function LiveClassCountdown({
     checkTiming();
     const interval = setInterval(checkTiming, 1000);
     return () => clearInterval(interval);
-  }, [workshop]);
+  }, [workshop, preferRecordingOverLive]);
 
-  // Si el usuario ingresa a la página y faltan <= 5 min (o está en vivo), disparar alerta 5 min una sola vez
   useEffect(() => {
+    if (preferRecordingOverLive) return;
     if (isRegistered && timing.canAccess && !timing.isPast) {
       triggerLiveClassFiveMinuteAlert(workshop);
     }
-  }, [isRegistered, timing.canAccess, timing.isPast, workshop]);
+  }, [isRegistered, timing.canAccess, timing.isPast, workshop, preferRecordingOverLive]);
 
-  const { isPast, isLiveNow, canAccess, timeRemaining, accessOpensAt, scheduledAt } =
-    timing;
+  const { isPast, isLiveNow, canAccess, timeRemaining, accessOpensAt, scheduledAt } = timing;
 
   const formattedStartTime = scheduledAt.toLocaleTimeString('es-MX', {
     hour: '2-digit',
@@ -78,23 +108,86 @@ export function LiveClassCountdown({
           </div>
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Este taller ya finalizó</h3>
           {workshop.recording_url ? (
-            <div className="mt-4">
-              <a
-                href={workshop.recording_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md transition-all cursor-pointer"
-              >
-                <Video className="w-5 h-5" /> Ver grabación de la clase
-              </a>
-            </div>
+            userId ? (
+              recordingPlayerBlock(workshop, userId)
+            ) : (
+              <div className="mt-4">
+                <a
+                  href={workshop.recording_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md transition-all cursor-pointer"
+                >
+                  <Video className="w-5 h-5" /> Ver grabación de la clase
+                </a>
+              </div>
+            )
           ) : (
             <p className="text-sm text-slate-500">La grabación aún no está disponible en la biblioteca.</p>
           )}
         </div>
+      ) : preferRecordingOverLive ? (
+        <>
+          {/* ─── CASO 2: CLASE CON GRABACIÓN LISTA PARA VER / ACREDITAR ─── */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">
+                Clase grabada disponible
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {isRegistered
+                  ? 'Reproduce la clase en este visualizador para acreditar tu asistencia en el kardex.'
+                  : 'Regístrate para desbloquear el visualizador de la clase grabada y acreditar asistencia.'}
+              </p>
+            </div>
+
+            {isRegistered ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60">
+                <CheckCircle className="w-4 h-4" /> Registrado para asistir
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={onRegister}
+                disabled={loadingReg}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {loadingReg ? 'Registrando...' : 'Registrarme a esta clase'}
+              </button>
+            )}
+          </div>
+
+          {showTrackedRecordingNow && userId ? (
+            recordingPlayerBlock(workshop, userId)
+          ) : (
+            <div className="mt-6 p-4 rounded-xl bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 text-center">
+              <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                El visualizador de clase grabada se activará al registrarte.
+              </p>
+            </div>
+          )}
+
+          {workshop.stream_url && canAccess && isRegistered && (
+            <div className="mt-5 pt-5 border-t border-slate-200 dark:border-slate-800 text-center">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
+                También hay un enlace de transmisión en vivo (opcional):
+              </p>
+              <a
+                href={workshop.stream_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                <Video className="w-4 h-4" />
+                Abrir stream en vivo
+              </a>
+            </div>
+          )}
+        </>
       ) : (
         <>
-          {/* ─── ESTADO DEL REGISTRO DEL ALUMNO ─── */}
+          {/* ─── CASO 3: SESIÓN EN VIVO (SIN GRABACIÓN PARA ACREDITAR) ─── */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">
@@ -124,7 +217,6 @@ export function LiveClassCountdown({
             )}
           </div>
 
-          {/* ─── ALERTA DESTACADA DE 5 MINUTOS (CUANDO LA SALA ESTÁ ABIERTA) ─── */}
           {canAccess && isRegistered && !alertDismissed && (
             <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-red-500/15 via-rose-500/10 to-amber-500/15 border border-red-300 dark:border-red-800/70 text-slate-900 dark:text-white flex items-start justify-between gap-3 animate-fade-in shadow-xs">
               <div className="flex items-start gap-3">
@@ -159,21 +251,26 @@ export function LiveClassCountdown({
             </div>
           )}
 
-          {/* ─── SECCIÓN DE CUENTA REGRESIVA Y ACCESO AL STREAM ─── */}
           <div className="mt-6 text-center">
-            {/* Si aún faltan más de 5 minutos: MOSTRAR CONTADOR REGRESIVO Y BOTÓN BLOQUEADO */}
             {!canAccess ? (
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-800/80">
                   <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
-                  <span>Inicio en {scheduledAt.toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })} a las {formattedStartTime}</span>
+                  <span>
+                    Inicio en{' '}
+                    {scheduledAt.toLocaleDateString('es-MX', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                    })}{' '}
+                    a las {formattedStartTime}
+                  </span>
                 </div>
 
                 <p className="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
                   Tiempo restante para el inicio de la clase
                 </p>
 
-                {/* RELOJ DE CUENTA REGRESIVA */}
                 <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-sm mx-auto">
                   <div className="p-2 sm:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
                     <span className="block text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
@@ -212,7 +309,6 @@ export function LiveClassCountdown({
                   </div>
                 </div>
 
-                {/* EXPLICACIÓN DE REGLA DE 5 MINUTOS */}
                 <div className="max-w-md mx-auto p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/50 text-xs text-blue-900 dark:text-blue-200 flex items-center justify-center gap-2">
                   <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>
@@ -221,7 +317,6 @@ export function LiveClassCountdown({
                   </span>
                 </div>
 
-                {/* BOTÓN BLOQUEADO / DESHABILITADO */}
                 <div className="pt-2">
                   <button
                     type="button"
@@ -239,11 +334,12 @@ export function LiveClassCountdown({
                 </div>
               </div>
             ) : (
-              /* SI FALTAN <= 5 MINUTOS O ESTÁ EN VIVO: BOTÓN DE ACCESO ACTIVO Y VIBRANTE */
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wider border border-red-300 dark:border-red-800">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping inline-block" />
-                  {isLiveNow ? '🔴 EN VIVO AHORA' : `🔴 SALA ABIERTA (Inicia en ${timing.startsInMinutes} min)`}
+                  {isLiveNow
+                    ? '🔴 EN VIVO AHORA'
+                    : `🔴 SALA ABIERTA (Inicia en ${timing.startsInMinutes} min)`}
                 </div>
 
                 {!isLiveNow && timeRemaining.totalSeconds > 0 && (
@@ -276,7 +372,8 @@ export function LiveClassCountdown({
                   <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs font-medium max-w-md mx-auto flex items-center justify-center gap-2">
                     <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>
-                      El docente está por conectar el enlace de transmisión en vivo a esta sala. Mantente en esta página.
+                      El docente está por conectar el enlace de transmisión en vivo a esta sala. Mantente
+                      en esta página.
                     </span>
                   </div>
                 )}
@@ -288,4 +385,3 @@ export function LiveClassCountdown({
     </div>
   );
 }
-

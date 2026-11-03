@@ -1,0 +1,642 @@
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  RotateCcw,
+  Sparkles,
+  ExternalLink,
+  ShieldAlert,
+} from 'lucide-react';
+import type { LiveWorkshop } from '../../types/database';
+import { parseVideoUrl, getVideoEmbedSrc } from '../../utils/mediaValidation';
+import {
+  mergeWatchedIntervals,
+  calculateWatchedCoverage,
+  formatVideoTime,
+  type TimeInterval,
+} from '../../utils/videoProgressTracker';
+import {
+  getWorkshopVideoProgress,
+  logVideoWatchHeartbeat,
+} from '../../services/videoProgressService';
+
+interface TrackedLiveClassPlayerProps {
+  workshop: LiveWorkshop;
+  userId: string;
+  onAttendanceAccredited?: () => void;
+  className?: string;
+}
+
+export function TrackedLiveClassPlayer({
+  workshop,
+  userId,
+  onAttendanceAccredited,
+  className = '',
+}: TrackedLiveClassPlayerProps) {
+  const recordingUrl = workshop.recording_url || '';
+  const parsedVideo = useMemo(() => parseVideoUrl(recordingUrl), [recordingUrl]);
+  const ytVideoId = parsedVideo?.kind === 'youtube' ? parsedVideo.videoId : null;
+  const vimeoVideoId = parsedVideo?.kind === 'vimeo' ? parsedVideo.videoId : null;
+  const minRequiredPercent = workshop.min_watch_percent ?? 85;
+
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [coveragePercent, setCoveragePercent] = useState(0);
+  const [isFullyWatched, setIsFullyWatched] = useState(false);
+  const [accreditedJustNow, setAccreditedJustNow] = useState(false);
+  const [resumePrompt, setResumePrompt] = useState<number | null>(null);
+  const [tabIsHidden, setTabIsHidden] = useState(false);
+
+  // Referencias mutables para evitar re-creación de funciones y bucles infinitos en useEffect
+  const watchedSegmentsRef = useRef<TimeInterval[]>([]);
+  const currentTimeRef = useRef<number>(0);
+  const durationRef = useRef<number>(0);
+  const isFullyWatchedRef = useRef<boolean>(false);
+
+  const ytPlayerRef = useRef<any>(null);
+  const ytContainerRef = useRef<HTMLDivElement>(null);
+  const vimeoPlayerRef = useRef<any>(null);
+  const vimeoIframeRef = useRef<HTMLIFrameElement>(null);
+  const trackingIntervalRef = useRef<any>(null);
+  const lastSyncTimeRef = useRef<number>(0);
+  const lastTickTimeRef = useRef<number | null>(null);
+
+  // 1. Cargar estado previo de la base de datos
+  useEffect(() => {
+    let cancelled = false;
+    getWorkshopVideoProgress(workshop.id, userId).then((progress) => {
+      if (cancelled) return;
+      if (progress) {
+        const segs = progress.watched_segments || [];
+        watchedSegmentsRef.current = segs;
+        currentTimeRef.current = progress.last_position_seconds || 0;
+        durationRef.current = progress.total_duration_seconds || 0;
+        isFullyWatchedRef.current = progress.is_fully_watched || false;
+
+        setCoveragePercent(progress.watched_percentage || 0);
+        setIsFullyWatched(progress.is_fully_watched || false);
+        setCurrentTime(progress.last_position_seconds || 0);
+        if (progress.total_duration_seconds > 0) {
+          setDuration(progress.total_duration_seconds);
+        }
+        if (
+          progress.last_position_seconds > 15 &&
+          (!progress.total_duration_seconds ||
+            progress.last_position_seconds < progress.total_duration_seconds - 30)
+        ) {
+          setResumePrompt(progress.last_position_seconds);
+        }
+      }
+      setLoadingInitial(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [workshop.id, userId]);
+
+  // Sincronizar latido con el servidor (Estable: lee de refs y no se recrea cada segundo)
+  const syncHeartbeat = useCallback(
+    async (overrideSegments?: TimeInterval[], overrideTime?: number, overrideDur?: number) => {
+      const segs = overrideSegments ?? watchedSegmentsRef.current;
+      const cur = overrideTime ?? currentTimeRef.current;
+      const dur = overrideDur ?? durationRef.current;
+
+      if (!workshop.id || !userId || dur <= 0) return;
+
+      const res = await logVideoWatchHeartbeat({
+        workshopId: workshop.id,
+        userId,
+        currentTime: cur,
+        duration: dur,
+        segments: segs,
+        minWatchPercent: minRequiredPercent,
+      });
+
+      setCoveragePercent(res.watched_percentage);
+      if (res.is_fully_watched && !isFullyWatchedRef.current) {
+        isFullyWatchedRef.current = true;
+        setIsFullyWatched(true);
+        setAccreditedJustNow(true);
+        onAttendanceAccredited?.();
+      }
+      lastSyncTimeRef.current = Date.now();
+    },
+    [workshop.id, userId, minRequiredPercent, onAttendanceAccredited]
+  );
+
+  // Registro de un tick de avance en tiempo real (1 segundo) - Función estable
+  const recordPlaybackTick = useCallback(
+    (nowSec: number, totalDur: number) => {
+      if (totalDur > 0 && durationRef.current !== totalDur) {
+        durationRef.current = totalDur;
+        setDuration(totalDur);
+      }
+      currentTimeRef.current = nowSec;
+      setCurrentTime(nowSec);
+
+      try {
+        (window as any).__NEUROSAFE_CURRENT_VIDEO_TIME__ = nowSec;
+        window.dispatchEvent(
+          new CustomEvent('neurosafe:video-tick', {
+            detail: { currentTime: nowSec, duration: totalDur },
+          })
+        );
+      } catch {}
+
+      const prevSec = lastTickTimeRef.current;
+      lastTickTimeRef.current = nowSec;
+
+      // Si el salto fue suave (menos de 2.5s entre ticks) contamos el segmento
+      if (prevSec !== null && nowSec > prevSec && nowSec - prevSec < 2.5) {
+        const updated = mergeWatchedIntervals(watchedSegmentsRef.current, [prevSec, nowSec]);
+        watchedSegmentsRef.current = updated;
+        const newCov = calculateWatchedCoverage(updated, totalDur);
+        setCoveragePercent(newCov);
+
+        // Disparar sincronización periódica cada ~8 segundos
+        if (Date.now() - lastSyncTimeRef.current > 8000) {
+          syncHeartbeat(updated, nowSec, totalDur);
+        }
+      }
+    },
+    [syncHeartbeat]
+  );
+
+  // 2. Control de visibilidad de pestaña (pausar o marcar aviso)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const hidden = document.hidden;
+      setTabIsHidden(hidden);
+      if (hidden) {
+        // Pausar YouTube si está activo
+        if (ytPlayerRef.current?.pauseVideo && typeof ytPlayerRef.current.pauseVideo === 'function') {
+          try {
+            ytPlayerRef.current.pauseVideo();
+          } catch {}
+        }
+        // Pausar Vimeo si está activo
+        if (vimeoPlayerRef.current?.pause && typeof vimeoPlayerRef.current.pause === 'function') {
+          try {
+            vimeoPlayerRef.current.pause().catch(() => {});
+          } catch {}
+        }
+        // Sincronizar inmediatamente al perder foco
+        syncHeartbeat();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [syncHeartbeat]);
+
+  // Sincronizar antes de salir de la página
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      syncHeartbeat();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      syncHeartbeat();
+    };
+  }, [syncHeartbeat]);
+
+  // 3. Inicializador de YOUTUBE (Se ejecuta ÚNICAMENTE al cambiar de video o montar)
+  useEffect(() => {
+    if (!ytVideoId) return;
+
+    let destroyed = false;
+
+    const setupYT = () => {
+      if (destroyed || !ytContainerRef.current || !(window as any).YT || !(window as any).YT.Player) {
+        return;
+      }
+      if (ytPlayerRef.current) return;
+
+      try {
+        ytPlayerRef.current = new (window as any).YT.Player(ytContainerRef.current, {
+          videoId: ytVideoId,
+          playerVars: {
+            enablejsapi: 1,
+            modestbranding: 1,
+            rel: 0,
+            playsinline: 1,
+          },
+          events: {
+            onReady: (event: any) => {
+              if (destroyed) return;
+              try {
+                const dur = event.target.getDuration();
+                if (dur > 0) {
+                  durationRef.current = dur;
+                  setDuration(dur);
+                }
+              } catch {}
+            },
+            onStateChange: (event: any) => {
+              if (destroyed) return;
+              const state = event.data;
+              // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
+              if (state === 1) {
+                setIsPlaying(true);
+                try {
+                  lastTickTimeRef.current = event.target.getCurrentTime();
+                } catch {}
+
+                clearInterval(trackingIntervalRef.current);
+                trackingIntervalRef.current = setInterval(() => {
+                  if (destroyed || !ytPlayerRef.current) return;
+                  try {
+                    const cur = ytPlayerRef.current.getCurrentTime();
+                    const dur = ytPlayerRef.current.getDuration();
+                    recordPlaybackTick(cur, dur);
+                  } catch {}
+                }, 1000);
+              } else {
+                setIsPlaying(false);
+                lastTickTimeRef.current = null;
+                clearInterval(trackingIntervalRef.current);
+                if (state === 2 || state === 0) {
+                  try {
+                    const cur = event.target.getCurrentTime();
+                    const dur = event.target.getDuration();
+                    syncHeartbeat(undefined, cur, dur);
+                  } catch {}
+                }
+              }
+            },
+          },
+        });
+      } catch (err) {
+        console.warn('[TrackedLiveClassPlayer] Error initializing YouTube player:', err);
+      }
+    };
+
+    // Cargar API de YouTube si no existe
+    if (!(window as any).YT || !(window as any).YT.Player) {
+      const existingTag = document.getElementById('youtube-iframe-api');
+      if (!existingTag) {
+        const tag = document.createElement('script');
+        tag.id = 'youtube-iframe-api';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScript = document.getElementsByTagName('script')[0];
+        firstScript?.parentNode?.insertBefore(tag, firstScript);
+      }
+
+      const prevCallback = (window as any).onYouTubeIframeAPIReady;
+      (window as any).onYouTubeIframeAPIReady = () => {
+        if (prevCallback) prevCallback();
+        setupYT();
+      };
+    } else {
+      setupYT();
+    }
+
+    return () => {
+      destroyed = true;
+      clearInterval(trackingIntervalRef.current);
+      if (ytPlayerRef.current?.destroy && typeof ytPlayerRef.current.destroy === 'function') {
+        try {
+          ytPlayerRef.current.destroy();
+        } catch {}
+        ytPlayerRef.current = null;
+      }
+    };
+  }, [ytVideoId, recordPlaybackTick, syncHeartbeat]);
+
+  // 4. Inicializador de VIMEO
+  useEffect(() => {
+    if (!vimeoVideoId) return;
+
+    let destroyed = false;
+
+    const setupVimeo = () => {
+      if (destroyed || !vimeoIframeRef.current || !(window as any).Vimeo) return;
+      if (vimeoPlayerRef.current) return;
+
+      try {
+        const player = new (window as any).Vimeo.Player(vimeoIframeRef.current);
+        vimeoPlayerRef.current = player;
+
+        player.getDuration().then((dur: number) => {
+          if (!destroyed && dur > 0) {
+            durationRef.current = dur;
+            setDuration(dur);
+          }
+        });
+
+        player.on('play', () => {
+          if (destroyed) return;
+          setIsPlaying(true);
+        });
+
+        player.on('pause', (data: any) => {
+          if (destroyed) return;
+          setIsPlaying(false);
+          lastTickTimeRef.current = null;
+          syncHeartbeat(undefined, data.seconds, data.duration);
+        });
+
+        player.on('ended', (data: any) => {
+          if (destroyed) return;
+          setIsPlaying(false);
+          lastTickTimeRef.current = null;
+          syncHeartbeat(undefined, data.seconds, data.duration);
+        });
+
+        player.on('timeupdate', (data: any) => {
+          if (destroyed) return;
+          recordPlaybackTick(data.seconds, data.duration);
+        });
+      } catch (err) {
+        console.warn('[TrackedLiveClassPlayer] Error initializing Vimeo player:', err);
+      }
+    };
+
+    if (!(window as any).Vimeo) {
+      const existingTag = document.getElementById('vimeo-player-api');
+      if (!existingTag) {
+        const tag = document.createElement('script');
+        tag.id = 'vimeo-player-api';
+        tag.src = 'https://player.vimeo.com/api/player.js';
+        tag.onload = setupVimeo;
+        document.head.appendChild(tag);
+      } else {
+        existingTag.addEventListener('load', setupVimeo);
+      }
+    } else {
+      setupVimeo();
+    }
+
+    return () => {
+      destroyed = true;
+      if (vimeoPlayerRef.current?.destroy) {
+        try {
+          vimeoPlayerRef.current.destroy();
+        } catch {}
+        vimeoPlayerRef.current = null;
+      }
+    };
+  }, [vimeoVideoId, recordPlaybackTick, syncHeartbeat]);
+
+  // Función para reanudar el video en la posición guardada
+  const handleResumePlayback = useCallback((seconds: number) => {
+    setResumePrompt(null);
+    if (ytPlayerRef.current?.seekTo) {
+      try {
+        ytPlayerRef.current.seekTo(seconds, true);
+        ytPlayerRef.current.playVideo();
+      } catch {}
+    } else if (vimeoPlayerRef.current?.setCurrentTime) {
+      try {
+        vimeoPlayerRef.current.setCurrentTime(seconds);
+        vimeoPlayerRef.current.play();
+      } catch {}
+    }
+  }, []);
+
+  // Escuchar eventos globales de salto (ej. al pulsar un timestamp en las dudas)
+  useEffect(() => {
+    const handleSeekEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ second: number }>).detail;
+      if (typeof detail?.second === 'number' && Number.isFinite(detail.second)) {
+        handleResumePlayback(detail.second);
+      }
+    };
+    window.addEventListener('neurosafe:seek-video', handleSeekEvent);
+    return () => {
+      window.removeEventListener('neurosafe:seek-video', handleSeekEvent);
+      try {
+        delete (window as any).__NEUROSAFE_CURRENT_VIDEO_TIME__;
+      } catch {}
+    };
+  }, [handleResumePlayback]);
+
+  if (loadingInitial) {
+    return (
+      <div className={`p-12 rounded-3xl bg-slate-900 border border-slate-800 text-center text-slate-400 ${className}`}>
+        <Clock className="w-8 h-8 mx-auto animate-spin text-indigo-400 mb-2" />
+        <p className="text-xs font-semibold">Cargando reproductor y progreso...</p>
+      </div>
+    );
+  }
+
+  const isGoogleDrive = parsedVideo?.kind === 'drive';
+  const isEmbedSupported = parsedVideo?.kind === 'youtube' || parsedVideo?.kind === 'vimeo';
+
+  if (!recordingUrl) {
+    return (
+      <div className={`p-8 rounded-3xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center ${className}`}>
+        <Clock className="w-10 h-10 mx-auto text-slate-400 mb-3" />
+        <h4 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
+          Grabación en procesamiento
+        </h4>
+        <p className="text-sm text-slate-500 max-w-md mx-auto">
+          El profesor aún no ha cargado el enlace de la grabación de esta sesión. Vuelve a consultar en unas horas.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      id="tracked-live-player"
+      className={`overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-2xl flex flex-col ${className}`}
+    >
+      {/* ─── BANNER SUPERIOR DE ACREDITACIÓN / PROGRESO ─── */}
+      <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            {isFullyWatched ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <CheckCircle2 className="w-4 h-4" /> Asistencia Acreditada
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <Clock className="w-3.5 h-3.5" /> Requisito: {minRequiredPercent}% visto
+              </span>
+            )}
+
+            {isPlaying && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> En reproducción
+              </span>
+            )}
+
+            {isGoogleDrive && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <AlertTriangle className="w-3 h-3" /> Google Drive (Pase manual)
+              </span>
+            )}
+          </div>
+
+          <h3 className="text-base sm:text-lg font-bold text-white truncate max-w-xl">
+            {workshop.title}
+          </h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Duración: {formatVideoTime(duration || workshop.duration_minutes * 60)} • Posición: {formatVideoTime(currentTime)}
+          </p>
+        </div>
+
+        {/* Resumen numérico de porcentaje */}
+        {isEmbedSupported && (
+          <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
+            <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
+              <span>Progreso:</span>
+              <span className={`text-sm font-black ${isFullyWatched ? 'text-emerald-400' : 'text-indigo-400'}`}>
+                {coveragePercent.toFixed(1)}%
+              </span>
+              <span className="text-slate-500 text-[11px]">/ {minRequiredPercent}%</span>
+            </div>
+
+            {/* Barra de progreso interactiva con marcador del umbral */}
+            <div className="relative w-full sm:w-48 h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700/60">
+              <div
+                className={`h-full transition-all duration-300 ${
+                  isFullyWatched
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-400 shadow-sm shadow-emerald-500/50'
+                    : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                }`}
+                style={{ width: `${Math.min(100, coveragePercent)}%` }}
+              />
+              {/* Marcador del umbral docente */}
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-amber-400 z-10 opacity-70"
+                style={{ left: `${minRequiredPercent}%` }}
+                title={`Umbral requerido: ${minRequiredPercent}%`}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ─── ALERTA DE REANUDACIÓN DE REPRODUCCIÓN ─── */}
+      {resumePrompt !== null && !isGoogleDrive && (
+        <div className="bg-indigo-950/80 border-b border-indigo-800/60 px-4 py-2.5 flex items-center justify-between text-xs text-indigo-200">
+          <div className="flex items-center gap-2">
+            <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Te quedaste en el minuto <strong>{formatVideoTime(resumePrompt)}</strong>.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleResumePlayback(resumePrompt)}
+              className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-colors cursor-pointer"
+            >
+              Reanudar aquí
+            </button>
+            <button
+              onClick={() => setResumePrompt(null)}
+              className="text-slate-400 hover:text-white px-2 py-1"
+            >
+              Descartar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MENSAJE SI CAMBIA DE PESTAÑA ─── */}
+      {tabIsHidden && (
+        <div className="bg-amber-950/90 border-b border-amber-800/80 px-4 py-2 flex items-center gap-2 text-xs text-amber-200">
+          <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>La reproducción se pausó porque cambiaste de ventana o pestaña.</span>
+        </div>
+      )}
+
+      {/* ─── AVISO DE ACREDITACIÓN RECIENTE ─── */}
+      {accreditedJustNow && (
+        <div className="bg-emerald-950/90 border-b border-emerald-800/80 px-4 py-3 flex items-center justify-between text-xs text-emerald-200">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <span>
+              <strong>¡Felicidades!</strong> Has alcanzado el <strong>{minRequiredPercent}%</strong> obligatorio. Tu asistencia ha sido acreditada en tu Kardex académico.
+            </span>
+          </div>
+          <button
+            onClick={() => setAccreditedJustNow(false)}
+            className="text-emerald-400 hover:text-white font-bold"
+          >
+            Entendido
+          </button>
+        </div>
+      )}
+
+      {/* ─── CONTENEDOR DEL REPRODUCTOR ─── */}
+      <div className="relative w-full bg-black aspect-video flex items-center justify-center">
+        {parsedVideo?.kind === 'youtube' && (
+          <div
+            ref={ytContainerRef}
+            className="w-full h-full"
+          />
+        )}
+
+        {parsedVideo?.kind === 'vimeo' && (
+          <iframe
+            ref={vimeoIframeRef}
+            src={`https://player.vimeo.com/video/${parsedVideo.videoId}?api=1`}
+            className="w-full h-full"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            title={workshop.title}
+          />
+        )}
+
+        {isGoogleDrive && (
+          <div className="w-full h-full flex flex-col">
+            <div className="bg-amber-900/40 border-b border-amber-700/50 p-3 text-xs text-amber-200 flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                Google Drive no expone API de progreso. Tu asistencia será validada manualmente por el docente.
+              </span>
+              <a
+                href={recordingUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 underline hover:text-white shrink-0 ml-2"
+              >
+                Abrir en Drive <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <iframe
+              src={getVideoEmbedSrc(parsedVideo)}
+              className="w-full flex-1"
+              allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+              title={workshop.title}
+            />
+          </div>
+        )}
+
+        {!isEmbedSupported && !isGoogleDrive && parsedVideo && (
+          <iframe
+            src={getVideoEmbedSrc(parsedVideo)}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media; fullscreen"
+            allowFullScreen
+            title={workshop.title}
+          />
+        )}
+      </div>
+
+      {/* ─── FOOTER EXPLICATIVO ─── */}
+      <div className="p-4 bg-slate-950/80 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-slate-500" />
+          <span>
+            {isFullyWatched
+              ? 'Has cubierto el tiempo obligatorio para esta clase.'
+              : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
+          </span>
+        </div>
+        <div className="text-[11px] text-slate-500">
+          Tracking inteligente, reporta cualquier falla de la app al Dr. Yocupicio.
+        </div>
+      </div>
+    </div>
+  );
+}

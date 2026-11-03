@@ -12,7 +12,7 @@ export default function AgreementVerifyPage() {
     folio?: string;
     document_type?: StudentAgreementType;
     document_version?: string;
-    full_name?: string;
+    full_name_masked?: string;
     signed_at?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export default function AgreementVerifyPage() {
             <ShieldAlert className="mx-auto mb-3 h-10 w-10 text-amber-500" />
           )}
           <p className="font-bold">{result.valid ? 'Acuerdo vigente' : 'Folio no encontrado'}</p>
-          {result.full_name && <p className="mt-2 text-sm">{result.full_name}</p>}
+          {result.full_name_masked && <p className="mt-2 text-sm">{result.full_name_masked}</p>}
           {title && <p className="mt-1 text-sm font-medium">{title}</p>}
           {result.document_version && (
             <p className="mt-1 text-xs text-slate-500">Versión {result.document_version}</p>

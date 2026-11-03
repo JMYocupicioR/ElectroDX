@@ -4,6 +4,7 @@ import {
   hasUnresolvedPartyPlaceholders,
   isBundleComplete,
   isPartyComplete,
+  mergePrivacyNotice,
   nextBundleVersion,
   parseAgreementMarkdown,
   shouldRedirectToAgreements,
@@ -68,6 +69,23 @@ describe('parseAgreementMarkdown', () => {
     expect(parsed.sections).toHaveLength(1);
     expect(parsed.sections[0].title).toBe('Partes');
     expect(parsed.checkboxText).toBe('Acepto el contrato.');
+  });
+});
+
+describe('mergePrivacyNotice', () => {
+  it('uses the privacy notice version, not the contract bundle version', () => {
+    const contract = parseAgreementMarkdown(
+      'contrato',
+      '# Contrato\n\nVersión 1.1\n\n## Partes\n\nTexto.'
+    );
+    const merged = mergePrivacyNotice(
+      contract,
+      '# Aviso de privacidad\n\nVersión 1.0\n\n## Datos\n\nTexto.'
+    );
+    const privacySection = merged.sections.find((section) => section.title === 'Aviso de privacidad');
+    expect(privacySection).toBeDefined();
+    expect(privacySection?.content).toContain('versión 1.0');
+    expect(privacySection?.content).not.toContain('1.1');
   });
 });
 

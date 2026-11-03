@@ -63,10 +63,15 @@ function appBaseUrl(req: Request): string {
 }
 
 function adminClient() {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Falta SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en el servidor.');
+    throw new Error(
+      'Falta configurar SUPABASE_SERVICE_ROLE_KEY o SUPABASE_URL en las variables de entorno del servidor (Vercel).'
+    );
   }
   return createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
@@ -152,7 +157,7 @@ async function handleSign(req: Request, body: SignBody): Promise<Response> {
   }
 
   const nowIso = new Date().toISOString();
-  const folio = `AGR-${folioPrefix(body.documentType)}-${randomBytes(3).toString('hex').toUpperCase()}`;
+  const folio = `AGR-${folioPrefix(body.documentType)}-${randomBytes(16).toString('hex').toUpperCase()}`;
   const { pdf, sha256 } = await stampStudentAgreement({
     agreement,
     signaturePng: signature,

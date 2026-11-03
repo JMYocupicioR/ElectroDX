@@ -35,6 +35,8 @@ export interface QaThread {
   student_id: string;
   module_id: string | null;
   topic_id: string | null;
+  workshop_id?: string | null;
+  video_second?: number | null;
   title: string;
   body: string;
   status: 'open' | 'answered' | 'closed';
@@ -392,6 +394,64 @@ export async function createTopicThread(input: {
 export async function listTopicDiscussionDirectory(topicId: string): Promise<TopicDiscussionAuthor[]> {
   const { data, error } = await supabase.rpc('topic_discussion_directory', { p_topic_id: topicId });
   throwIfError(error);
+  return (data ?? []) as TopicDiscussionAuthor[];
+}
+
+export async function listWorkshopThreads(workshopId: string): Promise<QaThread[]> {
+  const { data, error } = await supabase
+    .from('student_qa_threads')
+    .select('*')
+    .eq('workshop_id', workshopId)
+    .eq('visibility', 'cohort')
+    .order('created_at', { ascending: false });
+  throwIfError(error);
+  return (data ?? []) as QaThread[];
+}
+
+export async function createWorkshopThread(input: {
+  body: string;
+  workshopId: string;
+  moduleId?: string | null;
+  topicId?: string | null;
+  pageUrl: string;
+  videoSecond?: number | null;
+}): Promise<QaThread> {
+  const { data: sessionData } = await supabase.auth.getUser();
+  const userId = sessionData.user?.id;
+  if (!userId) throw new Error('Debe iniciar sesión.');
+  const body = input.body.trim();
+  if (!body) throw new Error('Escribe una duda o comentario.');
+  const row: Record<string, any> = {
+    student_id: userId,
+    title: threadTitleFromBody(body),
+    body,
+    workshop_id: input.workshopId,
+    module_id: input.moduleId ?? null,
+    topic_id: input.topicId ?? null,
+    visibility: 'cohort' as const,
+    page_url: input.pageUrl.slice(0, 500),
+    video_second:
+      typeof input.videoSecond === 'number' && input.videoSecond >= 0
+        ? Math.floor(input.videoSecond)
+        : null,
+  };
+  let { data, error } = await supabase.from('student_qa_threads').insert(row as any).select().single();
+  if (error && /video_second|workshop_id|page_url/i.test(error.message)) {
+    const fallback = { ...row };
+    if (/video_second/i.test(error.message)) delete fallback.video_second;
+    if (/page_url/i.test(error.message)) delete fallback.page_url;
+    ({ data, error } = await supabase.from('student_qa_threads').insert(fallback as any).select().single());
+  }
+  throwIfError(error);
+  return data as QaThread;
+}
+
+export async function listWorkshopDiscussionDirectory(workshopId: string): Promise<TopicDiscussionAuthor[]> {
+  const { data, error } = await supabase.rpc('workshop_discussion_directory', { p_workshop_id: workshopId });
+  if (error) {
+    console.warn('[listWorkshopDiscussionDirectory] Fallback:', error.message);
+    return [];
+  }
   return (data ?? []) as TopicDiscussionAuthor[];
 }
 

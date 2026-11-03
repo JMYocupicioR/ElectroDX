@@ -109,7 +109,7 @@ export function mergePrivacyNotice(contract: ParsedAgreement, privacyMarkdown: s
       ...contract.sections,
       {
         title: 'Aviso de privacidad',
-        content: `El alumno acepta el aviso de privacidad versión ${contract.version}, que forma parte de este contrato.`,
+        content: `El alumno acepta el aviso de privacidad versión ${privacy.version}, que forma parte de este contrato.`,
       },
       ...privacy.sections,
     ],

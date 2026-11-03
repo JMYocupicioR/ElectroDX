@@ -413,10 +413,26 @@ export interface LiveWorkshop {
   session_type?: 'workshop_online' | 'hands_on_presencial' | 'masterclass' | 'clinical_round' | string;
   session_modality?: 'online' | 'in_person';
   counts_for_kardex?: boolean;
+  min_watch_percent?: number;
+  allow_recording_attendance?: boolean;
   attendance_closed?: boolean;
   created_by: string;
   updated_at: string;
   created_at: string;
+}
+
+export interface WorkshopVideoProgress {
+  id: string;
+  user_id: string;
+  workshop_id: string;
+  watched_percentage: number;
+  last_position_seconds: number;
+  total_duration_seconds: number;
+  watched_segments: [number, number][];
+  is_fully_watched: boolean;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface WorkshopRegistration {
@@ -637,6 +653,8 @@ interface RawDatabase {
           student_id: string;
           module_id: string | null;
           topic_id: string | null;
+          workshop_id?: string | null;
+          video_second?: number | null;
           title: string;
           body: string;
           status: 'open' | 'answered' | 'closed';
@@ -650,6 +668,8 @@ interface RawDatabase {
           body: string;
           module_id?: string | null;
           topic_id?: string | null;
+          workshop_id?: string | null;
+          video_second?: number | null;
           visibility?: 'private' | 'cohort';
           page_url?: string | null;
         };
@@ -658,6 +678,8 @@ interface RawDatabase {
           visibility?: 'private' | 'cohort';
           page_url?: string | null;
           updated_at?: string;
+          workshop_id?: string | null;
+          video_second?: number | null;
         };
       };
       student_qa_replies: {
@@ -1233,6 +1255,10 @@ interface RawDatabase {
       is_platform_ceo: { Args: Record<string, never>; Returns: boolean };
       topic_discussion_directory: {
         Args: { p_topic_id: string };
+        Returns: { user_id: string; display_name: string; is_staff: boolean }[];
+      };
+      workshop_discussion_directory: {
+        Args: { p_workshop_id: string };
         Returns: { user_id: string; display_name: string; is_staff: boolean }[];
       };
       list_staff_inbox: {

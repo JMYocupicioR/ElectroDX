@@ -12,6 +12,10 @@ import {
   Unlock,
   BookOpen,
   Trash2,
+  Search,
+  Filter,
+  X,
+  RotateCcw,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -34,6 +38,19 @@ import type { AdminProfileRow } from '../../types/admin';
 import type { ClassAttendanceRecord } from '../../types/academicGradebook';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 
+export type StatusFilter = 'active' | 'all' | 'completed' | 'draft_cancelled' | WorkshopStatus;
+export type ModalityFilter = 'all' | 'online' | 'in_person';
+export type RollCallFilter = 'all' | 'not_started' | 'incomplete' | 'completed';
+export type SortOrder = 'date_asc' | 'date_desc';
+
+function normalizeSearchText(str: string): string {
+  return (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 export default function AdminWorkshopsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -48,6 +65,16 @@ export default function AdminWorkshopsPage() {
   const [pushTitle, setPushTitle] = useState('Aviso académico ElectroDx');
   const [pushBody, setPushBody] = useState('');
   const [pushStatus, setPushStatus] = useState<string | null>(null);
+
+  // Estados de Filtros
+  const [q, setQ] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('active');
+  const [modalityFilter, setModalityFilter] = useState<ModalityFilter>('all');
+  const [moduleId, setModuleId] = useState('');
+  const [rollCallFilter, setRollCallFilter] = useState<RollCallFilter>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('date_asc');
 
   const load = async () => {
     setLoading(true);
@@ -97,6 +124,122 @@ export default function AdminWorkshopsPage() {
     }
     return map;
   }, []);
+
+  const counts = useMemo(() => {
+    let active = 0;
+    let completed = 0;
+    let draftOrCancelled = 0;
+    for (const w of workshops) {
+      if (w.status === 'scheduled' || w.status === 'live') active++;
+      else if (w.status === 'completed') completed++;
+      else draftOrCancelled++;
+    }
+    return {
+      all: workshops.length,
+      active,
+      completed,
+      draftOrCancelled,
+    };
+  }, [workshops]);
+
+  const filteredWorkshops = useMemo(() => {
+    const needle = normalizeSearchText(q);
+
+    return workshops
+      .filter((w) => {
+        // Filtro por Estado
+        if (statusFilter === 'active') {
+          if (w.status !== 'scheduled' && w.status !== 'live') return false;
+        } else if (statusFilter === 'draft_cancelled') {
+          if (w.status !== 'draft' && w.status !== 'cancelled') return false;
+        } else if (statusFilter !== 'all') {
+          if (w.status !== statusFilter) return false;
+        }
+
+        // Filtro por Modalidad
+        if (modalityFilter !== 'all' && (w.session_modality ?? 'online') !== modalityFilter) {
+          return false;
+        }
+
+        // Filtro por Módulo
+        if (moduleId && w.module_id !== moduleId) {
+          return false;
+        }
+
+        // Filtro por Pase de lista
+        if (rollCallFilter !== 'all') {
+          const sum = summaries.get(w.id);
+          const rollCallStatus = sum ? sum.rollCallStatus : 'not_started';
+          if (rollCallStatus !== rollCallFilter) return false;
+        }
+
+        // Filtro por Fechas
+        const at = new Date(w.scheduled_at).getTime();
+        if (dateFrom && at < new Date(dateFrom).getTime()) return false;
+        if (dateTo && at > new Date(`${dateTo}T23:59:59`).getTime()) return false;
+
+        // Búsqueda textual insensible a acentos en título, módulo, tema y descripción
+        if (needle) {
+          const modTitle = modules.find((m) => m.id === w.module_id)?.title ?? '';
+          const topic = w.topic_id ? topicTitleMap.get(w.topic_id) ?? '' : '';
+          const hay = normalizeSearchText(`${w.title} ${modTitle} ${topic} ${w.description ?? ''}`);
+          if (!hay.includes(needle)) return false;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const timeA = new Date(a.scheduled_at).getTime();
+        const timeB = new Date(b.scheduled_at).getTime();
+        return sortOrder === 'date_asc' ? timeA - timeB : timeB - timeA;
+      });
+  }, [
+    workshops,
+    q,
+    statusFilter,
+    modalityFilter,
+    moduleId,
+    rollCallFilter,
+    dateFrom,
+    dateTo,
+    sortOrder,
+    modules,
+    topicTitleMap,
+    summaries,
+  ]);
+
+  const hasActiveFilters = Boolean(
+    q.trim() ||
+      statusFilter !== 'active' ||
+      modalityFilter !== 'all' ||
+      moduleId ||
+      rollCallFilter !== 'all' ||
+      dateFrom ||
+      dateTo ||
+      sortOrder !== 'date_asc'
+  );
+
+  const activeFiltersCount = [
+    Boolean(q.trim()),
+    statusFilter !== 'active',
+    modalityFilter !== 'all',
+    Boolean(moduleId),
+    rollCallFilter !== 'all',
+    Boolean(dateFrom),
+    Boolean(dateTo),
+    sortOrder !== 'date_asc',
+  ].filter(Boolean).length;
+
+  const resetFilters = (defaultToActive = true) => {
+    setQ('');
+    setStatusFilter(defaultToActive ? 'active' : 'all');
+    setModalityFilter('all');
+    setModuleId('');
+    setRollCallFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setSortOrder('date_asc');
+  };
 
   const setStatus = async (id: string, status: WorkshopStatus) => {
     // Si intenta finalizar, advertir si el pase de lista está incompleto
@@ -219,16 +362,260 @@ export default function AdminWorkshopsPage() {
         </button>
       </div>
 
+      {/* Barra de Filtros y Búsqueda */}
+      {!loading && workshops.length > 0 && (
+        <div className="mb-6 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3.5">
+          {/* Fila superior: Búsqueda rápida + Pestañas de estado + Contador */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+            {/* Input de búsqueda */}
+            <div className="relative flex-1 min-w-[240px] max-w-lg">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar por clase, módulo, tema o descripción..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 text-xs text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition"
+              />
+              {q && (
+                <button
+                  type="button"
+                  onClick={() => setQ('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition"
+                  title="Borrar búsqueda"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Quick Status Tabs (Pills) */}
+            <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-xs">
+              <button
+                type="button"
+                onClick={() => setStatusFilter('active')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  statusFilter === 'active'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Próximas y En Vivo</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    statusFilter === 'active'
+                      ? 'bg-indigo-700/70 text-indigo-100'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {counts.active}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter('all')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  statusFilter === 'all'
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Todas</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    statusFilter === 'all'
+                      ? 'bg-indigo-700/70 text-indigo-100'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {counts.all}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter('completed')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  statusFilter === 'completed'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Finalizadas</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    statusFilter === 'completed'
+                      ? 'bg-emerald-700/70 text-emerald-100'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {counts.completed}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setStatusFilter('draft_cancelled')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                  statusFilter === 'draft_cancelled'
+                    ? 'bg-slate-700 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>Borradores / Canceladas</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    statusFilter === 'draft_cancelled'
+                      ? 'bg-slate-800 text-slate-200'
+                      : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                >
+                  {counts.draftOrCancelled}
+                </span>
+              </button>
+            </div>
+
+            {/* Contador de resultados */}
+            <div className="text-xs text-slate-500 font-medium shrink-0 self-start lg:self-center">
+              Mostrando <strong className="text-slate-800 dark:text-slate-200">{filteredWorkshops.length}</strong> de {workshops.length} clases
+            </div>
+          </div>
+
+          {/* Fila inferior: Controles secundarios (Módulo, Modalidad, Pase de lista, Rango de fechas, Orden, Limpiar) */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 text-xs">
+            {/* Filtro Módulo */}
+            <div className="flex items-center gap-1.5 min-w-[170px] max-w-xs">
+              <select
+                value={moduleId}
+                onChange={(e) => setModuleId(e.target.value)}
+                className="w-full py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500"
+              >
+                <option value="">Todos los módulos</option>
+                {modules.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.number ? `M${m.number}: ` : ''}{m.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filtro Modalidad */}
+            <div className="flex items-center gap-1.5">
+              <select
+                value={modalityFilter}
+                onChange={(e) => setModalityFilter(e.target.value as ModalityFilter)}
+                className="py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500"
+              >
+                <option value="all">Modalidad: Todas</option>
+                <option value="online">🌐 En línea</option>
+                <option value="in_person">🏛️ Presencial</option>
+              </select>
+            </div>
+
+            {/* Filtro Pase de lista (Control escolar) */}
+            <div className="flex items-center gap-1.5">
+              <select
+                value={rollCallFilter}
+                onChange={(e) => setRollCallFilter(e.target.value as RollCallFilter)}
+                className="py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500"
+              >
+                <option value="all">Pase de lista: Todos</option>
+                <option value="not_started">⚠️ Sin pase de lista</option>
+                <option value="incomplete">⏳ Lista incompleta</option>
+                <option value="completed">✅ Lista completada</option>
+              </select>
+            </div>
+
+            {/* Rango de Fechas */}
+            <div className="flex items-center gap-1 text-slate-500 bg-slate-50 dark:bg-slate-800/60 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-[11px] font-semibold px-1">Fecha:</span>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="py-0.5 px-1.5 bg-transparent border-0 text-xs text-slate-700 dark:text-slate-200 focus:outline-none font-medium"
+                title="Fecha inicio"
+              />
+              <span className="text-[11px] text-slate-400">–</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="py-0.5 px-1.5 bg-transparent border-0 text-xs text-slate-700 dark:text-slate-200 focus:outline-none font-medium"
+                title="Fecha fin"
+              />
+            </div>
+
+            {/* Orden Cronológico */}
+            <div className="flex items-center gap-1.5">
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+                className="py-1.5 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium focus:outline-none focus:border-indigo-500"
+              >
+                <option value="date_asc">📅 Próximas primero</option>
+                <option value="date_desc">📅 Más lejanas primero</option>
+              </select>
+            </div>
+
+            {/* Botón Limpiar Filtros */}
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={() => resetFilters(false)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 font-bold transition ml-auto"
+                title="Restablecer todos los filtros"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Limpiar</span>
+                <span className="px-1.5 py-0.2 text-[10px] rounded-full bg-slate-200 dark:bg-slate-700 font-black">
+                  {activeFiltersCount}
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-sm text-slate-500 text-center py-12">Cargando talleres...</p>
       ) : workshops.length === 0 ? (
         <div className="text-center py-12 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700">
           <Calendar className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-500 font-semibold">No hay talleres programados.</p>
+          <p className="text-sm text-slate-500 font-semibold mb-3">No hay talleres programados en la plataforma.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingWorkshop(null);
+              setCreateOpen(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition"
+          >
+            <Plus className="w-4 h-4" /> Programar Primer Taller
+          </button>
+        </div>
+      ) : filteredWorkshops.length === 0 ? (
+        <div className="text-center py-12 rounded-3xl border border-dashed border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-900/40 p-8">
+          <Filter className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+          <p className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
+            Ninguna clase coincide con los filtros aplicados
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-4">
+            Prueba ajustando el término de búsqueda, seleccionando la pestaña "Todas" o limpiando los criterios secundarios.
+          </p>
+          <button
+            type="button"
+            onClick={() => resetFilters(false)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Restablecer filtros y ver todas las clases
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {workshops.map((w) => {
+          {filteredWorkshops.map((w) => {
             const mod = modules.find((m) => m.id === w.module_id);
             const date = new Date(w.scheduled_at);
             const summary = summaries.get(w.id);
@@ -311,14 +698,13 @@ export default function AdminWorkshopsPage() {
                     {w.recording_url && (
                       <div className="flex items-center gap-2 truncate text-emerald-600 dark:text-emerald-400 font-bold">
                         <Video className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                        <a
-                          href={w.recording_url}
-                          target="_blank"
-                          rel="noreferrer"
+                        <Link
+                          to={`/taller/${w.id}`}
                           className="hover:underline truncate"
+                          title="Abrir en aula virtual con tracking"
                         >
-                          Grabación disponible
-                        </a>
+                          Grabación ({w.min_watch_percent || 85}% req)
+                        </Link>
                       </div>
                     )}
 

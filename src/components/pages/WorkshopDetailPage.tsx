@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import { BackButton } from '../common/BackButton';
 import { LiveClassCountdown } from '../course/LiveClassCountdown';
 import { LiveSessionRoster } from '../course/LiveSessionRoster';
+import { WorkshopDiscussion } from '../course/WorkshopDiscussion';
 import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import type { LiveWorkshop } from '../../types/database';
@@ -109,12 +110,16 @@ export default function WorkshopDetailPage() {
         <LiveSessionRoster workshop={workshop} brief={brief} />
 
         {isEnrolledPhysician ? (
-          <LiveClassCountdown
-            workshop={workshop}
-            isRegistered={isRegistered}
-            onRegister={handleRegister}
-            loadingReg={loadingReg}
-          />
+          <>
+            <LiveClassCountdown
+              workshop={workshop}
+              isRegistered={isRegistered}
+              onRegister={handleRegister}
+              loadingReg={loadingReg}
+              userId={user?.id}
+            />
+            <WorkshopDiscussion workshop={workshop} />
+          </>
         ) : (
           <div className="p-6 rounded-2xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 text-center">
             <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100 mb-2">Acceso Premium Requerido</h3>

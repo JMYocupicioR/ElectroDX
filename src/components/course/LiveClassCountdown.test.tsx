@@ -75,5 +75,51 @@ describe('LiveClassCountdown Component', () => {
     expect(html).toContain('href="https://vimeo.com/test-recording"');
     expect(html).not.toContain('Entrar al Stream en Vivo');
   });
+
+  it('muestra el reproductor interactivo TrackedLiveClassPlayer cuando se pasa userId', () => {
+    const html = renderToStaticMarkup(
+      <LiveClassCountdown workshop={pastWorkshop} isRegistered={true} userId="student-user-1" />
+    );
+
+    expect(html).toContain('Este taller ya finalizó');
+    expect(html).toContain('Cargando reproductor y progreso...');
+  });
+
+  it('ofrece el visualizador de grabación aunque la sesión aún no haya terminado', () => {
+    const recordedReady: LiveWorkshop = {
+      ...imminentWorkshop,
+      id: 'ws-recorded-ready',
+      recording_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      allow_recording_attendance: true,
+      min_watch_percent: 50,
+    };
+
+    const html = renderToStaticMarkup(
+      <LiveClassCountdown workshop={recordedReady} isRegistered={true} userId="student-user-1" />
+    );
+
+    expect(html).toContain('Clase grabada disponible');
+    expect(html).toContain('Clase grabada lista');
+    expect(html).toContain('Cargando reproductor y progreso...');
+    expect(html).not.toContain('🔴 Alerta de Clase en Vivo');
+    expect(html).not.toContain('¡La clase está transmitiéndose en vivo ahora mismo!');
+  });
+
+  it('pide registro antes de abrir el visualizador de grabación', () => {
+    const recordedReady: LiveWorkshop = {
+      ...futureWorkshop,
+      id: 'ws-recorded-locked',
+      recording_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      allow_recording_attendance: true,
+    };
+
+    const html = renderToStaticMarkup(
+      <LiveClassCountdown workshop={recordedReady} isRegistered={false} userId="student-user-1" />
+    );
+
+    expect(html).toContain('Clase grabada disponible');
+    expect(html).toContain('El visualizador de clase grabada se activará al registrarte.');
+    expect(html).not.toContain('Cargando reproductor y progreso...');
+  });
 });
 

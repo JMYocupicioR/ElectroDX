@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Video, Clock, BookOpen, Lock, UserCheck, MapPin } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
@@ -122,9 +123,9 @@ export function WorkshopCard({ workshop, brief }: WorkshopCardProps) {
         {workshop.recording_url && (
           <div className="flex items-center gap-2 text-xs text-purple-600 dark:text-purple-400 font-medium">
             <Video className="w-3.5 h-3.5 flex-shrink-0" />
-            <a href={workshop.recording_url} target="_blank" rel="noreferrer" className="hover:underline" onClick={(e) => e.stopPropagation()}>
-              Ver clase grabada ↗
-            </a>
+            <Link to={`/taller/${workshop.id}`} className="hover:underline" onClick={(e) => e.stopPropagation()}>
+              Ver clase grabada (Aula Virtual)
+            </Link>
           </div>
         )}
       </div>

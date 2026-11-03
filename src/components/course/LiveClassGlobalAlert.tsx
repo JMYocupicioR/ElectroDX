@@ -31,6 +31,8 @@ export function LiveClassGlobalAlert() {
       const now = new Date();
       for (const w of upcomingWorkshops) {
         if (w.status === 'completed' || w.status === 'cancelled') continue;
+        // Si la asistencia es por grabación, no empujar toast de “en vivo / Zoom”.
+        if (w.recording_url?.trim() && w.allow_recording_attendance !== false) continue;
         const timing = getWorkshopAccessTiming(w, now);
 
         // Si faltan <= 5 min para iniciar o está en curso (y no ha finalizado)

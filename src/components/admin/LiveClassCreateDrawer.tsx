@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  BookOpen,
   Calendar,
   Check,
   Clock,
@@ -14,8 +15,11 @@ import {
   UserPlus,
   Video,
   X,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 import { allModules } from '../../content/modules';
+import { detectVideoPlatform } from '../../utils/mediaValidation';
 import { useAuth } from '../../contexts/AuthProvider';
 import { createWorkshop, deleteWorkshop, updateWorkshop } from '../../services/courseService';
 import { getAdminProfiles, getCourseTeachers } from '../../services/editorialService';
@@ -177,13 +181,15 @@ export function LiveClassCreateDrawer({
   const [primaryTopicId, setPrimaryTopicId] = useState('');
   const [additionalIds, setAdditionalIds] = useState<string[]>([]);
   const [primaryQuery, setPrimaryQuery] = useState('');
-  const [primarySearchFocused, setPrimarySearchFocused] = useState(false);
+  const topicPickerRef = useRef<HTMLDivElement>(null);
 
   const [classDate, setClassDate] = useState('');
   const [classTime, setClassTime] = useState('19:00');
   const [classDuration, setClassDuration] = useState(90);
   const [classStreamUrl, setClassStreamUrl] = useState('');
   const [classRecordingUrl, setClassRecordingUrl] = useState('');
+  const [minWatchPercent, setMinWatchPercent] = useState(85);
+  const [allowRecordingAttendance, setAllowRecordingAttendance] = useState(true);
   const [classModality, setClassModality] = useState<SessionModality>('online');
   const [classLocation, setClassLocation] = useState('');
   const [classDescription, setClassDescription] = useState('');
@@ -230,12 +236,10 @@ export function LiveClassCreateDrawer({
 
   const primaryResults = useMemo(() => {
     const query = primaryQuery.trim().toLowerCase();
-    const pool = query
-      ? catalog.filter((entry) =>
-          [entry.title, entry.moduleTitle, entry.parentTitle ?? ''].join(' ').toLowerCase().includes(query),
-        )
-      : moduleSuggestions;
-    return pool.slice(0, 8);
+    if (!query) return moduleSuggestions;
+    return catalog.filter((entry) =>
+      [entry.title, entry.moduleTitle, entry.parentTitle ?? ''].join(' ').toLowerCase().includes(query),
+    );
   }, [catalog, moduleSuggestions, primaryQuery]);
 
   useEffect(() => {
@@ -299,6 +303,8 @@ export function LiveClassCreateDrawer({
         setClassLocation(stored.location);
         setClassModality(initialWorkshop?.session_modality === 'in_person' ? 'in_person' : 'online');
         setClassRecordingUrl(initialWorkshop?.recording_url || '');
+        setMinWatchPercent(initialWorkshop?.min_watch_percent ?? 85);
+        setAllowRecordingAttendance(initialWorkshop?.allow_recording_attendance !== false);
         setClassStreamUrl(initialWorkshop?.stream_url || '');
         setClassDuration(initialWorkshop?.duration_minutes || 90);
         setCountsForKardex(initialWorkshop?.counts_for_kardex !== false);
@@ -359,7 +365,6 @@ export function LiveClassCreateDrawer({
     setIncludeSubtopics(rest.length > 0 || descendantTopicIds(catalog, nextPrimary).length > 0);
     if (!titleDirty.current) setTitle(`Clase: ${entry.title}`);
     setPrimaryQuery('');
-    setPrimarySearchFocused(false);
   };
 
   const assignTeacher = async (teacherId: string, teacherName: string) => {
@@ -488,6 +493,7 @@ export function LiveClassCreateDrawer({
     }
     if (!primaryTopicId) {
       showToast('err', 'Elige el tema principal de la clase.');
+      topicPickerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     if (!classDate) {
@@ -520,6 +526,8 @@ export function LiveClassCreateDrawer({
         duration_minutes: classDuration || 90,
         stream_url: classStreamUrl.trim() || null,
         recording_url: classRecordingUrl.trim() || null,
+        min_watch_percent: minWatchPercent,
+        allow_recording_attendance: allowRecordingAttendance,
         session_modality: classModality,
         session_type: classModality === 'in_person' ? 'hands_on_presencial' : 'masterclass',
         counts_for_kardex: countsForKardex,
@@ -697,6 +705,118 @@ export function LiveClassCreateDrawer({
             </p>
           ) : (
             <>
+              <div
+                ref={topicPickerRef}
+                className={`p-4 rounded-2xl border space-y-3.5 ${
+                  !primaryTopicId && feedback?.type === 'err' && feedback.text.includes('tema principal')
+                    ? 'border-rose-400 dark:border-rose-500 bg-rose-50/50 dark:bg-rose-950/20'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30'
+                }`}
+              >
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-blue-600 dark:text-cyan-400" />
+                    Tema principal de la clase
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Obligatorio. Elige el módulo y luego el tema (o subtema) que se impartirá.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Módulo académico
+                  </label>
+                  <select
+                    value={moduleId}
+                    onChange={(event) => {
+                      setModuleId(event.target.value);
+                      setPrimaryTopicId('');
+                      setPrimaryQuery('');
+                      setAdditionalIds([]);
+                    }}
+                    className="live-session-select w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 text-xs font-bold"
+                  >
+                    {allModules.map((mod) => (
+                      <option key={mod.id} value={mod.id}>
+                        {mod.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {!primaryTopicId ? (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="search"
+                        value={primaryQuery}
+                        onChange={(event) => setPrimaryQuery(event.target.value)}
+                        placeholder="Filtrar temas del módulo…"
+                        className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+                        autoComplete="off"
+                      />
+                    </div>
+                    <ul className="w-full max-h-56 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-800">
+                      {primaryResults.length === 0 ? (
+                        <li className="px-3 py-3 text-[11px] text-slate-500">
+                          No hay temas en este módulo
+                          {primaryQuery.trim() ? ' con ese filtro.' : '.'}
+                        </li>
+                      ) : (
+                        primaryResults.map((entry) => (
+                          <li key={entry.topicId}>
+                            <button
+                              type="button"
+                              onClick={() => choosePrimary(entry.topicId)}
+                              className="w-full text-left px-3 py-2.5 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer"
+                            >
+                              <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">
+                                {entry.title}
+                              </span>
+                              <span className="block text-[10px] text-slate-500 truncate">
+                                {entry.parentTitle ? `${entry.parentTitle} · ` : ''}
+                                {entry.moduleTitle}
+                              </span>
+                            </button>
+                          </li>
+                        ))
+                      )}
+                    </ul>
+                    <p className="text-[10px] text-slate-500">
+                      {primaryResults.length} tema{primaryResults.length === 1 ? '' : 's'}
+                      {primaryQuery.trim() ? ' encontrados' : ' en este módulo'}. Haz clic para elegirlo.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-300">
+                        Tema seleccionado
+                      </p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {primaryEntry?.title}
+                      </p>
+                      {primaryEntry?.parentTitle && (
+                        <p className="text-[10px] text-slate-500 truncate">{primaryEntry.parentTitle}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPrimaryTopicId('');
+                        setPrimaryQuery('');
+                        setAdditionalIds([]);
+                      }}
+                      className="text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer shrink-0"
+                    >
+                      Cambiar tema
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/30 space-y-3.5">
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
@@ -710,7 +830,7 @@ export function LiveClassCreateDrawer({
 
                 {!primaryTopicId ? (
                   <p className="text-xs text-slate-500">
-                    Elige el tema principal abajo para asignar docentes con un clic.
+                    Primero elige el tema principal arriba para ver y asignar docentes.
                   </p>
                 ) : topicCommitments.length > 0 ? (
                   <div className="space-y-2">
@@ -932,85 +1052,12 @@ export function LiveClassCreateDrawer({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Módulo académico
-                  </label>
-                  <select
-                    value={moduleId}
-                    onChange={(event) => setModuleId(event.target.value)}
-                    className="live-session-select w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 text-xs font-bold"
-                  >
-                    {allModules.map((mod) => (
-                      <option key={mod.id} value={mod.id}>
-                        {mod.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {!primaryTopicId ? (
-                  <div className="relative">
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
-                      Tema principal
-                    </label>
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="search"
-                        value={primaryQuery}
-                        onChange={(event) => setPrimaryQuery(event.target.value)}
-                        onFocus={() => setPrimarySearchFocused(true)}
-                        onBlur={() => window.setTimeout(() => setPrimarySearchFocused(false), 150)}
-                        placeholder="Buscar el tema de esta clase…"
-                        className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-                      />
-                    </div>
-                    {primarySearchFocused && (
-                      <ul
-                        className="mt-1 w-full max-h-52 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
-                        onMouseDown={(event) => event.preventDefault()}
-                      >
-                        {primaryResults.length === 0 ? (
-                          <li className="px-3 py-2 text-[11px] text-slate-500">Sin coincidencias.</li>
-                        ) : (
-                          primaryResults.map((entry) => (
-                            <li key={entry.topicId}>
-                              <button
-                                type="button"
-                                onClick={() => choosePrimary(entry.topicId)}
-                                className="w-full text-left px-3 py-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 cursor-pointer"
-                              >
-                                <span className="block text-xs font-semibold text-slate-800 dark:text-slate-100">
-                                  {entry.title}
-                                </span>
-                                <span className="block text-[10px] text-slate-500 truncate">
-                                  {entry.parentTitle ? `${entry.parentTitle} · ` : ''}
-                                  {entry.moduleTitle}
-                                </span>
-                              </button>
-                            </li>
-                          ))
-                        )}
-                      </ul>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[11px] text-slate-500">
-                      Tema principal: <strong className="text-slate-800 dark:text-slate-100">{primaryEntry?.title}</strong>
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPrimaryTopicId('');
-                        setPrimaryQuery('');
-                      }}
-                      className="text-[11px] font-bold text-blue-600 dark:text-cyan-400 hover:underline cursor-pointer shrink-0"
-                    >
-                      Cambiar tema
-                    </button>
-                  </div>
+                {primaryEntry && (
+                  <p className="text-[11px] text-slate-500 px-1">
+                    Módulo: <strong className="text-slate-800 dark:text-slate-100">{primaryModule?.title}</strong>
+                    {' · '}
+                    Tema: <strong className="text-slate-800 dark:text-slate-100">{primaryEntry.title}</strong>
+                  </p>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -1119,7 +1166,68 @@ export function LiveClassCreateDrawer({
                     placeholder="https://drive.google.com/... o https://youtube.com/..."
                     className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
                   />
+                  {classRecordingUrl.trim() && (() => {
+                    const platform = detectVideoPlatform(classRecordingUrl);
+                    if (platform.kind === 'drive') {
+                      return (
+                        <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">Aviso sobre Google Drive:</span> Esta plataforma no permite auditar el porcentaje de reproducción ni acreditar asistencia automática. Si requieres verificar que el alumno vio la clase, utiliza <strong>YouTube (no listado)</strong> o <strong>Vimeo</strong>.
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (platform.kind === 'youtube' || platform.kind === 'vimeo') {
+                      return (
+                        <div className="mt-2 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <span>Plataforma compatible con tracking anti-trampas y acreditación automática.</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
+
+                {classRecordingUrl.trim() && (
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <label className="font-bold text-slate-700 dark:text-slate-300">
+                          Porcentaje mínimo de reproducción requerido:
+                        </label>
+                        <span className="font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                          {minWatchPercent}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={50}
+                        max={100}
+                        step={5}
+                        value={minWatchPercent}
+                        onChange={(e) => setMinWatchPercent(Number(e.target.value))}
+                        className="w-full accent-indigo-600 cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-slate-400">
+                        <span>50%</span>
+                        <span>Recomendado: 85%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={allowRecordingAttendance}
+                        onChange={(e) => setAllowRecordingAttendance(e.target.checked)}
+                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span>Acreditar asistencia en Kardex automáticamente al alcanzar el porcentaje</span>
+                    </label>
+                  </div>
+                )}
 
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
                   <input

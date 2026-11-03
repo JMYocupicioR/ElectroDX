@@ -23,7 +23,10 @@ import {
   Search,
   Copy,
   MessageCircle,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
+import { detectVideoPlatform } from '../../utils/mediaValidation';
 import type { Module, Topic } from '../../types/content';
 import {
   LiveClassTopicQuickPicker,
@@ -99,6 +102,8 @@ interface TopicConfigDrawerProps {
     durationMinutes: number;
     streamUrl: string;
     recordingUrl?: string;
+    minWatchPercent?: number;
+    allowRecordingAttendance?: boolean;
     description?: string | null;
     sessionModality?: SessionModality;
     countsForKardex?: boolean;
@@ -172,6 +177,8 @@ export function TopicConfigDrawer({
   const [classDuration, setClassDuration] = useState(90);
   const [classStreamUrl, setClassStreamUrl] = useState('');
   const [classRecordingUrl, setClassRecordingUrl] = useState('');
+  const [classMinWatchPercent, setClassMinWatchPercent] = useState(85);
+  const [classAllowRecordingAttendance, setClassAllowRecordingAttendance] = useState(true);
   const [classModality, setClassModality] = useState<SessionModality>('online');
   const [classLocation, setClassLocation] = useState('');
   const [classDescription, setClassDescription] = useState('');
@@ -500,6 +507,8 @@ export function TopicConfigDrawer({
         durationMinutes: classDuration || 90,
         streamUrl: classStreamUrl.trim(),
         recordingUrl: classRecordingUrl.trim(),
+        minWatchPercent: classMinWatchPercent,
+        allowRecordingAttendance: classAllowRecordingAttendance,
         description: composeClassDescription(classDescription, classLocation, classModality) || null,
         sessionModality: classModality,
         countsForKardex: classCountsForKardex,
@@ -1090,7 +1099,68 @@ export function TopicConfigDrawer({
                     onChange={(e) => setClassRecordingUrl(e.target.value)}
                     className="w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
                   />
+                  {classRecordingUrl.trim() && (() => {
+                    const platform = detectVideoPlatform(classRecordingUrl);
+                    if (platform.kind === 'drive') {
+                      return (
+                        <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">Aviso sobre Google Drive:</span> Esta plataforma no permite auditar el porcentaje de reproducción ni acreditar asistencia automática. Si requieres verificar que el alumno vio la clase, utiliza <strong>YouTube (no listado)</strong> o <strong>Vimeo</strong>.
+                          </div>
+                        </div>
+                      );
+                    }
+                    if (platform.kind === 'youtube' || platform.kind === 'vimeo') {
+                      return (
+                        <div className="mt-2 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <span>Plataforma compatible con tracking anti-trampas y acreditación automática.</span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
+
+                {classRecordingUrl.trim() && (
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <label className="font-bold text-slate-700 dark:text-slate-300">
+                          Porcentaje mínimo de reproducción requerido:
+                        </label>
+                        <span className="font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800">
+                          {classMinWatchPercent}%
+                        </span>
+                      </div>
+                      <input
+                        type="range"
+                        min={50}
+                        max={100}
+                        step={5}
+                        value={classMinWatchPercent}
+                        onChange={(e) => setClassMinWatchPercent(Number(e.target.value))}
+                        className="w-full accent-indigo-600 cursor-pointer"
+                      />
+                      <div className="flex justify-between text-[10px] text-slate-400">
+                        <span>50%</span>
+                        <span>Recomendado: 85%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={classAllowRecordingAttendance}
+                        onChange={(e) => setClassAllowRecordingAttendance(e.target.checked)}
+                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span>Acreditar asistencia en Kardex automáticamente al alcanzar el porcentaje</span>
+                    </label>
+                  </div>
+                )}
 
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
                   <input

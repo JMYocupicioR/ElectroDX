@@ -303,15 +303,13 @@ export default function WorkshopsListPage() {
                           Detalles
                         </Link>
                         {ws.recording_url && (
-                          <a
-                            href={ws.recording_url}
-                            target="_blank"
-                            rel="noreferrer"
+                          <Link
+                            to={`/taller/${ws.id}`}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition-all"
                           >
                             <PlayCircle className="w-3.5 h-3.5" />
-                            Ver Video ↗
-                          </a>
+                            Ver Grabación
+                          </Link>
                         )}
                       </div>
                     </div>

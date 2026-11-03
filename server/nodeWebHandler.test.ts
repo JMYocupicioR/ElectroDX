@@ -14,7 +14,7 @@ function captureResponse() {
       return this;
     },
     setHeader(name: string, value: string) {
-      headers.set(name, value);
+      headers.set(name.toLowerCase(), value);
     },
     end(payload?: Buffer | string) {
       body = Buffer.isBuffer(payload) ? payload.toString('utf8') : payload || '';
@@ -71,5 +71,39 @@ describe('invokeWebHandler', () => {
 
     expect(captured.status()).toBe(201);
     expect(JSON.parse(captured.body())).toEqual({ ok: 'download' });
+  });
+
+  it('handles OPTIONS request safely without asyncIterator or body', async () => {
+    const req: NodeApiRequest = {
+      method: 'OPTIONS',
+      url: '/api/sign-agreement',
+      headers: { host: 'electro-dx.vercel.app' },
+    };
+    const captured = captureResponse();
+
+    await invokeWebHandler(req, captured.res, async (request) => {
+      expect(request.method).toBe('OPTIONS');
+      return new Response(null, { status: 204 });
+    });
+
+    expect(captured.status()).toBe(204);
+  });
+
+  it('catches uncaught handler errors and returns 500 JSON without crashing process', async () => {
+    const req: NodeApiRequest = {
+      method: 'POST',
+      url: '/api/sign-agreement',
+      headers: { host: 'electro-dx.vercel.app' },
+    };
+    const captured = captureResponse();
+
+    await invokeWebHandler(req, captured.res, async () => {
+      throw new Error('Simulated database crash');
+    });
+
+    expect(captured.status()).toBe(500);
+    const body = JSON.parse(captured.body());
+    expect(body.success).toBe(false);
+    expect(body.error).toContain('Simulated database crash');
   });
 });

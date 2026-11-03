@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { allModules } from '../../content/modules';
+import { detectVideoPlatform } from '../../utils/mediaValidation';
 import { createWorkshop, getWorkshops, updateWorkshop, deleteWorkshop } from '../../services/courseService';
 import {
   listTopicTeachingCommitments,
@@ -2360,6 +2361,24 @@ export function ClassSetupWizardModal({
                       placeholder="https://youtu.be/..."
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs"
                     />
+                    {targetRecordingUrl.trim() && (() => {
+                      const p = detectVideoPlatform(targetRecordingUrl);
+                      if (p.kind === 'drive') {
+                        return (
+                          <p className="mt-1.5 text-[11px] text-amber-600 dark:text-amber-400">
+                            ⚠️ Google Drive no permite auditar el porcentaje visto automáticamente. Para clases obligatorias se recomienda YouTube (no listado) o Vimeo.
+                          </p>
+                        );
+                      }
+                      if (p.kind === 'youtube' || p.kind === 'vimeo') {
+                        return (
+                          <p className="mt-1.5 text-[11px] text-emerald-600 dark:text-emerald-400">
+                            ✓ Plataforma compatible con tracking anti-trampas en el aula virtual.
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
 
                   <button

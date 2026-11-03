@@ -2112,14 +2112,12 @@ export default function StudentDashboard() {
                             Ver detalles <ChevronRight className="w-3 h-3" />
                           </Link>
                           {w.recording_url && (
-                            <a
-                              href={w.recording_url}
-                              target="_blank"
-                              rel="noreferrer"
+                            <Link
+                              to={`/taller/${w.id}`}
                               className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-cyan-400 hover:underline"
                             >
-                              Ver grabación ↗
-                            </a>
+                              Ver grabación
+                            </Link>
                           )}
                         </div>
                       </div>

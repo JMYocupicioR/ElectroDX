@@ -44,28 +44,31 @@ export function SignaturePad({
     return () => window.removeEventListener('resize', setupCanvas);
   }, [setupCanvas]);
 
-  const coords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const coords = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    if ('touches' in e) {
-      if (e.touches.length === 0) return null;
-      return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-    }
     return { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
-  const start = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
-    if (disabled) return;
+  const start = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (disabled || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      canvas.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignorar si no soporta captura
+    }
     const point = coords(e);
-    const ctx = canvasRef.current?.getContext('2d');
+    const ctx = canvas.getContext('2d');
     if (!point || !ctx) return;
     ctx.beginPath();
     ctx.moveTo(point.x, point.y);
     drawingRef.current = true;
   };
 
-  const move = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+  const move = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current || disabled) return;
     const point = coords(e);
     const ctx = canvasRef.current?.getContext('2d');
@@ -78,10 +81,19 @@ export function SignaturePad({
     }
   };
 
-  const stop = () => {
+  const stop = (e?: React.PointerEvent<HTMLCanvasElement>) => {
     if (!drawingRef.current) return;
     drawingRef.current = false;
     const canvas = canvasRef.current;
+    if (canvas && e) {
+      try {
+        if (canvas.hasPointerCapture(e.pointerId)) {
+          canvas.releasePointerCapture(e.pointerId);
+        }
+      } catch {
+        // Ignorar
+      }
+    }
     if (canvas && hasStrokeRef.current) {
       const dataUrl = canvas.toDataURL('image/png');
       dataUrlRef.current = dataUrl;
@@ -105,23 +117,11 @@ export function SignaturePad({
       <div className="relative h-44 w-full overflow-hidden rounded-xl border-2 border-slate-300 bg-white dark:border-slate-600">
         <canvas
           ref={canvasRef}
-          className="block h-full w-full cursor-crosshair touch-none"
-          onMouseDown={start}
-          onMouseMove={move}
-          onMouseUp={stop}
-          onMouseLeave={stop}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            start(e);
-          }}
-          onTouchMove={(e) => {
-            e.preventDefault();
-            move(e);
-          }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            stop();
-          }}
+          className="block h-full w-full cursor-crosshair touch-none select-none"
+          onPointerDown={start}
+          onPointerMove={move}
+          onPointerUp={stop}
+          onPointerCancel={stop}
         />
         {!hasStroke && (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-slate-400">
