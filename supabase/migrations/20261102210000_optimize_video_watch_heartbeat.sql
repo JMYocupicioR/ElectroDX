@@ -221,7 +221,7 @@ BEGIN
       format('Asistencia acreditada automáticamente por visualización de grabación (%s%% visto)', ROUND(v_calc_percentage)),
       now()
     )
-    ON CONFLICT (student_id, workshop_id)
+    ON CONFLICT (student_id, workshop_id) WHERE workshop_id IS NOT NULL
     DO UPDATE SET
       status = 'present',
       minutes_attended = EXCLUDED.minutes_attended,

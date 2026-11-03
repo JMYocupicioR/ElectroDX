@@ -147,17 +147,28 @@ export async function logVideoWatchHeartbeat(params: {
     });
 
     if (error) {
-      console.warn('[videoProgressService] RPC error, using local fallback:', error.message);
+      console.warn(
+        '[videoProgressService] RPC log_video_watch_heartbeat falló; progreso solo local:',
+        error.message,
+        error
+      );
       return localFallbackResult(localCoverage, localIsFullyWatched, minWatchPercent);
     }
 
     if (data && typeof data === 'object') {
       const d = data as Record<string, any>;
+      const accredited = Boolean(d.accredited ?? false);
+      if (localIsFullyWatched && !accredited && d.skipped !== true) {
+        console.warn(
+          '[videoProgressService] Umbral de video alcanzado pero la RPC no acreditó asistencia:',
+          d
+        );
+      }
       return {
         watched_percentage: Number(d.watched_percentage ?? localCoverage),
         is_fully_watched: Boolean(d.is_fully_watched ?? localIsFullyWatched),
         min_required: Number(d.min_required ?? minWatchPercent),
-        accredited: Boolean(d.accredited ?? false),
+        accredited,
         skipped: Boolean(d.skipped ?? false),
       };
     }

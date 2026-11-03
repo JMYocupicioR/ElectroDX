@@ -121,6 +121,7 @@ export function TrackedLiveClassPlayer({
   const lastSyncedPositionRef = useRef(0);
   const accessTokenRef = useRef<string | null>(null);
   const thresholdSyncSentRef = useRef(false);
+  const accreditedNotifiedRef = useRef(false);
 
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
@@ -142,6 +143,8 @@ export function TrackedLiveClassPlayer({
         durationRef.current = progress.total_duration_seconds || 0;
         isFullyWatchedRef.current = progress.is_fully_watched || false;
         thresholdSyncSentRef.current = progress.is_fully_watched || false;
+        // Si ya venía acreditado, no mostrar el banner de "recién acreditado"
+        accreditedNotifiedRef.current = progress.is_fully_watched || false;
         lastSyncedCoverageRef.current = progress.watched_percentage || 0;
         lastSyncedPositionRef.current = progress.last_position_seconds || 0;
 
@@ -240,10 +243,13 @@ export function TrackedLiveClassPlayer({
         lastSyncedPositionRef.current = cur;
 
         // La cobertura local (segmentos) es la fuente de verdad durante reproducción;
-        // el servidor solo confirma acreditación.
+        // el servidor confirma umbral + acreditación real en class_attendances.
         if (res.is_fully_watched && !isFullyWatchedRef.current) {
           isFullyWatchedRef.current = true;
           setIsFullyWatched(true);
+        }
+        if (res.accredited && !accreditedNotifiedRef.current) {
+          accreditedNotifiedRef.current = true;
           setAccreditedJustNow(true);
           onAttendanceAccredited?.();
         }
