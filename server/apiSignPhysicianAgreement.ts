@@ -20,3 +20,4 @@ export default async function handler(req: NodeApiRequest, res: NodeApiResponse)
     res.end(JSON.stringify({ success: false, error: message }));
   }
 }
+

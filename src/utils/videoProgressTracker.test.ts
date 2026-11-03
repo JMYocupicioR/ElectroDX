@@ -1,8 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
   mergeWatchedIntervals,
+  mergeIntervalLists,
   calculateWatchedCoverage,
   formatVideoTime,
+  hasMeaningfulWatchDelta,
+  VIDEO_SYNC_INTERVAL_MS,
+  VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS,
   type TimeInterval,
 } from './videoProgressTracker';
 
@@ -39,6 +43,57 @@ describe('videoProgressTracker', () => {
       const intervals: TimeInterval[] = [[0, 10]];
       expect(mergeWatchedIntervals(intervals, [10, 10])).toEqual([[0, 10]]);
       expect(mergeWatchedIntervals(intervals, [15, 10])).toEqual([[0, 10]]);
+    });
+  });
+
+  describe('mergeIntervalLists', () => {
+    it('une listas de dos pestañas sin perder cobertura', () => {
+      const a: TimeInterval[] = [[0, 20], [40, 50]];
+      const b: TimeInterval[] = [[18, 35], [80, 90]];
+      expect(mergeIntervalLists(a, b)).toEqual([[0, 35], [40, 50], [80, 90]]);
+    });
+  });
+
+  describe('hasMeaningfulWatchDelta', () => {
+    it('ignora cambios minúsculos de cobertura y posición', () => {
+      expect(
+        hasMeaningfulWatchDelta({
+          coverage: 50.2,
+          position: 812,
+          lastCoverage: 50,
+          lastPosition: 810,
+        })
+      ).toBe(false);
+    });
+
+    it('detecta avance real de cobertura', () => {
+      expect(
+        hasMeaningfulWatchDelta({
+          coverage: 51,
+          position: 812,
+          lastCoverage: 50,
+          lastPosition: 810,
+        })
+      ).toBe(true);
+    });
+
+    it('detecta seek / avance de posición significativo', () => {
+      expect(
+        hasMeaningfulWatchDelta({
+          coverage: 50,
+          position: 900,
+          lastCoverage: 50,
+          lastPosition: 810,
+        })
+      ).toBe(true);
+    });
+  });
+
+  describe('sync interval constants', () => {
+    it('usa intervalos más largos tras acreditar', () => {
+      expect(VIDEO_SYNC_INTERVAL_MS).toBe(20_000);
+      expect(VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS).toBe(45_000);
+      expect(VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS).toBeGreaterThan(VIDEO_SYNC_INTERVAL_MS);
     });
   });
 

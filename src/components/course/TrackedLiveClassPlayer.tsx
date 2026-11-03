@@ -14,12 +14,18 @@ import {
   mergeWatchedIntervals,
   calculateWatchedCoverage,
   formatVideoTime,
+  hasMeaningfulWatchDelta,
+  VIDEO_SYNC_INTERVAL_MS,
+  VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS,
   type TimeInterval,
 } from '../../utils/videoProgressTracker';
 import {
   getWorkshopVideoProgress,
   logVideoWatchHeartbeat,
+  logVideoWatchHeartbeatKeepalive,
+  type HeartbeatSyncReason,
 } from '../../services/videoProgressService';
+import { supabase } from '../../lib/supabase';
 
 interface TrackedLiveClassPlayerProps {
   workshop: LiveWorkshop;
@@ -110,6 +116,11 @@ export function TrackedLiveClassPlayer({
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
   const isFullyWatchedRef = useRef<boolean>(false);
+  const syncInFlightRef = useRef(false);
+  const lastSyncedCoverageRef = useRef(0);
+  const lastSyncedPositionRef = useRef(0);
+  const accessTokenRef = useRef<string | null>(null);
+  const thresholdSyncSentRef = useRef(false);
 
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
@@ -125,11 +136,14 @@ export function TrackedLiveClassPlayer({
     getWorkshopVideoProgress(workshop.id, userId).then((progress) => {
       if (cancelled) return;
       if (progress) {
-        const segs = progress.watched_segments || [];
+        const segs = (progress.watched_segments || []) as TimeInterval[];
         watchedSegmentsRef.current = segs;
         currentTimeRef.current = progress.last_position_seconds || 0;
         durationRef.current = progress.total_duration_seconds || 0;
         isFullyWatchedRef.current = progress.is_fully_watched || false;
+        thresholdSyncSentRef.current = progress.is_fully_watched || false;
+        lastSyncedCoverageRef.current = progress.watched_percentage || 0;
+        lastSyncedPositionRef.current = progress.last_position_seconds || 0;
 
         setCoveragePercent(progress.watched_percentage || 0);
         setIsFullyWatched(progress.is_fully_watched || false);
@@ -153,35 +167,113 @@ export function TrackedLiveClassPlayer({
     };
   }, [workshop.id, userId]);
 
-  // Sincronizar latido con el servidor (Estable: lee de refs y no se recrea cada segundo)
+  // Token fresco para keepalive en pagehide/beforeunload
+  useEffect(() => {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled) accessTokenRef.current = data.session?.access_token ?? null;
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      accessTokenRef.current = session?.access_token ?? null;
+    });
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Sincronizar latido con el servidor (dedupe + skip no-ops + intervalos adaptativos)
   const syncHeartbeat = useCallback(
-    async (overrideSegments?: TimeInterval[], overrideTime?: number, overrideDur?: number) => {
+    async (
+      overrideSegments?: TimeInterval[],
+      overrideTime?: number,
+      overrideDur?: number,
+      options?: { force?: boolean; reason?: HeartbeatSyncReason }
+    ) => {
       const segs = overrideSegments ?? watchedSegmentsRef.current;
       const cur = overrideTime ?? currentTimeRef.current;
       const dur = overrideDur ?? durationRef.current;
+      const force = options?.force === true;
 
       if (!workshop.id || !userId || dur <= 0) return;
+      if (syncInFlightRef.current) return;
 
-      const res = await logVideoWatchHeartbeat({
-        workshopId: workshop.id,
-        userId,
-        currentTime: cur,
-        duration: dur,
-        segments: segs,
-        minWatchPercent: minRequiredPercent,
-      });
+      const localCoverage = calculateWatchedCoverage(segs, dur);
+      const intervalMs = isFullyWatchedRef.current
+        ? VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS
+        : VIDEO_SYNC_INTERVAL_MS;
 
-      setCoveragePercent(res.watched_percentage);
-      if (res.is_fully_watched && !isFullyWatchedRef.current) {
-        isFullyWatchedRef.current = true;
-        setIsFullyWatched(true);
-        setAccreditedJustNow(true);
-        onAttendanceAccredited?.();
+      if (!force) {
+        if (Date.now() - lastSyncTimeRef.current < intervalMs) return;
+        if (
+          !hasMeaningfulWatchDelta({
+            coverage: localCoverage,
+            position: cur,
+            lastCoverage: lastSyncedCoverageRef.current,
+            lastPosition: lastSyncedPositionRef.current,
+          })
+        ) {
+          lastSyncTimeRef.current = Date.now();
+          return;
+        }
       }
+
+      // Marcar ANTES del await para evitar stampede de RPCs concurrentes
+      syncInFlightRef.current = true;
       lastSyncTimeRef.current = Date.now();
+
+      try {
+        const res = await logVideoWatchHeartbeat({
+          workshopId: workshop.id,
+          userId,
+          currentTime: cur,
+          duration: dur,
+          segments: segs,
+          minWatchPercent: minRequiredPercent,
+        });
+
+        lastSyncedCoverageRef.current = Math.max(
+          lastSyncedCoverageRef.current,
+          localCoverage,
+          res.watched_percentage || 0
+        );
+        lastSyncedPositionRef.current = cur;
+
+        // La cobertura local (segmentos) es la fuente de verdad durante reproducción;
+        // el servidor solo confirma acreditación.
+        if (res.is_fully_watched && !isFullyWatchedRef.current) {
+          isFullyWatchedRef.current = true;
+          setIsFullyWatched(true);
+          setAccreditedJustNow(true);
+          onAttendanceAccredited?.();
+        }
+      } finally {
+        syncInFlightRef.current = false;
+      }
     },
     [workshop.id, userId, minRequiredPercent, onAttendanceAccredited]
   );
+
+  const flushKeepalive = useCallback(() => {
+    const dur = durationRef.current;
+    if (!workshop.id || !userId || dur <= 0) return;
+
+    logVideoWatchHeartbeatKeepalive({
+      workshopId: workshop.id,
+      userId,
+      currentTime: currentTimeRef.current,
+      duration: dur,
+      segments: watchedSegmentsRef.current,
+      minWatchPercent: minRequiredPercent,
+      accessToken: accessTokenRef.current,
+    });
+    lastSyncTimeRef.current = Date.now();
+    lastSyncedCoverageRef.current = calculateWatchedCoverage(
+      watchedSegmentsRef.current,
+      dur
+    );
+    lastSyncedPositionRef.current = currentTimeRef.current;
+  }, [workshop.id, userId, minRequiredPercent]);
 
   // Registro de un tick de avance en tiempo real (1 segundo) - Función estable
   const recordPlaybackTick = useCallback(
@@ -212,13 +304,28 @@ export function TrackedLiveClassPlayer({
         const newCov = calculateWatchedCoverage(updated, totalDur);
         setCoveragePercent(newCov);
 
-        // Disparar sincronización periódica cada ~8 segundos
-        if (Date.now() - lastSyncTimeRef.current > 8000) {
-          syncHeartbeat(updated, nowSec, totalDur);
+        const crossedThreshold =
+          !isFullyWatchedRef.current &&
+          !thresholdSyncSentRef.current &&
+          newCov >= minRequiredPercent;
+
+        if (crossedThreshold) {
+          thresholdSyncSentRef.current = true;
+          void syncHeartbeat(updated, nowSec, totalDur, {
+            force: true,
+            reason: 'threshold',
+          });
+        } else {
+          const intervalMs = isFullyWatchedRef.current
+            ? VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS
+            : VIDEO_SYNC_INTERVAL_MS;
+          if (Date.now() - lastSyncTimeRef.current >= intervalMs) {
+            void syncHeartbeat(updated, nowSec, totalDur, { reason: 'periodic' });
+          }
         }
       }
     },
-    [syncHeartbeat]
+    [syncHeartbeat, minRequiredPercent]
   );
 
   // Callbacks estables para los listeners de los reproductores (evita recrear el player)
@@ -238,20 +345,20 @@ export function TrackedLiveClassPlayer({
       const hidden = document.hidden;
       setTabIsHidden(hidden);
       if (hidden) {
-        // Pausar YouTube si está activo
         if (ytPlayerRef.current?.pauseVideo && typeof ytPlayerRef.current.pauseVideo === 'function') {
           try {
             ytPlayerRef.current.pauseVideo();
           } catch {}
         }
-        // Pausar Vimeo si está activo
         if (vimeoPlayerRef.current?.pause && typeof vimeoPlayerRef.current.pause === 'function') {
           try {
             vimeoPlayerRef.current.pause().catch(() => {});
           } catch {}
         }
-        // Sincronizar inmediatamente al perder foco
-        syncHeartbeat();
+        void syncHeartbeat(undefined, undefined, undefined, {
+          force: true,
+          reason: 'visibility',
+        });
       }
     };
 
@@ -261,17 +368,19 @@ export function TrackedLiveClassPlayer({
     };
   }, [syncHeartbeat]);
 
-  // Sincronizar antes de salir de la página
+  // Sincronizar al salir: keepalive (no depende de promesas async)
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      syncHeartbeat();
+    const handlePageHide = () => {
+      flushKeepalive();
     };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handlePageHide);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      syncHeartbeat();
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handlePageHide);
+      flushKeepalive();
     };
-  }, [syncHeartbeat]);
+  }, [flushKeepalive]);
 
   // 3. Inicializador de YOUTUBE (espera a que el contenedor exista y la API esté lista)
   useEffect(() => {
@@ -355,7 +464,10 @@ export function TrackedLiveClassPlayer({
                     try {
                       const cur = event.target.getCurrentTime();
                       const dur = event.target.getDuration();
-                      callbacksRef.current.syncHeartbeat(undefined, cur, dur);
+                      callbacksRef.current.syncHeartbeat(undefined, cur, dur, {
+                        force: true,
+                        reason: state === 0 ? 'ended' : 'pause',
+                      });
                     } catch {}
                   }
                 }
@@ -421,14 +533,20 @@ export function TrackedLiveClassPlayer({
           if (destroyed) return;
           setIsPlaying(false);
           lastTickTimeRef.current = null;
-          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration);
+          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration, {
+            force: true,
+            reason: 'pause',
+          });
         });
 
         player.on('ended', (data: any) => {
           if (destroyed) return;
           setIsPlaying(false);
           lastTickTimeRef.current = null;
-          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration);
+          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration, {
+            force: true,
+            reason: 'ended',
+          });
         });
 
         player.on('timeupdate', (data: any) => {
@@ -576,12 +694,15 @@ export function TrackedLiveClassPlayer({
         {/* Resumen numérico de porcentaje */}
         {isEmbedSupported && (
           <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
-            <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5">
-              <span>Progreso:</span>
+            <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5 flex-wrap justify-end">
+              <span>Visto:</span>
               <span className={`text-sm font-black ${isFullyWatched ? 'text-emerald-400' : 'text-indigo-400'}`}>
                 {coveragePercent.toFixed(1)}%
               </span>
-              <span className="text-slate-500 text-[11px]">/ {minRequiredPercent}%</span>
+              <span className="text-slate-500 text-[11px]">
+                · Requisito: {minRequiredPercent}%
+                {isFullyWatched ? ' ✓' : ''}
+              </span>
             </div>
 
             {/* Barra de progreso interactiva con marcador del umbral */}
@@ -736,7 +857,7 @@ export function TrackedLiveClassPlayer({
           <Clock className="w-3.5 h-3.5 text-slate-500" />
           <span>
             {isFullyWatched
-              ? 'Has cubierto el tiempo obligatorio para esta clase.'
+              ? `Asistencia acreditada. El contador sigue registrando hasta el 100% si continúas viendo (vas en ${coveragePercent.toFixed(1)}%).`
               : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
           </span>
         </div>

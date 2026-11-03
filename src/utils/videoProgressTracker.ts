@@ -7,6 +7,15 @@
 
 export type TimeInterval = [number, number];
 
+/** Intervalo rutinario de sync a Supabase mientras reproduce (antes de acreditar). */
+export const VIDEO_SYNC_INTERVAL_MS = 20_000;
+/** Intervalo más lento tras acreditar asistencia (solo resume / cobertura extra). */
+export const VIDEO_SYNC_INTERVAL_AFTER_ACCREDITED_MS = 45_000;
+/** Delta mínimo de cobertura (%) para justificar un heartbeat no forzado. */
+export const VIDEO_SYNC_MIN_COVERAGE_DELTA = 0.5;
+/** Delta mínimo de posición (s) para justificar un heartbeat no forzado. */
+export const VIDEO_SYNC_MIN_POSITION_DELTA = 5;
+
 /**
  * Fusiona un nuevo segmento continuo [start, end] con la lista previa de intervalos.
  * Tolera pequeñas discontinuidades de hasta 1.5 segundos (jitter de red / frame drop).
@@ -25,7 +34,24 @@ export function mergeWatchedIntervals(
 
   if (sanitizedNew[1] <= sanitizedNew[0]) return intervals;
 
-  const all = [...intervals, sanitizedNew].sort((a, b) => a[0] - b[0]);
+  return mergeIntervalLists(intervals, [sanitizedNew]);
+}
+
+/**
+ * Fusiona dos listas de intervalos en una sola lista disjunta ordenada.
+ */
+export function mergeIntervalLists(
+  a: TimeInterval[],
+  b: TimeInterval[]
+): TimeInterval[] {
+  const all = [...a, ...b]
+    .map(([start, end]): TimeInterval => [
+      Math.max(0, Math.round(start * 10) / 10),
+      Math.max(0, Math.round(end * 10) / 10),
+    ])
+    .filter(([start, end]) => end > start)
+    .sort((x, y) => x[0] - y[0]);
+
   const merged: TimeInterval[] = [];
 
   for (const current of all) {
@@ -35,7 +61,6 @@ export function mergeWatchedIntervals(
     }
 
     const prev = merged[merged.length - 1];
-    // Si se tocan o superponen con 1.5 s de tolerancia
     if (current[0] <= prev[1] + 1.5) {
       prev[1] = Math.max(prev[1], current[1]);
     } else {
@@ -61,6 +86,32 @@ export function calculateWatchedCoverage(
 
   const percentage = (totalWatchedSeconds / totalDurationSeconds) * 100;
   return Math.min(100, Math.max(0, Math.round(percentage * 10) / 10));
+}
+
+/**
+ * ¿Vale la pena un heartbeat? Evita writes inútiles a Supabase.
+ */
+export function hasMeaningfulWatchDelta(params: {
+  coverage: number;
+  position: number;
+  lastCoverage: number;
+  lastPosition: number;
+  minCoverageDelta?: number;
+  minPositionDelta?: number;
+}): boolean {
+  const {
+    coverage,
+    position,
+    lastCoverage,
+    lastPosition,
+    minCoverageDelta = VIDEO_SYNC_MIN_COVERAGE_DELTA,
+    minPositionDelta = VIDEO_SYNC_MIN_POSITION_DELTA,
+  } = params;
+
+  return (
+    Math.abs(coverage - lastCoverage) >= minCoverageDelta ||
+    Math.abs(position - lastPosition) >= minPositionDelta
+  );
 }
 
 /**
