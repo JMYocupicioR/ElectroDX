@@ -295,6 +295,7 @@ export async function handleSignAgreementRequest(req: Request): Promise<Response
     if (body.action === 'download') return await handleDownload(req, body);
     return await handleSign(req, body);
   } catch (error) {
+    console.error('[handleSignAgreementRequest error]:', error);
     const message = error instanceof Error ? error.message : 'Error al procesar el acuerdo.';
     return json(500, { success: false, error: message });
   }

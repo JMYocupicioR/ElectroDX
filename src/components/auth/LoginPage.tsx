@@ -297,9 +297,10 @@ function translateAuthError(msg: string): string {
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
+                    id="email"
                     type="email"
                     name="email"
-                    autoComplete="email"
+                    autoComplete="username"
                     autoCapitalize="none"
                     autoCorrect="off"
                     spellCheck={false}

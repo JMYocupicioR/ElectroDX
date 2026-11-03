@@ -420,15 +420,15 @@ BEGIN
     UNION ALL
 
     SELECT
-      'admission_legacy:' || p.id::text,
+      'admission_profile:' || p.id::text,
       'admission'::text,
-      'Solicitud de acceso'::text,
-      left(COALESCE(p.enrollment_notes, 'Registro médico inicial'), 160),
+      'Perfil pendiente de admisión'::text,
+      'Solicitud de acceso a la plataforma',
       COALESCE(p.display_name, 'Médico solicitante'),
-      'Admisión de médico',
+      'Perfil',
       '/admin/admisiones'::text,
       true,
-      COALESCE(p.updated_at, p.created_at),
+      p.created_at,
       NULL::timestamptz,
       NULL::text,
       false,
@@ -446,48 +446,44 @@ BEGIN
     UNION ALL
 
     SELECT
-      'quiz_review:' || qa.id::text,
+      'quiz:' || q.id::text,
       'quiz'::text,
-      'Evaluación por calificar'::text,
-      left(COALESCE(q.title, qa.quiz_id), 160),
-      COALESCE(p.display_name, 'Médico cursista'),
-      COALESCE(q.title, qa.quiz_id),
-      '/admin/alumnos/evaluaciones'::text,
+      'Quiz por validar'::text,
+      left(COALESCE(q.title, q.topic_id), 160),
+      NULL::text,
+      COALESCE(q.title, q.topic_id),
+      '/admin/quizzes'::text,
       true,
-      COALESCE(qa.completed_at, qa.created_at),
+      COALESCE(q.published_at, now()),
       NULL::timestamptz,
       NULL::text,
       false,
       false,
       false,
       NULL::uuid
-    FROM public.quiz_attempts qa
-    LEFT JOIN public.topic_quizzes q ON q.id = qa.quiz_id
-    LEFT JOIN public.profiles p ON p.id = qa.user_id
-    WHERE qa.needs_manual_review = true
-      AND qa.is_final = true
+    FROM public.published_quizzes q
+    WHERE COALESCE(q.clinical_validation_status, 'pending_review') = 'pending_review'
 
     UNION ALL
 
     SELECT
-      'editorial_revision:' || ccr.id::text,
+      'revision:' || r.id::text,
       'editorial'::text,
-      'Caso clínico pendiente'::text,
-      left(COALESCE(ccr.notes, ccr.title, 'Caso clínico'), 160),
-      COALESCE(p.display_name, 'Editor docente'),
-      ccr.title,
-      '/admin/casos'::text,
+      'Tema por aprobar'::text,
+      left(COALESCE(r.payload->>'title', r.target_topic_id, r.module_id), 160),
+      NULL::text,
+      COALESCE(r.payload->>'title', r.target_topic_id, r.module_id),
+      '/admin/revisiones'::text,
       true,
-      COALESCE(ccr.updated_at, ccr.created_at),
+      COALESCE(r.submitted_at, r.created_at),
       NULL::timestamptz,
       NULL::text,
       false,
       false,
       false,
       NULL::uuid
-    FROM public.clinical_case_revisions ccr
-    LEFT JOIN public.profiles p ON p.id = ccr.created_by
-    WHERE ccr.status IN ('draft', 'review')
+    FROM public.content_revisions r
+    WHERE r.status = 'pending_review'
 
     UNION ALL
 

@@ -28,6 +28,59 @@ interface TrackedLiveClassPlayerProps {
   className?: string;
 }
 
+let ytApiPromise: Promise<any> | null = null;
+
+// Cargador único de la IFrame API: si el script ya está en vuelo, reutiliza la promesa.
+function loadYouTubeIframeApi(): Promise<any> {
+  const w = window as any;
+  if (w.YT && w.YT.Player) return Promise.resolve(w.YT);
+  if (ytApiPromise) return ytApiPromise;
+
+  ytApiPromise = new Promise((resolve, reject) => {
+    let settled = false;
+    let pollId = 0;
+    let timeoutId = 0;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      window.clearInterval(pollId);
+      window.clearTimeout(timeoutId);
+      resolve(w.YT);
+    };
+
+    const previousCallback = w.onYouTubeIframeAPIReady;
+    w.onYouTubeIframeAPIReady = () => {
+      try {
+        previousCallback?.();
+      } catch {}
+      if (w.YT?.Player) finish();
+    };
+
+    if (!document.getElementById('youtube-iframe-api')) {
+      const tag = document.createElement('script');
+      tag.id = 'youtube-iframe-api';
+      tag.src = 'https://www.youtube.com/iframe_api';
+      tag.async = true;
+      document.head.appendChild(tag);
+    }
+
+    pollId = window.setInterval(() => {
+      if (w.YT?.Player) finish();
+    }, 100);
+
+    timeoutId = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      window.clearInterval(pollId);
+      ytApiPromise = null;
+      reject(new Error('YouTube IFrame API timeout'));
+    }, 15000);
+  });
+
+  return ytApiPromise;
+}
+
 export function TrackedLiveClassPlayer({
   workshop,
   userId,
@@ -49,6 +102,8 @@ export function TrackedLiveClassPlayer({
   const [accreditedJustNow, setAccreditedJustNow] = useState(false);
   const [resumePrompt, setResumePrompt] = useState<number | null>(null);
   const [tabIsHidden, setTabIsHidden] = useState(false);
+  const [playerStatus, setPlayerStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
+  const [playerRetryKey, setPlayerRetryKey] = useState(0);
 
   // Referencias mutables para evitar re-creación de funciones y bucles infinitos en useEffect
   const watchedSegmentsRef = useRef<TimeInterval[]>([]);
@@ -166,6 +221,17 @@ export function TrackedLiveClassPlayer({
     [syncHeartbeat]
   );
 
+  // Callbacks estables para los listeners de los reproductores (evita recrear el player)
+  const callbacksRef = useRef({ recordPlaybackTick, syncHeartbeat });
+  useEffect(() => {
+    callbacksRef.current = { recordPlaybackTick, syncHeartbeat };
+  }, [recordPlaybackTick, syncHeartbeat]);
+
+  const handleReloadPlayer = useCallback(() => {
+    setPlayerStatus('loading');
+    setPlayerRetryKey((key) => key + 1);
+  }, []);
+
   // 2. Control de visibilidad de pestaña (pausar o marcar aviso)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -207,114 +273,129 @@ export function TrackedLiveClassPlayer({
     };
   }, [syncHeartbeat]);
 
-  // 3. Inicializador de YOUTUBE (Se ejecuta ÚNICAMENTE al cambiar de video o montar)
+  // 3. Inicializador de YOUTUBE (espera a que el contenedor exista y la API esté lista)
   useEffect(() => {
-    if (!ytVideoId) return;
+    if (!ytVideoId || loadingInitial) return;
+
+    const host = ytContainerRef.current;
+    if (!host) return;
 
     let destroyed = false;
+    let readyTimeout = 0;
 
-    const setupYT = () => {
-      if (destroyed || !ytContainerRef.current || !(window as any).YT || !(window as any).YT.Player) {
-        return;
+    setPlayerStatus('loading');
+
+    readyTimeout = window.setTimeout(() => {
+      if (!destroyed) {
+        setPlayerStatus((prev) => (prev === 'ready' ? prev : 'error'));
       }
-      if (ytPlayerRef.current) return;
+    }, 6000);
 
-      try {
-        ytPlayerRef.current = new (window as any).YT.Player(ytContainerRef.current, {
-          videoId: ytVideoId,
-          playerVars: {
-            enablejsapi: 1,
-            modestbranding: 1,
-            rel: 0,
-            playsinline: 1,
-          },
-          events: {
-            onReady: (event: any) => {
-              if (destroyed) return;
-              try {
-                const dur = event.target.getDuration();
-                if (dur > 0) {
-                  durationRef.current = dur;
-                  setDuration(dur);
-                }
-              } catch {}
+    loadYouTubeIframeApi()
+      .then((YT) => {
+        if (destroyed || ytPlayerRef.current) return;
+        const currentHost = ytContainerRef.current;
+        if (!currentHost) return;
+
+        currentHost.innerHTML = '';
+        const mount = document.createElement('div');
+        mount.className = 'w-full h-full';
+        currentHost.appendChild(mount);
+
+        try {
+          ytPlayerRef.current = new YT.Player(mount, {
+            videoId: ytVideoId,
+            playerVars: {
+              enablejsapi: 1,
+              modestbranding: 1,
+              rel: 0,
+              playsinline: 1,
+              origin: window.location.origin,
             },
-            onStateChange: (event: any) => {
-              if (destroyed) return;
-              const state = event.data;
-              // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
-              if (state === 1) {
-                setIsPlaying(true);
+            events: {
+              onReady: (event: any) => {
+                if (destroyed) return;
+                window.clearTimeout(readyTimeout);
+                setPlayerStatus('ready');
                 try {
-                  lastTickTimeRef.current = event.target.getCurrentTime();
+                  const dur = event.target.getDuration();
+                  if (dur > 0) {
+                    durationRef.current = dur;
+                    setDuration(dur);
+                  }
                 } catch {}
+              },
+              onError: () => {
+                if (!destroyed) setPlayerStatus('error');
+              },
+              onStateChange: (event: any) => {
+                if (destroyed) return;
+                const state = event.data;
+                // 1 = PLAYING, 2 = PAUSED, 0 = ENDED
+                if (state === 1) {
+                  setIsPlaying(true);
+                  try {
+                    lastTickTimeRef.current = event.target.getCurrentTime();
+                  } catch {}
 
-                clearInterval(trackingIntervalRef.current);
-                trackingIntervalRef.current = setInterval(() => {
-                  if (destroyed || !ytPlayerRef.current) return;
-                  try {
-                    const cur = ytPlayerRef.current.getCurrentTime();
-                    const dur = ytPlayerRef.current.getDuration();
-                    recordPlaybackTick(cur, dur);
-                  } catch {}
-                }, 1000);
-              } else {
-                setIsPlaying(false);
-                lastTickTimeRef.current = null;
-                clearInterval(trackingIntervalRef.current);
-                if (state === 2 || state === 0) {
-                  try {
-                    const cur = event.target.getCurrentTime();
-                    const dur = event.target.getDuration();
-                    syncHeartbeat(undefined, cur, dur);
-                  } catch {}
+                  clearInterval(trackingIntervalRef.current);
+                  trackingIntervalRef.current = setInterval(() => {
+                    if (destroyed || !ytPlayerRef.current) return;
+                    try {
+                      const cur = ytPlayerRef.current.getCurrentTime();
+                      const dur = ytPlayerRef.current.getDuration();
+                      callbacksRef.current.recordPlaybackTick(cur, dur);
+                    } catch {}
+                  }, 1000);
+                } else {
+                  setIsPlaying(false);
+                  lastTickTimeRef.current = null;
+                  clearInterval(trackingIntervalRef.current);
+                  if (state === 2 || state === 0) {
+                    try {
+                      const cur = event.target.getCurrentTime();
+                      const dur = event.target.getDuration();
+                      callbacksRef.current.syncHeartbeat(undefined, cur, dur);
+                    } catch {}
+                  }
                 }
-              }
+              },
             },
-          },
-        });
-      } catch (err) {
-        console.warn('[TrackedLiveClassPlayer] Error initializing YouTube player:', err);
-      }
-    };
-
-    // Cargar API de YouTube si no existe
-    if (!(window as any).YT || !(window as any).YT.Player) {
-      const existingTag = document.getElementById('youtube-iframe-api');
-      if (!existingTag) {
-        const tag = document.createElement('script');
-        tag.id = 'youtube-iframe-api';
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScript = document.getElementsByTagName('script')[0];
-        firstScript?.parentNode?.insertBefore(tag, firstScript);
-      }
-
-      const prevCallback = (window as any).onYouTubeIframeAPIReady;
-      (window as any).onYouTubeIframeAPIReady = () => {
-        if (prevCallback) prevCallback();
-        setupYT();
-      };
-    } else {
-      setupYT();
-    }
+          });
+        } catch (err) {
+          console.warn('[TrackedLiveClassPlayer] Error initializing YouTube player:', err);
+          if (!destroyed) setPlayerStatus('error');
+        }
+      })
+      .catch((err) => {
+        if (destroyed) return;
+        console.warn('[TrackedLiveClassPlayer] No se pudo cargar la API de YouTube:', err);
+        setPlayerStatus('error');
+      });
 
     return () => {
       destroyed = true;
+      window.clearTimeout(readyTimeout);
       clearInterval(trackingIntervalRef.current);
-      if (ytPlayerRef.current?.destroy && typeof ytPlayerRef.current.destroy === 'function') {
+
+      const player = ytPlayerRef.current;
+      ytPlayerRef.current = null;
+      if (player?.destroy && typeof player.destroy === 'function') {
         try {
-          ytPlayerRef.current.destroy();
+          player.destroy();
         } catch {}
-        ytPlayerRef.current = null;
+      } else {
+        host.innerHTML = '';
       }
     };
-  }, [ytVideoId, recordPlaybackTick, syncHeartbeat]);
+  }, [ytVideoId, loadingInitial, playerRetryKey]);
 
   // 4. Inicializador de VIMEO
   useEffect(() => {
-    if (!vimeoVideoId) return;
+    if (!vimeoVideoId || loadingInitial) return;
 
     let destroyed = false;
+    let apiPoll = 0;
 
     const setupVimeo = () => {
       if (destroyed || !vimeoIframeRef.current || !(window as any).Vimeo) return;
@@ -340,19 +421,19 @@ export function TrackedLiveClassPlayer({
           if (destroyed) return;
           setIsPlaying(false);
           lastTickTimeRef.current = null;
-          syncHeartbeat(undefined, data.seconds, data.duration);
+          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration);
         });
 
         player.on('ended', (data: any) => {
           if (destroyed) return;
           setIsPlaying(false);
           lastTickTimeRef.current = null;
-          syncHeartbeat(undefined, data.seconds, data.duration);
+          callbacksRef.current.syncHeartbeat(undefined, data.seconds, data.duration);
         });
 
         player.on('timeupdate', (data: any) => {
           if (destroyed) return;
-          recordPlaybackTick(data.seconds, data.duration);
+          callbacksRef.current.recordPlaybackTick(data.seconds, data.duration);
         });
       } catch (err) {
         console.warn('[TrackedLiveClassPlayer] Error initializing Vimeo player:', err);
@@ -367,15 +448,23 @@ export function TrackedLiveClassPlayer({
         tag.src = 'https://player.vimeo.com/api/player.js';
         tag.onload = setupVimeo;
         document.head.appendChild(tag);
-      } else {
-        existingTag.addEventListener('load', setupVimeo);
       }
+
+      let attempts = 0;
+      apiPoll = window.setInterval(() => {
+        attempts += 1;
+        if (destroyed || (window as any).Vimeo || attempts > 80) {
+          window.clearInterval(apiPoll);
+          if ((window as any).Vimeo) setupVimeo();
+        }
+      }, 125);
     } else {
       setupVimeo();
     }
 
     return () => {
       destroyed = true;
+      window.clearInterval(apiPoll);
       if (vimeoPlayerRef.current?.destroy) {
         try {
           vimeoPlayerRef.current.destroy();
@@ -383,7 +472,7 @@ export function TrackedLiveClassPlayer({
         vimeoPlayerRef.current = null;
       }
     };
-  }, [vimeoVideoId, recordPlaybackTick, syncHeartbeat]);
+  }, [vimeoVideoId, loadingInitial]);
 
   // Función para reanudar el video en la posición guardada
   const handleResumePlayback = useCallback((seconds: number) => {
@@ -573,6 +662,24 @@ export function TrackedLiveClassPlayer({
             ref={ytContainerRef}
             className="w-full h-full"
           />
+        )}
+
+        {parsedVideo?.kind === 'youtube' && playerStatus === 'error' && (
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-950/95 px-6 text-center">
+            <AlertTriangle className="w-8 h-8 text-amber-400" />
+            <p className="text-sm font-semibold text-white">
+              El video no terminó de cargar.
+            </p>
+            <p className="text-xs text-slate-400 max-w-sm">
+              Revisa tu conexión y vuelve a intentarlo. Tu progreso guardado no se pierde.
+            </p>
+            <button
+              onClick={handleReloadPlayer}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Recargar video
+            </button>
+          </div>
         )}
 
         {parsedVideo?.kind === 'vimeo' && (
