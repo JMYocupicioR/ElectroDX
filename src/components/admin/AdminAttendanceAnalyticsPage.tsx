@@ -131,6 +131,31 @@ export default function AdminAttendanceAnalyticsPage() {
     setParams(next, { replace: true });
   };
 
+  // Catálogo: celebrados recientes primero (útil para pase de lista), luego próximos.
+  const catalogWorkshops = useMemo(() => {
+    const now = Date.now();
+    const isPastOrLive = (w: LiveWorkshop) => {
+      if (w.status === 'live' || w.status === 'completed' || w.attendance_closed) return true;
+      if (!w.scheduled_at) return false;
+      return new Date(w.scheduled_at).getTime() <= now;
+    };
+
+    return [...workshops].sort((a, b) => {
+      const aLive = a.status === 'live' ? 0 : 1;
+      const bLive = b.status === 'live' ? 0 : 1;
+      if (aLive !== bLive) return aLive - bLive;
+
+      const aPast = isPastOrLive(a) ? 0 : 1;
+      const bPast = isPastOrLive(b) ? 0 : 1;
+      if (aPast !== bPast) return aPast - bPast;
+
+      const timeA = a.scheduled_at ? new Date(a.scheduled_at).getTime() : 0;
+      const timeB = b.scheduled_at ? new Date(b.scheduled_at).getTime() : 0;
+      // Pasados / en vivo: más reciente primero. Próximos: el más cercano primero.
+      return aPast === 0 ? timeB - timeA : timeA - timeB;
+    });
+  }, [workshops]);
+
   // Resúmenes calculados por taller
   const workshopSummaries = useMemo<WorkshopAttendanceSummary[]>(() => {
     const studentIds = profiles.map((p) => p.id);
@@ -249,10 +274,7 @@ export default function AdminAttendanceAnalyticsPage() {
             <button
               type="button"
               onClick={() => {
-                const targetWorkshop =
-                  workshops.find((w) => w.status === 'live') ||
-                  workshops.find((w) => w.status === 'scheduled') ||
-                  workshops[0];
+                const targetWorkshop = catalogWorkshops[0];
                 setTab('pase', { workshopId: targetWorkshop?.id || '' });
               }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm cursor-pointer"
@@ -311,7 +333,7 @@ export default function AdminAttendanceAnalyticsPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3">
-                  {workshops.map((w) => {
+                  {catalogWorkshops.map((w) => {
                     const summary = workshopSummaries.find((s) => s.workshopId === w.id);
                     const isClosed = !!w.attendance_closed;
 
@@ -493,8 +515,8 @@ export default function AdminAttendanceAnalyticsPage() {
         {/* ========================================================================= */}
         {currentTab === 'pase' && (
           <AttendanceCockpit
-            workshops={workshops}
-            selectedWorkshopId={selectedWorkshopId || workshops[0]?.id || ''}
+            workshops={catalogWorkshops}
+            selectedWorkshopId={selectedWorkshopId || catalogWorkshops[0]?.id || ''}
             onSelectWorkshop={(id) => setTab('pase', { workshopId: id })}
             students={profiles}
             onSaved={load}

@@ -108,6 +108,16 @@ export function formatWeekTitle(anchor: Date): string {
   return `${startLabel} – ${endLabel}`;
 }
 
+export function formatDayTitle(anchor: Date): string {
+  const label = anchor.toLocaleDateString('es-MX', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 export function assignmentRubricKey(type: AssignmentType): RubricKey {
   return ASSIGNMENT_RUBRIC[type] ?? 'assignments';
 }
@@ -135,11 +145,14 @@ export function groupAssignmentsIntoEvents(assignments: StudentAssignment[]): Ca
 
   return [...groups.entries()].map(([key, rows]) => {
     const first = rows[0];
-    const studentIds = [...new Set(rows.map((row) => row.student_id))];
+    // Paralelo a assignmentIds para poder borrar cada fila (local + remoto).
+    const studentIds = rows.map((row) => row.student_id);
+    const uniqueStudents = new Set(studentIds);
     const submittedCount = rows.filter((row) => isDeliveredStatus(row.status)).length;
     const approvedCount = rows.filter((row) => row.status === 'approved').length;
     const pendingCount = rows.filter((row) => row.status === 'pending' || row.status === 'overdue').length;
     const dueDay = toLocalDateKey(first.due_date);
+    const batchIds = [...new Set(rows.map((row) => row.batch_id).filter(Boolean))] as string[];
     return {
       id: `asggrp_${key}`,
       type: TYPE_FROM_ASSIGNMENT[first.type],
@@ -154,7 +167,7 @@ export function groupAssignmentsIntoEvents(assignments: StudentAssignment[]): Ca
       sourceIds: rows.map((row) => row.id),
       assignmentIds: rows.map((row) => row.id),
       studentIds,
-      studentCount: studentIds.length,
+      studentCount: uniqueStudents.size,
       submittedCount,
       approvedCount,
       pendingCount,
@@ -162,6 +175,7 @@ export function groupAssignmentsIntoEvents(assignments: StudentAssignment[]): Ca
       topicId: first.target_topic_id ?? null,
       patternId: first.target_exam_config?.patternId ?? null,
       assignmentType: first.type,
+      batchId: batchIds.length === 1 ? batchIds[0] : null,
     };
   });
 }
@@ -314,7 +328,7 @@ export function localDateTimeInputValue(date: Date, hours = 19, minutes = 0): st
 export const CALENDAR_BOARD_VIEW_STORAGE_KEY = 'neurosafe_admin_calendar_view';
 
 export function isCalendarBoardView(value: unknown): value is CalendarBoardView {
-  return value === 'month' || value === 'week' || value === 'agenda';
+  return value === 'month' || value === 'week' || value === 'day' || value === 'agenda';
 }
 
 export function readCalendarBoardView(storage?: Pick<Storage, 'getItem'> | null): CalendarBoardView | null {

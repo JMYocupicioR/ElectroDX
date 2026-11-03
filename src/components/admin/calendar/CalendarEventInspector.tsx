@@ -8,6 +8,32 @@ import { listWorkshopInstructorNames } from '../../../services/topicTeachingServ
 import { AssignmentMaterialsList } from '../../student/AssignmentMaterialsList';
 import { allModules } from '../../../content/modules';
 
+function deleteActionLabel(item: CalendarItem): string {
+  if (item.type === 'session') return 'Eliminar clase';
+  if (item.type === 'milestone') return 'Eliminar corte';
+  if (item.type === 'exam') return 'Eliminar examen';
+  if (item.type === 'clinical_case') return 'Eliminar caso';
+  return 'Eliminar tarea';
+}
+
+function deleteConfirmCopy(item: CalendarItem): string {
+  if (item.type === 'session') return '¿Seguro que deseas eliminar esta clase?';
+  if (item.type === 'milestone') return '¿Seguro que deseas eliminar este corte académico?';
+  if (item.type === 'exam') {
+    return item.studentCount > 1
+      ? `¿Eliminar este examen para ${item.studentCount} alumnos?`
+      : '¿Seguro que deseas eliminar este examen?';
+  }
+  if (item.type === 'clinical_case') {
+    return item.studentCount > 1
+      ? `¿Eliminar este caso para ${item.studentCount} alumnos?`
+      : '¿Seguro que deseas eliminar este caso?';
+  }
+  return item.studentCount > 1
+    ? `¿Eliminar esta tarea para ${item.studentCount} alumnos?`
+    : '¿Seguro que deseas eliminar esta tarea?';
+}
+
 export function CalendarEventInspector({
   item,
   onClose,
@@ -16,6 +42,8 @@ export function CalendarEventInspector({
   onAssignAnother,
   onEditMilestone,
   onDeleteSession,
+  onDeleteAssignment,
+  onDeleteMilestone,
 }: {
   item: CalendarItem | null;
   onClose: () => void;
@@ -24,6 +52,8 @@ export function CalendarEventInspector({
   onAssignAnother: () => void;
   onEditMilestone: () => void;
   onDeleteSession?: (workshopId: string) => void | Promise<void>;
+  onDeleteAssignment?: (item: CalendarItem) => void | Promise<void>;
+  onDeleteMilestone?: (milestoneId: string) => void | Promise<void>;
 }) {
   const { labels } = useCalendarColorLabels();
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -233,55 +263,6 @@ export function CalendarEventInspector({
                 <Video className="w-3.5 h-3.5" />
                 Ver talleres
               </Link>
-              {onDeleteSession && (
-                confirmDelete ? (
-                  <div className="p-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 space-y-2 animate-in fade-in zoom-in-95 duration-150">
-                    <p className="text-xs font-bold text-rose-800 dark:text-rose-200 text-center">
-                      ¿Seguro que deseas eliminar esta clase?
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={async () => {
-                          const idToDelete = item.workshopId || (item.id.startsWith('ws_') ? item.id.replace(/^ws_/, '') : item.id);
-                          if (!idToDelete) return;
-                          setIsDeleting(true);
-                          try {
-                            await onDeleteSession(idToDelete);
-                          } catch (e) {
-                            console.error('Error al eliminar clase:', e);
-                          } finally {
-                            setIsDeleting(false);
-                            setConfirmDelete(false);
-                          }
-                        }}
-                        className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                        <span>{isDeleting ? 'Eliminando...' : 'Sí, eliminar'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        disabled={isDeleting}
-                        onClick={() => setConfirmDelete(false)}
-                        className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmDelete(true)}
-                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-xs font-bold transition cursor-pointer"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Eliminar clase
-                  </button>
-                )
-              )}
             </>
           ) : null}
 
@@ -315,6 +296,73 @@ export function CalendarEventInspector({
               Editar corte y checklist
             </button>
           ) : null}
+
+          {(() => {
+            const canDeleteSession = item.type === 'session' && Boolean(onDeleteSession);
+            const canDeleteAssignment = item.assignmentIds.length > 0 && Boolean(onDeleteAssignment);
+            const canDeleteMilestone = item.type === 'milestone' && Boolean(onDeleteMilestone) && Boolean(item.milestoneId);
+            if (!canDeleteSession && !canDeleteAssignment && !canDeleteMilestone) return null;
+
+            if (confirmDelete) {
+              return (
+                <div className="p-3 rounded-2xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/70 dark:bg-rose-950/40 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+                  <p className="text-xs font-bold text-rose-800 dark:text-rose-200 text-center">
+                    {deleteConfirmCopy(item)}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={async () => {
+                        setIsDeleting(true);
+                        try {
+                          if (canDeleteSession) {
+                            const idToDelete =
+                              item.workshopId ||
+                              (item.id.startsWith('ws_') ? item.id.replace(/^ws_/, '') : item.id);
+                            if (!idToDelete) return;
+                            await onDeleteSession?.(idToDelete);
+                          } else if (canDeleteAssignment) {
+                            await onDeleteAssignment?.(item);
+                          } else if (canDeleteMilestone && item.milestoneId) {
+                            await onDeleteMilestone?.(item.milestoneId);
+                          }
+                        } catch (e) {
+                          console.error('Error al eliminar evento:', e);
+                        } finally {
+                          setIsDeleting(false);
+                          setConfirmDelete(false);
+                        }
+                      }}
+                      className="flex-1 py-2 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      <span>{isDeleting ? 'Eliminando...' : 'Sí, eliminar'}</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => setConfirmDelete(false)}
+                      className="py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/60 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-xs font-bold transition cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {deleteActionLabel(item)}
+              </button>
+            );
+          })()}
 
           <Link
             to="/admin/alumnos"

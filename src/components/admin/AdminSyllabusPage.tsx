@@ -18,6 +18,7 @@ import {
   Search,
   UserPlus,
   Calendar,
+  CalendarX,
   Sparkles,
   X,
   Users,
@@ -55,6 +56,7 @@ import {
   createCourse,
   createWorkshop,
   deleteCourse,
+  deleteWorkshop,
   getModuleAccessMap,
   getWorkshops,
   reorderCourseModules,
@@ -256,6 +258,7 @@ export default function AdminSyllabusPage() {
   const [autoDuration, setAutoDuration] = useState<number>(90);
   const [autoScope, setAutoScope] = useState<'unscheduled' | 'all'>('unscheduled');
   const [autoScheduling, setAutoScheduling] = useState(false);
+  const [clearingOrphanDates, setClearingOrphanDates] = useState(false);
 
   // Menus & Confirmation Modals
   const [moduleMenuId, setModuleMenuId] = useState<string | null>(null);
@@ -273,6 +276,14 @@ export default function AdminSyllabusPage() {
     topicId: string;
     topicTitle: string;
     isSubtopic?: boolean;
+  } | null>(null);
+
+  /** Bulk clear of live dates on topics that have a schedule but no teacher. */
+  const [orphanDatesClearConfirm, setOrphanDatesClearConfirm] = useState(false);
+  /** Single-topic clear: workshop id + title for the confirm dialog. */
+  const [dateToClear, setDateToClear] = useState<{
+    workshopId: string;
+    topicTitle: string;
   } | null>(null);
 
   // Active Topic Configuration Drawer
@@ -685,6 +696,34 @@ export default function AdminSyllabusPage() {
     autoWeekdays,
   ]);
 
+  /** Temas con fecha de clase pero sin docente — candidatos a liberar para autoprogramar. */
+  const orphanScheduledDates = useMemo(() => {
+    if (!selectedCourse) {
+      return { topicCount: 0, workshopIds: [] as string[] };
+    }
+    const modRows = rowsForCourse(selectedCourse.id);
+    const workshopIds = new Set<string>();
+    let topicCount = 0;
+    for (const { mod } of modRows) {
+      for (const tRow of topicRowsForModule(mod)) {
+        const comms = commitmentsByTopicId.get(tRow.topic.id) ?? [];
+        if (comms.length > 0) continue;
+        const workshop = workshopByTopicId.get(tRow.topic.id);
+        if (!workshop) continue;
+        topicCount += 1;
+        workshopIds.add(workshop.id);
+      }
+    }
+    return { topicCount, workshopIds: [...workshopIds] };
+  }, [
+    selectedCourse,
+    assignments,
+    modulesForStaff,
+    overrides,
+    commitmentsByTopicId,
+    workshopByTopicId,
+  ]);
+
   const handleToggleAutoWeekday = (day: number) => {
     setAutoWeekdays((prev) => {
       if (prev.includes(day)) {
@@ -749,6 +788,51 @@ export default function AdminSyllabusPage() {
       setError(e instanceof Error ? e.message : 'No se pudo generar el calendario automático');
     } finally {
       setAutoScheduling(false);
+    }
+  };
+
+  const handleConfirmClearOrphanDates = async () => {
+    if (orphanScheduledDates.workshopIds.length === 0) {
+      setOrphanDatesClearConfirm(false);
+      return;
+    }
+    setClearingOrphanDates(true);
+    setError(null);
+    try {
+      for (const workshopId of orphanScheduledDates.workshopIds) {
+        await deleteWorkshop(workshopId);
+      }
+      const clearedTopics = orphanScheduledDates.topicCount;
+      setOrphanDatesClearConfirm(false);
+      await loadAuxiliaryData();
+      setShowAutoScheduleBar(true);
+      setAutoScope('unscheduled');
+      notifySuccess(
+        `Se quitaron las fechas de ${clearedTopics} tema${clearedTopics === 1 ? '' : 's'} sin profesor. Ya puedes autoprogramarlas.`
+      );
+    } catch (e) {
+      setError(
+        e instanceof Error ? e.message : 'No se pudieron quitar las fechas sin docente'
+      );
+    } finally {
+      setClearingOrphanDates(false);
+    }
+  };
+
+  const handleConfirmClearSingleDate = async () => {
+    if (!dateToClear) return;
+    setClearingOrphanDates(true);
+    setError(null);
+    try {
+      await deleteWorkshop(dateToClear.workshopId);
+      const title = dateToClear.topicTitle;
+      setDateToClear(null);
+      await loadAuxiliaryData();
+      notifySuccess(`Se quitó la fecha de clase de “${title}”.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo quitar la fecha de clase');
+    } finally {
+      setClearingOrphanDates(false);
     }
   };
 
@@ -1670,7 +1754,19 @@ export default function AdminSyllabusPage() {
                       <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300 min-w-0">
                         {autoSchedulePlan.length === 0 ? (
                           <span className="text-slate-500">
-                            Todos los temas ya tienen fecha programada (cambia a &ldquo;Reprogramar todos&rdquo; si deseas actualizarlos).
+                            {orphanScheduledDates.topicCount > 0 ? (
+                              <>
+                                Hay {orphanScheduledDates.topicCount} tema
+                                {orphanScheduledDates.topicCount === 1 ? '' : 's'} con fecha pero
+                                sin profesor. Quítalas para poder autoprogramar, o cambia a
+                                &ldquo;Reprogramar todos&rdquo;.
+                              </>
+                            ) : (
+                              <>
+                                Todos los temas ya tienen fecha programada (cambia a
+                                &ldquo;Reprogramar todos&rdquo; si deseas actualizarlos).
+                              </>
+                            )}
                           </span>
                         ) : (
                           <>
@@ -1708,24 +1804,44 @@ export default function AdminSyllabusPage() {
                         )}
                       </div>
 
-                      <button
-                        type="button"
-                        disabled={autoScheduling || autoSchedulePlan.length === 0}
-                        onClick={() => void handleApplyAutoSchedule()}
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition cursor-pointer disabled:opacity-50 shrink-0"
-                      >
-                        {autoScheduling ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span>Programando…</span>
-                          </>
-                        ) : (
-                          <>
-                            <Zap className="w-3.5 h-3.5" />
-                            <span>Programar {autoSchedulePlan.length} sesiones</span>
-                          </>
+                      <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        {orphanScheduledDates.topicCount > 0 && (
+                          <button
+                            type="button"
+                            disabled={clearingOrphanDates || autoScheduling}
+                            onClick={() => setOrphanDatesClearConfirm(true)}
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-900 text-rose-700 dark:text-rose-300 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                            title="Elimina las sesiones en vivo de temas que tienen fecha pero ningún docente asignado"
+                          >
+                            {clearingOrphanDates ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CalendarX className="w-3.5 h-3.5" />
+                            )}
+                            <span>
+                              Quitar fechas sin docente ({orphanScheduledDates.topicCount})
+                            </span>
+                          </button>
                         )}
-                      </button>
+                        <button
+                          type="button"
+                          disabled={autoScheduling || autoSchedulePlan.length === 0}
+                          onClick={() => void handleApplyAutoSchedule()}
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition cursor-pointer disabled:opacity-50"
+                        >
+                          {autoScheduling ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Programando…</span>
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="w-3.5 h-3.5" />
+                              <span>Programar {autoSchedulePlan.length} sesiones</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1824,6 +1940,19 @@ export default function AdminSyllabusPage() {
                         );
                       })}
                     </div>
+
+                    {orphanScheduledDates.topicCount > 0 && (
+                      <button
+                        type="button"
+                        disabled={clearingOrphanDates}
+                        onClick={() => setOrphanDatesClearConfirm(true)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/70 bg-rose-50/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 text-[11px] font-bold hover:bg-rose-100 dark:hover:bg-rose-950/50 transition cursor-pointer shrink-0 disabled:opacity-50"
+                        title="Quitar fechas de temas sin profesor para poder autoprogramarlas"
+                      >
+                        <CalendarX className="w-3.5 h-3.5" />
+                        <span>Quitar fechas sin docente ({orphanScheduledDates.topicCount})</span>
+                      </button>
+                    )}
 
                     {currentCourseModuleIds.length > 0 && (
                       <button
@@ -2397,31 +2526,52 @@ export default function AdminSyllabusPage() {
 
                                             {/* Píldora minimalista de Fecha / Corte */}
                                             {scheduledWorkshop ? (
-                                              <button
-                                                type="button"
-                                                onClick={() =>
-                                                  setActiveTopicDrawer({
-                                                    moduleId: mod.id,
-                                                    topicId: topic.id,
-                                                    parentTopicId: null,
-                                                    initialTab: 'teaching',
-                                                  })
-                                                }
-                                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-cyan-300 border border-blue-200/70 dark:border-blue-800/60 text-[11px] font-semibold cursor-pointer"
-                                                title={`Clase programada: ${new Date(
-                                                  scheduledWorkshop.scheduled_at
-                                                ).toLocaleString('es-MX')}`}
-                                              >
-                                                <Calendar className="w-3 h-3" />
-                                                <span>
-                                                  {new Date(
+                                              <span className="inline-flex items-center rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-cyan-300 border border-blue-200/70 dark:border-blue-800/60 text-[11px] font-semibold overflow-hidden">
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveTopicDrawer({
+                                                      moduleId: mod.id,
+                                                      topicId: topic.id,
+                                                      parentTopicId: null,
+                                                      initialTab: 'teaching',
+                                                    });
+                                                  }}
+                                                  className="inline-flex items-center gap-1 px-2 py-0.5 cursor-pointer hover:bg-blue-100/80 dark:hover:bg-blue-900/40 transition"
+                                                  title={`Clase programada: ${new Date(
                                                     scheduledWorkshop.scheduled_at
-                                                  ).toLocaleDateString('es-MX', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                  })}
-                                                </span>
-                                              </button>
+                                                  ).toLocaleString('es-MX')}`}
+                                                >
+                                                  <Calendar className="w-3 h-3" />
+                                                  <span>
+                                                    {new Date(
+                                                      scheduledWorkshop.scheduled_at
+                                                    ).toLocaleDateString('es-MX', {
+                                                      day: 'numeric',
+                                                      month: 'short',
+                                                    })}
+                                                  </span>
+                                                </button>
+                                                {topicComms.length === 0 && (
+                                                  <button
+                                                    type="button"
+                                                    disabled={clearingOrphanDates}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setDateToClear({
+                                                        workshopId: scheduledWorkshop.id,
+                                                        topicTitle: topic.title,
+                                                      });
+                                                    }}
+                                                    className="px-1.5 py-0.5 border-l border-blue-200/70 dark:border-blue-800/60 text-blue-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer disabled:opacity-50"
+                                                    title="Quitar fecha de clase (sin docente asignado)"
+                                                    aria-label={`Quitar fecha de ${topic.title}`}
+                                                  >
+                                                    <X className="w-3 h-3" />
+                                                  </button>
+                                                )}
+                                              </span>
                                             ) : milestoneEntry ? (
                                               <button
                                                 type="button"
@@ -2807,6 +2957,24 @@ export default function AdminSyllabusPage() {
           }
           await loadAuxiliaryData();
         }}
+        onClearClassDate={async () => {
+          if (!drawerContext) return;
+          const workshop =
+            workshopByTopicId.get(drawerContext.topic.id) ??
+            adminWorkshops.find(
+              (w) =>
+                w.status !== 'cancelled' &&
+                (w.topic_id === drawerContext.topic.id ||
+                  (commitmentsByTopicId.get(drawerContext.topic.id) ?? []).some(
+                    (c) => c.workshop_id === w.id
+                  ))
+            );
+          if (!workshop) {
+            throw new Error('No hay sesión en vivo vinculada a este tema.');
+          }
+          await deleteWorkshop(workshop.id);
+          await loadAuxiliaryData();
+        }}
         onAssignMilestone={async (milestoneId) => {
           if (!drawerContext) return;
           const topicId = drawerContext.topic.id;
@@ -2939,6 +3107,116 @@ export default function AdminSyllabusPage() {
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Sí, eliminar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── CONFIRMAR QUITAR FECHAS SIN DOCENTE (MASIVO) ─── */}
+      {orphanDatesClearConfirm && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="max-w-md w-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 shrink-0">
+                <CalendarX className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  Liberar fechas
+                </span>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  ¿Quitar fechas de {orphanScheduledDates.topicCount} tema
+                  {orphanScheduledDates.topicCount === 1 ? '' : 's'} sin profesor?
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800">
+              Se eliminarán las sesiones en vivo asociadas. Los temas quedarán sin fecha y
+              podrás reasignarlas con &ldquo;Autoprogramar fechas&rdquo; (alcance: Solo temas aún
+              sin fecha). No se modifica la asignación de docentes.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={clearingOrphanDates}
+                onClick={() => setOrphanDatesClearConfirm(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={clearingOrphanDates}
+                onClick={() => void handleConfirmClearOrphanDates()}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {clearingOrphanDates ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CalendarX className="w-3.5 h-3.5" />
+                )}
+                <span>Sí, quitar fechas</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── CONFIRMAR QUITAR FECHA DE UN TEMA ─── */}
+      {dateToClear && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="max-w-md w-full rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-100 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 shrink-0">
+                <CalendarX className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">
+                  Quitar fecha de clase
+                </span>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                  ¿Quitar la fecha de &ldquo;{dateToClear.topicTitle}&rdquo;?
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/70 dark:border-slate-800">
+              La sesión en vivo se eliminará del calendario. El tema quedará libre para
+              autoprogramar o asignar una nueva fecha.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={clearingOrphanDates}
+                onClick={() => setDateToClear(null)}
+                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={clearingOrphanDates}
+                onClick={() => void handleConfirmClearSingleDate()}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {clearingOrphanDates ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CalendarX className="w-3.5 h-3.5" />
+                )}
+                <span>Sí, quitar fecha</span>
               </button>
             </div>
           </div>

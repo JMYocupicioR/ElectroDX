@@ -16,6 +16,7 @@ import {
   Filter,
   X,
   RotateCcw,
+  Pencil,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -745,12 +746,15 @@ export default function AdminWorkshopsPage() {
 
                     <button
                       type="button"
-                      onClick={() => setEditingWorkshop(w)}
+                      onClick={() => {
+                        setCreateOpen(false);
+                        setEditingWorkshop(w);
+                      }}
                       className="py-2 px-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
-                      title="Actualizar enlaces de transmisión o grabación"
+                      title="Editar clase, horarios y enlaces"
                     >
-                      <Video className="w-3.5 h-3.5 text-rose-500" />
-                      <span className="hidden sm:inline">Enlaces</span>
+                      <Pencil className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                      <span className="hidden sm:inline">Editar</span>
                     </button>
 
                     <button
@@ -815,7 +819,7 @@ export default function AdminWorkshopsPage() {
         </div>
       )}
 
-      {/* Modal de Enlaces y Grabaciones */}
+      {/* Crear / editar clase en vivo */}
       <CreateLiveClassModal
         isOpen={createOpen || Boolean(editingWorkshop)}
         onClose={() => {

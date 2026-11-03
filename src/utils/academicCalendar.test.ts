@@ -296,6 +296,10 @@ describe('calendar board view persistence', () => {
     expect(store[CALENDAR_BOARD_VIEW_STORAGE_KEY]).toBe('agenda');
   });
 
+  it('accepts the day board view', () => {
+    expect(readCalendarBoardView({ getItem: () => 'day' })).toBe('day');
+  });
+
   it('prefers the stored view over a narrow viewport default', () => {
     expect(
       defaultCalendarBoardView({

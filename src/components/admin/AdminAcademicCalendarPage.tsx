@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminLayout';
 import { CalendarBoard } from './calendar/CalendarBoard';
 import { CalendarCreateMenu, type CalendarCreateAction } from './calendar/CalendarCreateMenu';
 import { CalendarEventInspector } from './calendar/CalendarEventInspector';
+import { CalendarRemindersPanel } from './calendar/CalendarRemindersPanel';
 import { CalendarRubricRail } from './calendar/CalendarRubricRail';
 import AssignExamModal from './AssignExamModal';
 import AssignHomeworkModal from './AssignHomeworkModal';
@@ -12,21 +13,30 @@ import { CreateLiveClassModal } from './CreateLiveClassModal';
 import AcademicScheduleManagerModal from './AcademicScheduleManagerModal';
 import GradebookConfigModal from './GradebookConfigModal';
 import AttendanceTrackerModal from './AttendanceTrackerModal';
+import TeacherQuickGradeModal from './TeacherQuickGradeModal';
 import { loadAcademicCalendarFeed } from '../../services/academicCalendarService';
 import { getAdminProfiles } from '../../services/editorialService';
 import { deleteWorkshop } from '../../services/courseService';
+import { deleteMilestone } from '../../services/academicScheduleService';
+import { deleteAssignmentsByIds, getTeacherPendingReviewItems } from '../../services/studentPlanService';
+import { computeWorkshopAttendanceSummary, getCohortAttendance } from '../../services/attendanceService';
 import { filterGradeableStudents } from '../../utils/adminUtils';
 import {
+  calendarItemStartDate,
   calendarTypesForFilter,
   defaultCalendarBoardView,
   filterItemsByTypes,
   localDateTimeInputValue,
   writeCalendarBoardView,
 } from '../../utils/academicCalendar';
+import { buildTeacherCalendarReminders, type TeacherReminderRow } from '../../utils/teacherCalendarReminders';
 import { useAuth } from '../../contexts/AuthProvider';
 import type { CalendarBoardView, CalendarItem, CalendarItemType, CalendarRubricSnapshot } from '../../types/academicCalendar';
+import type { AcademicMilestone } from '../../types/academicGradebook';
+import type { WorkshopAttendanceSummary } from '../../types/academicAnalytics';
 import type { AdminProfileRow } from '../../types/admin';
 import type { LiveWorkshop } from '../../types/database';
+import type { TeacherPendingReviewItem } from '../../types/studentPlan';
 
 export default function AdminAcademicCalendarPage() {
   const { user } = useAuth();
@@ -34,6 +44,12 @@ export default function AdminAcademicCalendarPage() {
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [rubric, setRubric] = useState<CalendarRubricSnapshot | null>(null);
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
+  const [milestones, setMilestones] = useState<AcademicMilestone[]>([]);
+  const [pendingSubmissions, setPendingSubmissions] = useState<TeacherPendingReviewItem[]>([]);
+  const [pendingRetakes, setPendingRetakes] = useState<TeacherPendingReviewItem[]>([]);
+  const [attendanceSummaries, setAttendanceSummaries] = useState<WorkshopAttendanceSummary[]>([]);
+  const [gradingItem, setGradingItem] = useState<TeacherPendingReviewItem | null>(null);
+  const [attendanceWorkshopId, setAttendanceWorkshopId] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<CalendarBoardView>(() =>
     defaultCalendarBoardView({
@@ -64,10 +80,21 @@ export default function AdminAcademicCalendarPage() {
     try {
       const people = filterGradeableStudents(await getAdminProfiles(false, 'all').catch(() => []), user?.id);
       setProfiles(people);
-      const feed = await loadAcademicCalendarFeed(people);
+      const studentIds = people.map((profile) => profile.id);
+      const [feed, reviews, attendance] = await Promise.all([
+        loadAcademicCalendarFeed(people),
+        getTeacherPendingReviewItems(people).catch(() => ({ pendingSubmissions: [], pendingRetakes: [] })),
+        getCohortAttendance(studentIds).catch(() => []),
+      ]);
       setItems(feed.items);
       setRubric(feed.rubric);
       setWorkshops(feed.workshops);
+      setMilestones(feed.milestones);
+      setPendingSubmissions(reviews.pendingSubmissions);
+      setPendingRetakes(reviews.pendingRetakes);
+      setAttendanceSummaries(
+        feed.workshops.map((workshop) => computeWorkshopAttendanceSummary(workshop, studentIds, attendance))
+      );
       setFeedWarnings(feed.warnings);
       setSelected((current) => (current ? feed.items.find((item) => item.id === current.id) ?? null : null));
       return { ok: feed.warnings.length === 0, warnings: feed.warnings };
@@ -107,6 +134,38 @@ export default function AdminAcademicCalendarPage() {
     [items, typeFilter]
   );
 
+  const reminders = useMemo(
+    () =>
+      buildTeacherCalendarReminders({
+        items,
+        milestones,
+        workshops,
+        pendingSubmissions,
+        pendingRetakes,
+        attendanceSummaries,
+      }),
+    [items, milestones, workshops, pendingSubmissions, pendingRetakes, attendanceSummaries]
+  );
+
+  const openReminder = (row: TeacherReminderRow) => {
+    if (row.action === 'grade' && row.review) {
+      setGradingItem(row.review);
+      return;
+    }
+    if (row.action === 'attendance' && row.workshopId) {
+      setAttendanceWorkshopId(row.workshopId);
+      setShowAttendance(true);
+      return;
+    }
+    if (row.calendarItemId) {
+      const item = items.find((entry) => entry.id === row.calendarItemId);
+      if (item) {
+        setSelected(item);
+        setAnchor(calendarItemStartDate(item.startsAt, item.allDay));
+      }
+    }
+  };
+
   const openCreate = (action: CalendarCreateAction) => {
     if (!createDay) return;
     const dateValue =
@@ -135,6 +194,40 @@ export default function AdminAcademicCalendarPage() {
     } catch (error) {
       console.error('[handleDeleteSession] error:', error);
       alert(error instanceof Error ? error.message : 'Error al eliminar la clase');
+      throw error;
+    }
+  };
+
+  const handleDeleteAssignment = async (item: CalendarItem) => {
+    try {
+      const dueDay = item.startsAt?.slice(0, 10);
+      const removed = await deleteAssignmentsByIds(item.assignmentIds, {
+        studentIds: item.studentIds,
+        batchId: item.batchId,
+        title: item.title,
+        type: item.assignmentType,
+        dueDay,
+      });
+      if (removed === 0) {
+        throw new Error('No se encontraron asignaciones para eliminar.');
+      }
+      setSelected(null);
+      await refreshAfterWrite('tareas');
+    } catch (error) {
+      console.error('[handleDeleteAssignment] error:', error);
+      alert(error instanceof Error ? error.message : 'Error al eliminar la tarea');
+      throw error;
+    }
+  };
+
+  const handleDeleteMilestone = async (milestoneId: string) => {
+    try {
+      await deleteMilestone(milestoneId);
+      setSelected(null);
+      await refreshAfterWrite('cortes');
+    } catch (error) {
+      console.error('[handleDeleteMilestone] error:', error);
+      alert(error instanceof Error ? error.message : 'Error al eliminar el corte');
       throw error;
     }
   };
@@ -187,6 +280,7 @@ export default function AdminAcademicCalendarPage() {
           loading={loading}
           onRefresh={() => void loadFeed()}
         />
+        <CalendarRemindersPanel reminders={reminders} loading={loading && items.length === 0} onOpen={openReminder} />
       </div>
 
       <CalendarEventInspector
@@ -208,6 +302,8 @@ export default function AdminAcademicCalendarPage() {
         }}
         onEditMilestone={() => setShowMilestone(true)}
         onDeleteSession={handleDeleteSession}
+        onDeleteAssignment={handleDeleteAssignment}
+        onDeleteMilestone={handleDeleteMilestone}
       />
 
       {createDay ? (
@@ -273,11 +369,24 @@ export default function AdminAcademicCalendarPage() {
       />
       <AttendanceTrackerModal
         isOpen={showAttendance}
-        onClose={() => setShowAttendance(false)}
+        onClose={() => {
+          setShowAttendance(false);
+          setAttendanceWorkshopId(undefined);
+        }}
         profiles={profiles}
-        initialWorkshopId={selected?.workshopId ?? undefined}
+        initialWorkshopId={attendanceWorkshopId ?? selected?.workshopId ?? undefined}
         onSaved={() => {
           setShowAttendance(false);
+          setAttendanceWorkshopId(undefined);
+          void loadFeed();
+        }}
+      />
+      <TeacherQuickGradeModal
+        isOpen={Boolean(gradingItem)}
+        onClose={() => setGradingItem(null)}
+        item={gradingItem}
+        onGraded={() => {
+          setGradingItem(null);
           void loadFeed();
         }}
       />

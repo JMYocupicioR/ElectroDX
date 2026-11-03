@@ -12,7 +12,7 @@ export type CalendarItemType =
   | 'practical_task'
   | 'milestone';
 
-export type CalendarBoardView = 'month' | 'week' | 'agenda';
+export type CalendarBoardView = 'month' | 'week' | 'day' | 'agenda';
 
 export interface CalendarItem {
   id: string;
@@ -39,6 +39,8 @@ export interface CalendarItem {
   patternId?: string | null;
   workshopStatus?: string | null;
   assignmentType?: AssignmentType;
+  /** batch_id compartido cuando la cohorte se asignó en un solo lote */
+  batchId?: string | null;
   passingGrade?: number;
   topicCount?: number;
   modality?: 'online' | 'in_person' | null;

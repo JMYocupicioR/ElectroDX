@@ -23,6 +23,7 @@ import {
   getWorkshopVideoProgress,
   logVideoWatchHeartbeat,
   logVideoWatchHeartbeatKeepalive,
+  attestDriveRecordingAttendance,
   type HeartbeatSyncReason,
 } from '../../services/videoProgressService';
 import { supabase } from '../../lib/supabase';
@@ -110,6 +111,8 @@ export function TrackedLiveClassPlayer({
   const [tabIsHidden, setTabIsHidden] = useState(false);
   const [playerStatus, setPlayerStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [playerRetryKey, setPlayerRetryKey] = useState(0);
+  const [driveAttestBusy, setDriveAttestBusy] = useState(false);
+  const [driveAttestError, setDriveAttestError] = useState<string | null>(null);
 
   // Referencias mutables para evitar re-creación de funciones y bucles infinitos en useEffect
   const watchedSegmentsRef = useRef<TimeInterval[]>([]);
@@ -344,6 +347,66 @@ export function TrackedLiveClassPlayer({
     setPlayerStatus('loading');
     setPlayerRetryKey((key) => key + 1);
   }, []);
+
+  const handleDriveSelfAttest = useCallback(async () => {
+    if (driveAttestBusy || isFullyWatchedRef.current) return;
+    if (workshop.allow_recording_attendance === false) {
+      setDriveAttestError('Este taller no acredita asistencia por grabación.');
+      return;
+    }
+    if (workshop.attendance_closed) {
+      setDriveAttestError('La lista de asistencia de este taller ya está cerrada.');
+      return;
+    }
+
+    setDriveAttestBusy(true);
+    setDriveAttestError(null);
+    try {
+      const durationSeconds =
+        durationRef.current > 0
+          ? durationRef.current
+          : Math.max((workshop.duration_minutes || 1) * 60, 60);
+      const res = await attestDriveRecordingAttendance({
+        workshopId: workshop.id,
+        userId,
+        durationSeconds,
+        minWatchPercent: minRequiredPercent,
+      });
+
+      isFullyWatchedRef.current = true;
+      thresholdSyncSentRef.current = true;
+      setIsFullyWatched(true);
+      setCoveragePercent(Math.max(coveragePercent, res.watched_percentage || 100));
+
+      if (res.accredited) {
+        if (!accreditedNotifiedRef.current) {
+          accreditedNotifiedRef.current = true;
+          setAccreditedJustNow(true);
+          onAttendanceAccredited?.();
+        }
+      } else {
+        setDriveAttestError(
+          'Se registró tu confirmación, pero la asistencia no pudo acreditarse. Contacta al docente.'
+        );
+      }
+    } catch (err) {
+      setDriveAttestError(
+        err instanceof Error ? err.message : 'No se pudo marcar la clase como completada.'
+      );
+    } finally {
+      setDriveAttestBusy(false);
+    }
+  }, [
+    coveragePercent,
+    driveAttestBusy,
+    minRequiredPercent,
+    onAttendanceAccredited,
+    userId,
+    workshop.allow_recording_attendance,
+    workshop.attendance_closed,
+    workshop.duration_minutes,
+    workshop.id,
+  ]);
 
   // 2. Control de visibilidad de pestaña (pausar o marcar aviso)
   useEffect(() => {
@@ -642,6 +705,11 @@ export function TrackedLiveClassPlayer({
 
   const isGoogleDrive = parsedVideo?.kind === 'drive';
   const isEmbedSupported = parsedVideo?.kind === 'youtube' || parsedVideo?.kind === 'vimeo';
+  const canSelfAttestDrive =
+    isGoogleDrive &&
+    !isFullyWatched &&
+    workshop.allow_recording_attendance !== false &&
+    !workshop.attendance_closed;
 
   if (!recordingUrl) {
     return (
@@ -670,6 +738,10 @@ export function TrackedLiveClassPlayer({
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 <CheckCircle2 className="w-4 h-4" /> Asistencia Acreditada
               </span>
+            ) : isGoogleDrive ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <AlertTriangle className="w-3.5 h-3.5" /> Confirmación manual requerida
+              </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 <Clock className="w-3.5 h-3.5" /> Requisito: {minRequiredPercent}% visto
@@ -684,7 +756,7 @@ export function TrackedLiveClassPlayer({
 
             {isGoogleDrive && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                <AlertTriangle className="w-3 h-3" /> Google Drive (Pase manual)
+                <AlertTriangle className="w-3 h-3" /> Google Drive
               </span>
             )}
           </div>
@@ -822,16 +894,16 @@ export function TrackedLiveClassPlayer({
 
         {isGoogleDrive && (
           <div className="w-full h-full flex flex-col">
-            <div className="bg-amber-900/40 border-b border-amber-700/50 p-3 text-xs text-amber-200 flex items-center justify-between">
+            <div className="bg-amber-900/40 border-b border-amber-700/50 p-3 text-xs text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                Google Drive no expone API de progreso. Tu asistencia será validada manualmente por el docente.
+                Google Drive no expone API de progreso. Cuando termines la clase, márcala como completada.
               </span>
               <a
                 href={recordingUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 underline hover:text-white shrink-0 ml-2"
+                className="inline-flex items-center gap-1 underline hover:text-white shrink-0"
               >
                 Abrir en Drive <ExternalLink className="w-3 h-3" />
               </a>
@@ -857,14 +929,59 @@ export function TrackedLiveClassPlayer({
         )}
       </div>
 
+      {/* ─── AUTO-DECLARACIÓN (GOOGLE DRIVE) ─── */}
+      {isGoogleDrive && (
+        <div className="px-4 py-3 bg-slate-950 border-t border-slate-800 flex flex-col gap-2">
+          {canSelfAttestDrive ? (
+            <>
+              <p className="text-xs text-slate-400">
+                Confirma solo cuando hayas visto la clase completa. Se acreditará tu asistencia en el Kardex.
+              </p>
+              <button
+                type="button"
+                onClick={() => void handleDriveSelfAttest()}
+                disabled={driveAttestBusy}
+                className="inline-flex items-center justify-center gap-2 self-start px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {driveAttestBusy ? 'Acreditando…' : 'Marcar clase como completada'}
+              </button>
+            </>
+          ) : isFullyWatched ? (
+            <p className="text-xs text-emerald-300 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Ya confirmaste esta clase. Tu asistencia aparece en el Kardex.
+            </p>
+          ) : workshop.attendance_closed ? (
+            <p className="text-xs text-amber-300 flex items-center gap-1.5">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              La lista de asistencia ya está cerrada. Contacta al docente si falta tu pase.
+            </p>
+          ) : workshop.allow_recording_attendance === false ? (
+            <p className="text-xs text-slate-400">
+              Este taller no acredita asistencia por grabación.
+            </p>
+          ) : null}
+          {driveAttestError && (
+            <p className="text-xs text-rose-300" role="alert">
+              {driveAttestError}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* ─── FOOTER EXPLICATIVO ─── */}
       <div className="p-4 bg-slate-950/80 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <Clock className="w-3.5 h-3.5 text-slate-500" />
           <span>
             {isFullyWatched
-              ? `Asistencia acreditada. El contador sigue registrando hasta el 100% si continúas viendo (vas en ${coveragePercent.toFixed(1)}%).`
-              : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
+              ? isGoogleDrive
+                ? 'Asistencia acreditada por tu confirmación de clase completada.'
+                : `Asistencia acreditada. El contador sigue registrando hasta el 100% si continúas viendo (vas en ${coveragePercent.toFixed(1)}%).`
+              : isGoogleDrive
+                ? 'Google Drive no mide el porcentaje visto. Usa el botón de arriba al terminar la clase.'
+                : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
           </span>
         </div>
         <div className="text-[11px] text-slate-500">

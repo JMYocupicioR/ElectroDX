@@ -1152,6 +1152,139 @@ export async function deleteAssignmentBatch(batchId: string): Promise<number> {
   return rows.length;
 }
 
+/**
+ * Elimina un grupo de asignaciones del calendario.
+ * Tolera IDs locales (asg_…) y UUIDs remotos; usa batch_id o título/fecha como respaldo.
+ */
+export async function deleteAssignmentsByIds(
+  assignmentIds: string[],
+  options?: {
+    studentIds?: string[];
+    batchId?: string | null;
+    title?: string;
+    type?: StudentAssignment['type'];
+    dueDay?: string;
+  }
+): Promise<number> {
+  let removed = 0;
+
+  if (options?.batchId) {
+    try {
+      removed = await deleteAssignmentBatch(options.batchId);
+      if (removed > 0) return removed;
+    } catch (error) {
+      console.warn('[studentPlanService] deleteAssignmentsByIds batch fallback:', error);
+    }
+  }
+
+  const pairs = assignmentIds
+    .map((id, index) => ({
+      id,
+      studentId: options?.studentIds?.[index] ?? '',
+    }))
+    .filter((pair) => Boolean(pair.id));
+
+  for (const pair of pairs) {
+    if (pair.studentId) {
+      forgetLocalAssignment(pair.studentId, pair.id);
+    }
+
+    if (!isUuid(pair.id)) {
+      // Solo existía en caché local (o ID no-UUID).
+      if (pair.studentId) removed += 1;
+      continue;
+    }
+
+    const { error } = await supabase.from('student_assignments').delete().eq('id', pair.id);
+    if (error) {
+      const { error: rpcError } = await supabase.rpc('admin_delete_student_assignment', {
+        p_assignment_id: pair.id,
+      });
+      if (rpcError) {
+        console.warn('[studentPlanService] RPC delete failed for', pair.id, rpcError.message);
+        // Aun así contamos limpieza local si aplica.
+        if (pair.studentId) removed += 1;
+        continue;
+      }
+    }
+    removed += 1;
+  }
+
+  // Respaldo: si por ID no se borró nada remoto, buscar por título + tipo + día.
+  if (
+    removed === 0 &&
+    options?.title &&
+    options?.type &&
+    options?.dueDay
+  ) {
+    const { data, error } = await supabase
+      .from('student_assignments')
+      .select('id, student_id, due_date, title, type')
+      .eq('title', options.title)
+      .eq('type', options.type);
+    if (error) throw error;
+
+    const matches = (data ?? []).filter((row) => {
+      const day = row.due_date ? String(row.due_date).slice(0, 10) : '';
+      // due_date puede ser date o timestamptz; comparamos el día calendario local aproximado.
+      return day === options.dueDay || toLocalDateKeySafe(row.due_date) === options.dueDay;
+    });
+
+    for (const row of matches) {
+      forgetLocalAssignment(row.student_id, row.id);
+      const { error: delError } = await supabase.from('student_assignments').delete().eq('id', row.id);
+      if (delError) {
+        const { error: rpcError } = await supabase.rpc('admin_delete_student_assignment', {
+          p_assignment_id: row.id,
+        });
+        if (rpcError) throw rpcError;
+      }
+      removed += 1;
+    }
+  }
+
+  // Limpieza local restante por título (por si el feed mezcló caché sin UUID).
+  if (removed === 0 && options?.title && options?.studentIds?.length) {
+    for (const studentId of [...new Set(options.studentIds.filter(Boolean))]) {
+      try {
+        const raw = localStorage.getItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`);
+        if (!raw) continue;
+        const list: StudentAssignment[] = JSON.parse(raw);
+        const next: StudentAssignment[] = [];
+        for (const item of list) {
+          const sameTitle = item.title === options.title;
+          const sameType = !options.type || item.type === options.type;
+          const sameDay =
+            !options.dueDay ||
+            !item.due_date ||
+            toLocalDateKeySafe(item.due_date) === options.dueDay;
+          if (sameTitle && sameType && sameDay) {
+            removed += 1;
+            continue;
+          }
+          next.push(item);
+        }
+        localStorage.setItem(`${KEY_LOCAL_ASSIGNMENTS}${studentId}`, JSON.stringify(next));
+      } catch {
+        // ignore cache parse errors
+      }
+    }
+  }
+
+  return removed;
+}
+
+function toLocalDateKeySafe(value: string | null | undefined): string {
+  if (!value) return '';
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 export async function deleteAssignment(assignmentId: string, studentId: string): Promise<void> {
   forgetLocalAssignment(studentId, assignmentId);
 

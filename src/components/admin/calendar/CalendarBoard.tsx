@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, Palette, RefreshCw } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Palette, Plus, RefreshCw } from 'lucide-react';
 import type { CalendarBoardView, CalendarItem, CalendarItemType } from '../../../types/academicCalendar';
 import {
   addDays,
   addMonths,
+  formatDayTitle,
   formatMonthTitle,
   formatWeekTitle,
   getMonthGridDays,
@@ -24,6 +25,7 @@ import {
 import { CalendarColorLabelsEditor } from './CalendarColorLabelsEditor';
 
 const WEEKDAY_LABELS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const WEEKDAY_LABELS_SHORT = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 const FILTERS: { id: CalendarItemType | 'all' }[] = [
   { id: 'all' },
@@ -101,6 +103,42 @@ function EventChip({
   );
 }
 
+function DayEventRow({
+  item,
+  selected,
+  color,
+  typeLabel,
+  onClick,
+}: {
+  item: CalendarItem;
+  selected?: boolean;
+  color: string;
+  typeLabel: string;
+  onClick: () => void;
+}) {
+  const time = eventTimeLabel(item);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-start gap-3 px-3.5 py-3 rounded-2xl text-left border transition ${
+        selected
+          ? 'border-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/30'
+          : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'
+      }`}
+    >
+      <span className="mt-1.5 w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} aria-hidden />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
+          {time ? `${time} · ` : ''}
+          {typeLabel}
+        </span>
+        <span className="block text-sm font-bold text-slate-900 dark:text-white leading-snug mt-0.5">{item.title}</span>
+      </span>
+    </button>
+  );
+}
+
 export function CalendarBoard({
   view,
   onViewChange,
@@ -136,11 +174,21 @@ export function CalendarBoard({
   showColorEditor?: boolean;
 }) {
   const todayKey = toLocalDateKey(new Date());
-  const dayVerb = dayIntent === 'view' ? 'Ver' : 'Planear';
-  const title = view === 'week' ? formatWeekTitle(anchor) : formatMonthTitle(anchor);
+  const title =
+    view === 'week'
+      ? formatWeekTitle(anchor)
+      : view === 'day'
+        ? formatDayTitle(anchor)
+        : formatMonthTitle(anchor);
   const [overflowKey, setOverflowKey] = useState<string | null>(null);
   const [legendOpen, setLegendOpen] = useState(false);
   const { labels } = useCalendarColorLabels();
+
+  const openDayView = (day: Date) => {
+    setOverflowKey(null);
+    onAnchorChange(day);
+    onViewChange('day');
+  };
 
   useEffect(() => {
     if (!legendOpen) return;
@@ -179,15 +227,19 @@ export function CalendarBoard({
 
   const goPrev = () => {
     if (view === 'week') onAnchorChange(addDays(startOfWeekMonday(anchor), -7));
+    else if (view === 'day') onAnchorChange(addDays(anchor, -1));
     else if (view === 'agenda') onAnchorChange(addDays(anchor, -14));
     else onAnchorChange(addMonths(anchor, -1));
   };
 
   const goNext = () => {
     if (view === 'week') onAnchorChange(addDays(startOfWeekMonday(anchor), 7));
+    else if (view === 'day') onAnchorChange(addDays(anchor, 1));
     else if (view === 'agenda') onAnchorChange(addDays(anchor, 14));
     else onAnchorChange(addMonths(anchor, 1));
   };
+
+  const dayItemsForAnchor = itemsForDay(items, anchor);
 
   return (
     <div className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -222,18 +274,18 @@ export function CalendarBoard({
                 Actualizar
               </button>
             ) : null}
-            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800">
-              {(['month', 'week', 'agenda'] as CalendarBoardView[]).map((option) => (
+            <div className="inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800 overflow-x-auto max-w-full">
+              {(['month', 'week', 'day', 'agenda'] as CalendarBoardView[]).map((option) => (
                 <button
                   key={option}
                   type="button"
                   onClick={() => onViewChange(option)}
                   aria-pressed={view === option}
-                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] font-bold whitespace-nowrap ${
                     view === option ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-500'
                   }`}
                 >
-                  {option === 'month' ? 'Mes' : option === 'week' ? 'Semana' : 'Agenda'}
+                  {option === 'month' ? 'Mes' : option === 'week' ? 'Semana' : option === 'day' ? 'Día' : 'Agenda'}
                 </button>
               ))}
             </div>
@@ -282,45 +334,75 @@ export function CalendarBoard({
 
       {view === 'month' ? (
         <div className="p-2 sm:p-3">
-          <div className="grid grid-cols-7 gap-1 mb-1">
-            {WEEKDAY_LABELS.map((label) => (
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1">
+            {WEEKDAY_LABELS.map((label, index) => (
               <div key={label} className="text-[10px] font-black uppercase tracking-wider text-slate-400 text-center py-1">
-                {label}
+                <span className="sm:hidden">{WEEKDAY_LABELS_SHORT[index]}</span>
+                <span className="hidden sm:inline">{label}</span>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
             {getMonthGridDays(anchor).map((day) => {
               const key = toLocalDateKey(day);
               const inMonth = day.getMonth() === anchor.getMonth();
               const dayItems = itemsForDay(items, day);
               const visible = dayItems.slice(0, 3);
               const extra = dayItems.length - visible.length;
-              const planLabel = `${dayVerb} el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+              const mobileDots = dayItems.slice(0, 4);
+              const mobileExtra = dayItems.length - mobileDots.length;
+              const openLabel = `Ver el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
               return (
                 <div
                   key={key}
-                  className={`relative min-h-[104px] sm:min-h-[120px] xl:min-h-[132px] p-1.5 rounded-xl border text-left align-top transition cursor-pointer ${
+                  role="button"
+                  tabIndex={0}
+                  className={`relative min-h-[72px] sm:min-h-[120px] xl:min-h-[132px] p-1 sm:p-1.5 rounded-lg sm:rounded-xl border text-left align-top transition cursor-pointer ${
                     key === todayKey
                       ? 'border-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/30'
                       : 'border-slate-100 dark:border-slate-800 hover:border-indigo-200 dark:hover:border-indigo-800'
                   } ${inMonth ? '' : 'opacity-40'}`}
-                  onClick={() => onSelectDay(day)}
+                  onClick={() => openDayView(day)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      openDayView(day);
+                    }
+                  }}
                 >
                   <button
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onSelectDay(day);
+                      openDayView(day);
                     }}
                     className={`text-[11px] font-black rounded-md px-1 -ml-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 ${
                       key === todayKey ? 'text-indigo-600' : 'text-slate-500'
                     }`}
-                    aria-label={planLabel}
+                    aria-label={openLabel}
                   >
                     {day.getDate()}
                   </button>
-                  <div className="mt-1 space-y-0.5">
+
+                  {/* Móvil: solo puntos de color — el texto truncado no se lee */}
+                  <div className="mt-1 flex flex-wrap gap-0.5 content-start sm:hidden" aria-hidden={dayItems.length === 0}>
+                    {mobileDots.map((item) => (
+                      <span
+                        key={item.id}
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: calendarEventColor(item.type, labels) }}
+                        title={`${calendarTypeLabel(item.type, labels)} · ${item.title}`}
+                      />
+                    ))}
+                    {mobileExtra > 0 ? (
+                      <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-300 leading-none self-center">
+                        +{mobileExtra}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  {/* Desktop: chips con título */}
+                  <div className="mt-1 space-y-0.5 hidden sm:block">
                     {visible.map((item) => (
                       <EventChip
                         key={item.id}
@@ -372,20 +454,32 @@ export function CalendarBoard({
                       </div>
                       <button
                         type="button"
-                        onClick={() => {
-                          setOverflowKey(null);
-                          onSelectDay(day);
-                        }}
+                        onClick={() => openDayView(day)}
                         className="mt-2 w-full text-[11px] font-bold text-indigo-600 dark:text-indigo-300 py-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
                       >
-                        {dayVerb} este día
+                        Ver día completo
                       </button>
+                      {dayIntent === 'plan' ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOverflowKey(null);
+                            onSelectDay(day);
+                          }}
+                          className="mt-1 w-full text-[11px] font-bold text-slate-600 dark:text-slate-300 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                          Agregar evento
+                        </button>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
               );
             })}
           </div>
+          <p className="sm:hidden mt-2 px-1 text-[11px] text-slate-400">
+            Toca un día para ver todas las actividades
+          </p>
         </div>
       ) : null}
 
@@ -394,7 +488,7 @@ export function CalendarBoard({
           {getWeekDays(anchor).map((day) => {
             const key = toLocalDateKey(day);
             const dayItems = itemsForDay(items, day);
-            const planLabel = `${dayVerb} el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
+            const openLabel = `Ver el ${day.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}`;
             return (
               <div
                 key={key}
@@ -403,16 +497,16 @@ export function CalendarBoard({
                     ? 'border-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/30'
                     : 'border-slate-100 dark:border-slate-800'
                 }`}
-                onClick={() => onSelectDay(day)}
+                onClick={() => openDayView(day)}
               >
                 <button
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    onSelectDay(day);
+                    openDayView(day);
                   }}
                   className="text-left rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/80 px-1 -ml-1"
-                  aria-label={planLabel}
+                  aria-label={openLabel}
                 >
                   <p className="text-[10px] font-black uppercase text-slate-400">
                     {day.toLocaleDateString('es-MX', { weekday: 'short' })}
@@ -421,7 +515,9 @@ export function CalendarBoard({
                 </button>
                 <div className="mt-2 space-y-1">
                   {dayItems.length === 0 ? (
-                    <p className="text-[11px] text-slate-400">Clic para planear</p>
+                    <p className="text-[11px] text-slate-400">
+                      {dayIntent === 'plan' ? 'Clic para ver / planear' : 'Clic para ver el día'}
+                    </p>
                   ) : (
                     dayItems.map((item) => (
                       <EventChip
@@ -438,6 +534,56 @@ export function CalendarBoard({
               </div>
             );
           })}
+        </div>
+      ) : null}
+
+      {view === 'day' ? (
+        <div className="p-3 sm:p-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {dayItemsForAnchor.length === 0
+                ? 'Sin actividades este día'
+                : `${dayItemsForAnchor.length} ${dayItemsForAnchor.length === 1 ? 'actividad' : 'actividades'}`}
+            </p>
+            {dayIntent === 'plan' ? (
+              <button
+                type="button"
+                onClick={() => onSelectDay(anchor)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Agregar evento
+              </button>
+            ) : null}
+          </div>
+          {dayItemsForAnchor.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 px-4 py-10 text-center">
+              <p className="text-sm text-slate-500 dark:text-slate-400">No hay eventos programados.</p>
+              {dayIntent === 'plan' ? (
+                <button
+                  type="button"
+                  onClick={() => onSelectDay(anchor)}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-indigo-600 dark:text-indigo-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Planear este día
+                </button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {dayItemsForAnchor.map((item) => (
+                <DayEventRow
+                  key={item.id}
+                  item={item}
+                  selected={selectedId === item.id}
+                  color={calendarEventColor(item.type, labels)}
+                  typeLabel={calendarTypeLabel(item.type, labels)}
+                  onClick={() => onSelectItem(item)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       ) : null}
 

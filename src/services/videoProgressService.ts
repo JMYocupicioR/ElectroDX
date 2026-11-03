@@ -183,6 +183,68 @@ export async function logVideoWatchHeartbeat(params: {
  * Heartbeat fire-and-forget con fetch keepalive (pagehide / beforeunload).
  * No depende de que la promesa de supabase-js termine antes de cerrar la pestaña.
  */
+/**
+ * Auto-declaración de asistencia para grabaciones en Google Drive
+ * (Drive no expone API de progreso de reproducción).
+ */
+export async function attestDriveRecordingAttendance(params: {
+  workshopId: string;
+  userId: string;
+  durationSeconds?: number;
+  minWatchPercent?: number;
+}): Promise<HeartbeatResult> {
+  const { workshopId, userId, durationSeconds = 0, minWatchPercent = 85 } = params;
+
+  cacheLocalProgress({
+    userId,
+    workshopId,
+    currentTime: durationSeconds,
+    duration: durationSeconds || 1,
+    segments: durationSeconds > 0 ? [[0, durationSeconds]] : [],
+    localCoverage: 100,
+    localIsFullyWatched: true,
+  });
+
+  try {
+    const { data, error } = await (supabase as any).rpc('attest_drive_recording_attendance', {
+      p_workshop_id: workshopId,
+    });
+
+    if (error) {
+      console.warn(
+        '[videoProgressService] RPC attest_drive_recording_attendance falló:',
+        error.message,
+        error
+      );
+      throw new Error(error.message || 'No se pudo acreditar la asistencia');
+    }
+
+    if (data && typeof data === 'object') {
+      const d = data as Record<string, any>;
+      return {
+        watched_percentage: Number(d.watched_percentage ?? 100),
+        is_fully_watched: Boolean(d.is_fully_watched ?? true),
+        min_required: Number(d.min_required ?? minWatchPercent),
+        accredited: Boolean(d.accredited ?? false),
+        skipped: Boolean(d.skipped ?? false),
+      };
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message && !err.message.includes('Network')) {
+      throw err;
+    }
+    console.warn('[videoProgressService] Network error during Drive attest:', err);
+    throw new Error('Error de red al acreditar la asistencia');
+  }
+
+  return {
+    watched_percentage: 100,
+    is_fully_watched: true,
+    min_required: minWatchPercent,
+    accredited: false,
+  };
+}
+
 export function logVideoWatchHeartbeatKeepalive(params: {
   workshopId: string;
   userId: string;

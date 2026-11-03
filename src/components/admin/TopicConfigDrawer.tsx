@@ -4,6 +4,7 @@ import {
   UserPlus,
   UserCheck,
   Calendar,
+  CalendarX,
   Clock,
   Eye,
   EyeOff,
@@ -111,6 +112,8 @@ interface TopicConfigDrawerProps {
     teacherName?: string;
     additionalTopics?: { topicId: string; moduleId: string }[];
   }) => Promise<void>;
+  /** Deletes the linked live workshop so the topic can be re-scheduled. */
+  onClearClassDate?: () => Promise<void>;
   onAssignMilestone: (milestoneId: string | null) => Promise<void>;
   onSaveTopicMeta: (input: {
     title: string;
@@ -155,6 +158,7 @@ export function TopicConfigDrawer({
   onAssignTeacher,
   onRemoveTeacher,
   onScheduleClass,
+  onClearClassDate,
   onAssignMilestone,
   onSaveTopicMeta,
   onCreateSubtopic,
@@ -519,6 +523,29 @@ export function TopicConfigDrawer({
       showToast('ok', 'Clase en vivo guardada, con los temas incluidos.');
     } catch (err) {
       showToast('err', err instanceof Error ? err.message : 'No se pudo guardar la fecha');
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const clearLiveClassDate = async () => {
+    if (!linkedWorkshop || !onClearClassDate) return;
+    if (
+      !window.confirm(
+        '¿Quitar la fecha de clase de este tema? La sesión se eliminará del calendario y podrás autoprogramarla de nuevo.'
+      )
+    ) {
+      return;
+    }
+    setBusyAction('clear-date');
+    setFeedback(null);
+    try {
+      await onClearClassDate();
+      setClassDate('');
+      setClassTime('19:00');
+      showToast('ok', 'Fecha de clase eliminada. El tema quedó libre para reprogramar.');
+    } catch (err) {
+      showToast('err', err instanceof Error ? err.message : 'No se pudo quitar la fecha');
     } finally {
       setBusyAction(null);
     }
@@ -1208,6 +1235,22 @@ export function TopicConfigDrawer({
                     </span>
                   )}
                   <div className="flex items-center gap-1.5">
+                    {linkedWorkshop && onClearClassDate && (
+                      <button
+                        type="button"
+                        disabled={busyAction !== null}
+                        onClick={() => void clearLiveClassDate()}
+                        title="Quitar fecha de clase para poder autoprogramarla"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-950/70 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/70 text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                      >
+                        {busyAction === 'clear-date' ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <CalendarX className="w-3.5 h-3.5" />
+                        )}
+                        <span>Quitar fecha</span>
+                      </button>
+                    )}
                     {(linkedWorkshop || classDate) && (
                       <button
                         type="button"
