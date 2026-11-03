@@ -1,5 +1,5 @@
-import { handleSignAgreementRequest } from '../server/signAgreementHandler';
-import { invokeWebHandler, type NodeApiRequest, type NodeApiResponse } from '../server/nodeWebHandler';
+import { handleSignAgreementRequest } from './signAgreementHandler';
+import { invokeWebHandler, type NodeApiRequest, type NodeApiResponse } from './nodeWebHandler';
 
 export const config = {
   maxDuration: 20,

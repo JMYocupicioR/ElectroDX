@@ -1,5 +1,5 @@
-import { handleSignPhysicianAgreementRequest } from '../server/signPhysicianAgreementHandler';
-import { invokeWebHandler, type NodeApiRequest, type NodeApiResponse } from '../server/nodeWebHandler';
+import { handleSignPhysicianAgreementRequest } from './signPhysicianAgreementHandler';
+import { invokeWebHandler, type NodeApiRequest, type NodeApiResponse } from './nodeWebHandler';
 
 export const config = {
   maxDuration: 20,

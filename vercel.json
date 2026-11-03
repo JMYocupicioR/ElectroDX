@@ -7,10 +7,10 @@
       "maxDuration": 20,
       "includeFiles": "server/**"
     },
-    "api/sign-agreement.ts": {
+    "api/sign-agreement.js": {
       "maxDuration": 20
     },
-    "api/sign-physician-agreement.ts": {
+    "api/sign-physician-agreement.js": {
       "maxDuration": 20
     }
   },
