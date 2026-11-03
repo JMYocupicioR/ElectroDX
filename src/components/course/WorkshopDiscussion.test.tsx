@@ -27,7 +27,7 @@ const mockWorkshop: LiveWorkshop = {
   max_capacity: 50,
   clinical_case_revision_id: null,
   clinical_case_json: null,
-  status: 'past',
+  status: 'completed',
   created_by: 'teacher-1',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
