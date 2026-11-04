@@ -17,6 +17,8 @@ import {
   Settings,
   X,
   ChevronRight,
+  Sparkles,
+  PanelLeft,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
@@ -257,6 +259,33 @@ export function MobileBottomNav() {
                   <p className="text-[10px] text-slate-400 truncate">Morfología CMAP/SNAP</p>
                 </div>
               </Link>
+
+              <Link
+                to="/biblioteca"
+                onClick={() => setMoreOpen(false)}
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70"
+              >
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">Biblioteca</p>
+                  <p className="text-[10px] text-slate-400 truncate">Artículos y guías</p>
+                </div>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  window.dispatchEvent(new CustomEvent('open-course-sidebar'));
+                }}
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/70 text-left cursor-pointer"
+              >
+                <PanelLeft className="w-4 h-4 text-indigo-400 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">Índice de Temas</p>
+                  <p className="text-[10px] text-slate-400 truncate">Navegación del temario</p>
+                </div>
+              </button>
             </div>
 
             <div className="space-y-1.5">

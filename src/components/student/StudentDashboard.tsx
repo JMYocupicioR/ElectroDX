@@ -30,6 +30,9 @@ import {
   Smartphone,
   GraduationCap,
   Scale,
+  BookOpen,
+  ClipboardList,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getMyAttempts, getMyProgressByModule } from '../../services/quizService';
@@ -307,22 +310,17 @@ export default function StudentDashboard() {
     user ? getCompletedTopics(user.id) : new Set()
   );
   const [teachers, setTeachers] = useState<Profile[]>([]);
-  const [loadingTeachers, setLoadingTeachers] = useState(true);
   const [committeeModalOpen, setCommitteeModalOpen] = useState(false);
 
   // Cargar docentes del curso (colaboradores docentes)
   useEffect(() => {
     let cancelled = false;
-    setLoadingTeachers(true);
     getCourseTeachers()
       .then((data) => {
         if (!cancelled) setTeachers(data);
       })
       .catch((err) => {
         console.warn('[StudentDashboard] Error cargando docentes del curso:', err);
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingTeachers(false);
       });
     return () => {
       cancelled = true;
@@ -535,6 +533,18 @@ export default function StudentDashboard() {
     if (!metrics) return null;
     return checkCertificationEligibility(profile, metrics.overallProgressPct, moduleProgress, kardex);
   }, [profile, metrics, moduleProgress, kardex]);
+
+  const activeModuleStat = useMemo(() => {
+    if (!resumeLesson || !metrics) return null;
+    return metrics.moduleStats.find((m) => m.moduleId === resumeLesson.moduleId) || null;
+  }, [resumeLesson, metrics]);
+
+  const upcomingLiveWorkshop = useMemo(() => {
+    if (!workshops.length) return null;
+    const now = Date.now();
+    const upcoming = workshops.find((w) => new Date(w.scheduled_at).getTime() > now - 24 * 3600 * 1000);
+    return upcoming || workshops[0] || null;
+  }, [workshops]);
 
   // Evitar solapamiento entre la guía de inducción y el modal de tareas pendientes
   useEffect(() => {
@@ -1078,34 +1088,53 @@ export default function StudentDashboard() {
             )}
 
             {/* Foco de Acción Principal en Móvil ("Continuar donde te quedaste" arriba del doblez) */}
-            <div className="md:hidden bg-white/10 dark:bg-slate-900/70 rounded-xl p-3.5 border border-white/15">
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
-                  <Play className="w-3 h-3 text-blue-400 fill-blue-400" />
+            <div className="md:hidden bg-white/10 dark:bg-slate-900/70 rounded-2xl p-4 border border-white/15 shadow-lg backdrop-blur-md">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
+                  <Play className="w-3.5 h-3.5 text-cyan-400 fill-cyan-400" />
                   {resumeLesson
                     ? hasStartedCurriculum
                       ? 'Continuar donde te quedaste'
                       : 'Empieza tu formación'
                     : 'Curso al día'}
                 </p>
-                {resumeLesson && (
-                  <span className="text-[11px] font-mono tabular-nums text-slate-300">
-                    {resumeLesson.pendingLessonCount} pend.
+                {activeModuleStat && (
+                  <span className="text-[11px] font-mono tabular-nums text-cyan-300 font-bold bg-cyan-500/15 px-2 py-0.5 rounded-full border border-cyan-400/30">
+                    Lección {Math.min((activeModuleStat.completedTopics || 0) + 1, activeModuleStat.totalTopics || 1)} de {activeModuleStat.totalTopics}
                   </span>
                 )}
               </div>
 
               {resumeLesson ? (
                 <div>
-                  <p className="text-sm font-bold text-white line-clamp-1">
+                  <h2 className="text-sm sm:text-base font-extrabold text-white line-clamp-1 mb-0.5">
                     {resumeLesson.topicTitle}
-                  </p>
-                  <p className="text-xs text-slate-300 line-clamp-1 mb-2.5">
+                  </h2>
+                  <p className="text-xs text-slate-300 line-clamp-1">
                     Módulo {resumeLesson.moduleNumber}: {resumeLesson.moduleTitle}
                     {resumeLesson.firstIncompleteChildTitle
                       ? ` · ${resumeLesson.firstIncompleteChildTitle}`
                       : ''}
                   </p>
+
+                  {/* Micro barra de progreso del módulo en curso */}
+                  {activeModuleStat && (
+                    <div className="mt-2.5 mb-3">
+                      <div className="flex items-center justify-between text-[11px] text-slate-300 mb-1">
+                        <span className="text-slate-400">Progreso del módulo</span>
+                        <span className="font-mono font-bold text-white tabular-nums">
+                          {activeModuleStat.progressPct}% ({activeModuleStat.completedTopics}/{activeModuleStat.totalTopics})
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${activeModuleStat.progressPct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <Link
                     to={resumeLesson.url}
                     onClick={() => {
@@ -1121,10 +1150,10 @@ export default function StudentDashboard() {
                         });
                       }
                     }}
-                    className="w-full min-h-[40px] inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all"
+                    className="w-full min-h-[42px] inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/30 transition-all cursor-pointer"
                   >
                     <span>{hasStartedCurriculum ? 'Continuar lección' : 'Empezar curso'}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
               ) : (
@@ -1135,7 +1164,7 @@ export default function StudentDashboard() {
                   <button
                     type="button"
                     onClick={() => selectTab('modules')}
-                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white"
+                    className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white cursor-pointer"
                   >
                     <span>Repasar</span>
                     <ArrowRight className="w-3 h-3" />
@@ -1144,134 +1173,124 @@ export default function StudentDashboard() {
               )}
             </div>
 
-            {/* Cursos Activos en Carrusel Horizontal (Pills compactas con snap en móvil) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar snap-x pt-0.5">
-              <span className="text-[11px] font-semibold text-slate-300 shrink-0">Cursos:</span>
-              {sellable.filter((course) => isEnrolledInCourse(course.id)).length > 0 ? (
-                sellable
-                  .filter((course) => isEnrolledInCourse(course.id))
-                  .map((course) => {
-                    const cId = course.id;
-                    const title = course.title;
-                    return (
-                      <Link
-                        key={cId}
-                        to={`/portal/curso/${cId}`}
-                        className="snap-start shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/35 text-emerald-200 hover:text-white border border-emerald-400/40 transition cursor-pointer"
-                        title={`Ir al portal y temario de ${title}`}
-                      >
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span className="max-w-[180px] sm:max-w-none truncate">{title}</span>
-                        <ArrowRight className="w-3 h-3 text-emerald-400/80 shrink-0" />
-                      </Link>
-                    );
-                  })
-              ) : (
-                <span className="text-xs text-slate-400 italic shrink-0">
-                  Sin cursos activos aún
-                </span>
-              )}
-
-              {pendingCourseIds.map((cId) => {
-                const courseObj = grouped.find((g) => g.course.id === cId)?.course;
-                const title = courseObj?.title ?? cId;
-                return (
-                  <button
-                    key={cId}
-                    type="button"
-                    onClick={() => courseObj && setCourseForModal(courseObj)}
-                    className="snap-start shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500/30 transition cursor-pointer"
-                    title="Solicitud registrada. Haz clic para ver detalles."
-                  >
-                    <Clock className="w-3 h-3 text-amber-400 animate-pulse shrink-0" />
-                    <span className="max-w-[150px] truncate">En espera: {title}</span>
-                  </button>
-                );
-              })}
-
+            {/* Accesos Rápidos de Estudio y Enfoque en Móvil (reemplaza píldoras redundantes de niveles y docentes) */}
+            <div className="md:hidden flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
               <button
                 type="button"
                 onClick={() => {
-                  if (activeExamLock && (remainingActiveSeconds ?? 1) > 0) return;
-                  setGuideStep(0);
-                  setGuideError(null);
-                  setGuideOpen(true);
+                  window.dispatchEvent(new CustomEvent('open-course-sidebar'));
                 }}
-                disabled={Boolean(activeExamLock && (remainingActiveSeconds ?? 1) > 0)}
-                className="snap-start shrink-0 relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white border border-white/20 transition cursor-pointer disabled:opacity-50"
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition cursor-pointer shadow-xs backdrop-blur-xs"
+                title="Abrir temario e índice completo de lecciones"
               >
-                <BellRing className="w-3 h-3 text-blue-300 shrink-0" />
-                <span>Novedades</span>
-                {shouldShowPortalGuide(profile, guidePublishedVersion ?? PORTAL_GUIDE_VERSION) && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                )}
+                <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Índice de temas</span>
               </button>
+
+              {upcomingLiveWorkshop && (
+                <Link
+                  to={upcomingLiveWorkshop.recording_url ? `/taller/${upcomingLiveWorkshop.id}` : upcomingLiveWorkshop.stream_url || `/taller/${upcomingLiveWorkshop.id}`}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-500/25 hover:bg-violet-500/40 text-violet-200 border border-violet-400/30 transition cursor-pointer"
+                  title={`Clase en vivo: ${upcomingLiveWorkshop.title}`}
+                >
+                  <Video className="w-3.5 h-3.5 text-violet-300 animate-pulse" />
+                  <span className="max-w-[170px] truncate">
+                    {upcomingLiveWorkshop.recording_url ? 'Grabación: ' : 'Clase en vivo: '}
+                    {upcomingLiveWorkshop.title}
+                  </span>
+                </Link>
+              )}
+
+              {pendingAssignmentsCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => selectTab('assignments')}
+                  className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/30 transition cursor-pointer"
+                  title="Ver tareas asignadas pendientes"
+                >
+                  <ClipboardList className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{pendingAssignmentsCount} {pendingAssignmentsCount === 1 ? 'tarea' : 'tareas'}</span>
+                </button>
+              )}
+
+              <Link
+                to="/biblioteca"
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 border border-white/15 transition cursor-pointer"
+                title="Biblioteca y recursos clínicos"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-blue-300" />
+                <span>Biblioteca</span>
+              </Link>
+            </div>
+
+            {/* Barra de Acceso Rápido Desktop */}
+            <div className="hidden md:flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-course-sidebar'));
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition cursor-pointer shadow-xs"
+                title="Abrir temario e índice de temas"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Índice de temas</span>
+              </button>
+
+              <Link
+                to="/cursos"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 border border-emerald-400/30 transition"
+              >
+                <GraduationCap className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Mis Cursos</span>
+              </Link>
+
+              {upcomingLiveWorkshop && (
+                <Link
+                  to={upcomingLiveWorkshop.recording_url ? `/taller/${upcomingLiveWorkshop.id}` : upcomingLiveWorkshop.stream_url || `/taller/${upcomingLiveWorkshop.id}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-500/25 hover:bg-violet-500/40 text-violet-200 border border-violet-400/30 transition"
+                >
+                  <Video className="w-3.5 h-3.5 text-violet-300" />
+                  <span>{upcomingLiveWorkshop.recording_url ? 'Ver Grabación' : 'Clase en Vivo'}</span>
+                </Link>
+              )}
+
+              <Link
+                to="/biblioteca"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-slate-200 border border-white/15 transition"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-blue-300" />
+                <span>Biblioteca</span>
+              </Link>
 
               <button
                 type="button"
                 onClick={() => setCommitteeModalOpen(true)}
-                className="snap-start shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-200 hover:text-white border border-indigo-400/40 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-200 border border-indigo-400/30 transition cursor-pointer"
               >
-                <Scale className="w-3 h-3 text-indigo-300 shrink-0" />
+                <Scale className="w-3.5 h-3.5 text-indigo-300" />
                 <span>Comité editorial</span>
               </button>
-            </div>
-
-            {/* ─── Equipo Docente Condensado (Micro-avatares + Enlace discreto en 1 línea) ─── */}
-            <div className="pt-2 border-t border-white/10 flex items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2 min-w-0">
-                {teachers.length > 0 && (
-                  <div className="flex -space-x-1.5 shrink-0">
-                    {teachers.slice(0, 5).map((t) => {
-                      const initials = t.display_name
-                        .replace(/^((dr\(a\)|dr|dra)\.?\s*)+/i, '')
-                        .split(/\s+/)
-                        .slice(0, 2)
-                        .map((w) => w[0] || '')
-                        .join('')
-                        .toUpperCase();
-                      return (
-                        <Link
-                          key={t.id}
-                          to={`/especialistas/${t.id}`}
-                          title={t.display_name}
-                          className="w-6 h-6 rounded-full bg-indigo-800 border border-indigo-400/50 text-[9px] font-bold text-blue-100 flex items-center justify-center hover:z-10 hover:scale-110 transition-transform"
-                        >
-                          {initials || 'DR'}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-                <span className="text-slate-300 truncate">
-                  {loadingTeachers
-                    ? 'Cargando equipo docente…'
-                    : teachers.length > 0
-                      ? `${teachers.length} docentes titulares y colaboradores`
-                      : 'Equipo docente del diplomado'}
-                </span>
-              </div>
-
-              <Link
-                to="/especialistas"
-                className="shrink-0 font-semibold text-blue-300 hover:text-white hover:underline inline-flex items-center gap-1 transition"
-              >
-                <span>Ver equipo docente ({teachers.length})</span>
-                <ArrowRight className="w-3 h-3" />
-              </Link>
             </div>
           </div>
 
           {/* Quick Resume Card (Desktop / Tablet >= md) */}
           <div className="hidden md:block shrink-0 bg-white/10 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/15 max-w-sm w-full">
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-300 mb-1 flex items-center gap-1.5">
-              <Play className="w-3 h-3 text-blue-400 fill-blue-400" />
-              {resumeLesson
-                ? hasStartedCurriculum
-                  ? 'Continuar donde te quedaste'
-                  : 'Empieza tu formación'
-                : 'Curso al día'}
-            </p>
+            <div className="flex items-center justify-between gap-1.5 mb-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
+                <Play className="w-3 h-3 text-cyan-400 fill-cyan-400" />
+                {resumeLesson
+                  ? hasStartedCurriculum
+                    ? 'Continuar donde te quedaste'
+                    : 'Empieza tu formación'
+                  : 'Curso al día'}
+              </p>
+              {activeModuleStat && (
+                <span className="text-[11px] font-mono tabular-nums text-cyan-300 font-bold">
+                  Lección {Math.min((activeModuleStat.completedTopics || 0) + 1, activeModuleStat.totalTopics || 1)} de {activeModuleStat.totalTopics}
+                </span>
+              )}
+            </div>
             {resumeLesson ? (
               <div>
                 <p className="text-sm font-bold text-white line-clamp-2">{resumeLesson.topicTitle}</p>
@@ -1283,10 +1302,23 @@ export default function StudentDashboard() {
                     Siguiente: {resumeLesson.firstIncompleteChildTitle}
                   </p>
                 )}
-                <p className="text-[11px] text-slate-400 mt-2 mb-3">
-                  {resumeLesson.pendingLessonCount}{' '}
-                  {resumeLesson.pendingLessonCount === 1 ? 'tema pendiente' : 'temas pendientes'} en el curso
-                </p>
+                {/* Micro barra de progreso del módulo en curso en desktop */}
+                {activeModuleStat && (
+                  <div className="mt-2.5 mb-3">
+                    <div className="flex items-center justify-between text-[11px] text-slate-300 mb-1">
+                      <span className="text-slate-400">Progreso del módulo</span>
+                      <span className="font-mono font-bold text-white tabular-nums">
+                        {activeModuleStat.progressPct}% ({activeModuleStat.completedTopics}/{activeModuleStat.totalTopics})
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500"
+                        style={{ width: `${activeModuleStat.progressPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <Link
                   to={resumeLesson.url}
                   onClick={() => {
@@ -1424,8 +1456,8 @@ export default function StudentDashboard() {
         </div>
       )}
 
-      {/* ─── KPI Cards (En móvil: 1 fila compacta de 3 columnas + tira de Kardex; en desktop: 4 columnas) ─── */}
-      <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+      {/* ─── KPI Cards (En móvil: Ocultas de inicio para evitar fatiga por métricas, accesibles en la pestaña Desempeño; en desktop: 4 columnas) ─── */}
+      <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
         {/* 1. Progreso Global */}
         <div className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <div className="flex items-center justify-between gap-1 mb-1">
@@ -3704,6 +3736,9 @@ export default function StudentDashboard() {
         <StudentPerformancePanel
           kardex={kardex}
           minPassingGrade={80}
+          metrics={metrics}
+          certRequirements={certRequirements}
+          attemptsCount={attempts.length}
           onOpenKardex={() => setShowKardexModal(true)}
           onSelectTab={(tab) => selectTab(tab)}
         />

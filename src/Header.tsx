@@ -349,6 +349,19 @@ export function Header() {
               <Search className="w-4 h-4" />
             </button>
 
+            {/* Acceso directo al índice de temas en móvil */}
+            {isLoggedIn && (
+              <button
+                type="button"
+                onClick={openCourseSidebar}
+                className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                aria-label="Abrir temario e índice de temas"
+                title="Índice de temas"
+              >
+                <PanelLeft className="w-4 h-4 text-indigo-500 dark:text-cyan-400" />
+              </button>
+            )}
+
             <PWAUpdateButton />
             <OfflineIndicator />
 
@@ -356,19 +369,38 @@ export function Header() {
               <TeacherCommentBell placement="mobile" />
             )}
 
-            {isSupabaseConfigured && user && (
-              <div className="scale-90">
-                <UserMenu />
-              </div>
+            {/* Control unificado de usuario / menú móvil: un solo control en vez de hamburguesa + avatar duplicados */}
+            {isSupabaseConfigured && user ? (
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="relative p-0.5 rounded-full hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer shrink-0 ml-1"
+                aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú de usuario'}
+                title="Menú de cuenta y navegación"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={displayName}
+                    className="w-8 h-8 rounded-full object-cover border border-slate-300 dark:border-slate-700 shadow-xs"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                    {displayName.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú de cuenta'}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             )}
-
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-              aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú de cuenta'}
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
           </div>
         </div>
       </header>
@@ -435,6 +467,40 @@ export function Header() {
                   </button>
 
                   <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Académico</span>
+                    <MobileNavRow
+                      to="/biblioteca"
+                      onClick={closeMobileMenu}
+                      icon={<Sparkles className="w-4 h-4 text-cyan-500" />}
+                      label="Biblioteca y recursos clínicos"
+                    />
+                    <MobileNavRow
+                      to="/talleres"
+                      onClick={closeMobileMenu}
+                      icon={<Video className="w-4 h-4 text-violet-500" />}
+                      label="Clases en vivo y talleres"
+                    />
+                    <MobileNavRow
+                      to="/cursos"
+                      onClick={closeMobileMenu}
+                      icon={<GraduationCap className="w-4 h-4 text-amber-500" />}
+                      label="Mis cursos y niveles"
+                    />
+                    <MobileNavRow
+                      to="/especialistas"
+                      onClick={closeMobileMenu}
+                      icon={<Users className="w-4 h-4 text-indigo-500" />}
+                      label="Directorio del equipo docente"
+                    />
+                    <MobileNavRow
+                      to="/comite-editorial"
+                      onClick={closeMobileMenu}
+                      icon={<Scale className="w-4 h-4 text-emerald-500" />}
+                      label="Comité editorial y aval COMEFYR"
+                    />
+                  </div>
+
+                  <div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Cuenta</span>
                     <MobileNavRow
                       to="/cuenta"
@@ -493,6 +559,16 @@ export function Header() {
                         }
                       />
                     )}
+                    <button
+                      type="button"
+                      onClick={toggleDarkMode}
+                      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-medium text-sm transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
+                        <span>{isDarkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}</span>
+                      </div>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

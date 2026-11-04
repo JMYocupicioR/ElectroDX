@@ -1,13 +1,17 @@
 import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
+  Award,
+  BarChart3,
   CheckCircle2,
+  ChevronRight,
   ClipboardList,
   FileCheck,
   GraduationCap,
   UserCheck,
 } from 'lucide-react';
 import type { StudentKardexData, RubricKey } from '../../types/academicGradebook';
+import type { calculateStudentMetrics, CertificationRequirements } from '../../services/studentService';
 import { RUBRIC_TONE } from '../admin/calendar/calendarTheme';
 
 const BAR: Record<RubricKey, string> = {
@@ -27,11 +31,17 @@ const TAB_FOR_BUCKET: Record<RubricKey, 'quizzes' | 'assignments' | 'modules'> =
 export function StudentPerformancePanel({
   kardex,
   minPassingGrade = 80,
+  metrics,
+  certRequirements,
+  attemptsCount = 0,
   onOpenKardex,
   onSelectTab,
 }: {
   kardex: StudentKardexData | null;
   minPassingGrade?: number;
+  metrics?: ReturnType<typeof calculateStudentMetrics> | null;
+  certRequirements?: CertificationRequirements | null;
+  attemptsCount?: number;
   onOpenKardex: () => void;
   onSelectTab: (tab: 'quizzes' | 'assignments' | 'modules' | 'certificate') => void;
 }) {
@@ -57,6 +67,119 @@ export function StudentPerformancePanel({
 
   return (
     <div className="space-y-6">
+      {/* ─── Resumen Ejecutivo de Métricas (Reubicado en Desempeño para evitar fatiga en inicio) ─── */}
+      {metrics && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          {/* 1. Progreso Global */}
+          <div className="p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                Progreso
+              </span>
+              <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            </div>
+            <div className="flex items-baseline gap-1 mb-1.5">
+              <span className="text-xl sm:text-2xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white leading-none">
+                {metrics?.overallProgressPct || 0}%
+              </span>
+              <span className="hidden sm:inline text-[11px] text-slate-500 dark:text-slate-400">
+                del currículo
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-1">
+              <div
+                className="bg-blue-600 h-full rounded-full transition-all duration-500"
+                style={{ width: `${metrics?.overallProgressPct || 0}%` }}
+              />
+            </div>
+            <p className="text-[10px] sm:text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400 truncate">
+              {metrics?.totalCompletedCurriculumTopics || 0}/{metrics?.totalCurriculumTopics || 0} lecciones
+            </p>
+          </div>
+
+          {/* 2. Horas CME */}
+          <div className="p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                Horas CME
+              </span>
+              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            </div>
+            <div className="flex items-baseline gap-1 mb-1.5">
+              <span className="text-xl sm:text-2xl font-extrabold font-mono tabular-nums text-indigo-600 dark:text-indigo-400 leading-none">
+                {metrics?.cmeCreditsEarned || 0}
+              </span>
+              <span className="text-[10px] sm:text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400">
+                /{metrics?.maxCmeCredits || 40}
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-1">
+              <div
+                className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, Math.round(((metrics?.cmeCreditsEarned || 0) / (metrics?.maxCmeCredits || 40)) * 100))}%`,
+                }}
+              />
+            </div>
+            <p className="text-[10px] sm:text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400 truncate">
+              {metrics?.academicHoursEarned || 0}/{metrics?.maxAcademicHours || 80}h lectivas
+            </p>
+          </div>
+
+          {/* 3. Evaluaciones Quizzes */}
+          <div className="p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+                Quizzes
+              </span>
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            </div>
+            <div className="flex items-baseline gap-1 mb-1.5">
+              <span className="text-xl sm:text-2xl font-extrabold font-mono tabular-nums text-emerald-600 dark:text-emerald-400 leading-none">
+                {certRequirements?.quizzesPassedCount || 0}
+              </span>
+              <span className="text-[10px] sm:text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400 truncate">
+                ({certRequirements?.averageScore || 0}%)
+              </span>
+            </div>
+            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden mb-1">
+              <div
+                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min(100, Math.round(((certRequirements?.quizzesPassedCount || 0) / Math.max(1, certRequirements?.totalQuizzesAvailable || 13)) * 100))}%`,
+                }}
+              />
+            </div>
+            <p className="text-[10px] sm:text-xs font-mono tabular-nums text-slate-500 dark:text-slate-400 truncate">
+              {attemptsCount} intentos registrados
+            </p>
+          </div>
+
+          {/* 4. Kardex Capa A */}
+          <button
+            type="button"
+            onClick={onOpenKardex}
+            className="p-3 sm:p-4 rounded-2xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/50 dark:bg-indigo-950/30 shadow-xs hover:border-indigo-400 transition text-left cursor-pointer"
+          >
+            <div className="flex items-center justify-between gap-1 mb-1">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 truncate">
+                Kardex Capa A
+              </span>
+              <FileCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            </div>
+            <div className="flex items-baseline gap-1 mb-1.5">
+              <span className="text-xl sm:text-2xl font-extrabold font-mono tabular-nums text-slate-900 dark:text-white leading-none">
+                {kardex?.finalGrade ?? '—'}
+              </span>
+              <span className="text-xs text-slate-500 font-mono tabular-nums">/ 100</span>
+            </div>
+            <p className="text-[10px] sm:text-xs text-indigo-600 dark:text-indigo-300 font-semibold truncate flex items-center justify-between">
+              <span>{kardex?.isPassing ? 'Acreditado' : 'En proceso'}</span>
+              <ChevronRight className="w-3.5 h-3.5 inline" />
+            </p>
+          </button>
+        </div>
+      )}
       <section className="p-5 sm:p-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
