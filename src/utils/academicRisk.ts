@@ -1,6 +1,16 @@
 import type { AcademicMilestone, AttendanceStatus } from '../types/academicGradebook';
 import type { AssignmentType, StudentAssignment } from '../types/studentPlan';
 import { describeReadingAssignment } from './readingAssignments';
+import { allModules } from '../content/modules';
+import { findTopicInTree } from '../services/contentMerge';
+
+export function findTopicTitleById(topicId: string): string | null {
+  for (const mod of allModules) {
+    const found = findTopicInTree(mod.topics, topicId);
+    if (found?.title) return found.title;
+  }
+  return null;
+}
 
 export const MEXICO_TIME_ZONE = 'America/Mexico_City';
 export const DEFAULT_CORTE_PASSING_GRADE = 80;
@@ -202,21 +212,51 @@ function homeworkFailure(
   );
 }
 
-function assignmentFailureLabel(type: AssignmentType): string {
-  switch (type) {
-    case 'exam':
-      return 'Examen modular sin aprobar';
-    case 'clinical_case':
-      return 'Caso EMG sin entrega';
-    case 'reading':
-      return 'Lectura vencida';
-    case 'emg_report':
-      return 'Informe EMG sin entrega';
-    case 'practical_task':
-      return 'Tarea práctica sin entrega';
-    default:
-      return 'Tarea vencida';
+export function assignmentFailureLabel(
+  type: AssignmentType,
+  title?: string | null,
+  readingTopicIds?: string[] | null
+): string {
+  const baseLabel = (() => {
+    switch (type) {
+      case 'exam':
+        return 'Examen modular sin aprobar';
+      case 'clinical_case':
+        return 'Caso EMG sin entrega';
+      case 'reading':
+        return 'Lectura vencida';
+      case 'emg_report':
+        return 'Informe EMG sin entrega';
+      case 'practical_task':
+        return 'Tarea práctica sin entrega';
+      default:
+        return 'Tarea vencida';
+    }
+  })();
+
+  const cleanTitle = title?.trim();
+  if (!cleanTitle || cleanTitle.toLowerCase() === type.toLowerCase()) {
+    return baseLabel;
   }
+
+  if (['lectura', 'tarea', 'examen', 'caso', 'informe'].includes(cleanTitle.toLowerCase())) {
+    if (readingTopicIds && readingTopicIds.length > 0) {
+      const topicTitles = readingTopicIds
+        .map((tid) => findTopicTitleById(tid) || tid)
+        .filter(Boolean);
+      if (topicTitles.length > 0) {
+        const display =
+          topicTitles.slice(0, 2).join(', ') +
+          (topicTitles.length > 2 ? ` (+${topicTitles.length - 2})` : '');
+        return `${baseLabel}: "${display}"`;
+      }
+    }
+    return baseLabel;
+  }
+
+  const stripped = cleanTitle.replace(/^(lectura|tarea|examen|caso|informe)(\s+de\s+la\s+semana|\s+obligatoria|\s+semanal)?\s*:\s*/i, '').trim();
+  const displayTitle = stripped || cleanTitle;
+  return `${baseLabel}: "${displayTitle}"`;
 }
 
 function fallsWithinMilestone(dayKey: string, milestone: AcademicMilestone): boolean {
@@ -281,7 +321,13 @@ export function evaluateAcademicRisk(input: AcademicRiskInput): AcademicRiskResu
       const day = assignmentDayKey(assignment.due_date);
       if (findCoveringMilestone(day, milestones)?.id !== milestone.id) continue;
       usedAssignmentIds.add(assignment.id);
-      reasons.push(`${short}: ${assignmentFailureLabel(assignment.type)}`);
+      reasons.push(
+        `${short}: ${assignmentFailureLabel(
+          assignment.type,
+          assignment.title,
+          assignment.reading_topic_ids
+        )}`
+      );
     }
 
     const absences = attendance.filter(
@@ -296,7 +342,13 @@ export function evaluateAcademicRisk(input: AcademicRiskInput): AcademicRiskResu
 
   for (const assignment of failedAssignments) {
     if (usedAssignmentIds.has(assignment.id)) continue;
-    groups.push([assignmentFailureLabel(assignment.type)]);
+    groups.push([
+      assignmentFailureLabel(
+        assignment.type,
+        assignment.title,
+        assignment.reading_topic_ids
+      ),
+    ]);
   }
 
   const status = statusFromGroupCount(groups.length);

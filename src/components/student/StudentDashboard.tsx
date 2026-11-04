@@ -251,6 +251,8 @@ export default function StudentDashboard() {
     const tabParam = searchParams.get('tab');
     if (tabParam && ['summary', 'performance', 'modules', 'agenda', 'quizzes', 'assignments', 'notifications', 'certificate', 'study'].includes(tabParam)) {
       setActiveTab(tabParam as typeof activeTab);
+    } else if (!tabParam) {
+      setActiveTab('summary');
     }
   }, [searchParams]);
 

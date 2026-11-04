@@ -372,8 +372,28 @@ export default function StudentKardexModal({
                               Entrega: {asg.dueDate}
                             </span>
                           </div>
-                          <span className="font-black px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                            {typeof asg.grade === 'number' ? `${asg.grade}%` : 'Entregada'}
+                          <span
+                            className={`font-black text-[10px] px-2 py-0.5 rounded ${
+                              asg.status === 'overdue'
+                                ? 'bg-rose-50 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-900'
+                                : asg.status === 'pending'
+                                ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-900'
+                                : typeof asg.grade === 'number'
+                                ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
+                                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                            }`}
+                          >
+                            {typeof asg.grade === 'number'
+                              ? `${asg.grade}%`
+                              : asg.status === 'overdue'
+                              ? 'Vencida'
+                              : asg.status === 'pending'
+                              ? 'Pendiente'
+                              : asg.status === 'needs_revision'
+                              ? 'Requiere revisión'
+                              : asg.status === 'submitted'
+                              ? 'En revisión'
+                              : 'Entregada'}
                           </span>
                         </div>
                       ))}
@@ -434,9 +454,17 @@ export default function StudentKardexModal({
 
                   <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
                     {(kardex.riskReasons?.length ?? 0) > 0 ? (
-                      <p className="text-[10px] text-rose-700 dark:text-rose-300 px-1">
-                        {kardex.riskReasons.join(' · ')}
-                      </p>
+                      <div className="space-y-1 mb-2 px-1">
+                        {kardex.riskReasons.map((reason, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-1.5 text-[10px] font-semibold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 px-2 py-1 rounded-md border border-rose-200 dark:border-rose-900/60"
+                          >
+                            <AlertTriangle className="w-3 h-3 text-rose-500 shrink-0" />
+                            <span>{reason}</span>
+                          </div>
+                        ))}
+                      </div>
                     ) : null}
                     {kardex.milestoneAudits.length === 0 ? (
                       <p className="text-[10px] text-slate-400 px-1">

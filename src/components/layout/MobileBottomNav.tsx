@@ -10,7 +10,6 @@ import {
   LayoutDashboard,
   Home,
   LogIn,
-  Shield,
   User,
   Users,
   Scale,
@@ -19,6 +18,9 @@ import {
   ChevronRight,
   Sparkles,
   PanelLeft,
+  CalendarDays,
+  Library,
+  Bell,
   type LucideIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
@@ -46,6 +48,7 @@ export function MobileBottomNav() {
   const { pendingCount } = useStudentPendingAssignments();
   const [moreOpen, setMoreOpen] = useState(false);
   const path = location.pathname;
+  const currentTab = new URLSearchParams(location.search).get('tab');
 
   useEffect(() => {
     setMoreOpen(false);
@@ -67,7 +70,7 @@ export function MobileBottomNav() {
     path.startsWith('/especialistas') ||
     path.startsWith('/comite-editorial');
 
-  // Regla de 5 destinos principales (Material Design / iOS HIG) con Touch Target >= 48x48px
+  // Accesos rápidos del estudiante (Touch Target >= 48x48px)
   const studentItems: DockItem[] = [
     {
       id: 'portal',
@@ -77,24 +80,36 @@ export function MobileBottomNav() {
       well: 'bg-indigo-500/15',
       activeWell: 'bg-indigo-600 text-white shadow-sm',
       iconColor: 'text-indigo-300',
-      isActive: path === '/portal' || path === '/dashboard' || path === '/estudiante',
+      isActive:
+        (path === '/portal' && (!currentTab || currentTab === 'summary' || !['agenda', 'notifications'].includes(currentTab))) ||
+        path === '/dashboard' ||
+        path === '/estudiante',
       badge: examBadge,
     },
     {
-      id: 'study',
-      label: 'Estudio',
-      to: '/temario',
-      icon: BookOpen,
-      well: 'bg-blue-500/15',
-      activeWell: 'bg-blue-600 text-white shadow-sm',
-      iconColor: 'text-blue-300',
+      id: 'agenda',
+      label: 'Agenda',
+      to: '/portal?tab=agenda',
+      icon: CalendarDays,
+      well: 'bg-sky-500/15',
+      activeWell: 'bg-sky-600 text-white shadow-sm',
+      iconColor: 'text-sky-300',
       isActive:
-        path.startsWith('/modulo') ||
-        path === '/temario' ||
-        path === '/programa' ||
+        (path === '/portal' && currentTab === 'agenda') ||
         path.startsWith('/talleres') ||
-        path.startsWith('/taller') ||
-        path.startsWith('/biblioteca'),
+        path.startsWith('/taller'),
+    },
+    {
+      id: 'library',
+      label: 'Biblioteca',
+      to: '/biblioteca',
+      icon: Library,
+      well: 'bg-amber-500/15',
+      activeWell: 'bg-amber-600 text-white shadow-sm',
+      iconColor: 'text-amber-300',
+      isActive:
+        path.startsWith('/biblioteca') ||
+        path.startsWith('/especialistas/contenido'),
     },
     {
       id: 'practice',
@@ -111,14 +126,15 @@ export function MobileBottomNav() {
         path.startsWith('/herramientas'),
     },
     {
-      id: 'courses',
-      label: isStaff ? 'Panel' : 'Cursos',
-      to: isStaff ? '/admin' : '/cursos',
-      icon: isStaff ? Shield : GraduationCap,
-      well: 'bg-amber-500/15',
-      activeWell: 'bg-amber-600 text-white shadow-sm',
-      iconColor: 'text-amber-300',
-      isActive: isStaff ? path.startsWith('/admin') : path.startsWith('/cursos'),
+      id: 'notifications',
+      label: 'Avisos',
+      to: '/portal?tab=notifications',
+      icon: Bell,
+      well: 'bg-rose-500/15',
+      activeWell: 'bg-rose-600 text-white shadow-sm',
+      iconColor: 'text-rose-300',
+      isActive: path === '/portal' && currentTab === 'notifications',
+      badge: examBadge,
     },
     {
       id: 'more',
@@ -346,18 +362,28 @@ export function MobileBottomNav() {
         className="fixed bottom-0 left-0 right-0 z-50 lg:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.35)]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="grid grid-cols-5 items-stretch gap-1 px-2 py-1 max-w-lg mx-auto">
+        <div
+          className={`grid ${
+            navItems.length === 6
+              ? 'grid-cols-6 gap-0.5 px-1'
+              : navItems.length === 5
+              ? 'grid-cols-5 gap-1 px-2'
+              : navItems.length === 4
+              ? 'grid-cols-4 gap-1 px-2'
+              : 'grid-cols-5 gap-1 px-2'
+          } items-stretch py-1 max-w-lg mx-auto`}
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const inner = (
               <>
                 <span
-                  className={`relative w-9 h-8 rounded-xl flex items-center justify-center transition-colors ${
+                  className={`relative w-8.5 h-8 sm:w-9 sm:h-8 rounded-xl flex items-center justify-center transition-colors ${
                     item.isActive ? item.activeWell : item.well
                   }`}
                 >
                   <Icon
-                    className={`w-[19px] h-[19px] ${item.isActive ? 'text-white' : item.iconColor}`}
+                    className={`w-[18px] h-[18px] sm:w-[19px] sm:h-[19px] ${item.isActive ? 'text-white' : item.iconColor}`}
                     strokeWidth={2.25}
                   />
                   {item.badge != null && (
@@ -367,7 +393,7 @@ export function MobileBottomNav() {
                   )}
                 </span>
                 <span
-                  className={`text-[10px] font-semibold leading-none tracking-tight truncate max-w-full ${
+                  className={`text-[9px] sm:text-[10px] font-semibold leading-none tracking-tight truncate max-w-full text-center ${
                     item.isActive ? 'text-white' : 'text-slate-400'
                   }`}
                 >

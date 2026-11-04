@@ -316,4 +316,22 @@ describe('evaluateAcademicRisk', () => {
     expect(result.status).toBe('at_risk');
     expect(result.reasons).toEqual(['Lectura vencida']);
   });
+
+  it('includes the specific assignment title and lesson name in risk reasons', () => {
+    const reading = assignment({
+      type: 'reading',
+      title: 'Lectura de la semana: Nervio Mediano y STC',
+      status: 'pending',
+      due_date: '2026-10-20T18:00:00.000Z',
+      requires_delivery: false,
+    });
+    const result = evaluateAcademicRisk({
+      now: NOW,
+      milestones: [],
+      completedTopics: new Set(),
+      assignments: [reading],
+    });
+    expect(result.status).toBe('at_risk');
+    expect(result.reasons).toEqual(['Lectura vencida: "Nervio Mediano y STC"']);
+  });
 });
