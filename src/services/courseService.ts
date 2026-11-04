@@ -469,12 +469,13 @@ export async function getMyCourseEnrollments(status?: CourseEnrollmentStatus | '
 
 export async function requestCourseEnrollment(
   courseId: CourseId,
-  options?: { notes?: string; paymentReference?: string }
+  options?: { notes?: string; paymentReference?: string; couponCode?: string }
 ): Promise<CourseEnrollment> {
   const { data, error } = await sb.rpc('request_course_enrollment', {
     p_course_id: courseId,
     p_notes: options?.notes?.trim() || null,
     p_payment_reference: options?.paymentReference?.trim() || null,
+    p_coupon_code: options?.couponCode?.trim().toUpperCase() || null,
   });
   if (error) throw error;
   return data as CourseEnrollment;

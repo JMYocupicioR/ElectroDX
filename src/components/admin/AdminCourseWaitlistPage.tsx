@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   Users,
   Clock,
@@ -14,6 +14,7 @@ import {
   Eye,
   AlertCircle,
   RotateCcw,
+  Ticket,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -70,6 +71,7 @@ export default function AdminCourseWaitlistPage() {
     isCourseId(requestedCourse) ? requestedCourse : 'all'
   );
   const [selectedStatus, setSelectedStatus] = useState<CourseEnrollmentStatus | 'all'>('pending');
+  const [onlyScholarships, setOnlyScholarships] = useState(false);
   const [actionBusyId, setActionBusyId] = useState<string | null>(null);
 
   // Modal para admitir
@@ -204,6 +206,9 @@ export default function AdminCourseWaitlistPage() {
 
   const filteredList = useMemo(() => {
     let list = waitlist;
+    if (onlyScholarships) {
+      list = list.filter((r) => Boolean(r.coupon_code));
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter(
@@ -216,7 +221,7 @@ export default function AdminCourseWaitlistPage() {
       );
     }
     return list;
-  }, [waitlist, searchQuery]);
+  }, [waitlist, searchQuery, onlyScholarships]);
 
   const pendingCount = useMemo(
     () => waitlist.filter((r) => r.status === 'pending').length + profilePending.length,
@@ -227,6 +232,15 @@ export default function AdminCourseWaitlistPage() {
     <AdminLayout
       title="Admisiones y Lista de Espera de Cursos"
       subtitle="Control de aspirantes a los cursos de ElectroDx, cola de admisión cronológica y aprobación de suscripciones por el profesor."
+      headerActions={
+        <Link
+          to="/admin/becas"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition shadow-2xs"
+        >
+          <Ticket className="w-3.5 h-3.5" />
+          <span>Gestionar Becas</span>
+        </Link>
+      }
     >
       {/* Toast Notification */}
       {toastMessage && (
@@ -314,6 +328,16 @@ export default function AdminCourseWaitlistPage() {
               {f.label}
             </button>
           ))}
+          <label className="ml-1 sm:ml-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 cursor-pointer hover:bg-indigo-100/60 transition">
+            <input
+              type="checkbox"
+              checked={onlyScholarships}
+              onChange={(e) => setOnlyScholarships(e.target.checked)}
+              className="rounded-xs border-indigo-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <Ticket className="w-3 h-3 text-indigo-500" />
+            <span>Solo con beca</span>
+          </label>
         </div>
 
         <div className="relative w-full sm:w-72">
@@ -486,6 +510,22 @@ export default function AdminCourseWaitlistPage() {
                         </span>
                       )}
 
+                      {row.coupon_code && (
+                        <span
+                          className={`inline-flex items-center gap-1 font-mono text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                            row.discount_percent === 100
+                              ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                              : 'bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800'
+                          }`}
+                          title={`Beca del ${row.discount_percent}% aplicada con código ${row.coupon_code}`}
+                        >
+                          <Ticket className="w-3 h-3" />
+                          {row.discount_percent === 100
+                            ? `Beca 100% (${row.coupon_code})`
+                            : `Beca ${row.discount_percent}% (${row.coupon_code})`}
+                        </span>
+                      )}
+
                       {row.payment_reference && (
                         <span className="inline-flex items-center gap-1 font-mono text-[11px] text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                           <CreditCard className="w-3 h-3 text-slate-400" />
@@ -512,7 +552,13 @@ export default function AdminCourseWaitlistPage() {
                         disabled={isBusy}
                         onClick={() => {
                           setAdmitTarget(row);
-                          setAdmitPaymentRef(row.payment_reference || '');
+                          if (row.discount_percent === 100) {
+                            setAdmitPaymentMethod('beca');
+                            setAdmitPaymentRef(row.coupon_code ? `Beca 100% - ${row.coupon_code}` : 'Beca 100%');
+                          } else {
+                            setAdmitPaymentMethod('transferencia');
+                            setAdmitPaymentRef(row.payment_reference || '');
+                          }
                         }}
                         className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition cursor-pointer"
                       >
@@ -591,6 +637,18 @@ export default function AdminCourseWaitlistPage() {
                 <p className="text-slate-500">Cédula: {admitTarget.cedula_profesional}</p>
               )}
             </div>
+
+            {admitTarget.coupon_code && (
+              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/80 text-xs flex items-center justify-between">
+                <span className="font-semibold text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                  <Ticket className="w-3.5 h-3.5 text-indigo-500" />
+                  Beca del {admitTarget.discount_percent}% aplicada:
+                </span>
+                <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                  {admitTarget.coupon_code}
+                </span>
+              </div>
+            )}
 
             <form onSubmit={handleConfirmAdmission} className="space-y-3">
               <div>

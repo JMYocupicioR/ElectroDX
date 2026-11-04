@@ -59,6 +59,9 @@ export interface CourseEnrollment {
   reviewed_by?: string | null;
   reviewed_at?: string | null;
   review_notes?: string | null;
+  coupon_id?: string | null;
+  coupon_code?: string | null;
+  discount_percent?: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -88,7 +91,12 @@ export interface CourseWaitlistRow {
   cedula_verified: boolean;
   avatar_url: string | null;
   waitlist_position: number;
+  coupon_id?: string | null;
+  coupon_code?: string | null;
+  discount_percent?: number | null;
 }
+
+export * from './scholarship';
 
 export interface SyllabusTopicOverride {
   module_id: string;

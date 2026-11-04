@@ -963,13 +963,23 @@ export default function AdminDashboard() {
             )
           }
           headerAction={
-            <Link
-              to="/admin/admisiones"
-              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
-              title="Ver todas las admisiones"
-            >
-              Admisiones
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/admin/becas"
+                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+                title="Gestionar cupones y becas"
+              >
+                Becas
+              </Link>
+              <span className="text-slate-300 dark:text-slate-700">•</span>
+              <Link
+                to="/admin/admisiones"
+                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+                title="Ver todas las admisiones"
+              >
+                Admisiones
+              </Link>
+            </div>
           }
           isOpen={openSections['waitlist'] ?? false}
           onToggle={() => toggleSection('waitlist')}

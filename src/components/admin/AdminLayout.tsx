@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   PanelLeftClose,
   PanelLeftOpen,
+  Ticket,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useStaffViewStore } from '../../stores/staffViewStore';
@@ -210,6 +211,14 @@ export function AdminLayout({
           icon: UserCheck,
           exact: false,
           badge: pendingCourseEnrollments + pendingEnrollments,
+          adminOnly: true,
+        },
+        {
+          to: '/admin/becas',
+          label: 'Becas y cupones',
+          icon: Ticket,
+          exact: false,
+          badge: 0,
           adminOnly: true,
         },
         {

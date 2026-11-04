@@ -33,6 +33,8 @@ export interface StudentRegistrationData {
   comefyrMemberId?: string;
   cedulaVerified?: boolean;
   cedulaData?: Record<string, any> | null;
+  couponCode?: string;
+  accountType?: 'student' | 'teacher';
 }
 
 interface AuthContextValue {
@@ -430,6 +432,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         comefyrMemberId,
         cedulaVerified,
         cedulaData,
+        couponCode,
+        accountType,
       } = data;
 
       if (!password || password.length < 8) {
@@ -451,6 +455,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             comefyr_member_id: comefyrMemberId?.trim() || null,
             cedula_verified: cedulaVerified ?? false,
             cedula_data: cedulaData ?? null,
+            coupon_code: couponCode?.trim() || null,
+            account_type: accountType || 'student',
           },
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
         },
@@ -461,6 +467,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (signUpData.session?.user) {
+        if (couponCode?.trim()) {
+          try {
+            await sb.rpc('apply_registration_coupon' as any, {
+              p_user_id: signUpData.session.user.id,
+              p_coupon_code: couponCode.trim().toUpperCase(),
+            });
+          } catch (e) {
+            console.warn('[Auth] apply_registration_coupon error/warning:', e);
+          }
+        }
         await loadUserData(signUpData.session.user.id);
         return { error: null, needsEmailConfirmation: false };
       }

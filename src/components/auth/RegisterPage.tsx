@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,12 +21,16 @@ import {
   Plus,
   X,
   AlertCircle,
+  Ticket,
+  Crown,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { postLoginPath } from '../../utils/postLoginPath';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { BrandLogo } from '../brand/BrandLogo';
 import { BRAND } from '../../config/brand';
+import { validateScholarshipCoupon } from '../../services/scholarshipService';
+import type { CouponValidationResult } from '../../types/scholarship';
 
 // Sedes hospitalarias de referencia comunes en México (con programas de Rehabilitación y Neurofisiología)
 const POPULAR_HOSPITALS = [
@@ -110,6 +114,53 @@ export default function RegisterPage() {
   const [cedula, setCedula] = useState('');
   const [comefyrId, setComefyrId] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+
+  // Estados para cupón de beca / invitación docente
+  const [couponInput, setCouponInput] = useState('');
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [validatedCoupon, setValidatedCoupon] = useState<CouponValidationResult | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const handleValidateCoupon = async (codeOverride?: string) => {
+    const code = (codeOverride ?? couponInput).trim();
+    if (!code) {
+      setCouponError('Ingresa un código de cupón o beca.');
+      return;
+    }
+    setIsValidatingCoupon(true);
+    setCouponError(null);
+    try {
+      const result = await validateScholarshipCoupon(code, null, Boolean(cedula.trim()));
+      if (result.valid) {
+        setValidatedCoupon(result);
+        setCouponInput(result.code || code.toUpperCase());
+        setCouponError(null);
+      } else {
+        setValidatedCoupon(null);
+        setCouponError(result.error || 'Código no válido o no disponible.');
+      }
+    } catch (err: any) {
+      setValidatedCoupon(null);
+      setCouponError(err?.message || 'Error al validar el código.');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleClearCoupon = () => {
+    setCouponInput('');
+    setValidatedCoupon(null);
+    setCouponError(null);
+  };
+
+  useEffect(() => {
+    const codeParam = searchParams.get('beca') || searchParams.get('cupon') || searchParams.get('codigo');
+    if (codeParam && !couponInput) {
+      const cleanParam = codeParam.toUpperCase();
+      setCouponInput(cleanParam);
+      handleValidateCoupon(cleanParam);
+    }
+  }, [searchParams]);
 
   // Estados de carga y error
   const [loading, setLoading] = useState(false);
@@ -271,6 +322,8 @@ export default function RegisterPage() {
       residencyYear: category === 'resident' ? residencyYear : 'Especialista',
       cedulaProfesional: cedula || undefined,
       comefyrMemberId: comefyrId || undefined,
+      couponCode: validatedCoupon?.valid ? validatedCoupon.code : undefined,
+      accountType: validatedCoupon?.valid ? validatedCoupon.account_type : 'student',
     });
 
     setLoading(false);
@@ -334,23 +387,53 @@ export default function RegisterPage() {
             </p>
 
             {/* Credencial Digital Interactiva en Tiempo Real */}
-            <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/80 border border-slate-700/60 shadow-xl relative overflow-hidden group">
+            <div className={`p-5 rounded-2xl bg-gradient-to-br transition-all duration-300 border shadow-xl relative overflow-hidden group ${
+              validatedCoupon?.account_type === 'teacher'
+                ? 'from-slate-950 via-slate-900 to-violet-950/70 border-violet-500/40 shadow-violet-950/30'
+                : validatedCoupon?.discount_percent === 100
+                ? 'from-slate-950 via-slate-900 to-emerald-950/70 border-emerald-500/40 shadow-emerald-950/30'
+                : 'from-slate-950 via-slate-900 to-indigo-950/80 border-slate-700/60 shadow-slate-950/50'
+            }`}>
               <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl" />
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-cyan-400" />
+                  {validatedCoupon?.account_type === 'teacher' ? (
+                    <Crown className="w-4 h-4 text-violet-400" />
+                  ) : (
+                    <Shield className="w-4 h-4 text-cyan-400" />
+                  )}
                   <span className="text-[11px] font-semibold text-slate-300 tracking-wider uppercase">
-                    Credencial Digital Estudiante
+                    {validatedCoupon?.account_type === 'teacher'
+                      ? 'Credencial Digital Docente'
+                      : validatedCoupon?.discount_percent === 100
+                      ? 'Credencial Estudiante Becado'
+                      : 'Credencial Digital Estudiante'}
                   </span>
                 </div>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                  Activo
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition ${
+                  validatedCoupon?.account_type === 'teacher'
+                    ? 'bg-violet-500/20 text-violet-300 border-violet-500/40'
+                    : validatedCoupon?.discount_percent === 100
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : validatedCoupon
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                }`}>
+                  {validatedCoupon?.account_type === 'teacher'
+                    ? '👑 Profesor Invitado'
+                    : validatedCoupon?.discount_percent === 100
+                    ? '🎓 Beca 100%'
+                    : validatedCoupon
+                    ? `🏷️ Beca ${validatedCoupon.discount_percent}%`
+                    : 'Activo'}
                 </span>
               </div>
 
               <div className="space-y-2">
                 <div>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Médico en Formación</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                    {validatedCoupon?.account_type === 'teacher' ? 'Docente / Ponente Invitado' : 'Médico en Formación'}
+                  </p>
                   <p className="text-white font-bold text-base truncate">
                     {fullName.trim() || 'Dr(a). Nombre del Alumno'}
                   </p>
@@ -359,14 +442,24 @@ export default function RegisterPage() {
                 <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                   <div>
                     <p className="text-[10px] text-slate-500 uppercase font-semibold">Nivel / Rol</p>
-                    <p className="text-slate-300 font-medium">
-                      {category === 'resident' ? `Residente ${residencyYear}` : 'Especialista / Cursista'}
+                    <p className="text-slate-300 font-medium truncate">
+                      {validatedCoupon?.account_type === 'teacher'
+                        ? 'Profesor / Docente'
+                        : category === 'resident'
+                        ? `Residente ${residencyYear}${validatedCoupon?.discount_percent === 100 ? ' (Beca 100%)' : ''}`
+                        : 'Especialista / Cursista'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-slate-500 uppercase font-semibold">{BRAND.enableAccreditation ? 'Aval Académico' : 'Programa'}</p>
+                    <p className="text-[10px] text-slate-500 uppercase font-semibold">
+                      {validatedCoupon?.account_type === 'teacher' ? 'Claustro' : BRAND.enableAccreditation ? 'Aval Académico' : 'Programa'}
+                    </p>
                     <p className="text-cyan-400 font-medium truncate">
-                      {BRAND.enableAccreditation ? (comefyrId ? `COMEFYR: ${comefyrId}` : 'COMEFYR México') : 'Posgrado EDX'}
+                      {validatedCoupon?.account_type === 'teacher'
+                        ? 'Claustro Docente EDX'
+                        : BRAND.enableAccreditation
+                        ? (comefyrId ? `COMEFYR: ${comefyrId}` : 'COMEFYR México')
+                        : 'Posgrado EDX'}
                     </p>
                   </div>
                 </div>
@@ -389,6 +482,26 @@ export default function RegisterPage() {
                   <div className="pt-2 mt-2 border-t border-slate-800/80">
                     <p className="text-[10px] text-slate-500 uppercase font-semibold">Cédula profesional</p>
                     <p className="text-slate-300 text-xs truncate">#{cedula.trim()}</p>
+                  </div>
+                )}
+
+                {validatedCoupon && (
+                  <div className={`mt-2.5 pt-2 border-t text-[11px] flex items-center justify-between font-medium ${
+                    validatedCoupon.account_type === 'teacher'
+                      ? 'border-violet-500/30 text-violet-300'
+                      : validatedCoupon.discount_percent === 100
+                      ? 'border-emerald-500/30 text-emerald-300'
+                      : 'border-cyan-500/30 text-cyan-300'
+                  }`}>
+                    <span className="flex items-center gap-1">
+                      <Ticket className="w-3.5 h-3.5" />
+                      <strong className="font-mono uppercase">{validatedCoupon.code}</strong>
+                    </span>
+                    <span>
+                      {validatedCoupon.account_type === 'teacher'
+                        ? 'Acceso Docente Fast-Track'
+                        : `${validatedCoupon.discount_percent}% de Beca Canjeada`}
+                    </span>
                   </div>
                 )}
               </div>
@@ -886,6 +999,233 @@ export default function RegisterPage() {
                       Puedes anotarla ahora. La validación ante la SEP la hace el administrador desde tu expediente.
                     </p>
                   </div>
+
+                  {/* ─── Cupón de Beca o Invitación Docente (Al final del Paso 2) ─── */}
+                  <div className="pt-3 border-t border-slate-800/80">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 border border-slate-800 shadow-xl space-y-3.5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 shrink-0">
+                            <Ticket className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-xs sm:text-sm font-bold text-white">
+                                ¿Cuentas con código de beca o invitación docente?
+                              </h4>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                                Opcional
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              Ingresa tu código de convenio hospitalario, beca de residencia o invitación para profesor invitado.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Campo de Entrada y Botón de Validación */}
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <Ticket className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={couponInput}
+                            onChange={(e) => {
+                              setCouponInput(e.target.value.toUpperCase());
+                              if (validatedCoupon) setValidatedCoupon(null);
+                              if (couponError) setCouponError(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleValidateCoupon();
+                              }
+                            }}
+                            disabled={isValidatingCoupon || (validatedCoupon?.valid ?? false)}
+                            placeholder="Ingresa tu código..."
+                            className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 text-xs sm:text-sm uppercase tracking-wider font-mono focus:border-cyan-400 outline-none transition disabled:opacity-60"
+                          />
+                        </div>
+
+                        {validatedCoupon?.valid ? (
+                          <button
+                            type="button"
+                            onClick={handleClearCoupon}
+                            className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" /> Quitar
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleValidateCoupon()}
+                            disabled={isValidatingCoupon || !couponInput.trim()}
+                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-bold text-xs uppercase tracking-wider transition flex items-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                          >
+                            {isValidatingCoupon ? (
+                              <span className="flex items-center gap-1.5 text-slate-900 font-semibold">
+                                <span className="w-3 h-3 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                                Validando...
+                              </span>
+                            ) : (
+                              <>
+                                <span>Aplicar</span>
+                                <Sparkles className="w-3.5 h-3.5" />
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Mensaje de Error */}
+                      {couponError && (
+                        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold">Código no disponible</p>
+                            <p className="text-[11px] text-rose-400/90 mt-0.5">{couponError}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ─── TARJETA DE CANJE: Explica con total claridad qué está canjeando ─── */}
+                      {validatedCoupon?.valid && (
+                        <div
+                          className={`p-4 rounded-2xl border text-xs relative overflow-hidden transition-all duration-300 ${
+                            validatedCoupon.account_type === 'teacher'
+                              ? 'bg-gradient-to-br from-violet-950/70 via-slate-900 to-indigo-950/80 border-violet-500/60 text-violet-100 shadow-xl shadow-violet-950/30'
+                              : validatedCoupon.discount_percent === 100
+                              ? 'bg-gradient-to-br from-emerald-950/70 via-slate-900 to-cyan-950/80 border-emerald-500/60 text-emerald-100 shadow-xl shadow-emerald-950/30'
+                              : 'bg-gradient-to-br from-blue-950/70 via-slate-900 to-cyan-950/80 border-cyan-500/60 text-cyan-100 shadow-xl shadow-cyan-950/30'
+                          }`}
+                        >
+                          {/* Encabezado del Beneficio */}
+                          <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-white/10">
+                            <div className="flex items-center gap-2">
+                              {validatedCoupon.account_type === 'teacher' ? (
+                                <Crown className="w-4 h-4 text-amber-300" />
+                              ) : validatedCoupon.discount_percent === 100 ? (
+                                <GraduationCap className="w-4 h-4 text-emerald-300" />
+                              ) : (
+                                <Award className="w-4 h-4 text-cyan-300" />
+                              )}
+                              <span className="font-bold uppercase tracking-wider text-[11px] text-white">
+                                {validatedCoupon.account_type === 'teacher'
+                                  ? 'Cuenta de Profesor Invitado / Docente'
+                                  : validatedCoupon.discount_percent === 100
+                                  ? 'Alumno con Beca al 100% (Exención Total)'
+                                  : `Alumno con Beca Parcial (${validatedCoupon.discount_percent}% Descuento)`}
+                              </span>
+                            </div>
+                            <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-white/10 text-white border border-white/20">
+                              {validatedCoupon.code}
+                            </span>
+                          </div>
+
+                          {/* Título y descripción del canje */}
+                          <div className="mb-3">
+                            <p className="font-semibold text-white text-xs sm:text-sm">
+                              {validatedCoupon.account_type === 'teacher'
+                                ? 'Estás canjeando una Invitación Docente VIP (Acceso Fast-Track)'
+                                : validatedCoupon.discount_percent === 100
+                                ? 'Estás canjeando una Beca Completa de Colegiatura (100% Bonificado)'
+                                : `Estás canjeando una Beca por Convenio Especial (${validatedCoupon.discount_percent}% Bonificado)`}
+                            </p>
+                            {validatedCoupon.description && (
+                              <p className="text-[11px] text-slate-300 mt-0.5">
+                                {validatedCoupon.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Desglose de lo que se está canjeando */}
+                          <div className="p-3 rounded-xl bg-black/30 border border-white/10 space-y-2">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                              Beneficios incluidos con este cupón al completar tu registro:
+                            </p>
+
+                            {validatedCoupon.account_type === 'teacher' ? (
+                              <div className="space-y-1.5 text-[11px] text-slate-200">
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Perfil Docente Activo:</strong> Tu cuenta se creará con permisos de <strong>Profesor / Colaborador Académico</strong>.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Colegiatura $0 MXN:</strong> Acceso completo y liberado a todo el catálogo formativo sin ningún pago o trámite bancario.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Acceso Fast-Track Inmediato:</strong> Sin esperas en lista de admisión ni revisiones administrativas previas.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Herramientas de Cátedra:</strong> Acceso completo a simuladores de EMG, biblioteca de trazados y casos clínicos.
+                                  </span>
+                                </div>
+                              </div>
+                            ) : validatedCoupon.discount_percent === 100 ? (
+                              <div className="space-y-1.5 text-[11px] text-slate-200">
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Exención Total de Pago (100%):</strong> Colegiatura completa condonada ($0 MXN a liquidar).
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Sin comprobante bancario:</strong> No requieres adjuntar ficha de transferencia ni recibo de depósito.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Plan de Estudio Completo:</strong> Evaluaciones interactivas, simulador de neuroconducción y constancia avalada.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Modalidad:</strong> {validatedCoupon.auto_admit ? 'Admisión inmediata tras registro para comenzar tus clases.' : 'Ingreso Fast-Track con visto bueno docente en lista de espera.'}
+                                  </span>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5 text-[11px] text-slate-200">
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Subsidio del {validatedCoupon.discount_percent}%:</strong> Descuento aplicado directamente sobre el costo de colegiatura.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Tarifa Preferencial de Remanente:</strong> Podrás liquidar únicamente la diferencia bancaria con tarifa reducida.
+                                  </span>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                                  <span>
+                                    <strong>Acreditación Académica:</strong> Conservas el derecho pleno a evaluaciones clínicas y constancia oficial avalada.
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
@@ -1008,16 +1348,28 @@ export default function RegisterPage() {
                   </div>
 
                   <h3 className="text-2xl font-bold text-white">
-                    ¡Bienvenido(a) a {BRAND.name}!
+                    {validatedCoupon?.account_type === 'teacher'
+                      ? '¡Bienvenido(a) al Claustro Docente!'
+                      : `¡Bienvenido(a) a ${BRAND.name}!`}
                   </h3>
 
                   <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
-                    Tu cuenta de estudiante ha sido dada de alta exitosamente para el{' '}
-                    <strong className="text-white">{fullName}</strong> en{' '}
-                    <strong className="text-cyan-400">{institution}</strong>
-                    {academicInstitution && (
-                      <> (Egreso: <strong className="text-indigo-300">{academicInstitution}</strong>)</>
-                    )}.
+                    {validatedCoupon?.account_type === 'teacher' ? (
+                      <>
+                        Tu cuenta docente ha sido creada exitosamente para el{' '}
+                        <strong className="text-white">{fullName}</strong> en{' '}
+                        <strong className="text-violet-400">{institution}</strong> con acceso prioritario y total al catálogo.
+                      </>
+                    ) : (
+                      <>
+                        Tu cuenta de estudiante ha sido dada de alta exitosamente para el{' '}
+                        <strong className="text-white">{fullName}</strong> en{' '}
+                        <strong className="text-cyan-400">{institution}</strong>
+                        {academicInstitution && (
+                          <> (Egreso: <strong className="text-indigo-300">{academicInstitution}</strong>)</>
+                        )}.
+                      </>
+                    )}
                   </p>
 
                   <div className="flex justify-center">
@@ -1038,6 +1390,18 @@ export default function RegisterPage() {
                         Hemos enviado un enlace de confirmación a <strong>{email}</strong>. Por favor verifica tu bandeja de entrada o continúa navegando.
                       </p>
                     </div>
+                  ) : validatedCoupon?.account_type === 'teacher' ? (
+                    <p className="text-xs text-violet-400 font-medium">
+                      👑 Sesión iniciada con permisos de Profesor / Docente Invitado y acceso total.
+                    </p>
+                  ) : validatedCoupon?.discount_percent === 100 ? (
+                    <p className="text-xs text-emerald-400 font-medium">
+                      🎓 Beca del 100% activa. Tu exención total de colegiatura está registrada en tu expediente.
+                    </p>
+                  ) : validatedCoupon ? (
+                    <p className="text-xs text-cyan-400 font-medium">
+                      🏷️ Beca del {validatedCoupon.discount_percent}% vinculada exitosamente a tu expediente.
+                    </p>
                   ) : (
                     <p className="text-xs text-emerald-400 font-medium">
                       Sesión iniciada con permisos de Estudiante.

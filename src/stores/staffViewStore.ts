@@ -36,9 +36,11 @@ function markStaffViewHydrated() {
   }
 }
 
-useStaffViewStore.persist.onFinishHydration(markStaffViewHydrated);
+if (useStaffViewStore.persist?.onFinishHydration) {
+  useStaffViewStore.persist.onFinishHydration(markStaffViewHydrated);
+}
 
-if (useStaffViewStore.persist.hasHydrated()) {
+if (useStaffViewStore.persist?.hasHydrated?.()) {
   markStaffViewHydrated();
 }
 

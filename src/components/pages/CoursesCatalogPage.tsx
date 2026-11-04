@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import {
   GraduationCap,
@@ -25,6 +26,20 @@ export default function CoursesCatalogPage() {
   const sellable = sellableCourses(courses);
   const nextSuggested = recommendedNextCourse(courseIds, courses);
   const [selectedCourseForModal, setSelectedCourseForModal] = useState<Course | null>(null);
+  const [searchParams] = useSearchParams();
+  const initialCoupon = searchParams.get('beca') || searchParams.get('coupon');
+
+  useEffect(() => {
+    if (initialCoupon && user && !selectedCourseForModal) {
+      const courseParam = searchParams.get('curso') || searchParams.get('course');
+      if (courseParam) {
+        const found = courses.find((c) => c.id === courseParam && c.is_sellable);
+        if (found) setSelectedCourseForModal(found);
+      } else if (sellable.length === 1) {
+        setSelectedCourseForModal(sellable[0]);
+      }
+    }
+  }, [initialCoupon, user, courses, sellable, selectedCourseForModal, searchParams]);
 
   return (
     <main id="contenido-principal" className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-20">
@@ -215,6 +230,7 @@ export default function CoursesCatalogPage() {
         <CourseEnrollmentRequestModal
           course={selectedCourseForModal}
           isOpen={Boolean(selectedCourseForModal)}
+          initialCouponCode={initialCoupon || undefined}
           onClose={() => setSelectedCourseForModal(null)}
           onSuccess={async () => {
             await reload();
