@@ -264,9 +264,9 @@ BEGIN
     VALUES (p_user_id, 'contributor')
     ON CONFLICT (user_id, role) DO NOTHING;
 
-    -- Actualizar perfil a profesor
+    -- Marcar perfil como verificado
     UPDATE public.profiles
-    SET role = 'profesor',
+    SET verified_at = COALESCE(verified_at, now()),
         updated_at = now()
     WHERE id = p_user_id;
 
@@ -276,7 +276,9 @@ BEGIN
         user_id,
         course_id,
         status,
-        enrolled_at,
+        granted_at,
+        payment_method,
+        payment_reference,
         coupon_id,
         coupon_code,
         discount_percent
@@ -286,16 +288,21 @@ BEGIN
         v_course_record.id,
         'active',
         now(),
+        'beca',
+        v_coupon.code,
         v_coupon.id,
         v_coupon.code,
         100
       )
       ON CONFLICT (user_id, course_id) DO UPDATE
         SET status = 'active',
+            granted_at = COALESCE(course_enrollments.granted_at, now()),
+            payment_method = 'beca',
+            payment_reference = v_coupon.code,
             coupon_id = v_coupon.id,
             coupon_code = v_coupon.code,
             discount_percent = 100,
-            enrolled_at = COALESCE(course_enrollments.enrolled_at, now());
+            updated_at = now();
     END LOOP;
 
   -- B. Si es cupón para Alumno con Beca
@@ -312,7 +319,9 @@ BEGIN
           user_id,
           course_id,
           status,
-          enrolled_at,
+          granted_at,
+          payment_method,
+          payment_reference,
           coupon_id,
           coupon_code,
           discount_percent
@@ -322,21 +331,29 @@ BEGIN
           v_coupon.course_id,
           'active',
           now(),
+          'beca',
+          v_coupon.code,
           v_coupon.id,
           v_coupon.code,
           v_coupon.discount_percent
         )
         ON CONFLICT (user_id, course_id) DO UPDATE
           SET status = 'active',
+              granted_at = COALESCE(course_enrollments.granted_at, now()),
+              payment_method = 'beca',
+              payment_reference = v_coupon.code,
               coupon_id = v_coupon.id,
               coupon_code = v_coupon.code,
-              discount_percent = v_coupon.discount_percent;
+              discount_percent = v_coupon.discount_percent,
+              updated_at = now();
       ELSE
         INSERT INTO public.course_enrollments (
           user_id,
           course_id,
           status,
-          waitlist_joined_at,
+          requested_at,
+          payment_method,
+          payment_reference,
           coupon_id,
           coupon_code,
           discount_percent
@@ -346,14 +363,19 @@ BEGIN
           v_coupon.course_id,
           'pending',
           now(),
+          'beca',
+          v_coupon.code,
           v_coupon.id,
           v_coupon.code,
           v_coupon.discount_percent
         )
         ON CONFLICT (user_id, course_id) DO UPDATE
-          SET coupon_id = v_coupon.id,
+          SET payment_method = 'beca',
+              payment_reference = v_coupon.code,
+              coupon_id = v_coupon.id,
               coupon_code = v_coupon.code,
-              discount_percent = v_coupon.discount_percent;
+              discount_percent = v_coupon.discount_percent,
+              updated_at = now();
       END IF;
     END IF;
   END IF;
@@ -401,50 +423,68 @@ SET search_path = public
 AS $$
 DECLARE
   v_coupon_code TEXT;
-  v_requested_account_type TEXT;
-  v_role TEXT := 'student';
+  v_account_type TEXT;
 BEGIN
   v_coupon_code := NULLIF(TRIM(NEW.raw_user_meta_data->>'coupon_code'), '');
-  v_requested_account_type := NEW.raw_user_meta_data->>'account_type';
-
-  IF v_requested_account_type = 'teacher' THEN
-    v_role := 'profesor';
-  END IF;
+  v_account_type := NEW.raw_user_meta_data->>'account_type';
 
   INSERT INTO public.profiles (
     id,
     display_name,
     avatar_url,
-    role,
-    specialty,
+    credentials,
     institution,
+    academic_institution,
+    specialty,
     residency_year,
-    cedula_profesional
+    cedula_profesional,
+    comefyr_member_id,
+    cedula_verified,
+    cedula_data
   )
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
     NEW.raw_user_meta_data->>'avatar_url',
-    v_role,
-    NEW.raw_user_meta_data->>'specialty',
+    NEW.raw_user_meta_data->>'credentials',
     NEW.raw_user_meta_data->>'institution',
+    NEW.raw_user_meta_data->>'academic_institution',
+    NEW.raw_user_meta_data->>'specialty',
     NEW.raw_user_meta_data->>'residency_year',
-    NEW.raw_user_meta_data->>'cedula_profesional'
+    NEW.raw_user_meta_data->>'cedula_profesional',
+    NEW.raw_user_meta_data->>'comefyr_member_id',
+    COALESCE((NEW.raw_user_meta_data->>'cedula_verified')::boolean, false),
+    (NEW.raw_user_meta_data->>'cedula_data')::jsonb
   )
   ON CONFLICT (id) DO UPDATE
-    SET display_name = EXCLUDED.display_name,
-        role = CASE WHEN v_role = 'profesor' THEN 'profesor' ELSE profiles.role END,
+    SET display_name = COALESCE(EXCLUDED.display_name, profiles.display_name),
+        credentials = COALESCE(EXCLUDED.credentials, profiles.credentials),
+        institution = COALESCE(EXCLUDED.institution, profiles.institution),
+        academic_institution = COALESCE(EXCLUDED.academic_institution, profiles.academic_institution),
         specialty = COALESCE(EXCLUDED.specialty, profiles.specialty),
-        institution = COALESCE(EXCLUDED.institution, profiles.institution);
+        residency_year = COALESCE(EXCLUDED.residency_year, profiles.residency_year),
+        cedula_profesional = COALESCE(EXCLUDED.cedula_profesional, profiles.cedula_profesional),
+        updated_at = now();
 
   -- Por defecto rol student
   INSERT INTO public.user_roles (user_id, role)
   VALUES (NEW.id, 'student')
   ON CONFLICT (user_id, role) DO NOTHING;
 
-  -- Si tiene cupón ingresado durante el registro, aplicarlo
+  -- Si se indicó cuenta docente
+  IF v_account_type = 'teacher' THEN
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'contributor')
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END IF;
+
+  -- Si tiene cupón ingresado durante el registro, aplicarlo dentro de bloque EXCEPTION
   IF v_coupon_code IS NOT NULL THEN
-    PERFORM public.apply_registration_coupon(NEW.id, v_coupon_code);
+    BEGIN
+      PERFORM public.apply_registration_coupon(NEW.id, v_coupon_code);
+    EXCEPTION WHEN OTHERS THEN
+      RAISE WARNING 'apply_registration_coupon falló para usuario %: %', NEW.id, SQLERRM;
+    END;
   END IF;
 
   RETURN NEW;
