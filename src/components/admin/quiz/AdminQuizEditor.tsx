@@ -17,6 +17,9 @@ import {
   Check,
   FolderInput,
   X,
+  Upload,
+  Activity,
+  BookOpen,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthProvider';
 import { useAllModules } from '../../../hooks/useAllModules';
@@ -29,7 +32,11 @@ import {
   saveRevision,
 } from '../../../services/editorialService';
 import { defaultOptionsForType } from '../../../utils/quizScoring';
+import { CLINICAL_PRESETS } from '../../simulator/traceEngine/defaultPresets';
+import { uploadRenderedTraceSvgToStorage } from '../../../utils/traceSvgGenerator';
+import { getReferencesForTopic, type Reference } from '../../../content/topicReferences';
 import type {
+  QuizCitation,
   QuizDifficulty,
   QuizOption,
   QuizQuestionDraft,
@@ -105,10 +112,23 @@ export function AdminQuizEditor({
   const [showSimulator, setShowSimulator] = useState(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(0);
   const [movingQuestionIndex, setMovingQuestionIndex] = useState<number | null>(null);
+  const [selectedTracePreset, setSelectedTracePreset] = useState<string>(
+    CLINICAL_PRESETS[0]?.id ?? 'median-cts'
+  );
+  const [selectedTraceVariant, setSelectedTraceVariant] = useState<
+    'pathologic' | 'normal' | 'comparison'
+  >('pathologic');
+  const [uploadingTraceIndex, setUploadingTraceIndex] = useState<number | null>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement | null>(null);
   const quizLoadToken = useRef(0);
   const appliedRouteTopic = useRef('');
   const mergedModuleRef = useRef(mergedModule);
   mergedModuleRef.current = mergedModule;
+
+  const topicRefs = useMemo(
+    () => (selectedTopicId ? getReferencesForTopic(selectedModuleId, selectedTopicId) : []),
+    [selectedModuleId, selectedTopicId]
+  );
 
   // Available leaf topics for selected module. Option keys stay unique even
   // when two leaves in the same module reused a slug.
@@ -439,6 +459,129 @@ export function AdminQuizEditor({
     }
   };
 
+  // Import JSON Draft (.agents/skills/emg-quiz-topics/drafts/{topicId}.json)
+  const handleImportJsonFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setErrorMessage(null);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as Record<string, unknown>;
+      const quizObj =
+        parsed.topicQuiz && typeof parsed.topicQuiz === 'object'
+          ? (parsed.topicQuiz as Record<string, unknown>)
+          : parsed;
+
+      const rawQuestions = Array.isArray(quizObj.questions)
+        ? (quizObj.questions as QuizQuestionDraft[])
+        : [];
+      if (rawQuestions.length === 0) {
+        setErrorMessage('El archivo JSON no contiene un arreglo válido de "questions".');
+        return;
+      }
+
+      if (typeof quizObj.title === 'string' && quizObj.title.trim()) {
+        setTitle(quizObj.title.trim());
+      }
+      if (typeof quizObj.passScore === 'number') {
+        setPassScore(quizObj.passScore);
+      }
+      if (typeof quizObj.shuffleQuestions === 'boolean') {
+        setShuffleQuestions(quizObj.shuffleQuestions);
+      }
+      if (typeof quizObj.shuffleOptions === 'boolean') {
+        setShuffleOptions(quizObj.shuffleOptions);
+      }
+
+      const normalized: QuizQuestionDraft[] = rawQuestions.map((q) => ({
+        ...q,
+        id: q.id || crypto.randomUUID(),
+        type: q.type || 'single',
+        difficulty: q.difficulty || 'intermediate',
+        options: (q.options ?? []).map((opt) => ({
+          id: opt.id || crypto.randomUUID(),
+          text: opt.text ?? '',
+          isCorrect: Boolean(opt.isCorrect),
+        })),
+      }));
+
+      setQuestions(normalized);
+      setExpandedIndex(0);
+      setSuccessToast(
+        `Borrador IA importado (${normalized.length} reactivos cargados). Revisa y publica o guarda borrador.`
+      );
+      setTimeout(() => setSuccessToast(null), 5000);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('No se pudo leer el archivo JSON de borrador.');
+    }
+  };
+
+  const handleGenerateAndUploadTrace = async (qIndex: number) => {
+    const q = questions[qIndex];
+    if (!q) return;
+    setUploadingTraceIndex(qIndex);
+    setErrorMessage(null);
+    try {
+      const uploaded = await uploadRenderedTraceSvgToStorage(
+        selectedTopicId || 'general',
+        {
+          tracePresetId: selectedTracePreset,
+          variant: selectedTraceVariant,
+          hideDiagnosis: true,
+        },
+        q.imageAlt
+      );
+      updateQuestion(qIndex, {
+        imageUrl: uploaded.imageUrl,
+        imageAlt: uploaded.imageAlt,
+      });
+      setSuccessToast('Trazado EMG calibrado generado y subido a emg-trace-images.');
+      setTimeout(() => setSuccessToast(null), 4000);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(
+        err instanceof Error ? err.message : 'Error al generar y subir el trazo EMG.'
+      );
+    } finally {
+      setUploadingTraceIndex(null);
+    }
+  };
+
+  const handleInsertReference = (qIndex: number, ref: Reference) => {
+    const q = questions[qIndex];
+    if (!q) return;
+    const formattedLine = `📚 Referencia: ${ref.authors} (${ref.year}). ${ref.title}. ${ref.journal}.${ref.url ? ` ${ref.url}` : ''}`;
+    const currentExp = (q.explanation ?? '').trim();
+    const nextExp = currentExp.includes(ref.title)
+      ? currentExp
+      : currentExp
+      ? `${currentExp}\n\n${formattedLine}`
+      : formattedLine;
+
+    const existingCitations: QuizCitation[] = q.citations ?? [];
+    const alreadyInCitations = existingCitations.some((c) => c.title === ref.title);
+    const nextCitations: QuizCitation[] = alreadyInCitations
+      ? existingCitations
+      : [
+          ...existingCitations,
+          {
+            authors: ref.authors,
+            title: ref.title,
+            journal: ref.journal,
+            year: ref.year,
+            ...(ref.url ? { url: ref.url } : {}),
+          },
+        ];
+
+    updateQuestion(qIndex, {
+      explanation: nextExp,
+      citations: nextCitations,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Breadcrumbs */}
@@ -483,6 +626,23 @@ export function AdminQuizEditor({
 
         {/* Global Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={jsonFileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleImportJsonFile}
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={() => jsonFileInputRef.current?.click()}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-cyan-200 dark:border-cyan-800 bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 text-xs sm:text-sm font-semibold transition shadow-xs"
+            title="Importar archivo JSON generado por la skill emg-quiz-topics (.agents/skills/emg-quiz-topics/drafts/*.json)"
+          >
+            <Upload className="w-4 h-4" /> Importar Borrador IA (.json)
+          </button>
+
           <button
             type="button"
             onClick={() => setShowSimulator(true)}
@@ -851,9 +1011,63 @@ export function AdminQuizEditor({
                       {/* Clinical Image Field (if image_choice) */}
                       {q.type === 'image_choice' && (
                         <div className="p-3.5 rounded-xl border border-cyan-200 dark:border-cyan-900/50 bg-cyan-50/40 dark:bg-cyan-950/20 space-y-3">
-                          <span className="text-xs font-bold text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5">
-                            <ImageIcon className="w-4 h-4" /> Registro de Imagen Clínica
-                          </span>
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="text-xs font-bold text-cyan-800 dark:text-cyan-300 flex items-center gap-1.5">
+                              <ImageIcon className="w-4 h-4" /> Registro de Imagen Clínica / Trazo EMG Calibrado
+                            </span>
+                            <span className="text-[11px] font-medium text-cyan-700/80 dark:text-cyan-300/80">
+                              Osciloscopio 10×8 div · Sin revelar diagnóstico en encabezado
+                            </span>
+                          </div>
+
+                          {/* Calibrated EMG SVG Trace Generator */}
+                          <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-cyan-200/70 dark:border-cyan-800/60 space-y-2.5">
+                            <div className="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                              <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>Generador de Trazado EMG Calibrado (SVG → Bucket emg-trace-images)</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                              <select
+                                value={selectedTracePreset}
+                                onChange={(e) => setSelectedTracePreset(e.target.value)}
+                                className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                              >
+                                {CLINICAL_PRESETS.map((preset) => (
+                                  <option key={preset.id} value={preset.id}>
+                                    [{preset.studyType.toUpperCase()}] {preset.title}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <select
+                                value={selectedTraceVariant}
+                                onChange={(e) =>
+                                  setSelectedTraceVariant(
+                                    e.target.value as 'pathologic' | 'normal' | 'comparison'
+                                  )
+                                }
+                                className="px-2.5 py-1.5 rounded-lg text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                              >
+                                <option value="pathologic">Trazo Patológico (L1 marcado)</option>
+                                <option value="comparison">Comparativo CH1 Control vs CH2 Estudio</option>
+                                <option value="normal">Trazo Normal / Control</option>
+                              </select>
+
+                              <button
+                                type="button"
+                                disabled={uploadingTraceIndex === index}
+                                onClick={() => handleGenerateAndUploadTrace(index)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50 cursor-pointer"
+                              >
+                                <Activity className="w-3.5 h-3.5" />
+                                <span>
+                                  {uploadingTraceIndex === index
+                                    ? 'Generando SVG...'
+                                    : 'Generar y Subir Trazo'}
+                                </span>
+                              </button>
+                            </div>
+                          </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input
@@ -865,7 +1079,7 @@ export function AdminQuizEditor({
                             />
                             <input
                               type="text"
-                              placeholder="Pie de figura / texto alternativo"
+                              placeholder="Pie de figura / texto alternativo (alt clínico sin diagnóstico)"
                               value={q.imageAlt ?? ''}
                               onChange={(e) => updateQuestion(index, { imageAlt: e.target.value })}
                               className="px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
@@ -873,11 +1087,11 @@ export function AdminQuizEditor({
                           </div>
 
                           {q.imageUrl && (
-                            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-48 flex items-center justify-center bg-black/40">
+                            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 max-h-56 flex items-center justify-center bg-black/80 p-2">
                               <img
                                 src={q.imageUrl}
                                 alt={q.imageAlt || 'Vista previa'}
-                                className="max-h-48 object-contain"
+                                className="max-h-52 object-contain"
                                 onError={(e) => {
                                   (e.target as HTMLElement).style.display = 'none';
                                 }}
@@ -960,19 +1174,70 @@ export function AdminQuizEditor({
                         </div>
                       </div>
 
-                      {/* Explanation / Clinical Pearl */}
-                      <div>
-                        <label className="text-xs font-semibold text-slate-500 mb-1 flex items-center gap-1.5">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                          <span>Retroalimentación Académica / Perla Clínica COMEFYR</span>
-                        </label>
+                      {/* Explanation / Clinical Pearl & Bibliographic Grounding */}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <label className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Retroalimentación Académica / Perla Clínica + Bibliografía</span>
+                          </label>
+
+                          {topicRefs.length > 0 && (
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                const idxRef = Number(e.target.value);
+                                if (!Number.isNaN(idxRef) && topicRefs[idxRef]) {
+                                  handleInsertReference(index, topicRefs[idxRef]);
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300"
+                            >
+                              <option value="">+ Insertar cita verificada del tema...</option>
+                              {topicRefs.map((ref, rIdx) => (
+                                <option key={rIdx} value={rIdx}>
+                                  {ref.authors} ({ref.year}) — {ref.journal || ref.title.slice(0, 45)}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+
                         <textarea
-                          rows={2}
+                          rows={3}
                           value={q.explanation ?? ''}
                           onChange={(e) => updateQuestion(index, { explanation: e.target.value })}
-                          placeholder="Justificación médica y electrodiagnóstica que verá el estudiante al concluir el examen..."
+                          placeholder="Justificación médica y electrodiagnóstica + 📚 Referencia: Autor (Año). Título. Revista. DOI/URL..."
                           className="w-full px-3 py-2 rounded-xl text-xs sm:text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 leading-relaxed"
                         />
+
+                        {q.citations && q.citations.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                            {q.citations.map((cit, cIdx) => (
+                              <span
+                                key={cIdx}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300"
+                              >
+                                <BookOpen className="w-3 h-3 text-indigo-500 shrink-0" />
+                                <span className="truncate max-w-xs">
+                                  {cit.authors} ({cit.year}) · {cit.journal}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    updateQuestion(index, {
+                                      citations: q.citations?.filter((_, i) => i !== cIdx),
+                                    })
+                                  }
+                                  className="text-slate-400 hover:text-red-500"
+                                  title="Quitar cita estructurada"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

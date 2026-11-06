@@ -71,7 +71,9 @@ function mergeRemoteAndLocalCommitments(
           ...rem,
           teacher_name: rem.teacher_name || loc.teacher_name || 'Profesor',
           milestone_id: loc.milestone_id ?? rem.milestone_id ?? null,
-          workshop_id: loc.workshop_id ?? rem.workshop_id ?? null,
+          // El servidor manda en workshop_id: no dejar que un local viejo
+          // vuelva a vincular una clase ya desasociada (loc ?? rem resucitaba el id).
+          workshop_id: rem.workshop_id ?? null,
         });
       }
     }
@@ -447,5 +449,87 @@ export async function assignWorkshopToTopics(
     }
   } catch (err) {
     console.warn('[topicTeachingService] assignWorkshopToTopics error:', err);
+  }
+}
+
+/**
+ * Vincula un taller ya grabado a un tema sin crear otro recurso.
+ * Actualiza commitments de cualquier docente del tema (no solo el admin actual).
+ */
+export async function attachWorkshopIdToTopicCommitments(
+  workshopId: string,
+  topicIds: string[],
+  cohortId: string = TOPIC_TEACHING_COHORT_ID
+): Promise<void> {
+  if (!workshopId || !topicIds.length) return;
+  const unique = [...new Set(topicIds.filter(Boolean))];
+  if (!unique.length) return;
+
+  try {
+    if (!isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+      const { error, status } = await sb
+        .from(COMMITMENTS_TABLE)
+        .update({ workshop_id: workshopId })
+        .eq('cohort_id', cohortId)
+        .neq('status', 'withdrawn')
+        .in('topic_id', unique);
+      if (isMissingRelationError(error, status)) {
+        markTableAsMissingInSupabase(COMMITMENTS_TABLE);
+      }
+    }
+  } catch (err) {
+    console.warn('[topicTeachingService] attachWorkshopIdToTopicCommitments remote error:', err);
+  }
+
+  const local = readLocalCommitments();
+  writeLocalCommitments(
+    local.map((c) =>
+      c.cohort_id === cohortId && c.status !== 'withdrawn' && unique.includes(c.topic_id)
+        ? { ...c, workshop_id: workshopId }
+        : c
+    )
+  );
+}
+
+/**
+ * Quita el vínculo taller↔tema en commitments sin retirar al docente del tema.
+ */
+export async function detachWorkshopIdFromTopicCommitments(
+  workshopId: string,
+  topicIds: string[],
+  cohortId: string = TOPIC_TEACHING_COHORT_ID
+): Promise<void> {
+  if (!workshopId || !topicIds.length) return;
+  const unique = [...new Set(topicIds.filter(Boolean))];
+  if (!unique.length) return;
+
+  const local = readLocalCommitments();
+  writeLocalCommitments(
+    local.map((c) =>
+      c.cohort_id === cohortId &&
+      c.status !== 'withdrawn' &&
+      c.workshop_id === workshopId &&
+      unique.includes(c.topic_id)
+        ? { ...c, workshop_id: null }
+        : c
+    )
+  );
+
+  if (isTableMissingInSupabase(COMMITMENTS_TABLE)) return;
+
+  const { error, status } = await sb
+    .from(COMMITMENTS_TABLE)
+    .update({ workshop_id: null })
+    .eq('cohort_id', cohortId)
+    .eq('workshop_id', workshopId)
+    .neq('status', 'withdrawn')
+    .in('topic_id', unique);
+
+  if (isMissingRelationError(error, status)) {
+    markTableAsMissingInSupabase(COMMITMENTS_TABLE);
+    return;
+  }
+  if (error) {
+    throw rpcError(error, 'No se pudo desvincular la clase del tema en los compromisos docentes.');
   }
 }

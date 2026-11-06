@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bell, X, CheckCircle2, Smartphone } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
@@ -33,6 +34,7 @@ export function dismissPwaPrompt(userId?: string | null): void {
 
 export default function DeviceNotificationPromptBanner() {
   const { user, isAdmin, isEditor } = useAuth();
+  const location = useLocation();
   const isStaff = isAdmin || isEditor;
   const openInstallModal = usePWAInstallStore((s) => s.openInstallModal);
 
@@ -102,14 +104,14 @@ export default function DeviceNotificationPromptBanner() {
     }
   };
 
-  if (!isVisible || !user) return null;
+  if (!isVisible || !user || location.pathname.startsWith('/taller/')) return null;
 
   return (
     <aside
       aria-label="Aviso para activar alertas y notificaciones del dispositivo"
       className="relative z-40 mt-14 sm:mt-16 -mb-14 sm:-mb-16 bg-indigo-900 dark:bg-indigo-950 text-white border-b border-indigo-700/60"
     >
-      <div className="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-2">
+      <div className="max-w-[1680px] mx-auto px-3 sm:px-6 lg:px-8 py-1.5 sm:py-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {justGranted ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -131,12 +133,12 @@ export default function DeviceNotificationPromptBanner() {
         </div>
 
         {!justGranted && (
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             {diagnostics.needsIOSInstall ? (
               <button
                 type="button"
                 onClick={openInstallModal}
-                className="px-2.5 py-1 rounded-lg bg-white text-indigo-950 hover:bg-indigo-50 font-semibold text-[11px] transition cursor-pointer whitespace-nowrap"
+                className="min-h-9 px-3 py-1 rounded-lg bg-white text-indigo-950 hover:bg-indigo-50 font-semibold text-[11px] transition cursor-pointer whitespace-nowrap"
               >
                 Instalar en iPhone
               </button>
@@ -145,7 +147,7 @@ export default function DeviceNotificationPromptBanner() {
                 type="button"
                 onClick={handleEnable}
                 disabled={isRequesting}
-                className="px-2.5 py-1 rounded-lg bg-white text-indigo-950 hover:bg-indigo-50 font-semibold text-[11px] transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                className="min-h-9 px-3 py-1 rounded-lg bg-white text-indigo-950 hover:bg-indigo-50 font-semibold text-[11px] transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
               >
                 {isRequesting ? 'Activando...' : 'Activar alertas'}
               </button>
@@ -154,7 +156,7 @@ export default function DeviceNotificationPromptBanner() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="p-1 rounded-md text-indigo-200 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              className="min-w-10 min-h-10 flex items-center justify-center rounded-lg text-indigo-200 hover:text-white hover:bg-white/10 transition cursor-pointer"
               title="Cerrar aviso"
               aria-label="Cerrar aviso de alertas"
             >

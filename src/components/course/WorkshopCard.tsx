@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useMemo } from 'react';
 import { Video, Clock, BookOpen, Lock, UserCheck, MapPin } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { canAccessLiveWorkshop } from '../../utils/liveSessionUtils';
 import { buildLiveClassTopicCatalog } from '../admin/LiveClassTopicQuickPicker';
 import {
@@ -23,8 +23,12 @@ export function WorkshopCard({ workshop, brief }: WorkshopCardProps) {
   const isPast = date < now;
   const isLive = Math.abs(date.getTime() - now.getTime()) < 2 * 60 * 60 * 1000; // within 2 hours
   const canAccess = canAccessLiveWorkshop(workshop, now);
+  const { modulesForStaff } = useSyllabusCatalog();
 
-  const catalog = useMemo(() => buildLiveClassTopicCatalog(allModules), []);
+  const catalog = useMemo(
+    () => buildLiveClassTopicCatalog(modulesForStaff),
+    [modulesForStaff],
+  );
   const resolved = briefForWorkshop(workshop, brief);
   const summary = sessionSummaryText(workshop.description);
   const teacherLabel = resolved.teachers.map((teacher) => teacher.name).slice(0, 2).join(', ');

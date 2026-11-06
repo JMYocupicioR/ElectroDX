@@ -30,6 +30,26 @@ interface QuizResultsProps {
 
 const OPTION_LETTERS = ['A', 'B', 'C', 'D', 'E'];
 
+function splitExplanationAndReferences(explanation?: string): {
+  body: string;
+  inlineReference: string | null;
+  referenceUrl: string | null;
+} {
+  if (!explanation) return { body: '', inlineReference: null, referenceUrl: null };
+  const match = explanation.match(/(?:📚\s*)?Referencias?:\s*([\s\S]+)$/i);
+  if (!match || match.index === undefined) {
+    return { body: explanation.trim(), inlineReference: null, referenceUrl: null };
+  }
+  const body = explanation.slice(0, match.index).trim();
+  const inlineReference = match[1].trim();
+  const urlMatch = inlineReference.match(/https?:\/\/[^\s)]+/i);
+  return {
+    body: body || explanation.trim(),
+    inlineReference,
+    referenceUrl: urlMatch ? urlMatch[0].replace(/[.,;]+$/, '') : null,
+  };
+}
+
 export function QuizResults({
   quiz,
   displayQuestions,
@@ -234,6 +254,23 @@ export function QuizResults({
 
                 {isExpanded && (
                   <div className="px-4 pb-4 pt-2 border-t border-slate-200/60 dark:border-slate-800/60 space-y-3">
+                    {/* Imagen / Trazo EMG (si existe) */}
+                    {q.image_url && (
+                      <figure className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-950/90 p-2">
+                        <img
+                          src={q.image_url}
+                          alt={q.image_alt ?? 'Registro electrodiagnóstico del reactivo'}
+                          className="w-full max-h-60 object-contain rounded-lg mx-auto"
+                          loading="lazy"
+                        />
+                        {q.image_alt && (
+                          <figcaption className="text-[11px] text-slate-400 text-center mt-1.5 px-2">
+                            {q.image_alt}
+                          </figcaption>
+                        )}
+                      </figure>
+                    )}
+
                     {/* Opciones */}
                     <div className="space-y-1.5">
                       {q.options.map((opt, oIdx) => {
@@ -272,20 +309,73 @@ export function QuizResults({
                       })}
                     </div>
 
-                    {/* Explicación / Perla clínica */}
-                    {q.explanation && (
-                      <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5">
-                        <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <div className="text-xs">
-                          <span className="font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide block mb-0.5">
-                            Perla Clínica Oficial
-                          </span>
-                          <p className="text-slate-700 dark:text-amber-200/90 leading-relaxed">
-                            {q.explanation}
-                          </p>
+                    {/* Explicación / Perla clínica y Bibliografía */}
+                    {q.explanation && (() => {
+                      const parsedExp = splitExplanationAndReferences(q.explanation);
+                      const hasCitations = Boolean(
+                        parsedExp.inlineReference || (q.citations && q.citations.length > 0)
+                      );
+                      return (
+                        <div className="space-y-2">
+                          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5">
+                            <Lightbulb className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                            <div className="text-xs flex-1">
+                              <span className="font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wide block mb-0.5">
+                                Perla Clínica Oficial
+                              </span>
+                              <p className="text-slate-700 dark:text-amber-200/90 leading-relaxed whitespace-pre-line">
+                                {parsedExp.body}
+                              </p>
+                            </div>
+                          </div>
+
+                          {hasCitations && (
+                            <div className="p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                              <div className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                                <BookOpen className="w-3.5 h-3.5" />
+                                <span>Sustento Bibliográfico</span>
+                              </div>
+                              {parsedExp.inlineReference && (
+                                <p className="leading-relaxed">
+                                  {parsedExp.inlineReference}{' '}
+                                  {parsedExp.referenceUrl && (
+                                    <a
+                                      href={parsedExp.referenceUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-semibold text-indigo-600 dark:text-indigo-400 underline ml-1"
+                                    >
+                                      Ver fuente ↗
+                                    </a>
+                                  )}
+                                </p>
+                              )}
+                              {q.citations &&
+                                q.citations.map((cit, cIdx) => (
+                                  <p key={cIdx} className="leading-relaxed">
+                                    • {cit.authors} ({cit.year}). <em>{cit.title}</em>. {cit.journal}.
+                                    {(cit.url || cit.doi) && (
+                                      <a
+                                        href={
+                                          cit.url ??
+                                          (cit.doi?.startsWith('http')
+                                            ? cit.doi
+                                            : `https://doi.org/${cit.doi}`)
+                                        }
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold text-indigo-600 dark:text-indigo-400 underline ml-1"
+                                      >
+                                        Fuente ↗
+                                      </a>
+                                    )}
+                                  </p>
+                                ))}
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 )}
               </div>

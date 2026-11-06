@@ -317,6 +317,27 @@ describe('evaluateAcademicRisk', () => {
     expect(result.reasons).toEqual(['Lectura vencida']);
   });
 
+  it('clears reading risk when the syllabus already has every assigned topic', () => {
+    const reading = assignment({
+      type: 'reading',
+      title: 'Leer los primeros tres temas',
+      status: 'pending',
+      due_date: '2026-10-20T18:00:00.000Z',
+      requires_delivery: false,
+      reading_topic_ids: ['history', 'clinical-role', 'laboratory'],
+      reading_done_ids: [],
+      reading_completed_at: null,
+    });
+    const result = evaluateAcademicRisk({
+      now: NOW,
+      milestones: [],
+      completedTopics: new Set(['history', 'clinical-role', 'laboratory']),
+      assignments: [reading],
+    });
+    expect(result.status).toBe('on_track');
+    expect(result.reasons).toEqual([]);
+  });
+
   it('includes the specific assignment title and lesson name in risk reasons', () => {
     const reading = assignment({
       type: 'reading',

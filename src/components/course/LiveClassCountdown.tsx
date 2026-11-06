@@ -1,7 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { Video, Lock, Clock, Bell, CheckCircle, AlertCircle, Play } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
-import { TrackedLiveClassPlayer } from './TrackedLiveClassPlayer';
+import {
+  TrackedLiveClassPlayer,
+  type TrackedAttendanceLockState,
+} from './TrackedLiveClassPlayer';
 import {
   getWorkshopAccessTiming,
   triggerLiveClassFiveMinuteAlert,
@@ -15,20 +18,42 @@ interface LiveClassCountdownProps {
   loadingReg?: boolean;
   className?: string;
   userId?: string;
+  /** Cuando el page monta el player en modo teatro (full width). */
+  hidePlayer?: boolean;
+  rosterAttendanceLocked?: boolean;
+  rosterStatusLabel?: string | null;
+  onRosterAttendanceResolved?: (state: TrackedAttendanceLockState) => void;
 }
 
-function recordingPlayerBlock(workshop: LiveWorkshop, userId: string) {
+function recordingPlayerBlock(
+  workshop: LiveWorkshop,
+  userId: string,
+  options?: {
+    rosterLocked?: boolean;
+    rosterStatusLabel?: string | null;
+    onRosterAttendanceResolved?: (state: TrackedAttendanceLockState) => void;
+  },
+) {
   return (
-    <div className="mt-6 text-left">
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] font-bold uppercase tracking-wide">
-          <Play className="w-3 h-3" /> Clase grabada lista
+    <div className="mt-4 text-left">
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-200 text-[11px] font-bold uppercase tracking-wide border border-purple-200/70 dark:border-purple-800/50">
+          <Play className="w-3 h-3 fill-current" /> Clase grabada lista
         </span>
         <span className="text-[11px] text-slate-500 dark:text-slate-400">
-          Reproduce aquí para acreditar asistencia (mín. {workshop.min_watch_percent ?? 85}%).
+          {options?.rosterLocked
+            ? `Asistencia ya asentada${options.rosterStatusLabel ? ` (${options.rosterStatusLabel})` : ''} · grabación opcional`
+            : `Acredita con mín. ${workshop.min_watch_percent ?? 85}% visto`}
         </span>
       </div>
-      <TrackedLiveClassPlayer workshop={workshop} userId={userId} />
+      <div className="-mx-4 -mb-4 sm:mx-0 sm:mb-0">
+        <TrackedLiveClassPlayer
+          workshop={workshop}
+          userId={userId}
+          className="rounded-b-2xl rounded-t-xl sm:rounded-2xl"
+          onRosterAttendanceResolved={options?.onRosterAttendanceResolved}
+        />
+      </div>
     </div>
   );
 }
@@ -40,6 +65,10 @@ export function LiveClassCountdown({
   loadingReg = false,
   className = '',
   userId,
+  hidePlayer = false,
+  rosterAttendanceLocked = false,
+  rosterStatusLabel = null,
+  onRosterAttendanceResolved,
 }: LiveClassCountdownProps) {
   const [timing, setTiming] = useState<WorkshopAccessTiming>(() =>
     getWorkshopAccessTiming(workshop, new Date())
@@ -94,55 +123,90 @@ export function LiveClassCountdown({
     hour: '2-digit',
     minute: '2-digit',
   });
+  const shortFinishedDate = scheduledAt.toLocaleDateString('es-MX', {
+    day: 'numeric',
+    month: 'short',
+  });
 
   return (
     <div
-      className={`rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-900/60 p-6 transition-all ${className}`}
+      className={`rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 sm:p-5 shadow-sm transition-all ${className}`}
       aria-live="polite"
     >
-      {/* ─── CASO 1: LA CLASE YA FINALIZÓ ─── */}
+      {/* ─── CASO 1: LA CLASE YA FINALIZÓ (Banner horizontal compacto + Player a ancho completo) ─── */}
       {isPast ? (
-        <div className="text-center py-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold mb-3">
-            <Clock className="w-3.5 h-3.5" /> Sesión Concluida
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200/80 dark:border-slate-700">
+                <Clock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                <span>Sesión Concluida · {shortFinishedDate}</span>
+              </span>
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                Este taller ya finalizó
+              </h3>
+            </div>
+
+            {workshop.recording_url && !userId && (
+              <a
+                href={workshop.recording_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto min-h-11 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs sm:text-sm font-bold shadow-sm transition-all cursor-pointer"
+              >
+                <Video className="w-4 h-4" /> Ver grabación de la clase
+              </a>
+            )}
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Este taller ya finalizó</h3>
+
           {workshop.recording_url ? (
-            userId ? (
-              recordingPlayerBlock(workshop, userId)
-            ) : (
-              <div className="mt-4">
-                <a
-                  href={workshop.recording_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md transition-all cursor-pointer"
-                >
-                  <Video className="w-5 h-5" /> Ver grabación de la clase
-                </a>
-              </div>
-            )
+            userId && !hidePlayer ? (
+              recordingPlayerBlock(workshop, userId, {
+                rosterLocked: rosterAttendanceLocked,
+                rosterStatusLabel,
+                onRosterAttendanceResolved,
+              })
+            ) : userId && hidePlayer ? (
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 pt-3">
+                {rosterAttendanceLocked
+                  ? `Asistencia ya asentada${rosterStatusLabel ? ` (${rosterStatusLabel})` : ''}. La grabación arriba es solo para repaso.`
+                  : 'La grabación se reproduce arriba, a pantalla completa.'}
+              </p>
+            ) : null
           ) : (
-            <p className="text-sm text-slate-500">La grabación aún no está disponible en la biblioteca.</p>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 pt-3 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-slate-400 shrink-0" />
+              <span>La grabación aún no está disponible en la biblioteca.</span>
+            </p>
           )}
         </div>
       ) : preferRecordingOverLive ? (
         <>
           {/* ─── CASO 2: CLASE CON GRABACIÓN LISTA PARA VER / ACREDITAR ─── */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
-            <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Clase grabada disponible
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {isRegistered
-                  ? 'Reproduce la clase en este visualizador para acreditar tu asistencia en el kardex.'
-                  : 'Regístrate para desbloquear el visualizador de la clase grabada y acreditar asistencia.'}
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {rosterAttendanceLocked
+                  ? `El profesor ya asentó tu asistencia${rosterStatusLabel ? ` (${rosterStatusLabel})` : ''}. Puedes ver la grabación solo para repasar.`
+                  : isRegistered
+                    ? hidePlayer
+                      ? 'Reproduce la clase en el visualizador de arriba para acreditar tu asistencia en el kárdex.'
+                      : 'Reproduce la clase en este visualizador para acreditar tu asistencia en el kárdex.'
+                    : 'Regístrate para desbloquear el visualizador de la clase grabada y acreditar asistencia.'}
               </p>
             </div>
 
-            {isRegistered ? (
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60">
+            {rosterAttendanceLocked ? (
+              <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+                <CheckCircle className="w-4 h-4" />
+                Asistencia asentada
+                {rosterStatusLabel ? ` · ${rosterStatusLabel}` : ''}
+              </div>
+            ) : isRegistered ? (
+              <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60 shrink-0">
                 <CheckCircle className="w-4 h-4" /> Registrado para asistir
               </div>
             ) : (
@@ -150,7 +214,7 @@ export function LiveClassCountdown({
                 type="button"
                 onClick={onRegister}
                 disabled={loadingReg}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0"
               >
                 <CheckCircle className="w-4 h-4" />
                 {loadingReg ? 'Registrando...' : 'Registrarme a esta clase'}
@@ -158,50 +222,149 @@ export function LiveClassCountdown({
             )}
           </div>
 
-          {showTrackedRecordingNow && userId ? (
-            recordingPlayerBlock(workshop, userId)
-          ) : (
-            <div className="mt-6 p-4 rounded-xl bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 text-center">
-              <p className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+          {showTrackedRecordingNow && userId && !hidePlayer ? (
+            recordingPlayerBlock(workshop, userId, {
+              rosterLocked: rosterAttendanceLocked,
+              rosterStatusLabel,
+              onRosterAttendanceResolved,
+            })
+          ) : showTrackedRecordingNow && hidePlayer ? null : (
+            <div className="mt-4 p-3.5 rounded-xl bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 text-center">
+              <p className="text-xs sm:text-sm font-semibold text-purple-900 dark:text-purple-100">
                 El visualizador de clase grabada se activará al registrarte.
               </p>
             </div>
           )}
 
           {workshop.stream_url && canAccess && isRegistered && (
-            <div className="mt-5 pt-5 border-t border-slate-200 dark:border-slate-800 text-center">
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">
-                También hay un enlace de transmisión en vivo (opcional):
-              </p>
+            <div className="mt-4 pt-3.5 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Enlace de transmisión en vivo (opcional):
+              </span>
               <a
                 href={workshop.stream_url}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
-                <Video className="w-4 h-4" />
+                <Video className="w-3.5 h-3.5" />
                 Abrir stream en vivo
               </a>
             </div>
           )}
         </>
-      ) : (
-        <>
-          {/* ─── CASO 3: SESIÓN EN VIVO (SIN GRABACIÓN PARA ACREDITAR) ─── */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200 dark:border-slate-800">
+      ) : canAccess ? (
+        /* ─── CASO 3A: EN VIVO / SALA ABIERTA (≤ 5 MIN) — ACCIÓN PRIMERO ─── */
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wider border border-red-300 dark:border-red-800">
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping inline-block" />
+              {isLiveNow
+                ? '🔴 EN VIVO AHORA'
+                : `🔴 SALA ABIERTA (Inicia en ${timing.startsInMinutes} min)`}
+            </div>
+
+            {!isLiveNow && timeRemaining.totalSeconds > 0 && (
+              <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-300">
+                Inicia en{' '}
+                <span className="text-red-600 dark:text-red-400 tabular-nums">
+                  {timeRemaining.minutes.toString().padStart(2, '0')}:
+                  {timeRemaining.seconds.toString().padStart(2, '0')}
+                </span>
+              </span>
+            )}
+          </div>
+
+          {workshop.stream_url ? (
             <div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-0.5">
+              <a
+                href={workshop.stream_url}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2.5 min-h-12 px-6 py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-sm sm:text-base shadow-lg shadow-red-600/25 hover:shadow-red-600/35 active:scale-[0.99] transition-all cursor-pointer ring-2 ring-red-500/20"
+              >
+                <Video className="w-5 h-5 animate-pulse" />
+                <span>Entrar al Stream en Vivo</span>
+                <Play className="w-4 h-4 fill-white" />
+              </a>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs font-medium flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                El docente está por conectar el enlace de transmisión en vivo a esta sala. Mantente
+                en esta página.
+              </span>
+            </div>
+          )}
+
+          {isRegistered && !alertDismissed && (
+            <div className="p-3 rounded-xl bg-gradient-to-r from-red-500/10 via-rose-500/10 to-amber-500/10 border border-red-300/80 dark:border-red-800/70 text-slate-900 dark:text-white flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-lg bg-red-600 text-white flex items-center justify-center shrink-0">
+                  <Bell className="w-3.5 h-3.5 animate-bounce" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-red-600 dark:text-red-400 block">
+                    🔴 Alerta de Clase en Vivo
+                  </span>
+                  <p className="text-xs font-semibold mt-0.5">
+                    {isLiveNow
+                      ? '¡La clase está transmitiéndose en vivo ahora mismo!'
+                      : `¡La sala ya está abierta! Faltan ${Math.max(1, timing.startsInMinutes)} min para iniciar a las ${formattedStartTime}.`}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAlertDismissed(true)}
+                className="min-w-8 min-h-8 flex items-center justify-center rounded-lg text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer shrink-0"
+                title="Ocultar aviso"
+                aria-label="Ocultar aviso"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3">
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {isRegistered ? 'Tu lugar está confirmado' : 'Regístrate para registrar tu asistencia'}
+            </span>
+            {isRegistered ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+                <CheckCircle className="w-3.5 h-3.5" /> Registrado para asistir
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={onRegister}
+                disabled={loadingReg}
+                className="inline-flex items-center justify-center gap-1.5 min-h-10 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                {loadingReg ? 'Registrando...' : 'Registrarme a esta clase'}
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* ─── CASO 3B: PRÓXIMA SESIÓN EN VIVO (> 5 MIN) — REGISTRO + COUNTDOWN COMPACTO ─── */
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center lg:items-stretch xl:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+            <div className="min-w-0">
+              <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                 Registro al taller
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {isRegistered
-                  ? 'Estás registrado(a). El sistema te alertará y activará el acceso 5 minutos antes del inicio.'
+                  ? 'Estás registrado(a). El acceso se activará 5 minutos antes del inicio.'
                   : 'Regístrate para asegurar tu lugar en la sesión en vivo.'}
               </p>
             </div>
 
             {isRegistered ? (
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60">
+              <div className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-semibold text-xs border border-emerald-200 dark:border-emerald-800/60 shrink-0">
                 <CheckCircle className="w-4 h-4" /> Registrado para asistir
               </div>
             ) : (
@@ -209,7 +372,7 @@ export function LiveClassCountdown({
                 type="button"
                 onClick={onRegister}
                 disabled={loadingReg}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0"
               >
                 <CheckCircle className="w-4 h-4" />
                 {loadingReg ? 'Registrando...' : 'Registrarme a esta clase'}
@@ -217,170 +380,83 @@ export function LiveClassCountdown({
             )}
           </div>
 
-          {canAccess && isRegistered && !alertDismissed && (
-            <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-red-500/15 via-rose-500/10 to-amber-500/15 border border-red-300 dark:border-red-800/70 text-slate-900 dark:text-white flex items-start justify-between gap-3 animate-fade-in shadow-xs">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-red-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Bell className="w-4 h-4 animate-bounce" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-400">
-                      🔴 Alerta de Clase en Vivo
-                    </span>
-                    <span className="w-2 h-2 rounded-full bg-red-600 animate-ping inline-block" />
-                  </div>
-                  <p className="text-sm font-semibold mt-0.5">
-                    {isLiveNow
-                      ? '¡La clase está transmitiéndose en vivo ahora mismo!'
-                      : `¡La sala ya está abierta! Faltan ${Math.max(1, timing.startsInMinutes)} min para iniciar a las ${formattedStartTime}.`}
-                  </p>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                    Ingresa con tiempo para verificar tu micrófono, audífonos y conexión estable.
-                  </p>
-                </div>
+          <div className="text-center space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
+                Tiempo restante para el inicio de la clase
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100/80 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[11px] font-semibold border border-amber-300/80 dark:border-amber-800/80">
+                <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400 animate-pulse" />
+                <span>
+                  {scheduledAt.toLocaleDateString('es-MX', {
+                    weekday: 'short',
+                    day: 'numeric',
+                    month: 'short',
+                  })}{' '}
+                  · {formattedStartTime}
+                </span>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80">
+                <span className="block text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums leading-tight">
+                  {timeRemaining.days.toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  Días
+                </span>
               </div>
+
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80">
+                <span className="block text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums leading-tight">
+                  {timeRemaining.hours.toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  Horas
+                </span>
+              </div>
+
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80">
+                <span className="block text-xl sm:text-2xl font-black font-mono text-slate-900 dark:text-white tabular-nums leading-tight">
+                  {timeRemaining.minutes.toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  Min
+                </span>
+              </div>
+
+              <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80">
+                <span className="block text-xl sm:text-2xl font-black font-mono text-blue-600 dark:text-blue-400 tabular-nums leading-tight">
+                  {timeRemaining.seconds.toString().padStart(2, '0')}
+                </span>
+                <span className="text-[10px] uppercase font-semibold text-slate-500 dark:text-slate-400">
+                  Seg
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/50 text-xs text-blue-900 dark:text-blue-200 flex items-center justify-center gap-2 text-left">
+              <Lock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>
+                Acceso activo a las <strong>{formattedOpenTime}</strong> (5 minutos antes de la clase).
+              </span>
+            </div>
+
+            <div>
               <button
                 type="button"
-                onClick={() => setAlertDismissed(true)}
-                className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition p-1"
-                title="Ocultar aviso"
+                disabled
+                aria-disabled="true"
+                title="El acceso estará disponible 5 minutos antes de que empiece la clase"
+                className="w-full inline-flex items-center justify-center gap-2 min-h-11 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 font-bold text-xs sm:text-sm border border-slate-200 dark:border-slate-700/80 cursor-not-allowed select-none"
               >
-                ✕
+                <Lock className="w-3.5 h-3.5 shrink-0" />
+                <span>Entrar al Stream en Vivo (Disponible 5 min antes)</span>
               </button>
             </div>
-          )}
-
-          <div className="mt-6 text-center">
-            {!canAccess ? (
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-xs font-semibold border border-amber-300 dark:border-amber-800/80">
-                  <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
-                  <span>
-                    Inicio en{' '}
-                    {scheduledAt.toLocaleDateString('es-MX', {
-                      weekday: 'short',
-                      day: 'numeric',
-                      month: 'short',
-                    })}{' '}
-                    a las {formattedStartTime}
-                  </span>
-                </div>
-
-                <p className="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400">
-                  Tiempo restante para el inicio de la clase
-                </p>
-
-                <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-sm mx-auto">
-                  <div className="p-2 sm:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <span className="block text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
-                      {timeRemaining.days.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-                      Días
-                    </span>
-                  </div>
-
-                  <div className="p-2 sm:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <span className="block text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
-                      {timeRemaining.hours.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-                      Horas
-                    </span>
-                  </div>
-
-                  <div className="p-2 sm:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <span className="block text-2xl sm:text-3xl font-black font-mono text-slate-900 dark:text-white tabular-nums">
-                      {timeRemaining.minutes.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-                      Min
-                    </span>
-                  </div>
-
-                  <div className="p-2 sm:p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
-                    <span className="block text-2xl sm:text-3xl font-black font-mono text-blue-600 dark:text-blue-400 tabular-nums">
-                      {timeRemaining.seconds.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-[10px] sm:text-xs uppercase font-semibold text-slate-500 dark:text-slate-400">
-                      Seg
-                    </span>
-                  </div>
-                </div>
-
-                <div className="max-w-md mx-auto p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/50 text-xs text-blue-900 dark:text-blue-200 flex items-center justify-center gap-2">
-                  <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span>
-                    El acceso a la transmisión se activará automáticamente a las{' '}
-                    <strong>{formattedOpenTime}</strong> (5 minutos antes de la clase).
-                  </span>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    disabled
-                    aria-disabled="true"
-                    title="El acceso estará disponible 5 minutos antes de que empiece la clase"
-                    className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-bold text-sm border border-slate-300 dark:border-slate-700 cursor-not-allowed select-none opacity-80"
-                  >
-                    <Lock className="w-4 h-4" />
-                    <span>Entrar al Stream en Vivo (Disponible 5 min antes)</span>
-                  </button>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2">
-                    El botón cambiará a rojo activo automáticamente sin necesidad de recargar la página.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-red-100 dark:bg-red-950/80 text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wider border border-red-300 dark:border-red-800">
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping inline-block" />
-                  {isLiveNow
-                    ? '🔴 EN VIVO AHORA'
-                    : `🔴 SALA ABIERTA (Inicia en ${timing.startsInMinutes} min)`}
-                </div>
-
-                {!isLiveNow && timeRemaining.totalSeconds > 0 && (
-                  <p className="text-sm font-mono font-bold text-slate-600 dark:text-slate-300">
-                    Comienza exactamente en{' '}
-                    <span className="text-red-600 dark:text-red-400 tabular-nums">
-                      {timeRemaining.minutes.toString().padStart(2, '0')}:
-                      {timeRemaining.seconds.toString().padStart(2, '0')}
-                    </span>
-                  </p>
-                )}
-
-                {workshop.stream_url ? (
-                  <div className="pt-2">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                      El enlace de transmisión está activo para los alumnos inscritos:
-                    </p>
-                    <a
-                      href={workshop.stream_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-sm sm:text-base shadow-xl shadow-red-600/30 hover:shadow-red-600/40 hover:scale-[1.02] active:scale-[0.99] transition-all cursor-pointer ring-4 ring-red-500/20"
-                    >
-                      <Video className="w-5 h-5 animate-pulse" />
-                      <span>Entrar al Stream en Vivo</span>
-                      <Play className="w-4 h-4 fill-white" />
-                    </a>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs font-medium max-w-md mx-auto flex items-center justify-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>
-                      El docente está por conectar el enlace de transmisión en vivo a esta sala. Mantente
-                      en esta página.
-                    </span>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-        </>
+        </div>
       )}
     </div>
   );

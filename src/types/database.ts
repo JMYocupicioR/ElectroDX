@@ -1373,6 +1373,10 @@ interface RawDatabase {
         Args: Record<string, never>;
         Returns: void;
       };
+      admin_refresh_reading_assignments: {
+        Args: { p_student_ids?: string[] | null };
+        Returns: number;
+      };
       get_course_teachers: {
         Args: Record<string, never>;
         Returns: Profile[];

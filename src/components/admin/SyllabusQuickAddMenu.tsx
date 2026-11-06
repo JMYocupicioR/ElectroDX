@@ -3,6 +3,7 @@ import {
   BookOpen,
   ClipboardList,
   FileText,
+  Film,
   Link as LinkIcon,
   PenLine,
   Plus,
@@ -14,6 +15,7 @@ export type SyllabusQuickAddAction =
   | 'subtopic'
   | 'document'
   | 'link'
+  | 'link-recording'
   | 'live-class'
   | 'quiz'
   | 'edit';
@@ -29,6 +31,7 @@ const ICONS: Record<SyllabusQuickAddAction, typeof Plus> = {
   subtopic: Plus,
   document: FileText,
   link: LinkIcon,
+  'link-recording': Film,
   'live-class': Video,
   quiz: ClipboardList,
   edit: PenLine,
@@ -71,7 +74,7 @@ export function SyllabusQuickAddMenu({ label = 'Agregar', actions, onAction }: S
     }
     const rect = buttonRef.current?.getBoundingClientRect();
     if (rect) {
-      const width = 220;
+      const width = 240;
       const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8);
       const estimatedHeight = actions.length * 36 + 12;
       const openUp = rect.bottom + estimatedHeight > window.innerHeight - 12;
@@ -99,7 +102,7 @@ export function SyllabusQuickAddMenu({ label = 'Agregar', actions, onAction }: S
           ref={menuRef}
           role="menu"
           style={{ top: coords.top, left: coords.left }}
-          className="fixed z-[90] w-[220px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl py-1"
+          className="fixed z-[90] w-[240px] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xl py-1"
         >
           {actions.map((action) => {
             const Icon = ICONS[action.id];

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Topic } from '../types/content';
-import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, CheckCircle2, Circle, Pencil, ListTree } from 'lucide-react';
+import { X, Search, ChevronDown, ChevronRight, BookOpen, Lock, CheckCircle2, Circle, Pencil, ListTree, Video } from 'lucide-react';
 import { useQuizTopicFlags } from '../hooks/useQuizTopicFlags';
 import { QuizTopicBadge } from './quiz/QuizTopicBadge';
 import { useAuth } from '../contexts/AuthProvider';
@@ -12,12 +12,24 @@ import { useTopicProgress } from '../hooks/useTopicProgress';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { useSyllabusCatalog } from '../hooks/useSyllabusCatalog';
 import { applyOverridesToModules, getCourseIdForModule, groupModulesByCourse } from '../content/courseCatalog';
-import type { CourseId, CourseModuleRow, SyllabusTopicOverride } from '../types/database';
+import type { CourseId, CourseModuleRow, LiveWorkshop, SyllabusTopicOverride, TopicTeachingCommitment } from '../types/database';
 import { CourseSyllabusEditorTree } from './admin/CourseSyllabusEditorTree';
 import { QuickCreateTopicModal } from './admin/QuickCreateTopicModal';
 import { QuickTopicMaterialModal } from './editorial/QuickTopicMaterialModal';
 import { CreateLiveClassModal } from './admin/CreateLiveClassModal';
+import { LinkRecordedClassModal } from './admin/LinkRecordedClassModal';
 import type { SyllabusQuickAddAction } from './admin/SyllabusQuickAddMenu';
+import { getMyRegistrations, getWorkshops } from '../services/courseService';
+import { listTopicTeachingCommitments } from '../services/topicTeachingService';
+import { listMyWorkshopVideoProgress } from '../services/videoProgressService';
+import { getStudentAttendance } from '../services/attendanceService';
+import {
+  buildRecordedWorkshopByTopicId,
+  isRecordingAttendanceAccredited,
+  resolveTopicRecording,
+  topicRecordingInfo,
+} from '../utils/recordedWorkshopTopics';
+import { RECORDING_LINKS_CHANGED_EVENT } from '../utils/recordingLinksEvents';
 import {
   assignmentsWithModuleOrder,
   assignmentsWithModuleVisibility,
@@ -54,7 +66,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { hasQuiz, moduleQuizCount } = useQuizTopicFlags();
-  const { hasPremiumAccess, hasCourseAccess, isAdmin, isEditor } = useAuth();
+  const { user, hasPremiumAccess, hasCourseAccess, isAdmin, isEditor } = useAuth();
   const canEditSyllabus = isAdmin || isEditor;
   const { moduleAccess, load: loadCourse } = useCourseStore();
   const {
@@ -104,9 +116,90 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
     initialTab: 'pdf' | 'video';
   } | null>(null);
   const [liveClass, setLiveClass] = useState<{ moduleId: string; topicId?: string | null } | null>(null);
+  const [linkRecording, setLinkRecording] = useState<{
+    moduleId: string;
+    topic: Topic;
+  } | null>(null);
+  const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
+  const [commitments, setCommitments] = useState<TopicTeachingCommitment[]>([]);
+  const [accreditedWorkshopIds, setAccreditedWorkshopIds] = useState<Set<string>>(new Set());
+  const [recordingLinksVersion, setRecordingLinksVersion] = useState(0);
 
   const assignmentsEff = draftAssignments ?? assignments;
   const overridesEff = draftOverrides ?? overrides;
+
+  const recordedWorkshopByTopicId = useMemo(
+    () => buildRecordedWorkshopByTopicId(workshops, commitments),
+    [workshops, commitments],
+  );
+
+  const reloadRecordingLinks = useCallback(async () => {
+    try {
+      const [ws, comms] = await Promise.all([
+        getWorkshops(),
+        listTopicTeachingCommitments(),
+      ]);
+      setWorkshops(ws);
+      setCommitments(comms);
+    } catch (err) {
+      console.warn('[CourseSidebar] No se pudieron cargar clases grabadas:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    void reloadRecordingLinks();
+  }, [isOpen, recordingLinksVersion, reloadRecordingLinks]);
+
+  useEffect(() => {
+    const onLinksChanged = () => {
+      setRecordingLinksVersion((n) => n + 1);
+    };
+    window.addEventListener(RECORDING_LINKS_CHANGED_EVENT, onLinksChanged);
+    return () => window.removeEventListener(RECORDING_LINKS_CHANGED_EVENT, onLinksChanged);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || !user?.id) {
+      setAccreditedWorkshopIds(new Set());
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [progressRows, registrations, attendanceRows] = await Promise.all([
+          listMyWorkshopVideoProgress(user.id),
+          getMyRegistrations(user.id),
+          getStudentAttendance(user.id),
+        ]);
+        if (cancelled) return;
+        const next = new Set<string>();
+        for (const workshop of workshops) {
+          if (!workshop.recording_url?.trim()) continue;
+          const progress = progressRows.find((row) => row.workshop_id === workshop.id) ?? null;
+          const registration = registrations.find((row) => row.workshop_id === workshop.id) ?? null;
+          const attendance =
+            attendanceRows.find((row) => row.workshop_id === workshop.id) ?? null;
+          if (
+            isRecordingAttendanceAccredited({
+              workshopId: workshop.id,
+              progress,
+              registration,
+              attendance,
+            })
+          ) {
+            next.add(workshop.id);
+          }
+        }
+        setAccreditedWorkshopIds(next);
+      } catch (err) {
+        console.warn('[CourseSidebar] No se pudo cargar progreso de grabaciones:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, user?.id, workshops, recordingLinksVersion]);
 
   const studentGrouped = useMemo(() => {
     if (!draftAssignments && !draftOverrides) return grouped;
@@ -308,6 +401,10 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
       setMaterial({ moduleId: ctx.moduleId, topic: ctx.topic, initialTab: 'video' });
       return;
     }
+    if (action === 'link-recording' && ctx.topic) {
+      setLinkRecording({ moduleId: ctx.moduleId, topic: ctx.topic });
+      return;
+    }
     if (action === 'live-class') {
       setLiveClass({ moduleId: ctx.moduleId, topicId: ctx.topic?.id ?? null });
       return;
@@ -341,19 +438,19 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   };
 
   const isSearching = searchQuery.trim().length >= 2;
-  const modalOpen = Boolean(createTopic || material || liveClass);
+  const modalOpen = Boolean(createTopic || material || liveClass || linkRecording);
   const panelRef = useFocusTrap(isOpen && !modalOpen);
 
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (createTopic || material || liveClass) return;
+      if (createTopic || material || liveClass || linkRecording) return;
       onClose();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [isOpen, onClose, createTopic, material, liveClass]);
+  }, [isOpen, onClose, createTopic, material, liveClass, linkRecording]);
 
   const visibleModuleCount = studentGrouped.reduce((sum, g) => sum + g.modules.length, 0);
 
@@ -489,6 +586,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                   currentModuleId={currentModuleId}
                   expandedModules={expandedModules}
                   hasQuiz={hasQuiz}
+                  recordedWorkshopByTopicId={recordedWorkshopByTopicId}
                   busy={busy}
                   onToggleModule={toggleModule}
                   onReorderModules={handleReorderModules}
@@ -580,28 +678,62 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                   const done = isCompleted(topic.id);
                                   const topicLocked =
                                     !courseUnlocked && !isTopicOpenToRegistered(access, [topic.id]);
+                                  const recording = topicRecordingInfo(
+                                    resolveTopicRecording(topic, recordedWorkshopByTopicId),
+                                    accreditedWorkshopIds,
+                                  );
 
                                   return (
-                                    <Link
+                                    <div
                                       key={topic.id}
-                                      to={topicUrl}
-                                      className={`block px-3 py-2 rounded-lg text-[0.8rem] sm:text-sm transition-all min-h-[40px] flex items-center gap-2 ${
+                                      className={`px-3 py-2 rounded-lg text-[0.8rem] sm:text-sm transition-all min-h-[40px] flex items-center gap-2 ${
                                         isActive
                                           ? 'bg-blue-100/80 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium border-l-2 border-blue-500 -ml-[2px] pl-[14px]'
                                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200'
                                       }`}
                                     >
-                                      {done ? (
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                                      ) : (
-                                        <Circle className="w-3 h-3 text-slate-300 dark:text-slate-600 flex-shrink-0" />
-                                      )}
-                                      <span className={`leading-snug flex-1 ${done ? 'font-medium text-slate-800 dark:text-slate-200' : ''}`}>
-                                        {topic.title}
-                                      </span>
+                                      <Link
+                                        to={topicUrl}
+                                        className="flex items-center gap-2 min-w-0 flex-1"
+                                      >
+                                        {done ? (
+                                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                                        ) : (
+                                          <Circle className="w-3 h-3 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                                        )}
+                                        <span className={`leading-snug flex-1 ${done ? 'font-medium text-slate-800 dark:text-slate-200' : ''}`}>
+                                          {topic.title}
+                                        </span>
+                                      </Link>
                                       {topicLocked && <Lock className="w-3 h-3 text-amber-500 flex-shrink-0" />}
+                                      {recording && (
+                                        <Link
+                                          to={`/taller/${recording.workshop.id}`}
+                                          onClick={onClose}
+                                          title={
+                                            recording.status === 'watched'
+                                              ? `Clase vista · asistencia acreditada: ${recording.workshop.title}`
+                                              : `Pendiente de ver: ${recording.workshop.title}`
+                                          }
+                                          aria-label={
+                                            recording.status === 'watched'
+                                              ? 'Clase grabada vista con asistencia'
+                                              : 'Clase grabada pendiente de ver'
+                                          }
+                                          className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-md flex-shrink-0 ${
+                                            recording.status === 'watched'
+                                              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                                              : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30'
+                                          }`}
+                                        >
+                                          <Video className="w-3 h-3" />
+                                          <span className="text-[9px] font-bold uppercase tracking-wide">
+                                            {recording.status === 'watched' ? 'Visto' : 'Pendiente'}
+                                          </span>
+                                        </Link>
+                                      )}
                                       {topicTreeHasQuiz(topic, hasQuiz) && <QuizTopicBadge compact />}
-                                    </Link>
+                                    </div>
                                   );
                                 })}
                               </div>
@@ -688,7 +820,22 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
               initialModuleId={liveClass.moduleId}
               initialTopicId={liveClass.topicId}
               onSuccess={async () => {
+                setRecordingLinksVersion((n) => n + 1);
                 setLiveClass(null);
+              }}
+            />
+          )}
+          {linkRecording && (
+            <LinkRecordedClassModal
+              isOpen
+              onClose={() => setLinkRecording(null)}
+              moduleId={linkRecording.moduleId}
+              topicId={linkRecording.topic.id}
+              topicTitle={linkRecording.topic.title}
+              currentWorkshopId={recordedWorkshopByTopicId.get(linkRecording.topic.id)?.id ?? null}
+              onSuccess={async () => {
+                setRecordingLinksVersion((n) => n + 1);
+                setLinkRecording(null);
               }}
             />
           )}

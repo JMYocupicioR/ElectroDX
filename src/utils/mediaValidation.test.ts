@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   extractVideosFromContent,
+  isAllowedImageUrl,
   resolveAllTopicVideos,
 } from './mediaValidation';
 
@@ -93,5 +94,24 @@ describe('resolveAllTopicVideos', () => {
     expect(result[0].title).toBe('Video: Taller de Paraespinales');
     expect(result[1].title).toBe('Video Extra');
     expect(result[1].sourceKind).toBe('vimeo');
+  });
+});
+
+describe('isAllowedImageUrl', () => {
+  it('allows Supabase course-images and emg-trace-images buckets including svg', () => {
+    expect(
+      isAllowedImageUrl('https://demo.supabase.co/storage/v1/object/public/course-images/quizzes/snap-1.png')
+    ).toBe(true);
+    expect(
+      isAllowedImageUrl('https://demo.supabase.co/storage/v1/object/public/emg-trace-images/quizzes/median-cts.svg')
+    ).toBe(true);
+  });
+
+  it('allows local generated quiz trace paths', () => {
+    expect(isAllowedImageUrl('/quiz-traces/median-cts-pathologic.svg')).toBe(true);
+  });
+
+  it('rejects non-https external image URLs', () => {
+    expect(isAllowedImageUrl('http://upload.wikimedia.org/example.png')).toBe(false);
   });
 });

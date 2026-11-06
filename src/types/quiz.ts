@@ -4,6 +4,15 @@ export type QuizQuestionType = 'single' | 'multiple' | 'true_false' | 'image_cho
 
 export type QuizDifficulty = 'basic' | 'intermediate' | 'advanced';
 
+export interface QuizCitation {
+  authors: string;
+  title: string;
+  journal: string;
+  year: number | string;
+  doi?: string;
+  url?: string;
+}
+
 export interface QuizOption {
   id: string;
   text: string;
@@ -24,6 +33,7 @@ export interface QuizQuestionDraft {
   explanation?: string;
   explanationEn?: string;
   difficulty?: QuizDifficulty;
+  citations?: QuizCitation[];
 }
 
 export type ClinicalValidationStatus = 'pending_review' | 'approved' | 'rejected';
@@ -62,6 +72,7 @@ export interface QuizQuestion {
   explanation: string | null;
   explanation_en: string | null;
   difficulty: QuizDifficulty | null;
+  citations?: QuizCitation[] | null;
 }
 
 export interface QuizTopicFlag {

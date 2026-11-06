@@ -7,9 +7,10 @@ import {
   Eye,
   EyeOff,
   Pencil,
+  Video,
 } from 'lucide-react';
 import type { Module, Topic } from '../../types/content';
-import type { SyllabusTopicOverride } from '../../types/database';
+import type { LiveWorkshop, SyllabusTopicOverride } from '../../types/database';
 import type { GroupedSyllabusCourse } from '../../content/courseCatalog';
 import { QuizTopicBadge } from '../quiz/QuizTopicBadge';
 import { SortableList } from '../common/SortableList';
@@ -23,6 +24,7 @@ interface CourseSyllabusEditorTreeProps {
   currentModuleId: string | null;
   expandedModules: Set<string>;
   hasQuiz: (topicId: string) => boolean;
+  recordedWorkshopByTopicId?: Map<string, LiveWorkshop>;
   busy: boolean;
   onToggleModule: (moduleId: string) => void;
   onReorderModules: (courseId: string, moduleIds: string[], from: number, to: number) => void;
@@ -49,6 +51,7 @@ export function CourseSyllabusEditorTree({
   currentModuleId,
   expandedModules,
   hasQuiz,
+  recordedWorkshopByTopicId,
   busy,
   onToggleModule,
   onReorderModules,
@@ -146,6 +149,7 @@ export function CourseSyllabusEditorTree({
                           overrides={overrides}
                           expandedTopics={expandedTopics}
                           hasQuiz={hasQuiz}
+                          recordedWorkshopByTopicId={recordedWorkshopByTopicId}
                           busy={busy}
                           onToggleTopic={toggleTopic}
                           onReorderTopics={onReorderTopics}
@@ -177,6 +181,7 @@ function TopicEditorList({
   overrides,
   expandedTopics,
   hasQuiz,
+  recordedWorkshopByTopicId,
   busy,
   onToggleTopic,
   onReorderTopics,
@@ -191,6 +196,7 @@ function TopicEditorList({
   overrides: SyllabusTopicOverride[];
   expandedTopics: Set<string>;
   hasQuiz: (topicId: string) => boolean;
+  recordedWorkshopByTopicId?: Map<string, LiveWorkshop>;
   busy: boolean;
   onToggleTopic: (topicId: string) => void;
   onReorderTopics: (moduleId: string, siblings: Topic[], from: number, to: number) => void;
@@ -246,6 +252,14 @@ function TopicEditorList({
                   title="Tema sin contenido todavía"
                 />
               )}
+              {recordedWorkshopByTopicId?.get(topic.id) && (
+                <span
+                  className="inline-flex items-center justify-center p-0.5 rounded text-violet-600 dark:text-violet-300"
+                  title={`Clase grabada: ${recordedWorkshopByTopicId.get(topic.id)?.title ?? ''}`}
+                >
+                  <Video className="w-3 h-3" />
+                </span>
+              )}
               {topicTreeHasQuiz(topic, hasQuiz) && <QuizTopicBadge compact />}
               <button
                 type="button"
@@ -273,6 +287,7 @@ function TopicEditorList({
                   { id: 'subtopic', label: 'Agregar subtema' },
                   { id: 'document', label: 'Adjuntar documento' },
                   { id: 'link', label: 'Adjuntar link o video' },
+                  { id: 'link-recording', label: 'Vincular clase grabada' },
                   { id: 'live-class', label: 'Programar clase' },
                   { id: 'quiz', label: 'Evaluación' },
                   { id: 'edit', label: 'Editar contenido' },
@@ -298,6 +313,7 @@ function TopicEditorList({
                   overrides={overrides}
                   expandedTopics={expandedTopics}
                   hasQuiz={hasQuiz}
+                  recordedWorkshopByTopicId={recordedWorkshopByTopicId}
                   busy={busy}
                   onToggleTopic={onToggleTopic}
                   onReorderTopics={onReorderTopics}

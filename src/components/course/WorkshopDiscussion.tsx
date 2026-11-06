@@ -250,28 +250,28 @@ export function WorkshopDiscussion({ workshop, className = '' }: WorkshopDiscuss
   return (
     <section
       id="clase-comentarios"
-      className={`mt-10 p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900/90 shadow-xl transition-all ${className}`}
+      className={`p-4 sm:p-6 lg:p-7 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900/70 shadow-sm transition-all ${className}`}
     >
       {/* ─── ENCABEZADO ─── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h2 className="text-xl font-bold flex items-center gap-2.5 text-slate-900 dark:text-white">
-            <span className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
-              <MessageCircle className="w-5 h-5" />
+          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+            <span className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+              <MessageCircle className="w-4 h-4" />
             </span>
             Dudas y discusión de esta clase
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Espacio de debate para la cohorte y los profesores. Puedes vincular el minuto exacto del video.
           </p>
         </div>
-        <span className="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold shrink-0">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold shrink-0">
           {threads.length} {threads.length === 1 ? 'duda registrada' : 'dudas registradas'}
         </span>
       </div>
 
       {/* ─── CAJA DE NUEVA DUDA / COMENTARIO ─── */}
-      <div className="mt-6 p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60">
+      <div className="mt-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/60">
         <label
           className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2"
           htmlFor={`workshop-comment-${workshop.id}`}

@@ -42,9 +42,25 @@ import {
   ShieldAlert,
   RotateCcw,
   Activity,
+  Video,
 } from 'lucide-react';
 import { QuickTopicMaterialModal } from '../editorial/QuickTopicMaterialModal';
 import { TeacherTraceBuilderModal } from '../simulator/TeacherTraceBuilderModal';
+import { LinkRecordedClassModal, type LinkRecordedClassTopicOption } from '../admin/LinkRecordedClassModal';
+import { TopicRecordingsSection } from '../course/TopicRecordingsSection';
+import { getWorkshops } from '../../services/courseService';
+import { listTopicTeachingCommitments } from '../../services/topicTeachingService';
+import {
+  buildRecordedWorkshopByTopicId,
+  collectTopicRecordings,
+  type TopicRecordingEntry,
+} from '../../utils/recordedWorkshopTopics';
+import { unlinkRecordedWorkshopFromTopic } from '../../services/linkRecordedClassService';
+import {
+  RECORDING_LINKS_CHANGED_EVENT,
+  notifyRecordingLinksChanged,
+} from '../../utils/recordingLinksEvents';
+import type { LiveWorkshop, TopicTeachingCommitment } from '../../types/database';
 import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { isAppendixModule } from '../../content/appendixModules';
@@ -646,6 +662,10 @@ export default function TopicPage() {
   );
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const [isTraceBuilderOpen, setIsTraceBuilderOpen] = useState(false);
+  const [isRecordingLinkOpen, setIsRecordingLinkOpen] = useState(false);
+  const [recordedWorkshops, setRecordedWorkshops] = useState<LiveWorkshop[]>([]);
+  const [teachingCommitments, setTeachingCommitments] = useState<TopicTeachingCommitment[]>([]);
+  const [unlinkingRecordingKey, setUnlinkingRecordingKey] = useState<string | null>(null);
 
   const handleInsertTraceToTopic = async (snippet: string) => {
     if (!user || !mod || !topic) return;
@@ -864,6 +884,120 @@ export default function TopicPage() {
     if (!mod) return { topic: null as Topic | null, breadcrumbs: [] as Topic[] };
     return findTopicByPath(mod.topics, pathParts);
   }, [mod, pathParts]);
+
+  const reloadRecordedClasses = useCallback(async () => {
+    if (!mod?.id) {
+      setRecordedWorkshops([]);
+      setTeachingCommitments([]);
+      return;
+    }
+    try {
+      const [workshops, commitments] = await Promise.all([
+        getWorkshops(),
+        listTopicTeachingCommitments(),
+      ]);
+      setRecordedWorkshops(workshops);
+      setTeachingCommitments(commitments);
+    } catch (err) {
+      console.warn('[TopicPage] No se pudieron cargar las clases grabadas:', err);
+    }
+  }, [mod?.id]);
+
+  useEffect(() => {
+    void reloadRecordedClasses();
+  }, [reloadRecordedClasses]);
+
+  useEffect(() => {
+    const refresh = () => {
+      void reloadRecordedClasses();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    window.addEventListener(RECORDING_LINKS_CHANGED_EVENT, refresh);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener(RECORDING_LINKS_CHANGED_EVENT, refresh);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [reloadRecordedClasses]);
+
+  const recordedWorkshopByTopicId = useMemo(
+    () => buildRecordedWorkshopByTopicId(recordedWorkshops, teachingCommitments),
+    [recordedWorkshops, teachingCommitments],
+  );
+
+  const linkedRecordings = useMemo(
+    () => (topic ? collectTopicRecordings(topic, recordedWorkshopByTopicId) : []),
+    [topic, recordedWorkshopByTopicId],
+  );
+
+  const recordingTopicOptions = useMemo<LinkRecordedClassTopicOption[]>(() => {
+    if (!topic) return [];
+    return getAllFlatTopics([topic]).map(({ topic: entry, path }) => ({
+      id: entry.id,
+      title: entry.title,
+      depth: path.length - 1,
+    }));
+  }, [topic]);
+
+  const handleRecordingLinked = useCallback((workshop: LiveWorkshop) => {
+    setRecordedWorkshops((prev) => [workshop, ...prev.filter((item) => item.id !== workshop.id)]);
+    notifyRecordingLinksChanged();
+    void reloadRecordedClasses();
+  }, [reloadRecordedClasses]);
+
+  const handleUnlinkRecording = useCallback(
+    async (entry: TopicRecordingEntry) => {
+      const confirmed = window.confirm(
+        `¿Quitar «${entry.workshop.title}» de este tema?\n\nLa clase y la grabación se conservan; solo se elimina el vínculo con «${entry.topicTitle}».`,
+      );
+      if (!confirmed) return;
+
+      const key = `${entry.topicId}:${entry.workshop.id}`;
+      setUnlinkingRecordingKey(key);
+      try {
+        // Quitar el taller de este nodo y de cualquier subtema de la página que lo apunte
+        const topicIdsToClear = new Set<string>([entry.topicId]);
+        if (topic) {
+          for (const { topic: node } of getAllFlatTopics([topic])) {
+            if (recordedWorkshopByTopicId.get(node.id)?.id === entry.workshop.id) {
+              topicIdsToClear.add(node.id);
+            }
+          }
+        }
+
+        let updated = entry.workshop;
+        for (const topicId of topicIdsToClear) {
+          updated = await unlinkRecordedWorkshopFromTopic({
+            workshop: updated,
+            topicId,
+          });
+        }
+
+        setRecordedWorkshops((prev) =>
+          prev.map((item) => (item.id === updated.id ? updated : item)),
+        );
+        setTeachingCommitments((prev) =>
+          prev.map((row) =>
+            row.workshop_id === entry.workshop.id && topicIdsToClear.has(row.topic_id)
+              ? { ...row, workshop_id: null }
+              : row,
+          ),
+        );
+        await reloadRecordedClasses();
+      } catch (err) {
+        console.error('[TopicPage] unlink recording:', err);
+        alert(err instanceof Error ? err.message : 'No se pudo desvincular la grabación.');
+        await reloadRecordedClasses();
+      } finally {
+        setUnlinkingRecordingKey(null);
+      }
+    },
+    [reloadRecordedClasses, topic, recordedWorkshopByTopicId],
+  );
 
   const allFlat = useMemo(() => (mod ? getAllFlatTopics(mod.topics) : []), [mod]);
   const currentIndex = allFlat.findIndex((f) => f.path.join('/') === pathParts.join('/'));
@@ -1177,6 +1311,14 @@ export default function TopicPage() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => setIsRecordingLinkOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white text-xs font-bold shadow-md shadow-violet-500/20 transition-all cursor-pointer"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  Vincular clase grabada existente
+                </button>
+                <button
+                  type="button"
                   onClick={() => setIsTraceBuilderOpen(true)}
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-700 hover:to-teal-700 text-white text-xs font-bold shadow-md shadow-cyan-500/20 transition-all cursor-pointer"
                 >
@@ -1235,6 +1377,16 @@ export default function TopicPage() {
               {topicHasVideos(topic) && <ExternalVideosSection topic={topic} />}
               {topicPdfList(topic).length > 0 && <PdfDocumentsSection topic={topic} />}
             </div>
+          )}
+
+          {linkedRecordings.length > 0 && (
+            <TopicRecordingsSection
+              entries={linkedRecordings}
+              userId={user?.id}
+              canUnlink={Boolean(isAdmin || isEditor)}
+              unlinkingKey={unlinkingRecordingKey}
+              onUnlink={handleUnlinkRecording}
+            />
           )}
 
           {isLeafTopic && (
@@ -1780,6 +1932,20 @@ export default function TopicPage() {
           onClose={() => setIsTraceBuilderOpen(false)}
           onInsertTrace={handleInsertTraceToTopic}
           topicTitle={topic.title}
+        />
+      )}
+
+      {/* ── Link an existing recorded class to this topic ── */}
+      {mod && topic && (
+        <LinkRecordedClassModal
+          isOpen={isRecordingLinkOpen}
+          onClose={() => setIsRecordingLinkOpen(false)}
+          moduleId={mod.id}
+          topicId={topic.id}
+          topicTitle={topic.title}
+          topicOptions={recordingTopicOptions}
+          currentWorkshopId={recordedWorkshopByTopicId.get(topic.id)?.id ?? null}
+          onSuccess={handleRecordingLinked}
         />
       )}
     </CourseGate>

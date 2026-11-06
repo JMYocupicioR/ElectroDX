@@ -78,6 +78,21 @@ describe('describeReadingAssignment', () => {
     );
     expect(view.statusLabel).toBe('Lectura vencida');
   });
+
+  it('treats a stale reading row as complete when the syllabus already has the topics', () => {
+    const view = describeReadingAssignment(
+      readingTask({
+        reading_done_ids: [],
+        reading_completed_at: null,
+        status: 'pending',
+      }),
+      Date.parse('2026-11-06T12:00:00.000Z'),
+      new Set(['a', 'b', 'c'])
+    );
+    expect(view.complete).toBe(true);
+    expect(view.done).toBe(3);
+    expect(view.statusLabel).toBe('Lectura cumplida');
+  });
 });
 
 describe('dueSoonCopy', () => {

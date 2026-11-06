@@ -181,7 +181,8 @@ function examFailure(
 
 function homeworkFailure(
   assignment: NonNullable<AcademicRiskInput['assignments']>[number],
-  now: Date
+  now: Date,
+  completedTopics: Set<string>
 ): boolean {
   if (assignment.type === 'exam') return false;
   if (!isDuePassed(assignment.due_date, now)) return false;
@@ -197,10 +198,12 @@ function homeworkFailure(
       reading_done_ids: assignment.reading_done_ids,
       reading_completed_at: assignment.reading_completed_at,
     },
-    now.getTime()
+    now.getTime(),
+    completedTopics
   );
 
   if (reading.readingOnly) {
+    // Lectura sola: si el temario ya tiene todos los temas, no hay riesgo aunque la fila esté desfasada.
     if (reading.complete) return false;
     return reading.statusLabel === 'Lectura vencida' || assignment.status === 'overdue';
   }
@@ -296,7 +299,8 @@ export function evaluateAcademicRisk(input: AcademicRiskInput): AcademicRiskResu
   const attendance = input.attendance ?? [];
 
   const failedAssignments = assignments.filter(
-    (assignment) => examFailure(assignment, now) || homeworkFailure(assignment, now)
+    (assignment) =>
+      examFailure(assignment, now) || homeworkFailure(assignment, now, input.completedTopics)
   );
   const usedAssignmentIds = new Set<string>();
   const groups: string[][] = [];

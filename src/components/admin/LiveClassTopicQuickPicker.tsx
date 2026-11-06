@@ -13,6 +13,39 @@ export interface LiveClassTopicEntry {
   isSubtopic: boolean;
 }
 
+/** Quita acentos y normaliza espacios para búsqueda tolerante. */
+export function normalizeTopicSearchText(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Coincide por substring, token o raíz compartida (p. ej. "bienvenida" ↔ "Bienvenido al curso").
+ */
+export function matchesTopicSearch(haystack: string, query: string): boolean {
+  const h = normalizeTopicSearchText(haystack);
+  const q = normalizeTopicSearchText(query);
+  if (!q) return true;
+  if (h.includes(q)) return true;
+
+  const hTokens = h.split(' ').filter(Boolean);
+  const qTokens = q.split(' ').filter(Boolean);
+  return qTokens.every((qt) =>
+    hTokens.some((ht) => {
+      if (ht.includes(qt) || qt.includes(ht)) return true;
+      const minLen = Math.min(ht.length, qt.length);
+      if (minLen < 4) return false;
+      const stemLen = Math.min(minLen, Math.max(4, minLen - 1));
+      return ht.slice(0, stemLen) === qt.slice(0, stemLen);
+    }),
+  );
+}
+
 function appendTopics(
   list: LiveClassTopicEntry[],
   mod: Module,
@@ -130,6 +163,28 @@ export function topicCatalogLine(entry: LiveClassTopicEntry): string {
   return entry.moduleTitle;
 }
 
+/** Construye la ruta hacia la lección del temario para un tema o subtema del catálogo. */
+export function buildLiveClassTopicHref(
+  catalog: LiveClassTopicEntry[],
+  entry: LiveClassTopicEntry,
+): string {
+  const byId = new Map<string, LiveClassTopicEntry>();
+  for (const item of catalog) {
+    if (item.moduleId === entry.moduleId) {
+      byId.set(item.topicId, item);
+    }
+  }
+  const segments: string[] = [];
+  const visited = new Set<string>();
+  let current: LiveClassTopicEntry | undefined = entry;
+  while (current && !visited.has(current.topicId)) {
+    visited.add(current.topicId);
+    segments.unshift(current.topicId);
+    current = current.parentTopicId ? byId.get(current.parentTopicId) : undefined;
+  }
+  return `/modulo/${entry.moduleId}/${segments.join('/')}`;
+}
+
 export interface SelectedTopicGroup {
   entry: LiveClassTopicEntry;
   children: LiveClassTopicEntry[];
@@ -222,7 +277,7 @@ export function LiveClassTopicQuickPicker({
   );
 
   const searchResults = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim();
     if (!q) return [];
     return catalog
       .filter((entry) => {
@@ -232,10 +287,8 @@ export function LiveClassTopicQuickPicker({
           entry.moduleTitle,
           entry.parentTitle ?? '',
           entry.topicId,
-        ]
-          .join(' ')
-          .toLowerCase();
-        return haystack.includes(q);
+        ].join(' ');
+        return matchesTopicSearch(haystack, q);
       })
       .slice(0, maxResults);
   }, [catalog, query, coveredTopicIds, maxResults]);

@@ -4,13 +4,14 @@ import { AdminLayout } from './AdminLayout';
 import { AdminQuizCatalog } from './quiz/AdminQuizCatalog';
 import { AdminQuizEditor } from './quiz/AdminQuizEditor';
 import { AdminFinalExamsManager } from './quiz/AdminFinalExamsManager';
+import { AdminExamBankManager } from './quiz/AdminExamBankManager';
 import {
   buildQuizCatalogPath,
   catalogPathFromEditorSearch,
   parseQuizCatalogStatus,
   quizEditorPath,
 } from '../../utils/quizCatalogNavigation';
-import { GraduationCap, BookOpen } from 'lucide-react';
+import { GraduationCap, BookOpen, Database } from 'lucide-react';
 
 export default function AdminQuizzesPage() {
   const { topicId: routeTopicId } = useParams();
@@ -22,8 +23,10 @@ export default function AdminQuizzesPage() {
 
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(activeTopicId);
 
-  // Pestaña activa cuando estamos en la vista de lista/catálogo: 'finals' | 'topics'
-  const activeTab = searchParams.get('tab') === 'topics' ? 'topics' : 'finals';
+  // Pestaña activa cuando estamos en la vista de lista/catálogo: 'finals' | 'topics' | 'bank'
+  const rawTab = searchParams.get('tab');
+  const activeTab: 'finals' | 'topics' | 'bank' =
+    rawTab === 'topics' ? 'topics' : rawTab === 'bank' ? 'bank' : 'finals';
 
   useEffect(() => {
     setSelectedTopicId(activeTopicId);
@@ -48,10 +51,10 @@ export default function AdminQuizzesPage() {
     navigate(catalogPathFromEditorSearch(searchParams.toString()));
   };
 
-  const handleSwitchTab = (tab: 'finals' | 'topics') => {
+  const handleSwitchTab = (tab: 'finals' | 'topics' | 'bank') => {
     const nextParams = new URLSearchParams(searchParams);
-    if (tab === 'topics') {
-      nextParams.set('tab', 'topics');
+    if (tab === 'topics' || tab === 'bank') {
+      nextParams.set('tab', tab);
     } else {
       nextParams.delete('tab');
     }
@@ -65,6 +68,8 @@ export default function AdminQuizzesPage() {
           ? 'Editor de Evaluación'
           : activeTab === 'finals'
           ? 'Exámenes Finales & Sumativos'
+          : activeTab === 'bank'
+          ? 'Banco de Reactivos del Simulador'
           : 'Cuestionarios de Temas'
       }
       subtitle={
@@ -72,6 +77,8 @@ export default function AdminQuizzesPage() {
           ? 'Redacta viñetas clínicas, opciones de respuesta, perlas COMEFYR y publica en vivo para alumnos.'
           : activeTab === 'finals'
           ? 'Diseña, programa y despacha evaluaciones oficiales con candado estricto a toda la cohorte o a alumnos individuales.'
+          : activeTab === 'bank'
+          ? 'Valida clínicamente, aprueba (DRAFT → PUBLISHED) o importa borradores IA para el simulador general exam_questions.'
           : 'Supervisa y edita los cuestionarios formativos integrados al final de cada lección teórica.'
       }
     >
@@ -84,7 +91,7 @@ export default function AdminQuizzesPage() {
       ) : (
         <div className="space-y-6">
           {/* Barra de Pestañas Superiores */}
-          <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
             <button
               type="button"
               onClick={() => handleSwitchTab('finals')}
@@ -110,11 +117,26 @@ export default function AdminQuizzesPage() {
               <BookOpen className="w-4 h-4" />
               <span>Cuestionarios de Temas (Lecciones)</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => handleSwitchTab('bank')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer ${
+                activeTab === 'bank'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Database className="w-4 h-4" />
+              <span>Banco Simulador (`exam_questions`)</span>
+            </button>
           </div>
 
           {/* Contenido de la pestaña activa */}
           {activeTab === 'finals' ? (
             <AdminFinalExamsManager />
+          ) : activeTab === 'bank' ? (
+            <AdminExamBankManager />
           ) : (
             <AdminQuizCatalog onSelectTopic={handleSelectTopic} />
           )}

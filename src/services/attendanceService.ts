@@ -4,7 +4,11 @@ import {
   isTableMissingInSupabase,
   markTableAsMissingInSupabase,
 } from './tableAvailability';
-import type { ClassAttendanceRecord, SessionModality } from '../types/academicGradebook';
+import type {
+  AttendanceStatus,
+  ClassAttendanceRecord,
+  SessionModality,
+} from '../types/academicGradebook';
 import type { WorkshopAttendanceSummary } from '../types/academicAnalytics';
 import type { LiveWorkshop } from '../types/database';
 
@@ -12,6 +16,28 @@ const KEY_LOCAL_ATTENDANCE = 'neurosafe_class_attendances_';
 
 export function normalizeSessionModality(value: unknown): SessionModality {
   return value === 'in_person' ? 'in_person' : 'online';
+}
+
+/** Presente, retardo o justificada ya cubren la sesión en el kárdex. */
+export function attendanceStatusSatisfiesSession(
+  status: AttendanceStatus | null | undefined,
+): boolean {
+  return status === 'present' || status === 'late' || status === 'excused';
+}
+
+export function attendanceStatusLabelEs(status: AttendanceStatus): string {
+  switch (status) {
+    case 'present':
+      return 'Presente';
+    case 'late':
+      return 'Retardo';
+    case 'excused':
+      return 'Justificada';
+    case 'absent':
+      return 'Falta';
+    default:
+      return status;
+  }
 }
 
 function attendanceKey(record: Pick<ClassAttendanceRecord, 'student_id' | 'session_title' | 'session_date' | 'workshop_id'>): string {
@@ -63,6 +89,37 @@ export async function getStudentAttendance(studentId: string): Promise<ClassAtte
   }
 
   return [];
+}
+
+export async function getStudentAttendanceForWorkshop(
+  studentId: string,
+  workshopId: string,
+): Promise<ClassAttendanceRecord | null> {
+  if (!studentId || !workshopId) return null;
+
+  if (!isTableMissingInSupabase('class_attendances')) {
+    try {
+      const { data, error, status } = await supabase
+        .from('class_attendances')
+        .select('*')
+        .eq('student_id', studentId)
+        .eq('workshop_id', workshopId)
+        .maybeSingle();
+
+      if (isMissingRelationError(error, status)) {
+        markTableAsMissingInSupabase('class_attendances');
+      } else if (!error && data) {
+        return normalizeAttendanceRecord(data as ClassAttendanceRecord);
+      } else if (!error) {
+        return null;
+      }
+    } catch {
+      // Transient network error: fall back to local / full student list
+    }
+  }
+
+  const all = await getStudentAttendance(studentId);
+  return all.find((row) => row.workshop_id === workshopId) ?? null;
 }
 
 export async function getWorkshopAttendance(workshopId: string): Promise<ClassAttendanceRecord[]> {

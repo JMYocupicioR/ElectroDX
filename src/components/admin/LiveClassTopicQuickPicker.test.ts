@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import type { Module } from '../../types/content';
 import {
   buildLiveClassTopicCatalog,
+  buildLiveClassTopicHref,
   coveredLiveClassTopicIds,
   groupSelectedLiveClassTopics,
+  matchesTopicSearch,
   sessionTopicIdsForLiveClass,
   topicIdsIncludedBySelection,
 } from './LiveClassTopicQuickPicker';
@@ -93,5 +95,45 @@ describe('selección de temas para la clase en vivo', () => {
     expect(covered.has('bases')).toBe(true);
     expect(covered.has('voltaje')).toBe(false);
     expect(covered.has('filtros')).toBe(false);
+  });
+
+  it('construye la ruta jerárquica al temario para temas raíz y subtemas anidados', () => {
+    const rootEntry = catalog.find((e) => e.topicId === 'bases')!;
+    const childEntry = catalog.find((e) => e.topicId === 'voltaje')!;
+    const deepEntry = catalog.find((e) => e.topicId === 'notch')!;
+
+    expect(buildLiveClassTopicHref(catalog, rootEntry)).toBe('/modulo/m1/bases');
+    expect(buildLiveClassTopicHref(catalog, childEntry)).toBe('/modulo/m1/bases/voltaje');
+    expect(buildLiveClassTopicHref(catalog, deepEntry)).toBe('/modulo/m1/bases/filtros/notch');
+  });
+
+  it('incluye temas publicados que no están en el temario estático', () => {
+    const withPublished = buildLiveClassTopicCatalog([
+      {
+        ...modules[0],
+        topics: [
+          { id: 'bienvenido-al-curso', title: 'Bienvenido al curso' },
+          ...modules[0].topics,
+        ],
+      },
+    ] as Module[]);
+    expect(withPublished.some((e) => e.topicId === 'bienvenido-al-curso')).toBe(true);
+    expect(withPublished.find((e) => e.topicId === 'bienvenido-al-curso')?.title).toBe(
+      'Bienvenido al curso',
+    );
+  });
+});
+
+describe('matchesTopicSearch', () => {
+  it('encuentra Bienvenido con la consulta bienvenida', () => {
+    expect(matchesTopicSearch('Bienvenido al curso', 'bienvenida')).toBe(true);
+  });
+
+  it('ignora acentos', () => {
+    expect(matchesTopicSearch('Neuroanatomía Funcional', 'neuroanatomia')).toBe(true);
+  });
+
+  it('no coincide con temas ajenos', () => {
+    expect(matchesTopicSearch('EMG de Fibra Única (SFEMG)', 'bienvenida')).toBe(false);
   });
 });

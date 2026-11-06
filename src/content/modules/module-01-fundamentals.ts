@@ -13,6 +13,25 @@ export const module01: Module = {
   icon: 'BookOpen',
   topics: [
     {
+      id: 'bienvenido-al-curso',
+      title: 'Bienvenido al curso',
+      titleEn: 'Welcome to the course',
+      description: 'Orientación inicial al diplomado ElectroDx y al Módulo 1',
+      descriptionEn: 'Initial orientation to the ElectroDx diploma and Module 1',
+      content: `¡Bienvenidos al Diplomado ElectroDx!
+
+Este tema de apertura presenta el rumbo del curso **Fundamentos de Neurofisiología Clínica**: bases fisiológicas, técnicas y clínicas para el electrodiagnóstico neuromuscular.
+
+Usen la plataforma ElectroDx para el temario, el simulador de trazo EMG, los cuestionarios y el canal de dudas. Las clases en vivo y talleres complementan la lectura.
+
+Avancen a **Introducción al Neurodiagnóstico** cuando terminen esta bienvenida.`,
+      keyPoints: [
+        'Objetivo: bases sólidas para interpretar NCS y EMG con criterio clínico.',
+        'Herramientas: temario, simulador de trazo, cuestionarios y clases en vivo.',
+        'Siguiente paso: Introducción al Neurodiagnóstico.',
+      ],
+    },
+    {
       id: 'intro-neurodiagnostics',
       title: 'Introducción al Neurodiagnóstico',
       titleEn: 'Introduction to Neurodiagnostics',

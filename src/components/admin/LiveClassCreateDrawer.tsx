@@ -18,9 +18,9 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from 'lucide-react';
-import { allModules } from '../../content/modules';
 import { detectVideoPlatform } from '../../utils/mediaValidation';
 import { useAuth } from '../../contexts/AuthProvider';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { createWorkshop, deleteWorkshop, updateWorkshop } from '../../services/courseService';
 import { getAdminProfiles, getCourseTeachers } from '../../services/editorialService';
 import {
@@ -36,6 +36,7 @@ import {
   LiveClassTopicQuickPicker,
   buildLiveClassTopicCatalog,
   descendantTopicIds,
+  matchesTopicSearch,
   sessionTopicIdsForLiveClass,
   topicIdsIncludedBySelection,
 } from './LiveClassTopicQuickPicker';
@@ -167,8 +168,13 @@ export function LiveClassCreateDrawer({
   const { user } = useAuth();
   const classDateInputRef = useRef<HTMLInputElement>(null);
   const titleDirty = useRef(false);
+  const { modulesForStaff, loading: catalogLoading } = useSyllabusCatalog();
 
-  const catalog = useMemo(() => buildLiveClassTopicCatalog(allModules), []);
+  /** Temario fusionado (estático + temas publicados en admin), incl. ocultos. */
+  const catalog = useMemo(
+    () => buildLiveClassTopicCatalog(modulesForStaff),
+    [modulesForStaff],
+  );
 
   const [loading, setLoading] = useState(false);
   const [busyAction, setBusyAction] = useState<string | null>(null);
@@ -177,7 +183,7 @@ export function LiveClassCreateDrawer({
   const [commitments, setCommitments] = useState<TopicTeachingCommitment[]>([]);
 
   const [title, setTitle] = useState('');
-  const [moduleId, setModuleId] = useState(allModules[0]?.id || '');
+  const [moduleId, setModuleId] = useState('');
   const [primaryTopicId, setPrimaryTopicId] = useState('');
   const [additionalIds, setAdditionalIds] = useState<string[]>([]);
   const [primaryQuery, setPrimaryQuery] = useState('');
@@ -203,7 +209,8 @@ export function LiveClassCreateDrawer({
   const [autoOpenOnLogin, setAutoOpenOnLogin] = useState(false);
 
   const primaryEntry = catalog.find((entry) => entry.topicId === primaryTopicId) ?? null;
-  const primaryModule = allModules.find((mod) => mod.id === (primaryEntry?.moduleId || moduleId)) ?? null;
+  const primaryModule =
+    modulesForStaff.find((mod) => mod.id === (primaryEntry?.moduleId || moduleId)) ?? null;
   const childCount = primaryTopicId ? descendantTopicIds(catalog, primaryTopicId).length : 0;
 
   const moduleSuggestions = useMemo(
@@ -235,12 +242,15 @@ export function LiveClassCreateDrawer({
   const selectedTopicKey = (initialSelectedTopicIds ?? []).join('|');
 
   const primaryResults = useMemo(() => {
-    const query = primaryQuery.trim().toLowerCase();
+    const query = primaryQuery.trim();
     if (!query) return moduleSuggestions;
-    return catalog.filter((entry) =>
-      [entry.title, entry.moduleTitle, entry.parentTitle ?? ''].join(' ').toLowerCase().includes(query),
+    return moduleSuggestions.filter((entry) =>
+      matchesTopicSearch(
+        [entry.title, entry.moduleTitle, entry.parentTitle ?? '', entry.topicId].join(' '),
+        query,
+      ),
     );
-  }, [catalog, moduleSuggestions, primaryQuery]);
+  }, [moduleSuggestions, primaryQuery]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -253,6 +263,10 @@ export function LiveClassCreateDrawer({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (catalogLoading) {
+      setLoading(true);
+      return;
+    }
     let cancelled = false;
     titleDirty.current = false;
     setFeedback(null);
@@ -292,7 +306,11 @@ export function LiveClassCreateDrawer({
         setAdditionalIds(nextAdditional);
         setIncludeSubtopics(descendantTopicIds(catalog, nextPrimary).length > 0);
         setModuleId(
-          initialModuleId || initialWorkshop?.module_id || primary?.moduleId || allModules[0]?.id || '',
+          initialModuleId ||
+            initialWorkshop?.module_id ||
+            primary?.moduleId ||
+            modulesForStaff[0]?.id ||
+            '',
         );
 
         const stored = splitStoredDescription(initialWorkshop?.description);
@@ -331,6 +349,7 @@ export function LiveClassCreateDrawer({
     };
   }, [
     isOpen,
+    catalogLoading,
     user?.id,
     initialWorkshop,
     initialScheduledAt,
@@ -338,6 +357,7 @@ export function LiveClassCreateDrawer({
     initialTopicId,
     selectedTopicKey,
     catalog,
+    modulesForStaff,
   ]);
 
   if (!isOpen) return null;
@@ -698,7 +718,7 @@ export function LiveClassCreateDrawer({
         )}
 
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
-          {loading ? (
+          {loading || catalogLoading ? (
             <p className="text-xs text-slate-500 flex items-center gap-2">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
               Cargando docentes y temario…
@@ -737,7 +757,7 @@ export function LiveClassCreateDrawer({
                     }}
                     className="live-session-select w-full px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 text-xs font-bold"
                   >
-                    {allModules.map((mod) => (
+                    {modulesForStaff.map((mod) => (
                       <option key={mod.id} value={mod.id}>
                         {mod.title}
                       </option>

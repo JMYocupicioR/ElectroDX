@@ -357,6 +357,30 @@ async function syncOwnReadingAssignments(studentId: string): Promise<void> {
   }
 }
 
+/** Recalcula lecturas de tareas para alumnos (solo admin). Ignora si el RPC aún no existe. */
+export async function adminRefreshReadingAssignments(
+  studentIds?: string[] | null
+): Promise<number> {
+  try {
+    const { data, error } = await supabase.rpc('admin_refresh_reading_assignments', {
+      p_student_ids: studentIds && studentIds.length > 0 ? studentIds : null,
+    });
+    if (error) {
+      if (/admin_refresh_reading_assignments|schema cache|PGRST202|42883/i.test(error.message)) {
+        return 0;
+      }
+      console.warn(
+        '[studentPlanService] No se pudieron recalcular lecturas de la cohorte:',
+        error.message
+      );
+      return 0;
+    }
+    return typeof data === 'number' ? data : 0;
+  } catch {
+    return 0;
+  }
+}
+
 function readingAssignmentColumns(assignment: {
   batch_id?: string | null;
   reading_topic_ids?: string[] | null;

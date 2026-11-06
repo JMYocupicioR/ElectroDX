@@ -19,7 +19,7 @@ import {
   deleteMilestone,
   rememberAdminMilestones,
 } from '../../services/academicScheduleService';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import type { AcademicMilestone } from '../../types/academicGradebook';
 import type { AdminProfileRow } from '../../types/admin';
 import {
@@ -49,6 +49,7 @@ export default function AcademicScheduleManagerModal({
   const [editingMilestone, setEditingMilestone] = useState<AcademicMilestone | null>(null);
   const [expandedMilestoneId, setExpandedMilestoneId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const { modulesForStaff } = useSyllabusCatalog();
 
   useEffect(() => {
     if (isOpen) {
@@ -66,7 +67,10 @@ export default function AcademicScheduleManagerModal({
     }
   }, [isOpen]);
 
-  const topicCatalog = useMemo(() => buildLiveClassTopicCatalog(allModules), []);
+  const topicCatalog = useMemo(
+    () => buildLiveClassTopicCatalog(modulesForStaff),
+    [modulesForStaff],
+  );
 
   if (!isOpen) return null;
 

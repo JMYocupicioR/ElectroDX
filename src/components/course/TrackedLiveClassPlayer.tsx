@@ -26,13 +26,29 @@ import {
   attestDriveRecordingAttendance,
   type HeartbeatSyncReason,
 } from '../../services/videoProgressService';
+import {
+  attendanceStatusLabelEs,
+  attendanceStatusSatisfiesSession,
+  getStudentAttendanceForWorkshop,
+} from '../../services/attendanceService';
+import type { ClassAttendanceRecord } from '../../types/academicGradebook';
 import { supabase } from '../../lib/supabase';
+
+export type TrackedAttendanceLockState = {
+  rosterLocked: boolean;
+  statusLabel: string | null;
+  record: ClassAttendanceRecord | null;
+};
 
 interface TrackedLiveClassPlayerProps {
   workshop: LiveWorkshop;
   userId: string;
   onAttendanceAccredited?: () => void;
+  /** Notifica si el pase de lista del docente ya cubre esta sesión. */
+  onRosterAttendanceResolved?: (state: TrackedAttendanceLockState) => void;
   className?: string;
+  /** Chrome más bajo y sin título duplicado; pensado para layout teatro a ancho completo. */
+  compact?: boolean;
 }
 
 let ytApiPromise: Promise<any> | null = null;
@@ -92,7 +108,9 @@ export function TrackedLiveClassPlayer({
   workshop,
   userId,
   onAttendanceAccredited,
+  onRosterAttendanceResolved,
   className = '',
+  compact = false,
 }: TrackedLiveClassPlayerProps) {
   const recordingUrl = workshop.recording_url || '';
   const parsedVideo = useMemo(() => parseVideoUrl(recordingUrl), [recordingUrl]);
@@ -106,6 +124,7 @@ export function TrackedLiveClassPlayer({
   const [duration, setDuration] = useState(0);
   const [coveragePercent, setCoveragePercent] = useState(0);
   const [isFullyWatched, setIsFullyWatched] = useState(false);
+  const [rosterAttendance, setRosterAttendance] = useState<ClassAttendanceRecord | null>(null);
   const [accreditedJustNow, setAccreditedJustNow] = useState(false);
   const [resumePrompt, setResumePrompt] = useState<number | null>(null);
   const [tabIsHidden, setTabIsHidden] = useState(false);
@@ -113,6 +132,12 @@ export function TrackedLiveClassPlayer({
   const [playerRetryKey, setPlayerRetryKey] = useState(0);
   const [driveAttestBusy, setDriveAttestBusy] = useState(false);
   const [driveAttestError, setDriveAttestError] = useState<string | null>(null);
+
+  const rosterLocked = attendanceStatusSatisfiesSession(rosterAttendance?.status);
+  const rosterStatusLabel = rosterAttendance?.status
+    ? attendanceStatusLabelEs(rosterAttendance.status)
+    : null;
+  const attendanceSatisfied = rosterLocked || isFullyWatched;
 
   // Referencias mutables para evitar re-creación de funciones y bucles infinitos en useEffect
   const watchedSegmentsRef = useRef<TimeInterval[]>([]);
@@ -125,6 +150,7 @@ export function TrackedLiveClassPlayer({
   const accessTokenRef = useRef<string | null>(null);
   const thresholdSyncSentRef = useRef(false);
   const accreditedNotifiedRef = useRef(false);
+  const rosterLockedRef = useRef(false);
 
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
@@ -133,21 +159,37 @@ export function TrackedLiveClassPlayer({
   const trackingIntervalRef = useRef<any>(null);
   const lastSyncTimeRef = useRef<number>(0);
   const lastTickTimeRef = useRef<number | null>(null);
+  const onRosterResolvedRef = useRef(onRosterAttendanceResolved);
+  onRosterResolvedRef.current = onRosterAttendanceResolved;
+  rosterLockedRef.current = rosterLocked;
 
-  // 1. Cargar estado previo de la base de datos
+  // 1. Cargar progreso de video + asistencia del pase de lista
   useEffect(() => {
     let cancelled = false;
-    getWorkshopVideoProgress(workshop.id, userId).then((progress) => {
+    Promise.all([
+      getWorkshopVideoProgress(workshop.id, userId),
+      getStudentAttendanceForWorkshop(userId, workshop.id),
+    ]).then(([progress, attendance]) => {
       if (cancelled) return;
+
+      const rosterOk = attendanceStatusSatisfiesSession(attendance?.status);
+      rosterLockedRef.current = rosterOk;
+      setRosterAttendance(attendance);
+      onRosterResolvedRef.current?.({
+        rosterLocked: rosterOk,
+        statusLabel: attendance?.status ? attendanceStatusLabelEs(attendance.status) : null,
+        record: attendance,
+      });
+
       if (progress) {
         const segs = (progress.watched_segments || []) as TimeInterval[];
         watchedSegmentsRef.current = segs;
         currentTimeRef.current = progress.last_position_seconds || 0;
         durationRef.current = progress.total_duration_seconds || 0;
         isFullyWatchedRef.current = progress.is_fully_watched || false;
-        thresholdSyncSentRef.current = progress.is_fully_watched || false;
-        // Si ya venía acreditado, no mostrar el banner de "recién acreditado"
-        accreditedNotifiedRef.current = progress.is_fully_watched || false;
+        thresholdSyncSentRef.current = progress.is_fully_watched || rosterOk;
+        // Si ya venía acreditado (video o pase), no mostrar el banner de "recién acreditado"
+        accreditedNotifiedRef.current = progress.is_fully_watched || rosterOk;
         lastSyncedCoverageRef.current = progress.watched_percentage || 0;
         lastSyncedPositionRef.current = progress.last_position_seconds || 0;
 
@@ -158,12 +200,16 @@ export function TrackedLiveClassPlayer({
           setDuration(progress.total_duration_seconds);
         }
         if (
+          !rosterOk &&
           progress.last_position_seconds > 15 &&
           (!progress.total_duration_seconds ||
             progress.last_position_seconds < progress.total_duration_seconds - 30)
         ) {
           setResumePrompt(progress.last_position_seconds);
         }
+      } else if (rosterOk) {
+        accreditedNotifiedRef.current = true;
+        thresholdSyncSentRef.current = true;
       }
       setLoadingInitial(false);
     });
@@ -202,6 +248,7 @@ export function TrackedLiveClassPlayer({
       const force = options?.force === true;
 
       if (!workshop.id || !userId || dur <= 0) return;
+      if (rosterLockedRef.current) return;
       if (syncInFlightRef.current) return;
 
       const localCoverage = calculateWatchedCoverage(segs, dur);
@@ -266,6 +313,7 @@ export function TrackedLiveClassPlayer({
   const flushKeepalive = useCallback(() => {
     const dur = durationRef.current;
     if (!workshop.id || !userId || dur <= 0) return;
+    if (rosterLockedRef.current) return;
 
     logVideoWatchHeartbeatKeepalive({
       workshopId: workshop.id,
@@ -349,7 +397,7 @@ export function TrackedLiveClassPlayer({
   }, []);
 
   const handleDriveSelfAttest = useCallback(async () => {
-    if (driveAttestBusy || isFullyWatchedRef.current) return;
+    if (driveAttestBusy || isFullyWatchedRef.current || rosterLockedRef.current) return;
     if (workshop.allow_recording_attendance === false) {
       setDriveAttestError('Este taller no acredita asistencia por grabación.');
       return;
@@ -707,7 +755,7 @@ export function TrackedLiveClassPlayer({
   const isEmbedSupported = parsedVideo?.kind === 'youtube' || parsedVideo?.kind === 'vimeo';
   const canSelfAttestDrive =
     isGoogleDrive &&
-    !isFullyWatched &&
+    !attendanceSatisfied &&
     workshop.allow_recording_attendance !== false &&
     !workshop.attendance_closed;
 
@@ -728,13 +776,23 @@ export function TrackedLiveClassPlayer({
   return (
     <div
       id="tracked-live-player"
-      className={`overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-2xl flex flex-col ${className}`}
+      className={`overflow-hidden rounded-2xl sm:rounded-3xl bg-slate-900 border border-slate-800 text-white shadow-2xl flex flex-col ${className}`}
     >
       {/* ─── BANNER SUPERIOR DE ACREDITACIÓN / PROGRESO ─── */}
-      <div className="p-4 sm:p-5 border-b border-slate-800/80 bg-slate-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            {isFullyWatched ? (
+      <div
+        className={`border-b border-slate-800/80 bg-slate-900/90 flex flex-col sm:flex-row items-start sm:items-center justify-between ${
+          compact ? 'gap-2 px-3 py-2.5 sm:px-4' : 'gap-4 p-4 sm:p-5'
+        }`}
+      >
+        <div className="min-w-0">
+          <div className={`flex items-center gap-2 flex-wrap ${compact ? '' : 'mb-1.5'}`}>
+            {rosterLocked ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <CheckCircle2 className="w-4 h-4" />
+                Asistencia asentada
+                {rosterStatusLabel ? ` · ${rosterStatusLabel}` : ''}
+              </span>
+            ) : isFullyWatched ? (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 <CheckCircle2 className="w-4 h-4" /> Asistencia Acreditada
               </span>
@@ -754,23 +812,33 @@ export function TrackedLiveClassPlayer({
               </span>
             )}
 
-            {isGoogleDrive && (
+            {isGoogleDrive && !rosterLocked && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 <AlertTriangle className="w-3 h-3" /> Google Drive
               </span>
             )}
           </div>
 
-          <h3 className="text-base sm:text-lg font-bold text-white truncate max-w-xl">
-            {workshop.title}
-          </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Duración: {formatVideoTime(duration || workshop.duration_minutes * 60)} • Posición: {formatVideoTime(currentTime)}
-          </p>
+          {!compact && (
+            <>
+              <h3 className="text-base sm:text-lg font-bold text-white truncate max-w-xl">
+                {workshop.title}
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {rosterLocked
+                  ? 'Puedes ver la grabación para repasar. El porcentaje de visualización ya no aplica.'
+                  : `Duración: ${formatVideoTime(duration || workshop.duration_minutes * 60)} • Posición: ${formatVideoTime(currentTime)}`}
+              </p>
+            </>
+          )}
+          {compact && !rosterLocked && (
+            <p className="text-[11px] text-slate-400 mt-1 tabular-nums">
+              {formatVideoTime(currentTime)} / {formatVideoTime(duration || workshop.duration_minutes * 60)}
+            </p>
+          )}
         </div>
 
-        {/* Resumen numérico de porcentaje */}
-        {isEmbedSupported && (
+        {rosterLocked ? null : isEmbedSupported ? (
           <div className="flex flex-col items-start sm:items-end w-full sm:w-auto">
             <div className="text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1.5 flex-wrap justify-end">
               <span>Visto:</span>
@@ -783,8 +851,11 @@ export function TrackedLiveClassPlayer({
               </span>
             </div>
 
-            {/* Barra de progreso interactiva con marcador del umbral */}
-            <div className="relative w-full sm:w-48 h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700/60">
+            <div
+              className={`relative h-2.5 rounded-full bg-slate-800 overflow-hidden border border-slate-700/60 ${
+                compact ? 'w-full sm:w-56' : 'w-full sm:w-48'
+              }`}
+            >
               <div
                 className={`h-full transition-all duration-300 ${
                   isFullyWatched
@@ -793,7 +864,6 @@ export function TrackedLiveClassPlayer({
                 }`}
                 style={{ width: `${Math.min(100, coveragePercent)}%` }}
               />
-              {/* Marcador del umbral docente */}
               <div
                 className="absolute top-0 bottom-0 w-0.5 bg-amber-400 z-10 opacity-70"
                 style={{ left: `${minRequiredPercent}%` }}
@@ -801,11 +871,11 @@ export function TrackedLiveClassPlayer({
               />
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ─── ALERTA DE REANUDACIÓN DE REPRODUCCIÓN ─── */}
-      {resumePrompt !== null && !isGoogleDrive && (
+      {resumePrompt !== null && !isGoogleDrive && !rosterLocked && (
         <div className="bg-indigo-950/80 border-b border-indigo-800/60 px-4 py-2.5 flex items-center justify-between text-xs text-indigo-200">
           <div className="flex items-center gap-2">
             <RotateCcw className="w-3.5 h-3.5 text-indigo-400" />
@@ -947,6 +1017,12 @@ export function TrackedLiveClassPlayer({
                 {driveAttestBusy ? 'Acreditando…' : 'Marcar clase como completada'}
               </button>
             </>
+          ) : rosterLocked ? (
+            <p className="text-xs text-emerald-300 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              El profesor ya asentó tu asistencia
+              {rosterStatusLabel ? ` (${rosterStatusLabel})` : ''}. No hace falta confirmar la grabación.
+            </p>
           ) : isFullyWatched ? (
             <p className="text-xs text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -970,24 +1046,30 @@ export function TrackedLiveClassPlayer({
         </div>
       )}
 
-      {/* ─── FOOTER EXPLICATIVO ─── */}
-      <div className="p-4 bg-slate-950/80 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-slate-500" />
-          <span>
-            {isFullyWatched
-              ? isGoogleDrive
-                ? 'Asistencia acreditada por tu confirmación de clase completada.'
-                : `Asistencia acreditada. El contador sigue registrando hasta el 100% si continúas viendo (vas en ${coveragePercent.toFixed(1)}%).`
-              : isGoogleDrive
-                ? 'Google Drive no mide el porcentaje visto. Usa el botón de arriba al terminar la clase.'
-                : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
-          </span>
+      {/* ─── FOOTER EXPLICATIVO (oculto si el pase de lista ya cubrió la sesión) ─── */}
+      {!rosterLocked && (
+        <div className="p-4 bg-slate-950/80 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            {isFullyWatched ? (
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+            ) : (
+              <Clock className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            )}
+            <span>
+              {isFullyWatched
+                ? isGoogleDrive
+                  ? 'Asistencia acreditada por tu confirmación de clase completada.'
+                  : `Asistencia acreditada. El contador sigue registrando hasta el 100% si continúas viendo (vas en ${coveragePercent.toFixed(1)}%).`
+                : isGoogleDrive
+                  ? 'Google Drive no mide el porcentaje visto. Usa el botón de arriba al terminar la clase.'
+                  : `Debes ver al menos el ${minRequiredPercent}% de la sesión para acreditar la asistencia de este taller.`}
+            </span>
+          </div>
+          <div className="text-[11px] text-slate-500">
+            Tracking inteligente, reporta cualquier falla de la app al Dr. Yocupicio.
+          </div>
         </div>
-        <div className="text-[11px] text-slate-500">
-          Tracking inteligente, reporta cualquier falla de la app al Dr. Yocupicio.
-        </div>
-      </div>
+      )}
     </div>
   );
 }

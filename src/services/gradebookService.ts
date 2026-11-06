@@ -10,7 +10,11 @@ import {
   getAllTopicIds,
 } from './studentService';
 import { getCohortAttempts, getMyAttempts, getMyProgressByModule } from './quizService';
-import { getAllStudentAssignments, getStudentAssignments } from './studentPlanService';
+import {
+  adminRefreshReadingAssignments,
+  getAllStudentAssignments,
+  getStudentAssignments,
+} from './studentPlanService';
 import { calculateStudentAttendanceMetrics, getCohortAttendance } from './attendanceService';
 import { getWorkshops } from './courseService';
 import {
@@ -425,6 +429,9 @@ export async function getCohortAcademicSummaries(
   if (profiles.length === 0) return map;
 
   const studentIds = profiles.map((p) => p.id);
+
+  // Cierra lecturas desfasadas antes de evaluar riesgo / kardex de la cohorte.
+  await adminRefreshReadingAssignments(studentIds).catch(() => 0);
 
   const [
     rubrics,

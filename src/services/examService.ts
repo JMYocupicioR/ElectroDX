@@ -652,3 +652,76 @@ export async function loadAvailableTopics(): Promise<Array<{
     critical_count: qs.filter(q => q.is_critical).length,
   })).sort((a, b) => b.count - a.count);
 }
+
+// ─── Administración del Banco de Reactivos (exam_questions) ───────────────────
+
+export async function adminListExamQuestions(filters?: {
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'ALL';
+  moduleId?: string;
+}): Promise<ExamQuestion[]> {
+  let query = sb
+    .from('exam_questions')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (filters?.status && filters.status !== 'ALL') {
+    query = query.eq('status', filters.status);
+  }
+  if (filters?.moduleId && filters.moduleId !== 'all') {
+    query = query.eq('module_id', filters.moduleId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as unknown as ExamQuestion[];
+}
+
+export async function adminUpdateExamQuestionsStatus(
+  ids: string[],
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+): Promise<void> {
+  if (ids.length === 0) return;
+  const { error } = await sb
+    .from('exam_questions')
+    .update({ status, updated_at: new Date().toISOString() })
+    .in('id', ids);
+  if (error) throw error;
+}
+
+export async function adminDeleteExamQuestion(id: string): Promise<void> {
+  const { error } = await sb.from('exam_questions').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminImportDraftExamQuestions(
+  items: Array<Partial<ExamQuestion>>,
+  defaultModuleId = 'fundamentals',
+  defaultTopicId?: string
+): Promise<number> {
+  if (items.length === 0) return 0;
+  const rows = items.map((eq) => ({
+    island_name: eq.island_name ?? 'EMG',
+    module_id: eq.module_id ?? defaultModuleId,
+    topic_name: eq.topic_name ?? 'Electrodiagnóstico Clínico',
+    topic_id: eq.topic_id ?? defaultTopicId ?? null,
+    stem: (eq.stem ?? '').trim(),
+    findings: eq.findings ?? [],
+    image_url: eq.image_url ?? null,
+    image_alt: eq.image_alt ?? null,
+    options: eq.options ?? [],
+    difficulty: eq.difficulty ?? 2,
+    is_critical: Boolean(eq.is_critical),
+    pearl: eq.pearl ?? null,
+    source_reference: eq.source_reference ?? null,
+    tags: eq.tags ?? [],
+    status: 'DRAFT' as const,
+  }));
+
+  const { data, error } = await sb
+    .from('exam_questions')
+    .insert(rows)
+    .select('id');
+  if (error) throw error;
+  return data?.length ?? rows.length;
+}
+

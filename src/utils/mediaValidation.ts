@@ -623,13 +623,19 @@ export function resolveAllTopicVideos(topic?: {
 function isSupabasePublicImage(parsed: URL): boolean {
   return (
     parsed.hostname.endsWith('.supabase.co') &&
-    /\/storage\/v1\/object\/public\/course-images\/.+\.(png|jpe?g|webp)$/i.test(parsed.pathname)
+    /\/storage\/v1\/object\/public\/(?:course-images|emg-trace-images)\/.+\.(png|jpe?g|webp|gif|svg)$/i.test(
+      parsed.pathname
+    )
   );
 }
 
 export function isAllowedImageUrl(url: string): boolean {
+  const trimmed = url.trim();
+  if (/^\/quiz-traces\/[a-zA-Z0-9._/-]+\.(svg|png|jpe?g|webp)$/i.test(trimmed)) {
+    return true;
+  }
   try {
-    const parsed = new URL(url.trim());
+    const parsed = new URL(trimmed);
     if (parsed.protocol !== 'https:') return false;
     if (isSupabasePublicImage(parsed)) return true;
     if (ALLOWED_IMAGE_HOSTS.some((host) => parsed.hostname === host || parsed.hostname.endsWith('.' + host))) {

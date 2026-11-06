@@ -85,6 +85,21 @@ describe('LiveClassCountdown Component', () => {
     expect(html).toContain('Cargando reproductor y progreso...');
   });
 
+  it('omite el reproductor embebido cuando hidePlayer=true (modo teatro del page)', () => {
+    const html = renderToStaticMarkup(
+      <LiveClassCountdown
+        workshop={pastWorkshop}
+        isRegistered={true}
+        userId="student-user-1"
+        hidePlayer
+      />
+    );
+
+    expect(html).toContain('Este taller ya finalizó');
+    expect(html).toContain('La grabación se reproduce arriba, a pantalla completa.');
+    expect(html).not.toContain('Cargando reproductor y progreso...');
+  });
+
   it('ofrece el visualizador de grabación aunque la sesión aún no haya terminado', () => {
     const recordedReady: LiveWorkshop = {
       ...imminentWorkshop,
@@ -120,6 +135,23 @@ describe('LiveClassCountdown Component', () => {
     expect(html).toContain('Clase grabada disponible');
     expect(html).toContain('El visualizador de clase grabada se activará al registrarte.');
     expect(html).not.toContain('Cargando reproductor y progreso...');
+  });
+
+  it('si el pase de lista ya asentó asistencia, no pide acreditar por video', () => {
+    const html = renderToStaticMarkup(
+      <LiveClassCountdown
+        workshop={pastWorkshop}
+        isRegistered={true}
+        userId="student-user-1"
+        hidePlayer
+        rosterAttendanceLocked
+        rosterStatusLabel="Presente"
+      />
+    );
+
+    expect(html).toContain('Asistencia ya asentada (Presente)');
+    expect(html).toContain('La grabación arriba es solo para repaso.');
+    expect(html).not.toContain('Acredita con mín.');
   });
 });
 

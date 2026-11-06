@@ -54,10 +54,17 @@ export function readingTopicIds(assignment: { reading_topic_ids?: string[] | nul
 
 export function describeReadingAssignment(
   assignment: ReadingAssignmentFields,
-  now = Date.now()
+  now = Date.now(),
+  /** Temas ya leídos en el temario; cubre filas de tarea con reading_done_ids desfasados. */
+  liveCompletedTopics?: Set<string> | null
 ): ReadingAssignmentView {
   const topicIds = readingTopicIds(assignment);
   const doneSet = new Set((assignment.reading_done_ids ?? []).map((id) => id.trim()).filter(Boolean));
+  if (liveCompletedTopics) {
+    for (const id of topicIds) {
+      if (liveCompletedTopics.has(id)) doneSet.add(id);
+    }
+  }
   const doneIds = topicIds.filter((id) => doneSet.has(id));
   const total = topicIds.length;
   const done = doneIds.length;
@@ -71,7 +78,9 @@ export function describeReadingAssignment(
   const late = complete && Number.isFinite(completedAt) && Number.isFinite(dueAt) && completedAt > dueAt;
   const requiresDelivery = assignmentRequiresDelivery(assignment);
   const readingOnly = hasReading && !requiresDelivery;
-  const overdue = Number.isFinite(dueAt) && dueAt < now && assignment.status === 'pending';
+  // Si la lectura ya está cumplida (incluso vía temario en vivo), no tratarla como vencida.
+  const overdue =
+    Number.isFinite(dueAt) && dueAt < now && assignment.status === 'pending' && !complete;
 
   let statusLabel: string | null = null;
   if (readingOnly && complete && late) statusLabel = 'Lectura cumplida con retraso';

@@ -111,6 +111,44 @@ export async function getWorkshopVideoProgress(
   return null;
 }
 
+/** Progreso de grabaciones del alumno (para badges del temario). */
+export async function listMyWorkshopVideoProgress(
+  userId: string
+): Promise<WorkshopVideoProgress[]> {
+  if (!userId) return [];
+
+  try {
+    const { data, error } = await (supabase as any)
+      .from('workshop_video_progress')
+      .select('*')
+      .eq('user_id', userId);
+    if (!error && Array.isArray(data)) {
+      return data as WorkshopVideoProgress[];
+    }
+  } catch (err) {
+    console.warn('[videoProgressService] Error listing progress from Supabase:', err);
+  }
+
+  const fromCache: WorkshopVideoProgress[] = [];
+  try {
+    const prefix = `${LOCAL_STORAGE_PROGRESS_PREFIX}${userId}_`;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith(prefix)) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      try {
+        fromCache.push(JSON.parse(raw) as WorkshopVideoProgress);
+      } catch {
+        // ignore bad cache row
+      }
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return fromCache;
+}
+
 /**
  * Envía el latido (heartbeat) de progreso del alumno al servidor.
  * La RPC de Supabase valida los intervalos y acredita asistencia automáticamente.

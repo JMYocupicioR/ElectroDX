@@ -2895,7 +2895,7 @@ export default function AdminSyllabusPage() {
         }) => {
           if (!drawerContext || !user) return;
           const sessionTopicIds = sessionTopicIdsForLiveClass(
-            buildLiveClassTopicCatalog(allModules),
+            buildLiveClassTopicCatalog(modulesForStaff),
             drawerContext.topic.id,
             additionalTopics.map((topic) => topic.topicId),
           );
