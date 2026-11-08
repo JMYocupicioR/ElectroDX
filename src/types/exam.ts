@@ -23,16 +23,16 @@ export interface ExamQuestion {
   island_name: string;         // "EMG"
   module_id: string;           // "nerve-conduction", "emg-needle", etc.
   topic_name: string;          // "Reflejo H", "Actividad espontánea", etc.
-  topic_id?: string;
+  topic_id?: string | null;
   stem: string;                // Viñeta clínica / enunciado
   findings: ExamQuestionFinding[];
-  image_url?: string;
-  image_alt?: string;
+  image_url?: string | null;
+  image_alt?: string | null;
   options: ExamQuestionOption[];
   difficulty: 1 | 2 | 3;      // 1=Básico, 2=Intermedio, 3=Avanzado
   is_critical: boolean;        // Preguntas de alta rentabilidad del Consejo
-  pearl?: string;              // Perla clínica oficial
-  source_reference?: string;   // Referencia bibliográfica
+  pearl?: string | null;              // Perla clínica oficial
+  source_reference?: string | null;   // Referencia bibliográfica
   tags: string[];
   status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   created_at: string;
