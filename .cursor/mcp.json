@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "neurosafe-quiz": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "tsx",
+        "--import",
+        "./scripts/register-assets.mjs",
+        "mcp/neurosafe-quiz/server.ts"
+      ]
+    }
+  }
+}
+

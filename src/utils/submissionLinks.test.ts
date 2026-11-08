@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { submissionFileError, submissionLinkError } from './submissionLinks';
+import { submissionFileError, submissionFileMime, submissionLinkError } from './submissionLinks';
 
 describe('submissionLinkError', () => {
   it('acepta Drive, Docs, OneDrive y Dropbox por https', () => {
@@ -36,5 +36,18 @@ describe('submissionFileError', () => {
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     });
     expect(submissionFileError(word)).toBeNull();
+  });
+
+  it('normaliza extensiones y tipos MIME con variantes de navegador', () => {
+    const docxOctet = new File([new Uint8Array(32)], 'TAREA.DOCX', { type: 'application/octet-stream' });
+    expect(submissionFileMime(docxOctet)).toBe('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    expect(submissionFileError(docxOctet)).toBeNull();
+
+    const pdfUppercase = new File([new Uint8Array(32)], 'CASO.PDF', { type: '' });
+    expect(submissionFileMime(pdfUppercase)).toBe('application/pdf');
+    expect(submissionFileError(pdfUppercase)).toBeNull();
+
+    const imageJpg = new File([new Uint8Array(32)], 'trazo.jpg', { type: 'image/jpg' });
+    expect(submissionFileMime(imageJpg)).toBe('image/jpeg');
   });
 });

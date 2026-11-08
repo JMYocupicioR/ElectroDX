@@ -12,6 +12,7 @@ import {
   Save,
   Clock,
   AlertTriangle,
+  Link2,
 } from 'lucide-react';
 import type { TeacherPendingReviewItem } from '../../types/studentPlan';
 import { gradeAssignment } from '../../services/studentPlanService';
@@ -19,6 +20,7 @@ import { AssignmentSubmissionReview } from '../student/AssignmentDeliveryPanel';
 import { AssignmentMaterialsList } from '../student/AssignmentMaterialsList';
 import { getEmgReportForAssignment, gradeEmgReport } from '../../services/studentToolsService';
 import { useAuth } from '../../contexts/AuthProvider';
+import { extractUrls } from '../../utils/submissionLinks';
 
 interface TeacherQuickGradeModalProps {
   isOpen: boolean;
@@ -43,6 +45,31 @@ const EMG_RUBRIC = [
   { id: 'correlacion', label: 'Correlación clínica' },
   { id: 'limitaciones', label: 'Limitaciones del estudio' },
 ] as const;
+
+function FormattedTextWithLinks({ text }: { text: string }) {
+  const urlRegex = /(https?:\/\/[^\s<>"'()]+)/g;
+  const parts = text.split(urlRegex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        urlRegex.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-cyan-600 dark:text-cyan-400 underline font-semibold hover:text-cyan-500 inline-flex items-center gap-0.5 break-all"
+          >
+            {part}
+            <ExternalLink className="w-3 h-3 inline shrink-0 ml-0.5" />
+          </a>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
 
 export default function TeacherQuickGradeModal({
   isOpen,
@@ -253,22 +280,53 @@ export default function TeacherQuickGradeModal({
                   Notas y Diagnóstico del Alumno:
                 </span>
                 <p className="text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
-                  {assignment.student_notes}
+                  <FormattedTextWithLinks text={assignment.student_notes} />
                 </p>
               </div>
             )}
 
+            {/* Any URLs detected in notes */}
+            {extractUrls(assignment.student_notes)
+              .filter((url) => url !== assignment.submission_url)
+              .map((url, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800 text-xs"
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Link2 className="w-4 h-4 text-indigo-600 dark:text-cyan-400 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-slate-800 dark:text-slate-200">Enlace detectado en el texto del alumno:</p>
+                      <p className="truncate text-indigo-600 dark:text-indigo-300 font-mono text-[11px]">{url}</p>
+                    </div>
+                  </div>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition shrink-0 ml-2 shadow-xs"
+                  >
+                    <span>Abrir enlace</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              ))}
+
             {/* Submission Link if provided */}
             {assignment.submission_url && !assignment.submission_url.startsWith('exam_session:') && (
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs">
-                <span className="truncate max-w-sm text-slate-600 dark:text-slate-300 font-mono">
-                  {assignment.submission_url}
-                </span>
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <Link2 className="w-4 h-4 text-blue-600 dark:text-cyan-400 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-800 dark:text-slate-200">Enlace entregado:</p>
+                    <p className="truncate text-slate-600 dark:text-slate-300 font-mono text-[11px]">{assignment.submission_url}</p>
+                  </div>
+                </div>
                 <a
                   href={assignment.submission_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition shrink-0 ml-2 shadow-xs"
                 >
                   <span>Abrir reporte</span>
                   <ExternalLink className="w-3.5 h-3.5" />

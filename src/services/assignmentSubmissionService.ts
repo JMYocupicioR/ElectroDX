@@ -1,6 +1,7 @@
 import { supabase, sb } from '../lib/supabase';
 import type { StudentNotification, NotificationColorTone } from './studentService';
 import {
+  normalizeSubmissionUrl,
   submissionFileError,
   submissionFileExtension,
   submissionFileMime,
@@ -41,6 +42,17 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+function safeRandomUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export async function listAssignmentSubmissions(assignmentId: string): Promise<AssignmentSubmission[]> {
   if (!isUuid(assignmentId)) return [];
   const { data, error } = await supabase
@@ -68,12 +80,13 @@ export async function uploadAssignmentFile(
 
   const mime = submissionFileMime(file);
   const ext = submissionFileExtension(mime);
-  const path = `${studentId}/${assignmentId}/${crypto.randomUUID()}.${ext}`;
+  const path = `${studentId}/${assignmentId}/${safeRandomUUID()}.${ext}`;
   const { error: uploadError } = await supabase.storage.from(STUDENT_SUBMISSIONS_BUCKET).upload(path, file, {
     contentType: mime,
     upsert: false,
   });
   if (uploadError) {
+    console.error('[assignmentSubmissionService] Error en supabase.storage.upload:', uploadError);
     const msg = (uploadError.message || '').toLowerCase();
     if (msg.includes('bucket not found') || msg.includes('not found')) {
       throw new Error('El almacenamiento de entregas aún no está activo. Aplica la migración de tareas.');
@@ -92,6 +105,7 @@ export async function uploadAssignmentFile(
     p_byte_size: file.size,
   });
   if (error) {
+    console.error('[assignmentSubmissionService] Error en register_my_submission_file:', error);
     await supabase.storage.from(STUDENT_SUBMISSIONS_BUCKET).remove([path]);
     throw error;
   }
@@ -103,14 +117,18 @@ export async function addAssignmentLink(
   url: string,
   label?: string
 ): Promise<AssignmentSubmission> {
-  const validation = submissionLinkError(url);
+  const normalized = normalizeSubmissionUrl(url);
+  const validation = submissionLinkError(normalized);
   if (validation) throw new Error(validation);
   const { data, error } = await sb.rpc('add_my_submission_link', {
     p_assignment_id: assignmentId,
-    p_url: url.trim(),
+    p_url: normalized,
     p_label: label?.trim() || null,
   });
-  if (error) throw error;
+  if (error) {
+    console.error('[assignmentSubmissionService] Error en add_my_submission_link:', error);
+    throw error;
+  }
   return data as AssignmentSubmission;
 }
 

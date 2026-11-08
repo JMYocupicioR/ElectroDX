@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Award,
@@ -105,7 +105,8 @@ import {
   requestExamRetake,
   getStudentLearningPlans,
 } from '../../services/studentPlanService';
-import { AssignmentDeliveryEditor } from './AssignmentDeliveryPanel';
+import { AssignmentDeliveryEditor, type AssignmentDeliveryEditorHandle } from './AssignmentDeliveryPanel';
+import { extractUrls } from '../../utils/submissionLinks';
 import { AssignmentMaterialsList } from './AssignmentMaterialsList';
 import { AssignmentReadingChecklist } from './AssignmentReadingChecklist';
 import { assignmentRequiresDelivery, describeReadingAssignment } from '../../utils/readingAssignments';
@@ -237,6 +238,7 @@ export default function StudentDashboard() {
   const [submitNotes, setSubmitNotes] = useState('');
   const [submitAttachmentCount, setSubmitAttachmentCount] = useState(0);
   const [savingSubmission, setSavingSubmission] = useState(false);
+  const deliveryEditorRef = useRef<AssignmentDeliveryEditorHandle>(null);
   const [lastVisited, setLastVisited] = useState<LastVisitedTopic | null>(() =>
     user ? getLastVisitedTopic(user.id) : null
   );
@@ -759,7 +761,13 @@ export default function StudentDashboard() {
     }
     setSavingSubmission(true);
     try {
-      await submitAssignment(submittingAsg.id, user.id, submitNotes.trim() || undefined);
+      if (deliveryEditorRef.current) {
+        await deliveryEditorRef.current.flushPendingLink();
+      }
+      const extractedUrls = extractUrls(submitNotes.trim());
+      const firstExtracted = extractedUrls.length > 0 ? extractedUrls[0] : undefined;
+
+      await submitAssignment(submittingAsg.id, user.id, submitNotes.trim() || undefined, firstExtracted);
       setSubmittingAsg(null);
       setSubmitNotes('');
       setSubmitAttachmentCount(0);
@@ -3169,6 +3177,7 @@ export default function StudentDashboard() {
 
                   {user && submittingAsg.type !== 'exam' && submittingAsg.type !== 'clinical_case' && (
                     <AssignmentDeliveryEditor
+                      ref={deliveryEditorRef}
                       assignmentId={submittingAsg.id}
                       studentId={user.id}
                       canEdit={submittingAsg.status === 'pending' || submittingAsg.status === 'needs_revision'}

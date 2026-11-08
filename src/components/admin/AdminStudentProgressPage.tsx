@@ -34,11 +34,14 @@ import {
   FileCheck,
   RefreshCw,
   RotateCcw,
+  Link2,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import AssignExamModal from './AssignExamModal';
 import AssignHomeworkModal from './AssignHomeworkModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
+import { AssignmentSubmissionReview } from '../student/AssignmentDeliveryPanel';
+import { extractUrls } from '../../utils/submissionLinks';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
   getStudentFullDossier,
@@ -1978,6 +1981,52 @@ export default function AdminStudentProgressPage() {
                               <p className="text-slate-600 dark:text-slate-300">{asg.student_notes}</p>
                             </div>
                           )}
+
+                          {/* Any URLs detected in notes */}
+                          {extractUrls(asg.student_notes)
+                            .filter((url) => url !== asg.submission_url)
+                            .map((url, i) => (
+                              <div
+                                key={i}
+                                className="mt-2 flex items-center justify-between p-2.5 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-xs"
+                              >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <Link2 className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 shrink-0" />
+                                  <span className="truncate text-indigo-700 dark:text-indigo-300 font-mono text-[11px]">{url}</span>
+                                </div>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-semibold text-[11px] hover:bg-indigo-700 transition shrink-0 ml-2"
+                                >
+                                  <span>Abrir enlace</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              </div>
+                            ))}
+
+                          {asg.submission_url && !asg.submission_url.startsWith('exam_session:') && (
+                            <div className="mt-2 flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <Link2 className="w-3.5 h-3.5 text-blue-600 dark:text-cyan-400 shrink-0" />
+                                <span className="truncate text-slate-600 dark:text-slate-300 font-mono text-[11px]">{asg.submission_url}</span>
+                              </div>
+                              <a
+                                href={asg.submission_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold text-[11px] hover:bg-blue-700 transition shrink-0 ml-2"
+                              >
+                                <span>Abrir reporte</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          )}
+
+                          <div className="mt-2">
+                            <AssignmentSubmissionReview assignmentId={asg.id} />
+                          </div>
 
                           {asg.grade != null && (
                             <div className="mt-1 flex items-center gap-2 text-xs">
