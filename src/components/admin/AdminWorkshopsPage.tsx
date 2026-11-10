@@ -17,6 +17,7 @@ import {
   X,
   RotateCcw,
   Pencil,
+  CheckCircle2,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -33,6 +34,7 @@ import {
 } from '../../services/attendanceService';
 import { allModules } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
+import { isWorkshopCompleted } from '../../utils/liveSessionUtils';
 import type { LiveWorkshop, WorkshopStatus } from '../../types/database';
 import type { Module } from '../../types/content';
 import type { AdminProfileRow } from '../../types/admin';
@@ -66,6 +68,7 @@ export default function AdminWorkshopsPage() {
   const [pushTitle, setPushTitle] = useState('Aviso académico ElectroDx');
   const [pushBody, setPushBody] = useState('');
   const [pushStatus, setPushStatus] = useState<string | null>(null);
+  const [isSendingPush, setIsSendingPush] = useState(false);
 
   // Estados de Filtros
   const [q, setQ] = useState('');
@@ -131,9 +134,13 @@ export default function AdminWorkshopsPage() {
     let completed = 0;
     let draftOrCancelled = 0;
     for (const w of workshops) {
-      if (w.status === 'scheduled' || w.status === 'live') active++;
-      else if (w.status === 'completed') completed++;
-      else draftOrCancelled++;
+      if (w.status === 'draft' || w.status === 'cancelled') {
+        draftOrCancelled++;
+      } else if (isWorkshopCompleted(w)) {
+        completed++;
+      } else {
+        active++;
+      }
     }
     return {
       all: workshops.length,
@@ -143,6 +150,33 @@ export default function AdminWorkshopsPage() {
     };
   }, [workshops]);
 
+  const pendingSyncWorkshops = useMemo(() => {
+    return workshops.filter((w) => w.status === 'scheduled' && isWorkshopCompleted(w));
+  }, [workshops]);
+
+  const [isSyncingCompleted, setIsSyncingCompleted] = useState(false);
+
+  const handleSyncCompletedWorkshops = async () => {
+    if (pendingSyncWorkshops.length === 0) return;
+    const proceed = window.confirm(
+      `Se actualizarán ${pendingSyncWorkshops.length} clases que ya concluyeron o tienen video subido al estado oficial "Finalizada" en la base de datos.\n\nPodrás seguir consultando los talleres y pasando lista en cualquier momento.\n\n¿Deseas continuar?`
+    );
+    if (!proceed) return;
+
+    setIsSyncingCompleted(true);
+    try {
+      await Promise.all(
+        pendingSyncWorkshops.map((w) => updateWorkshop(w.id, { status: 'completed' }))
+      );
+      await load();
+    } catch (err) {
+      console.error(err);
+      alert('Error al sincronizar algunas clases. Intenta nuevamente.');
+    } finally {
+      setIsSyncingCompleted(false);
+    }
+  };
+
   const filteredWorkshops = useMemo(() => {
     const needle = normalizeSearchText(q);
 
@@ -150,7 +184,9 @@ export default function AdminWorkshopsPage() {
       .filter((w) => {
         // Filtro por Estado
         if (statusFilter === 'active') {
-          if (w.status !== 'scheduled' && w.status !== 'live') return false;
+          if (w.status === 'draft' || w.status === 'cancelled' || isWorkshopCompleted(w)) return false;
+        } else if (statusFilter === 'completed') {
+          if (!isWorkshopCompleted(w)) return false;
         } else if (statusFilter === 'draft_cancelled') {
           if (w.status !== 'draft' && w.status !== 'cancelled') return false;
         } else if (statusFilter !== 'all') {
@@ -303,18 +339,25 @@ export default function AdminWorkshopsPage() {
           onSubmit={async (e) => {
             e.preventDefault();
             setPushStatus(null);
+            setIsSendingPush(true);
             try {
               const result = await sendAcademicPush({
                 title: pushTitle,
                 body: pushBody,
                 url: '/talleres',
               });
-              setPushStatus(
-                `Enviados ${result.sent} de ${result.queued}. Fallidos: ${result.failed}.`
-              );
+              if (result.queued === 0) {
+                setPushStatus('No hay alumnos con notificaciones push activadas en este momento.');
+              } else {
+                setPushStatus(
+                  `Enviados ${result.sent} de ${result.queued}. Fallidos: ${result.failed}.`
+                );
+              }
               setPushBody('');
             } catch (err) {
               setPushStatus(err instanceof Error ? err.message : 'No se pudo enviar');
+            } finally {
+              setIsSendingPush(false);
             }
           }}
         >
@@ -323,6 +366,7 @@ export default function AdminWorkshopsPage() {
             value={pushTitle}
             onChange={(e) => setPushTitle(e.target.value)}
             required
+            disabled={isSendingPush}
           />
           <textarea
             className="w-full rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-xs font-normal dark:bg-slate-800"
@@ -331,12 +375,14 @@ export default function AdminWorkshopsPage() {
             value={pushBody}
             onChange={(e) => setPushBody(e.target.value)}
             required
+            disabled={isSendingPush}
           />
           <button
             type="submit"
-            className="min-h-[40px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-xs cursor-pointer"
+            disabled={isSendingPush}
+            className="min-h-[40px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold transition shadow-xs cursor-pointer disabled:cursor-not-allowed"
           >
-            Enviar aviso
+            {isSendingPush ? 'Enviando aviso...' : 'Enviar aviso'}
           </button>
           {pushStatus && <p className="text-xs font-bold text-slate-500">{pushStatus}</p>}
         </form>
@@ -579,6 +625,36 @@ export default function AdminWorkshopsPage() {
         </div>
       )}
 
+      {/* Alerta de Sincronización de Clases Concluidas */}
+      {!loading && pendingSyncWorkshops.length > 0 && (
+        <div className="mb-5 p-3.5 sm:p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-800 dark:text-emerald-200">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div>
+              <p className="font-bold">
+                {pendingSyncWorkshops.length === 1
+                  ? '1 clase ya concluyó o tiene video subido'
+                  : `${pendingSyncWorkshops.length} clases ya concluyeron o tienen video subido`}
+              </p>
+              <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80">
+                Se muestran clasificadas en «Finalizadas». Puedes actualizar su estado oficial en la base de datos con un clic.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleSyncCompletedWorkshops}
+            disabled={isSyncingCompleted}
+            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition shadow-xs flex items-center gap-1.5 shrink-0"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            {isSyncingCompleted
+              ? 'Actualizando base de datos...'
+              : `Guardar ${pendingSyncWorkshops.length} como Finalizadas en BD`}
+          </button>
+        </div>
+      )}
+
       {loading ? (
         <p className="text-sm text-slate-500 text-center py-12">Cargando talleres...</p>
       ) : workshops.length === 0 ? (
@@ -621,6 +697,7 @@ export default function AdminWorkshopsPage() {
             const date = new Date(w.scheduled_at);
             const summary = summaries.get(w.id);
             const isClosed = !!w.attendance_closed;
+            const isFinished = isWorkshopCompleted(w);
 
             return (
               <div
@@ -636,14 +713,20 @@ export default function AdminWorkshopsPage() {
                       className={`px-2 py-0.5 text-[10px] uppercase font-black rounded-md shrink-0 ${
                         w.status === 'live'
                           ? 'bg-red-100 text-red-600 animate-pulse'
+                          : isFinished
+                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                           : w.status === 'scheduled'
                           ? 'bg-orange-100 text-orange-600'
-                          : w.status === 'completed'
-                          ? 'bg-emerald-100 text-emerald-600'
                           : 'bg-slate-100 text-slate-500'
                       }`}
                     >
-                      {w.status}
+                      {w.status === 'live'
+                        ? 'En Vivo'
+                        : isFinished
+                        ? (w.recording_url ? 'Finalizada · Grabada' : 'Finalizada')
+                        : w.status === 'scheduled'
+                        ? 'Programada'
+                        : w.status}
                     </span>
                   </div>
 
@@ -786,12 +869,22 @@ export default function AdminWorkshopsPage() {
                         Programar
                       </button>
                     )}
-                    {w.status === 'scheduled' && (
+                    {w.status === 'scheduled' && !isFinished && (
                       <button
                         onClick={() => setStatus(w.id, 'live')}
                         className="flex-1 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 transition"
                       >
                         Iniciar En Vivo
+                      </button>
+                    )}
+                    {w.status === 'scheduled' && isFinished && (
+                      <button
+                        onClick={() => setStatus(w.id, 'completed')}
+                        className="flex-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1"
+                        title="Guardar como Finalizada oficialmente en la base de datos"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        Guardar como Finalizada
                       </button>
                     )}
                     {w.status === 'live' && (
@@ -801,6 +894,20 @@ export default function AdminWorkshopsPage() {
                       >
                         Finalizar Taller
                       </button>
+                    )}
+                    {w.status === 'completed' && (
+                      <div className="flex-1 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Taller Concluido
+                        </span>
+                        <button
+                          onClick={() => setStatus(w.id, 'scheduled')}
+                          className="px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-[11px] font-medium text-slate-500 transition"
+                          title="Reabrir taller a programado"
+                        >
+                          Reabrir
+                        </button>
+                      </div>
                     )}
                     {['draft', 'scheduled'].includes(w.status) && (
                       <button

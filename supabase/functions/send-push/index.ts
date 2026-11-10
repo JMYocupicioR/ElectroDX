@@ -2,23 +2,23 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import webpush from 'npm:web-push@3.6.7';
 
 function corsHeaders(req: Request): Record<string, string> {
-  const allowed = (Deno.env.get('ALLOWED_ORIGINS') ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const origin = req.headers.get('Origin') ?? '';
-  const allowOrigin = allowed.includes(origin) ? origin : allowed[0] ?? 'http://localhost:5173';
+  const origin = req.headers.get('Origin');
   return {
-    'Access-Control-Allow-Origin': allowOrigin,
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
+    'Access-Control-Allow-Origin': origin && origin !== 'null' ? origin : '*',
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type, x-supabase-api-version',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
 }
 
 Deno.serve(async (req) => {
   const cors = corsHeaders(req);
-  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: cors });
+  }
+
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Método no permitido' }), {
       status: 405,
@@ -27,15 +27,21 @@ Deno.serve(async (req) => {
   }
 
   const auth = req.headers.get('Authorization') ?? '';
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    { global: { headers: { Authorization: auth } } }
-  );
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
+  if (!token) {
+    return new Response(JSON.stringify({ error: 'No autorizado: falta token' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json', ...cors },
+    });
+  }
 
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    return new Response(JSON.stringify({ error: 'No autorizado' }), {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  if (userError || !userData?.user) {
+    return new Response(JSON.stringify({ error: 'No autorizado: sesión inválida' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json', ...cors },
     });
@@ -55,9 +61,9 @@ Deno.serve(async (req) => {
 
   const vapidPublic = Deno.env.get('VAPID_PUBLIC_KEY');
   const vapidPrivate = Deno.env.get('VAPID_PRIVATE_KEY');
-  const vapidSubject = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@example.com';
+  const vapidSubject = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:contacto@electrodxdiplomado.com';
   if (!vapidPublic || !vapidPrivate) {
-    return new Response(JSON.stringify({ error: 'Faltan secretos VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY' }), {
+    return new Response(JSON.stringify({ error: 'Faltan secretos VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY en Supabase' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...cors },
     });
@@ -84,7 +90,12 @@ Deno.serve(async (req) => {
     });
   }
 
-  const payload = JSON.stringify({ title, body: message, url });
+  const payload = JSON.stringify({
+    title,
+    body: message,
+    url,
+    data: { url },
+  });
   let sent = 0;
   let failed = 0;
   const dead: string[] = [];

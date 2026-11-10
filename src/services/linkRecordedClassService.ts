@@ -59,6 +59,7 @@ export async function linkRecordedWorkshopToTopic(params: {
   ];
 
   const updated = await updateWorkshop(workshop.id, {
+    status: 'completed',
     clinical_case_json: withSessionTopicIds(workshop.clinical_case_json, nextIds),
     ...(workshop.topic_id
       ? {}

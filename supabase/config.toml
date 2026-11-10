@@ -410,3 +410,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # responde 401/404 sin CORS si verify_jwt queda activo.
 [functions.verify-cedula]
 verify_jwt = false
+
+# Envío de notificaciones push académicas (OPTIONS preflight sin CORS bloqueado)
+[functions.send-push]
+verify_jwt = false

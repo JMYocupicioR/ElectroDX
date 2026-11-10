@@ -558,17 +558,28 @@ export function LiveClassCreateDrawer({
       };
 
       let workshopId = initialWorkshop?.id;
+      const hasRecording = Boolean(classRecordingUrl.trim());
+      const isPastDate = new Date(scheduledAt).getTime() + (classDuration || 90) * 60000 < Date.now();
+
       if (workshopId) {
+        const shouldBeCompleted =
+          initialWorkshop?.status === 'completed' ||
+          (initialWorkshop?.status !== 'cancelled' && initialWorkshop?.status !== 'draft' && (hasRecording || isPastDate));
+
         await updateWorkshop(workshopId, {
           ...shared,
-          ...(initialWorkshop?.status === 'draft' ? { status: 'scheduled' as const } : {}),
+          ...(shouldBeCompleted
+            ? { status: 'completed' as const }
+            : initialWorkshop?.status === 'draft'
+            ? { status: 'scheduled' as const }
+            : {}),
         });
       } else {
         const created = await createWorkshop({
           ...shared,
           max_capacity: 100,
           clinical_case_revision_id: null,
-          status: 'scheduled',
+          status: hasRecording || isPastDate ? 'completed' : 'scheduled',
           created_by: user.id,
         });
         workshopId = created.id;

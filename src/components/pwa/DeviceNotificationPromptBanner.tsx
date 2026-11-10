@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import {
   getNotificationDiagnostics,
   requestNotificationPermission,
+  syncPushSubscriptionIfGranted,
   type NotificationPermissionStatus,
 } from '../../services/deviceNotificationService';
 import { usePWAInstallStore } from '../../stores/pwaInstallStore';
@@ -51,6 +52,10 @@ export default function DeviceNotificationPromptBanner() {
 
     const diag = getNotificationDiagnostics();
     setDiagnostics(diag);
+
+    if (diag.permission === 'granted') {
+      void syncPushSubscriptionIfGranted(user.id);
+    }
 
     if (diag.permission !== 'default') {
       setIsVisible(false);

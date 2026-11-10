@@ -125,7 +125,6 @@ import {
 } from './StudentQuickControlHub';
 import { calculateStudentKardex } from '../../services/gradebookService';
 import type { StudentKardexData } from '../../types/academicGradebook';
-import { savePushSubscription } from '../../services/studentToolsService';
 import {
   getClinicalCaseExerciseLocation,
   getClinicalCaseLaunchState,
@@ -3588,22 +3587,6 @@ export default function StudentDashboard() {
                   onClick={async () => {
                     const res = await requestNotificationPermission(user?.id);
                     setDeviceNotifStatus(res);
-                    if (
-                      res === 'granted' &&
-                      'serviceWorker' in navigator &&
-                      import.meta.env.VITE_VAPID_PUBLIC_KEY
-                    ) {
-                      try {
-                        const reg = await navigator.serviceWorker.ready;
-                        const sub = await reg.pushManager.subscribe({
-                          userVisibleOnly: true,
-                          applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
-                        });
-                        await savePushSubscription(sub);
-                      } catch (e) {
-                        console.warn('Web Push no disponible:', e);
-                      }
-                    }
                   }}
                   className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition cursor-pointer whitespace-nowrap"
                 >

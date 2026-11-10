@@ -28,19 +28,20 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Push notification listener (for future Web Push server messages)
+// Push notification listener (for Web Push server messages)
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   try {
     const data = event.data.json();
     const title = data.title || 'ElectroDx Diplomado';
+    const targetUrl = data.url || data.data?.url || '/dashboard?tab=assignments';
     const options = {
       body: data.body || 'Tienes una nueva tarea o evaluación asignada por tu profesor.',
       icon: data.icon || '/icons/icon-192x192.png',
       badge: data.badge || '/icons/icon-72x72.png',
       tag: data.tag || 'electrodx-notification',
-      data: data.data || { url: '/dashboard?tab=assignments' },
+      data: { url: targetUrl },
       vibrate: [200, 100, 200],
       requireInteraction: true,
     };

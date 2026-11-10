@@ -3,6 +3,7 @@ import {
   getWorkshopAccessTiming,
   canAccessLiveWorkshop,
   formatTimeRemainingText,
+  isWorkshopCompleted,
 } from './liveSessionUtils';
 import type { LiveWorkshop } from '../types/database';
 
@@ -100,6 +101,57 @@ describe('liveSessionUtils - Control de acceso y cuenta regresiva a clases en vi
     expect(formatTimeRemainingText({ days: 0, hours: 2, minutes: 15, seconds: 30, totalSeconds: 8130 })).toBe('2h 15m 30s');
     expect(formatTimeRemainingText({ days: 0, hours: 0, minutes: 4, seconds: 5, totalSeconds: 245 })).toBe('4m 05s');
     expect(formatTimeRemainingText({ days: 0, hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 })).toBe('0 min');
+  });
+
+  describe('isWorkshopCompleted - Clasificación de clases finalizadas', () => {
+    it('retorna true si el status ya es completed', () => {
+      expect(isWorkshopCompleted({ status: 'completed' })).toBe(true);
+    });
+
+    it('retorna false si es draft o cancelled', () => {
+      expect(isWorkshopCompleted({ status: 'draft', recording_url: 'https://video.com' })).toBe(false);
+      expect(isWorkshopCompleted({ status: 'cancelled', recording_url: 'https://video.com' })).toBe(false);
+    });
+
+    it('retorna true si tiene recording_url aunque status sea scheduled', () => {
+      expect(
+        isWorkshopCompleted({
+          status: 'scheduled',
+          recording_url: 'https://vimeo.com/123456',
+          scheduled_at: '2026-12-01T20:00:00.000Z',
+        }),
+      ).toBe(true);
+    });
+
+    it('retorna true si la fecha programada ya concluyó según duración', () => {
+      const now = new Date('2026-11-02T22:00:00.000Z');
+      expect(
+        isWorkshopCompleted(
+          {
+            status: 'scheduled',
+            recording_url: null,
+            scheduled_at: '2026-11-02T20:00:00.000Z',
+            duration_minutes: 90,
+          },
+          now,
+        ),
+      ).toBe(true);
+    });
+
+    it('retorna false si la clase es a futuro y no tiene grabación', () => {
+      const now = new Date('2026-11-02T18:00:00.000Z');
+      expect(
+        isWorkshopCompleted(
+          {
+            status: 'scheduled',
+            recording_url: null,
+            scheduled_at: '2026-11-02T20:00:00.000Z',
+            duration_minutes: 90,
+          },
+          now,
+        ),
+      ).toBe(false);
+    });
   });
 });
 

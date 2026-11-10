@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { StudentAssignment } from '../types/studentPlan';
 import { describeReadingAssignment, dueSoonCopy } from '../utils/readingAssignments';
+import { savePushSubscription } from './studentToolsService';
 
 const KEY_DEVICE_NOTIFS_ENABLED = 'neurosafe_device_notifs_enabled_';
 const KEY_NOTIFIED_ASSIGNMENTS = 'neurosafe_notified_asgs_';
@@ -78,6 +79,61 @@ export function isDeviceNotificationsEnabled(userId?: string): boolean {
   return pref !== 'false';
 }
 
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+/**
+ * Registers device with browser PushManager and saves subscription to Supabase push_subscriptions
+ */
+export async function registerWebPushSubscription(userId?: string): Promise<boolean> {
+  if (
+    typeof window === 'undefined' ||
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window)
+  ) {
+    return false;
+  }
+
+  const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+  if (!vapidKey) {
+    return false;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+    }
+    await savePushSubscription(sub, userId);
+    return true;
+  } catch (error) {
+    console.warn('[DeviceNotification] Failed to register Web Push subscription:', error);
+    return false;
+  }
+}
+
+/**
+ * Automatically syncs Web Push subscription if permission is already granted
+ */
+export async function syncPushSubscriptionIfGranted(userId?: string): Promise<void> {
+  if (typeof window === 'undefined' || !userId) return;
+  if (isNotificationSupported() && Notification.permission === 'granted') {
+    void registerWebPushSubscription(userId);
+  }
+}
+
 /**
  * Requests device notification permissions from the user
  */
@@ -97,6 +153,7 @@ export async function requestNotificationPermission(
 
     if (permission === 'granted') {
       void sendTestNotification(role);
+      void registerWebPushSubscription(userId);
     }
 
     return permission as NotificationPermissionStatus;
@@ -342,7 +399,7 @@ export function subscribeToRealtimeAssignments(
       )
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn(`[DeviceNotification] Realtime status ${status}:`, err || 'reconnecting in background');
+          console.debug(`[DeviceNotification] Realtime status ${status}:`, err || 'reconnecting in background');
         }
       });
 
@@ -417,7 +474,7 @@ export function subscribeToAdminRealtimeSubmissions(
       )
       .subscribe((status, err) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          console.warn(`[DeviceNotification] Admin Realtime status ${status}:`, err || 'reconnecting in background');
+          console.debug(`[DeviceNotification] Admin Realtime status ${status}:`, err || 'reconnecting in background');
         }
       });
 

@@ -711,24 +711,30 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
                                           to={`/taller/${recording.workshop.id}`}
                                           onClick={onClose}
                                           title={
-                                            recording.status === 'watched'
-                                              ? `Clase vista · asistencia acreditada: ${recording.workshop.title}`
-                                              : `Pendiente de ver: ${recording.workshop.title}`
+                                            canEditSyllabus
+                                              ? `Clase grabada disponible: ${recording.workshop.title}`
+                                              : recording.status === 'watched'
+                                              ? `Clase grabada vista · asistencia acreditada: ${recording.workshop.title}`
+                                              : `Clase grabada disponible · pendiente de ver: ${recording.workshop.title}`
                                           }
                                           aria-label={
-                                            recording.status === 'watched'
+                                            canEditSyllabus
+                                              ? 'Clase grabada disponible'
+                                              : recording.status === 'watched'
                                               ? 'Clase grabada vista con asistencia'
-                                              : 'Clase grabada pendiente de ver'
+                                              : 'Clase grabada disponible'
                                           }
-                                          className={`inline-flex items-center gap-0.5 px-1 py-0.5 rounded-md flex-shrink-0 ${
-                                            recording.status === 'watched'
-                                              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
-                                              : 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30'
+                                          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md flex-shrink-0 transition-colors ${
+                                            canEditSyllabus
+                                              ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 border border-indigo-200/60 dark:border-indigo-800/60'
+                                              : recording.status === 'watched'
+                                              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200/50 dark:border-emerald-800/50'
+                                              : 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 hover:bg-violet-100 dark:hover:bg-violet-900/30 border border-violet-200/50 dark:border-violet-800/50'
                                           }`}
                                         >
-                                          <Video className="w-3 h-3" />
+                                          <Video className="w-3 h-3 shrink-0" />
                                           <span className="text-[9px] font-bold uppercase tracking-wide">
-                                            {recording.status === 'watched' ? 'Visto' : 'Pendiente'}
+                                            {canEditSyllabus ? 'Grabación' : recording.status === 'watched' ? 'Visto' : 'Grabación'}
                                           </span>
                                         </Link>
                                       )}

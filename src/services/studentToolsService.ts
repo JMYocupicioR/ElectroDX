@@ -645,10 +645,13 @@ export async function verifyCertificate(folio: string): Promise<{
   return (data ?? { valid: false }) as { valid: boolean };
 }
 
-export async function savePushSubscription(sub: PushSubscription): Promise<void> {
+export async function savePushSubscription(sub: PushSubscription, customUserId?: string): Promise<void> {
   const json = sub.toJSON();
-  const { data: sessionData } = await supabase.auth.getUser();
-  const userId = sessionData.user?.id;
+  let userId = customUserId;
+  if (!userId) {
+    const { data: sessionData } = await supabase.auth.getUser();
+    userId = sessionData.user?.id;
+  }
   if (!userId) throw new Error('Debe iniciar sesión.');
   const { error } = await supabase.from('push_subscriptions').upsert(
     {

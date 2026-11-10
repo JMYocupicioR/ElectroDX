@@ -211,3 +211,28 @@ export async function triggerLiveClassFiveMinuteAlert(
   return true;
 }
 
+/**
+ * Determina con precisión si una clase o taller ya concluyó:
+ * - Ya tiene status === 'completed'.
+ * - O tiene grabación subida (recording_url no vacío).
+ * - O ya venció su horario programado (scheduled_at + duration_minutes < ahora), siempre que no sea borrador o cancelada.
+ */
+export function isWorkshopCompleted(
+  workshop: Pick<LiveWorkshop, 'status'> &
+    Partial<Pick<LiveWorkshop, 'recording_url' | 'scheduled_at' | 'duration_minutes'>>,
+  now = new Date(),
+): boolean {
+  if (workshop.status === 'completed') return true;
+  if (workshop.status === 'draft' || workshop.status === 'cancelled') return false;
+  if (Boolean(workshop.recording_url?.trim())) return true;
+  if (workshop.scheduled_at) {
+    const startMs = new Date(workshop.scheduled_at).getTime();
+    if (!Number.isNaN(startMs)) {
+      const durationMin = workshop.duration_minutes || 90;
+      const endMs = startMs + durationMin * 60 * 1000;
+      if (now.getTime() >= endMs) return true;
+    }
+  }
+  return false;
+}
+
