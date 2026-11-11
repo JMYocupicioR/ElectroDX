@@ -647,6 +647,19 @@ export async function verifyCertificate(folio: string): Promise<{
 
 export async function savePushSubscription(sub: PushSubscription, customUserId?: string): Promise<void> {
   const json = sub.toJSON();
+  const endpoint = json.endpoint ?? '';
+  const p256dh = json.keys?.p256dh ?? '';
+  const auth = json.keys?.auth ?? '';
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : null;
+
+  const { error: rpcError } = await supabase.rpc('save_my_push_subscription', {
+    p_endpoint: endpoint,
+    p_p256dh: p256dh,
+    p_auth: auth,
+    p_user_agent: userAgent,
+  });
+  if (!rpcError) return;
+
   let userId = customUserId;
   if (!userId) {
     const { data: sessionData } = await supabase.auth.getUser();
@@ -656,9 +669,9 @@ export async function savePushSubscription(sub: PushSubscription, customUserId?:
   const { error } = await supabase.from('push_subscriptions').upsert(
     {
       user_id: userId,
-      endpoint: json.endpoint ?? '',
-      p256dh: json.keys?.p256dh,
-      auth: json.keys?.auth,
+      endpoint,
+      p256dh,
+      auth,
     },
     { onConflict: 'endpoint' }
   );
@@ -695,7 +708,10 @@ export async function sendAcademicPush(input: {
   title: string;
   body: string;
   userId?: string;
+  userIds?: string[];
+  announcementId?: string;
   url?: string;
+  tag?: string;
 }): Promise<{ sent: number; failed: number; queued: number }> {
   const { data, error } = await supabase.functions.invoke('send-push', {
     body: input,

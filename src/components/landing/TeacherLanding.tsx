@@ -11,6 +11,7 @@ import {
   UserCheck,
   Users,
   Video,
+  Film,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useAdminPendingCounts } from '../../hooks/useAdminPendingCounts';
@@ -65,6 +66,13 @@ const SHORTCUTS = [
     label: 'Clases en vivo',
     desc: 'Talleres programados',
     icon: Video,
+    countKey: null,
+  },
+  {
+    to: '/biblioteca',
+    label: 'Biblioteca de videos',
+    desc: 'Clases grabadas y material didáctico',
+    icon: Film,
     countKey: null,
   },
   {

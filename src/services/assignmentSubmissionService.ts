@@ -192,11 +192,19 @@ export function mergeServerNotifications(
       (row.source_key.startsWith('assignment_grade:')
         ? localBySourceKey.get(row.source_key.split(':').slice(0, 2).join(':'))
         : undefined);
+    const resolvedType: StudentNotification['type'] =
+      row.type === 'announcement_taller' || row.type === 'workshop'
+        ? 'workshop'
+        : row.type === 'announcement_evaluacion' || row.type === 'quiz'
+        ? 'quiz'
+        : row.type === 'announcement_aviso' || row.type === 'announcement_general' || row.type === 'system'
+        ? 'system'
+        : 'academic';
     const nextNotification: StudentNotification = {
       id: row.id,
       title: row.title,
       message: row.message,
-      type: 'academic',
+      type: resolvedType,
       severity: matchedLocal?.severity ?? row.severity,
       createdAt: row.created_at,
       linkUrl: row.link_url || '/portal?tab=assignments',
@@ -212,11 +220,21 @@ export function mergeServerNotifications(
   );
 }
 
+export const STUDENT_NOTIFICATIONS_UPDATED_EVENT = 'electrodx:student-notifications-updated';
+
+export function emitStudentNotificationsUpdated(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(STUDENT_NOTIFICATIONS_UPDATED_EVENT));
+  }
+}
+
 export async function markServerNotificationRead(notificationId: string): Promise<void> {
   if (!isUuid(notificationId)) return;
   await supabase.from('student_notifications').update({ is_read: true }).eq('id', notificationId);
+  emitStudentNotificationsUpdated();
 }
 
 export async function markAllServerNotificationsRead(userId: string): Promise<void> {
   await supabase.from('student_notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
+  emitStudentNotificationsUpdated();
 }

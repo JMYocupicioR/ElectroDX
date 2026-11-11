@@ -77,11 +77,29 @@ Deno.serve(async (req) => {
     typeof body.body === 'string' && body.body.trim()
       ? body.body.trim()
       : 'Tienes una actualización académica';
-  const userId = typeof body.userId === 'string' ? body.userId : undefined;
-  const url = typeof body.url === 'string' ? body.url : '/portal?tab=notifications';
+  const userId = typeof body.userId === 'string' && body.userId.trim() ? body.userId.trim() : undefined;
+  const userIds = Array.isArray(body.userIds)
+    ? body.userIds.filter((id: unknown): id is string => typeof id === 'string' && id.trim().length > 0)
+    : undefined;
+  const announcementId =
+    typeof body.announcementId === 'string' && body.announcementId.trim()
+      ? body.announcementId.trim()
+      : undefined;
+  const url = typeof body.url === 'string' && body.url.trim() ? body.url.trim() : '/portal?tab=notifications';
+  const tag =
+    typeof body.tag === 'string' && body.tag.trim()
+      ? body.tag.trim()
+      : announcementId
+      ? `announcement-${announcementId}`
+      : `electrodx-${Date.now()}`;
 
   let query = supabase.from('push_subscriptions').select('*');
-  if (userId) query = query.eq('user_id', userId);
+  if (userId) {
+    query = query.eq('user_id', userId);
+  } else if (userIds && userIds.length > 0) {
+    query = query.in('user_id', userIds);
+  }
+
   const { data: subs, error } = await query;
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), {
@@ -94,7 +112,8 @@ Deno.serve(async (req) => {
     title,
     body: message,
     url,
-    data: { url },
+    tag,
+    data: { url, announcementId },
   });
   let sent = 0;
   let failed = 0;
@@ -119,6 +138,16 @@ Deno.serve(async (req) => {
 
   if (dead.length > 0) {
     await supabase.from('push_subscriptions').delete().in('endpoint', dead);
+  }
+
+  if (announcementId) {
+    await supabase
+      .from('platform_announcements')
+      .update({
+        push_sent_count: sent,
+        push_failed_count: failed,
+      })
+      .eq('id', announcementId);
   }
 
   return new Response(

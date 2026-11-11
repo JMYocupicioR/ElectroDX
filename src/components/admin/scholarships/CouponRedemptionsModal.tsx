@@ -65,8 +65,16 @@ export default function CouponRedemptionsModal({
                 <span className="font-mono text-xs font-black px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
                   {coupon.code}
                 </span>
-                <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-                  Beca {coupon.discount_percent}%
+                <span
+                  className={`text-[11px] font-bold ${
+                    coupon.account_type === 'teacher'
+                      ? 'text-violet-600 dark:text-violet-400'
+                      : 'text-emerald-600 dark:text-emerald-400'
+                  }`}
+                >
+                  {coupon.account_type === 'teacher'
+                    ? '👑 Acceso Docente (N/A Beca)'
+                    : `Beca ${coupon.discount_percent}%`}
                 </span>
               </div>
               <h2 id="modal-redemptions-title" className="text-xl font-extrabold text-slate-900 dark:text-white mt-0.5">

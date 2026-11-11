@@ -106,7 +106,43 @@ describe('AdminScholarshipsPage & Modals SSR Render', () => {
     expect(html).toContain('Actualizar Beca');
   });
 
-  it('renderiza CouponRedemptionsModal correctamente', () => {
+  it('renderiza CreateEditCouponModal para un Profesor con N/A de beca y remuneración económica', () => {
+    const teacherCoupon: ScholarshipCoupon = {
+      id: 'coupon-docente-1',
+      code: 'VIP-DOCENTE-100',
+      discount_percent: 100,
+      description: 'Acceso Docente Invitado',
+      course_id: null,
+      max_uses: 5,
+      used_count: 1,
+      starts_at: new Date().toISOString(),
+      expires_at: null,
+      is_active: true,
+      auto_admit: true,
+      requires_cedula_verified: false,
+      account_type: 'teacher',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const html = renderToStaticMarkup(
+      <CreateEditCouponModal
+        isOpen={true}
+        onClose={() => {}}
+        onSuccess={() => {}}
+        couponToEdit={teacherCoupon}
+        courses={[]}
+      />
+    );
+
+    expect(html).toContain('Configuración: VIP-DOCENTE-100');
+    expect(html).toContain('N/A (No aplica)');
+    expect(html).toContain('remuneración económica');
+    expect(html).toContain('Actualizar Código Docente');
+    expect(html).toContain('Acceso Fast-Track Docente Inmediato (Auto-admit)');
+  });
+
+  it('renderiza CouponRedemptionsModal correctamente para alumnos y docentes', () => {
     const sampleCoupon: ScholarshipCoupon = {
       id: 'coupon-sample',
       code: 'COMEFYR-50',
@@ -120,11 +156,12 @@ describe('AdminScholarshipsPage & Modals SSR Render', () => {
       is_active: true,
       auto_admit: false,
       requires_cedula_verified: false,
+      account_type: 'student',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    const html = renderToStaticMarkup(
+    const studentHtml = renderToStaticMarkup(
       <CouponRedemptionsModal
         isOpen={true}
         onClose={() => {}}
@@ -132,8 +169,26 @@ describe('AdminScholarshipsPage & Modals SSR Render', () => {
       />
     );
 
-    expect(html).toContain('Médicos Beneficiarios');
-    expect(html).toContain('COMEFYR-50');
-    expect(html).toContain('Beca 50%');
+    expect(studentHtml).toContain('Médicos Beneficiarios');
+    expect(studentHtml).toContain('COMEFYR-50');
+    expect(studentHtml).toContain('Beca 50%');
+
+    const teacherCoupon: ScholarshipCoupon = {
+      ...sampleCoupon,
+      code: 'VIP-DOCENTE-100',
+      discount_percent: 100,
+      account_type: 'teacher',
+    };
+
+    const teacherHtml = renderToStaticMarkup(
+      <CouponRedemptionsModal
+        isOpen={true}
+        onClose={() => {}}
+        coupon={teacherCoupon}
+      />
+    );
+
+    expect(teacherHtml).toContain('VIP-DOCENTE-100');
+    expect(teacherHtml).toContain('Acceso Docente (N/A Beca)');
   });
 });

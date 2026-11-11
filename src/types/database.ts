@@ -1026,6 +1026,29 @@ interface RawDatabase {
         };
         Update: Partial<PhysicianAgreement>;
       };
+      platform_announcements: {
+        Row: {
+          id: string;
+          title: string;
+          message: string;
+          category: string;
+          severity: string;
+          target_scope: string;
+          target_course_id: string | null;
+          target_workshop_id: string | null;
+          target_user_id: string | null;
+          action_url: string;
+          action_required: boolean;
+          send_push: boolean;
+          recipients_count: number;
+          push_sent_count: number;
+          push_failed_count: number;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: Record<string, unknown>;
+        Update: Record<string, unknown>;
+      };
     };
     Functions: {
       is_admin: { Args: { check_user_id?: string }; Returns: boolean };
@@ -1397,6 +1420,55 @@ interface RawDatabase {
           p_topic_id: string;
         };
         Returns: void;
+      };
+      save_my_push_subscription: {
+        Args: {
+          p_endpoint: string;
+          p_p256dh: string;
+          p_auth: string;
+          p_user_agent?: string | null;
+        };
+        Returns: unknown;
+      };
+      publish_platform_announcement: {
+        Args: {
+          p_title: string;
+          p_message: string;
+          p_category?: string;
+          p_severity?: string;
+          p_target_scope?: string;
+          p_target_course_id?: string | null;
+          p_target_workshop_id?: string | null;
+          p_target_user_id?: string | null;
+          p_action_url?: string;
+          p_action_required?: boolean;
+          p_send_push?: boolean;
+        };
+        Returns: {
+          announcement_id?: string;
+          recipients_count?: number;
+          recipient_ids?: string[];
+        };
+      };
+      list_platform_announcements_with_stats: {
+        Args: {
+          p_limit?: number;
+        };
+        Returns: unknown[];
+      };
+      delete_platform_announcement: {
+        Args: {
+          p_announcement_id: string;
+        };
+        Returns: boolean;
+      };
+      get_push_subscription_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          total_devices: number;
+          unique_users: number;
+          student_users: number;
+        };
       };
     };
     Views: {

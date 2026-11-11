@@ -21,6 +21,8 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Ticket,
+  Megaphone,
+  Film,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useStaffViewStore } from '../../stores/staffViewStore';
@@ -142,6 +144,14 @@ export function AdminLayout({
           exact: false,
           badge: 0,
         },
+        {
+          to: '/admin/anuncios',
+          label: 'Anuncios y Push',
+          shortLabel: 'Anuncios',
+          icon: Megaphone,
+          exact: false,
+          badge: 0,
+        },
       ],
     },
     {
@@ -189,6 +199,14 @@ export function AdminLayout({
           to: '/admin/talleres',
           label: 'Clases en vivo',
           icon: Video,
+          exact: false,
+          badge: 0,
+        },
+        {
+          to: '/biblioteca',
+          label: 'Biblioteca de videos',
+          shortLabel: 'Biblioteca de videos',
+          icon: Film,
           exact: false,
           badge: 0,
         },
@@ -257,6 +275,12 @@ export function AdminLayout({
         location.pathname === '/admin/alumnos' ||
         location.pathname === '/admin/progreso' ||
         /^\/admin\/(alumnos|progreso)\/[0-9a-f-]{8,}$/i.test(location.pathname)
+      );
+    }
+    if (to === '/biblioteca') {
+      return (
+        location.pathname.startsWith('/biblioteca') ||
+        location.pathname.startsWith('/especialistas/contenido')
       );
     }
     return location.pathname.startsWith(to);

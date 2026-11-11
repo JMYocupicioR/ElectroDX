@@ -26,7 +26,6 @@ import {
   deleteWorkshop,
   setWorkshopAttendanceClosed,
 } from '../../services/courseService';
-import { sendAcademicPush } from '../../services/studentToolsService';
 import { loadGradeableStudents } from '../../services/academicAnalyticsService';
 import {
   getCohortAttendance,
@@ -65,10 +64,6 @@ export default function AdminWorkshopsPage() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingWorkshop, setEditingWorkshop] = useState<LiveWorkshop | null>(null);
-  const [pushTitle, setPushTitle] = useState('Aviso académico ElectroDx');
-  const [pushBody, setPushBody] = useState('');
-  const [pushStatus, setPushStatus] = useState<string | null>(null);
-  const [isSendingPush, setIsSendingPush] = useState(false);
 
   // Estados de Filtros
   const [q, setQ] = useState('');
@@ -329,65 +324,6 @@ export default function AdminWorkshopsPage() {
       title="Clases en vivo"
       subtitle="Sesiones programadas, enlaces de transmisión y grabaciones de la cohorte"
     >
-      {/* Aviso Push */}
-      <div className="mb-6 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-        <h3 className="font-bold text-sm flex items-center gap-2 mb-3 text-slate-900 dark:text-white">
-          <Bell className="w-4 h-4 text-indigo-600" /> Aviso push a cursistas
-        </h3>
-        <form
-          className="space-y-3"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setPushStatus(null);
-            setIsSendingPush(true);
-            try {
-              const result = await sendAcademicPush({
-                title: pushTitle,
-                body: pushBody,
-                url: '/talleres',
-              });
-              if (result.queued === 0) {
-                setPushStatus('No hay alumnos con notificaciones push activadas en este momento.');
-              } else {
-                setPushStatus(
-                  `Enviados ${result.sent} de ${result.queued}. Fallidos: ${result.failed}.`
-                );
-              }
-              setPushBody('');
-            } catch (err) {
-              setPushStatus(err instanceof Error ? err.message : 'No se pudo enviar');
-            } finally {
-              setIsSendingPush(false);
-            }
-          }}
-        >
-          <input
-            className="w-full min-h-[42px] rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 text-xs font-semibold dark:bg-slate-800"
-            value={pushTitle}
-            onChange={(e) => setPushTitle(e.target.value)}
-            required
-            disabled={isSendingPush}
-          />
-          <textarea
-            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 px-3.5 py-2.5 text-xs font-normal dark:bg-slate-800"
-            rows={2}
-            placeholder="Mensaje del aviso (taller, recordatorio, cambio de horario)"
-            value={pushBody}
-            onChange={(e) => setPushBody(e.target.value)}
-            required
-            disabled={isSendingPush}
-          />
-          <button
-            type="submit"
-            disabled={isSendingPush}
-            className="min-h-[40px] px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold transition shadow-xs cursor-pointer disabled:cursor-not-allowed"
-          >
-            {isSendingPush ? 'Enviando aviso...' : 'Enviar aviso'}
-          </button>
-          {pushStatus && <p className="text-xs font-bold text-slate-500">{pushStatus}</p>}
-        </form>
-      </div>
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-base font-black text-slate-900 dark:text-white">
@@ -397,16 +333,24 @@ export default function AdminWorkshopsPage() {
             Programa sesiones híbridas y gestiona el pase de lista oficial para el Kardex.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setEditingWorkshop(null);
-            setCreateOpen(true);
-          }}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" /> Programar Taller
-        </button>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <Link
+            to="/admin/anuncios"
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60 rounded-xl text-xs font-bold transition"
+          >
+            <Bell className="w-4 h-4" /> Enviar Aviso / Push
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setEditingWorkshop(null);
+              setCreateOpen(true);
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Programar Taller
+          </button>
+        </div>
       </div>
 
       {/* Barra de Filtros y Búsqueda */}

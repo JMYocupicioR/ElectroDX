@@ -21,6 +21,7 @@ import {
   Search,
   Video,
   Sparkles,
+  Film,
   Settings,
   LogOut,
   Play,
@@ -35,6 +36,7 @@ import { OfflineIndicator } from './components/OfflineButton';
 import { PWAUpdateButton } from './components/pwa/PWAUpdateButton';
 import { UserMenu } from './components/user/UserMenu';
 import { TeacherCommentBell } from './components/admin/TeacherCommentBell';
+import { StudentNotificationBell } from './components/student/StudentNotificationBell';
 import { useAuth } from './contexts/AuthProvider';
 import { useStaffViewStore } from './stores/staffViewStore';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
@@ -161,10 +163,10 @@ export function Header() {
               <BrandLogo variant="full" size="md" />
             </Link>
 
-            {isAdmin && !studentMode && (
+            {(isAdmin || isEditor) && !studentMode && (
               <>
                 <span className="hidden lg:block h-5 w-px bg-slate-200 dark:bg-slate-800 ml-1" />
-                <nav className="hidden lg:flex items-center" aria-label="Temas">
+                <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Navegación administrativa">
                   <button
                     type="button"
                     onClick={openCourseSidebar}
@@ -175,6 +177,17 @@ export function Header() {
                     <PanelLeft className="w-4 h-4 text-indigo-500 dark:text-cyan-400" />
                     <span>Índice de temas</span>
                   </button>
+                  <Link
+                    to="/biblioteca"
+                    className={navClass(
+                      location.pathname.startsWith('/biblioteca') ||
+                      location.pathname.startsWith('/especialistas/contenido')
+                    )}
+                    title="Biblioteca de videos y clases grabadas"
+                  >
+                    <Film className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                    <span>Biblioteca</span>
+                  </Link>
                 </nav>
               </>
             )}
@@ -287,18 +300,22 @@ export function Header() {
             <PWAUpdateButton />
             <OfflineIndicator />
 
-            {isSupabaseConfigured && user && (isAdmin || isEditor) && (
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && !studentMode && (
               <TeacherCommentBell placement="desktop" />
             )}
 
-            {isSupabaseConfigured && user && isAdmin && !studentMode && !location.pathname.startsWith('/admin') && (
+            {isSupabaseConfigured && user && (!isAdmin && !isEditor || studentMode) && (
+              <StudentNotificationBell placement="desktop" />
+            )}
+
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && !studentMode && !location.pathname.startsWith('/admin') && (
               <Link
                 to="/admin"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-blue-500/10 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-xs"
-                title="Panel de Administración"
+                title={isAdmin ? 'Panel de Administración' : 'Panel Docente'}
               >
                 <Shield className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                <span>Panel Admin</span>
+                <span>{isAdmin ? 'Panel Admin' : 'Panel Docente'}</span>
                 {totalPending > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
                     {totalPending > 9 ? '9+' : totalPending}
@@ -365,8 +382,12 @@ export function Header() {
             <PWAUpdateButton />
             <OfflineIndicator />
 
-            {isSupabaseConfigured && user && (isAdmin || isEditor) && (
+            {isSupabaseConfigured && user && (isAdmin || isEditor) && !studentMode && (
               <TeacherCommentBell placement="mobile" />
+            )}
+
+            {isSupabaseConfigured && user && (!isAdmin && !isEditor || studentMode) && (
+              <StudentNotificationBell placement="mobile" />
             )}
 
             {/* Control unificado de usuario / menú móvil: un solo control en vez de hamburguesa + avatar duplicados */}

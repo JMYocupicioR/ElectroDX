@@ -45,7 +45,7 @@ export default function AdminScholarshipsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'active' | 'paused' | 'expired'>('all');
-  const [selectedDiscount, setSelectedDiscount] = useState<'all' | '100' | 'partial'>('all');
+  const [selectedDiscount, setSelectedDiscount] = useState<'all' | '100' | 'partial' | 'teacher'>('all');
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -133,10 +133,11 @@ export default function AdminScholarshipsPage() {
     const total = coupons.length;
     const active = coupons.filter((c) => c.is_active).length;
     const totalUses = coupons.reduce((acc, c) => acc + (c.used_count || 0), 0);
-    const fullScholarships = coupons.filter((c) => c.discount_percent === 100).length;
-    const partialScholarships = coupons.filter((c) => c.discount_percent < 100).length;
+    const fullScholarships = coupons.filter((c) => c.account_type !== 'teacher' && c.discount_percent === 100).length;
+    const partialScholarships = coupons.filter((c) => c.account_type !== 'teacher' && c.discount_percent < 100).length;
+    const teacherCoupons = coupons.filter((c) => c.account_type === 'teacher').length;
 
-    return { total, active, totalUses, fullScholarships, partialScholarships };
+    return { total, active, totalUses, fullScholarships, partialScholarships, teacherCoupons };
   }, [coupons]);
 
   // Filtered list
@@ -157,9 +158,10 @@ export default function AdminScholarshipsPage() {
         if (coupon.course_id !== selectedCourse) return false;
       }
 
-      // Discount
-      if (selectedDiscount === '100' && coupon.discount_percent !== 100) return false;
-      if (selectedDiscount === 'partial' && coupon.discount_percent === 100) return false;
+      // Discount / Account Type
+      if (selectedDiscount === '100' && (coupon.discount_percent !== 100 || coupon.account_type === 'teacher')) return false;
+      if (selectedDiscount === 'partial' && (coupon.discount_percent === 100 || coupon.account_type === 'teacher')) return false;
+      if (selectedDiscount === 'teacher' && coupon.account_type !== 'teacher') return false;
 
       // Status
       if (selectedStatus === 'active') {
@@ -315,16 +317,17 @@ export default function AdminScholarshipsPage() {
               </select>
             </div>
 
-            {/* Discount Filter */}
-            <div className="w-full md:w-44">
+            {/* Discount / Account Type Filter */}
+            <div className="w-full md:w-48">
               <select
                 value={selectedDiscount}
                 onChange={(e) => setSelectedDiscount(e.target.value as any)}
                 className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
               >
-                <option value="all">Todas las becas</option>
-                <option value="100">Beca 100%</option>
-                <option value="partial">Beca Parcial</option>
+                <option value="all">Todas las becas y roles</option>
+                <option value="100">🎓 Beca 100% (Alumnos)</option>
+                <option value="partial">🏷️ Beca Parcial (Alumnos)</option>
+                <option value="teacher">👑 Docentes (N/A Beca)</option>
               </select>
             </div>
           </div>
@@ -418,7 +421,7 @@ export default function AdminScholarshipsPage() {
                         }`}
                       >
                         {coupon.account_type === 'teacher'
-                          ? '👑 Profesor Invitado'
+                          ? '👑 Profesor Docente (N/A Beca)'
                           : coupon.discount_percent === 100
                           ? '🎓 Beca 100%'
                           : `🏷️ Beca ${coupon.discount_percent}%`}

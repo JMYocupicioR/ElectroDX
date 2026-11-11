@@ -108,7 +108,13 @@ export async function registerWebPushSubscription(userId?: string): Promise<bool
   }
 
   try {
-    const reg = await navigator.serviceWorker.ready;
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      reg = await navigator.serviceWorker.register('/custom-sw.js').catch(() => undefined);
+    }
+    if (!reg) {
+      reg = await navigator.serviceWorker.ready;
+    }
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
       sub = await reg.pushManager.subscribe({
@@ -488,3 +494,66 @@ export function subscribeToAdminRealtimeSubmissions(
     return () => {};
   }
 }
+
+/**
+ * Subscribes a student to Realtime events on public.student_notifications
+ * Triggers a device notification on INSERT (e.g., platform announcements, teacher replies, grades)
+ */
+export function subscribeToRealtimeStudentNotifications(
+  userId: string,
+  onNotificationChange: () => void
+): () => void {
+  if (!userId || !supabase) return () => {};
+
+  try {
+    const channelTopic = `student-notifs-${userId}-${Math.random().toString(36).slice(2, 7)}`;
+    const channel = supabase
+      .channel(channelTopic)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'student_notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          try {
+            onNotificationChange();
+            if (payload.eventType === 'INSERT' && payload.new) {
+              const row = payload.new as {
+                id: string;
+                title?: string;
+                message?: string;
+                link_url?: string | null;
+                severity?: string;
+                source_key?: string;
+              };
+              if (row.title && row.message) {
+                void sendDeviceNotification({
+                  title: row.title,
+                  body: row.message,
+                  url: row.link_url || '/portal?tab=notifications',
+                  tag: `student-notif-${row.id}`,
+                  requireInteraction: row.severity === 'urgent' || row.severity === 'warning',
+                });
+              }
+            }
+          } catch (e) {
+            console.warn('[DeviceNotification] Error handling student_notifications realtime payload:', e);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        void supabase.removeChannel(channel);
+      } catch {}
+    };
+  } catch (error) {
+    console.warn('[DeviceNotification] Failed to subscribe to student_notifications:', error);
+    return () => {};
+  }
+}
+

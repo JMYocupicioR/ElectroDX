@@ -15,6 +15,7 @@ import {
   ArrowRight,
   Sparkles,
   Calendar,
+  Film,
 } from 'lucide-react';
 import { useCommandPaletteStore } from '../../stores/commandPaletteStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -154,6 +155,15 @@ export function GlobalCommandPalette() {
         icon: BookOpen,
         to: '/temario',
       },
+      {
+        id: 'library-hub',
+        title: 'Biblioteca de videos y clases magistrales',
+        subtitle: 'Videoteca, grabaciones de talleres, guías clínicas y perlas docentes',
+        category: 'Curso',
+        icon: Film,
+        to: '/biblioteca',
+        badge: 'Videoteca',
+      },
 
       // Acciones rápidas
       {
@@ -178,6 +188,15 @@ export function GlobalCommandPalette() {
     });
 
     if (isAdmin || isEditor) {
+      items.push({
+        id: 'admin-biblioteca',
+        title: 'Biblioteca de videos',
+        subtitle: 'Explorar clases grabadas, perlas clínicas y recursos docentes',
+        category: 'Admin',
+        icon: Film,
+        to: '/biblioteca',
+        badge: 'Videoteca',
+      });
       items.push({
         id: 'admin-calendario',
         title: 'Calendario académico',

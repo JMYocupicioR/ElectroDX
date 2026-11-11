@@ -60,6 +60,7 @@ import {
   sendTestNotification,
   checkAndNotifyPendingAssignments,
   subscribeToRealtimeAssignments,
+  subscribeToRealtimeStudentNotifications,
   type NotificationPermissionStatus,
 } from '../../services/deviceNotificationService';
 import {
@@ -110,7 +111,14 @@ import { extractUrls } from '../../utils/submissionLinks';
 import { AssignmentMaterialsList } from './AssignmentMaterialsList';
 import { AssignmentReadingChecklist } from './AssignmentReadingChecklist';
 import { assignmentRequiresDelivery, describeReadingAssignment } from '../../utils/readingAssignments';
-import { fetchServerNotifications, markAllServerNotificationsRead, markServerNotificationRead, mergeServerNotifications } from '../../services/assignmentSubmissionService';
+import {
+  fetchServerNotifications,
+  markAllServerNotificationsRead,
+  markServerNotificationRead,
+  mergeServerNotifications,
+  STUDENT_NOTIFICATIONS_UPDATED_EVENT,
+  emitStudentNotificationsUpdated,
+} from '../../services/assignmentSubmissionService';
 import { StudentStudyHub } from './StudentStudyHub';
 import { StudentAgenda } from './StudentAgenda';
 import { StudentCertificatePanel } from './StudentCertificatePanel';
@@ -280,9 +288,20 @@ export default function StudentDashboard() {
         setRefreshTrigger((prev) => prev + 1);
       });
 
+      const unsubscribeNotifs = subscribeToRealtimeStudentNotifications(user.id, () => {
+        setRefreshTrigger((prev) => prev + 1);
+      });
+
+      const onNotifsUpdated = () => {
+        setRefreshTrigger((prev) => prev + 1);
+      };
+      window.addEventListener(STUDENT_NOTIFICATIONS_UPDATED_EVENT, onNotifsUpdated);
+
       return () => {
         window.removeEventListener(PWA_BANNER_DISMISSED_EVENT, onPwaDismiss);
+        window.removeEventListener(STUDENT_NOTIFICATIONS_UPDATED_EVENT, onNotifsUpdated);
         if (unsubscribe) unsubscribe();
+        if (unsubscribeNotifs) unsubscribeNotifs();
       };
     } catch (err) {
       console.warn('[StudentDashboard] Error setting up realtime assignment listener:', err);
@@ -922,6 +941,7 @@ export default function StudentDashboard() {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     );
+    emitStudentNotificationsUpdated();
   };
 
   const handleMarkAllNotifsRead = () => {
@@ -932,6 +952,7 @@ export default function StudentDashboard() {
     );
     void markAllServerNotificationsRead(user.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    emitStudentNotificationsUpdated();
   };
 
   const handleAttendNotification = (notif: StudentNotification) => {
