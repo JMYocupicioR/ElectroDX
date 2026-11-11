@@ -11,6 +11,7 @@ import { allModules } from '../../content/modules';
 import type { LiveWorkshop } from '../../types/database';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import { endOfWeekMonday, startOfWeekMonday } from '../../utils/academicCalendar';
+import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -290,9 +291,12 @@ export default function WorkshopsListPage() {
                     )}
 
                     <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-3">
-                      <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+                      <span
+                        className="inline-flex items-center gap-1.5 text-xs text-slate-500"
+                        title={getWorkshopDurationInfo(ws).isReal ? 'Duración real del video grabado' : 'Duración estimada'}
+                      >
                         <Clock className="w-3.5 h-3.5" />
-                        {ws.duration_minutes} min
+                        {getWorkshopDurationInfo(ws).display}
                       </span>
 
                       <div className="flex items-center gap-2">

@@ -19,6 +19,7 @@ import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import { getWorkshopAccessTiming, type WorkshopAccessTiming } from '../../utils/liveSessionUtils';
 import { extractValidUuid } from '../../utils/uuidUtils';
+import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 import type { LiveWorkshop } from '../../types/database';
 
 export default function WorkshopDetailPage() {
@@ -268,7 +269,7 @@ export default function WorkshopDetailPage() {
             <span className="inline-flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <span>
-                {formattedTime} ({workshop.duration_minutes} min)
+                {formattedTime} ({getWorkshopDurationInfo(workshop).display})
               </span>
             </span>
           </div>
@@ -439,7 +440,7 @@ export default function WorkshopDetailPage() {
                     {currentTiming.canAccess ? '¡Sala abierta ahora!' : 'Aparta tu lugar'}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                    {formattedTime} · {workshop.duration_minutes} min
+                    {formattedTime} · {getWorkshopDurationInfo(workshop).display}
                   </p>
                 </div>
                 <button

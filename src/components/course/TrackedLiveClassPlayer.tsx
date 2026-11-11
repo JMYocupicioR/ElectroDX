@@ -151,6 +151,7 @@ export function TrackedLiveClassPlayer({
   const thresholdSyncSentRef = useRef(false);
   const accreditedNotifiedRef = useRef(false);
   const rosterLockedRef = useRef(false);
+  const hasSyncedDurationRef = useRef(false);
 
   const ytPlayerRef = useRef<any>(null);
   const ytContainerRef = useRef<HTMLDivElement>(null);
@@ -332,12 +333,36 @@ export function TrackedLiveClassPlayer({
     lastSyncedPositionRef.current = currentTimeRef.current;
   }, [workshop.id, userId, minRequiredPercent]);
 
+  // Si se detecta la duración real del video y difiere de los metadatos o no existe, intentar sincronizarla
+  const trySyncActualDuration = useCallback((dur: number) => {
+    if (dur <= 0 || hasSyncedDurationRef.current || !workshop?.id) return;
+    const meta = (workshop.clinical_case_json || {}) as Record<string, unknown>;
+    const currentActual = typeof meta.actual_duration_seconds === 'number' ? meta.actual_duration_seconds : 0;
+    if (!currentActual || Math.abs(currentActual - dur) > 10) {
+      hasSyncedDurationRef.current = true;
+      const updatedMeta = {
+        ...meta,
+        actual_duration_seconds: Math.round(dur),
+        actual_duration_minutes: Math.max(1, Math.round(dur / 60)),
+      };
+      void (async () => {
+        try {
+          await supabase
+            .from('live_workshops')
+            .update({ clinical_case_json: updatedMeta } as any)
+            .eq('id', workshop.id);
+        } catch {}
+      })();
+    }
+  }, [workshop?.id, workshop?.clinical_case_json]);
+
   // Registro de un tick de avance en tiempo real (1 segundo) - Función estable
   const recordPlaybackTick = useCallback(
     (nowSec: number, totalDur: number) => {
       if (totalDur > 0 && durationRef.current !== totalDur) {
         durationRef.current = totalDur;
         setDuration(totalDur);
+        trySyncActualDuration(totalDur);
       }
       currentTimeRef.current = nowSec;
       setCurrentTime(nowSec);
@@ -386,10 +411,10 @@ export function TrackedLiveClassPlayer({
   );
 
   // Callbacks estables para los listeners de los reproductores (evita recrear el player)
-  const callbacksRef = useRef({ recordPlaybackTick, syncHeartbeat });
+  const callbacksRef = useRef({ recordPlaybackTick, syncHeartbeat, trySyncActualDuration });
   useEffect(() => {
-    callbacksRef.current = { recordPlaybackTick, syncHeartbeat };
-  }, [recordPlaybackTick, syncHeartbeat]);
+    callbacksRef.current = { recordPlaybackTick, syncHeartbeat, trySyncActualDuration };
+  }, [recordPlaybackTick, syncHeartbeat, trySyncActualDuration]);
 
   const handleReloadPlayer = useCallback(() => {
     setPlayerStatus('loading');
@@ -548,6 +573,7 @@ export function TrackedLiveClassPlayer({
                   if (dur > 0) {
                     durationRef.current = dur;
                     setDuration(dur);
+                    callbacksRef.current.trySyncActualDuration(dur);
                   }
                 } catch {}
               },
@@ -638,6 +664,7 @@ export function TrackedLiveClassPlayer({
           if (!destroyed && dur > 0) {
             durationRef.current = dur;
             setDuration(dur);
+            callbacksRef.current.trySyncActualDuration(dur);
           }
         });
 

@@ -24,6 +24,7 @@ import { getWorkshops } from '../../services/courseService';
 import { getAllPublishedTopics, getPublicProfiles, getPublishedModules } from '../../services/editorialService';
 import { allModules } from '../../content/modules';
 import { resolveAllTopicVideos, parseVideoUrl, getVideoEmbedSrc, getVideoThumbnailUrl, type TopicVideoItem } from '../../utils/mediaValidation';
+import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 import type { LiveWorkshop, PublishedTopic, Profile, PublishedModule } from '../../types/database';
 import type { Topic } from '../../types/content';
 
@@ -71,6 +72,9 @@ export interface LibraryVideoItem {
   isWorkshop?: boolean;
   date?: string;
   durationMinutes?: number;
+  durationSeconds?: number;
+  durationDisplay?: string;
+  isRealDuration?: boolean;
 }
 
 function flattenTopics(topics: Topic[]): Topic[] {
@@ -134,6 +138,15 @@ function VideoPlayerModal({
                 <span className="text-xs text-slate-400 truncate flex items-center gap-1">
                   <span>{video.moduleEmoji}</span>
                   <span>{video.moduleTitle}</span>
+                </span>
+              )}
+              {(video.durationDisplay || video.durationMinutes) && (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700/80 flex items-center gap-1">
+                  <Clock className="w-2.5 h-2.5 text-purple-400" />
+                  <span>{video.durationDisplay || `${video.durationMinutes} min`}</span>
+                  {video.isRealDuration && (
+                    <span className="text-[9px] text-emerald-400 font-semibold">· Real</span>
+                  )}
                 </span>
               )}
             </div>
@@ -309,10 +322,24 @@ function VideoCard({
 
         {/* Bottom Tag / Duration (bottom-right) */}
         <div className="absolute bottom-2.5 right-2.5 z-20">
-          {video.durationMinutes ? (
+          {video.durationDisplay ? (
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/85 text-white backdrop-blur-xs flex items-center gap-1 shadow-sm"
+              title={
+                video.durationSeconds
+                  ? `Duración real grabada: ${Math.floor(video.durationSeconds / 60)} min ${video.durationSeconds % 60} seg`
+                  : video.durationMinutes
+                  ? `${video.durationMinutes} minutos`
+                  : undefined
+              }
+            >
+              <Clock className="w-2.5 h-2.5 text-slate-300" />
+              <span>{video.durationDisplay}</span>
+            </span>
+          ) : video.durationMinutes ? (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/80 text-white backdrop-blur-xs flex items-center gap-1 shadow-sm">
               <Clock className="w-2.5 h-2.5 text-slate-300" />
-              {video.durationMinutes} min
+              <span>{video.durationMinutes} min</span>
             </span>
           ) : (
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/80 text-purple-300 backdrop-blur-xs flex items-center gap-1 shadow-sm">
@@ -572,6 +599,8 @@ export default function SpecialistContentHubPage() {
       const parsed = parseVideoUrl(ws.recording_url);
       const mod = ws.module_id ? modules.get(ws.module_id) : undefined;
       const thumb = getVideoThumbnailUrl(ws.recording_url);
+      const durationInfo = getWorkshopDurationInfo(ws);
+
       list.push({
         id: `ws-${ws.id}`,
         title: ws.title,
@@ -584,7 +613,10 @@ export default function SpecialistContentHubPage() {
         moduleTitle: mod?.title,
         moduleEmoji: mod?.emoji,
         date: ws.scheduled_at,
-        durationMinutes: ws.duration_minutes,
+        durationMinutes: durationInfo.minutes,
+        durationSeconds: durationInfo.seconds,
+        durationDisplay: durationInfo.display,
+        isRealDuration: durationInfo.isReal,
         description: ws.description || undefined,
         isWorkshop: true,
       });

@@ -11,6 +11,7 @@ import {
   sessionSummaryText,
   type SessionBrief,
 } from '../../utils/liveSessionBrief';
+import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 
 interface WorkshopCardProps {
   workshop: LiveWorkshop;
@@ -105,7 +106,9 @@ export function WorkshopCard({ workshop, brief }: WorkshopCardProps) {
       <div className="mt-auto space-y-2">
         <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
           <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>{workshop.duration_minutes} minutos</span>
+          <span title={getWorkshopDurationInfo(workshop).isReal ? 'Duración real de la grabación' : 'Duración estimada'}>
+            {getWorkshopDurationInfo(workshop).display}
+          </span>
         </div>
         
         {workshop.stream_url && !isPast && (

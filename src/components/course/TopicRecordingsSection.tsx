@@ -3,6 +3,7 @@ import { Calendar, Clock, ExternalLink, Link2Off, Loader2, Play, Video, X } from
 import { Link } from 'react-router-dom';
 import type { TopicRecordingEntry } from '../../utils/recordedWorkshopTopics';
 import { getVideoEmbedSrc, parseVideoUrl } from '../../utils/mediaValidation';
+import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 import { TrackedLiveClassPlayer } from './TrackedLiveClassPlayer';
 
 interface TopicRecordingsSectionProps {
@@ -87,7 +88,7 @@ export function TopicRecordingsSection({
                       {workshop.duration_minutes ? (
                         <span className="inline-flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {workshop.duration_minutes} min
+                          {getWorkshopDurationInfo(workshop).display}
                         </span>
                       ) : null}
                       <span className="truncate">Tema: {topicTitle}</span>
