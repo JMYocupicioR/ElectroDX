@@ -38,6 +38,7 @@ import {
   registerWebPushSubscription,
   sendTestNotification,
 } from '../../services/deviceNotificationService';
+import { sanitizeActionUrl } from '../../utils/uuidUtils';
 import type { Course, LiveWorkshop } from '../../types/database';
 import type { AdminProfileRow } from '../../types/admin';
 
@@ -285,6 +286,18 @@ export default function AdminAnnouncementsPage() {
     setFeedbackBanner(null);
 
     try {
+      const rawActionUrl = actionUrl.trim() || (targetScope === 'workshop' && targetWorkshopId ? `/taller/${targetWorkshopId}` : '/portal');
+      const sanitizedActionUrl = sanitizeActionUrl(rawActionUrl, '/portal');
+
+      if (category === 'taller' && actionUrl.includes('/taller/') && sanitizedActionUrl === '/talleres') {
+        setFeedbackBanner({
+          tone: 'error',
+          text: 'La ruta de taller ingresada no contiene un ID válido. Por favor selecciona una clase válida de la lista.',
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const result = await publishPlatformAnnouncement({
         title: title.trim(),
         message: message.trim(),
@@ -294,7 +307,7 @@ export default function AdminAnnouncementsPage() {
         targetCourseId: targetScope === 'course' ? targetCourseId : null,
         targetWorkshopId: targetScope === 'workshop' ? targetWorkshopId || null : targetWorkshopId || null,
         targetUserId: targetScope === 'individual' ? targetUserId : null,
-        actionUrl: actionUrl.trim() || '/portal',
+        actionUrl: sanitizedActionUrl,
         actionRequired,
         sendPush,
       });

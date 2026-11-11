@@ -954,29 +954,33 @@ export function getStudentNotifications(
     }
   });
 
-  // 1. Cédula Profesional status
+  // 1. Cédula Profesional status (solo mostrar en bandeja si no ha sido atendida o si falta)
   if (profile?.cedula_verified) {
-    notifs.push({
-      id: 'notif_cedula_verified',
-      title: 'Cédula Profesional Verificada',
-      message: `Tu cédula profesional (${profile.cedula_profesional}) fue validada exitosamente ante la Dirección General de Profesiones (SEP). Cumples con el requisito legal COMEFYR.`,
-      type: 'cedula',
-      severity: 'success',
-      createdAt: profile.enrollment_verified_at || '2026-09-12T00:00:00Z',
-      linkUrl: '/cuenta',
-      isRead: !!readMap['notif_cedula_verified'],
-    });
+    if (!readMap['notif_cedula_verified']) {
+      notifs.push({
+        id: 'notif_cedula_verified',
+        title: 'Cédula Profesional Verificada',
+        message: `Tu cédula profesional (${profile.cedula_profesional}) fue validada exitosamente ante la Dirección General de Profesiones (SEP). Cumples con el requisito legal COMEFYR.`,
+        type: 'cedula',
+        severity: 'success',
+        createdAt: profile.enrollment_verified_at || profile.created_at || new Date().toISOString(),
+        linkUrl: '/cuenta',
+        isRead: false,
+      });
+    }
   } else if (profile?.cedula_profesional) {
-    notifs.push({
-      id: 'notif_cedula_pending',
-      title: 'Validación de Cédula en Proceso',
-      message: `Hemos recibido tu cédula ${profile.cedula_profesional}. Puedes solicitar validación inmediata ante el Registro Nacional de Profesionistas en tu perfil.`,
-      type: 'cedula',
-      severity: 'warning',
-      createdAt: '2026-09-11T12:00:00Z',
-      linkUrl: '/cuenta',
-      isRead: !!readMap['notif_cedula_pending'],
-    });
+    if (!readMap['notif_cedula_pending']) {
+      notifs.push({
+        id: 'notif_cedula_pending',
+        title: 'Validación de Cédula en Proceso',
+        message: `Hemos recibido tu cédula ${profile.cedula_profesional}. Puedes solicitar validación inmediata ante el Registro Nacional de Profesionistas en tu perfil.`,
+        type: 'cedula',
+        severity: 'warning',
+        createdAt: profile.updated_at || profile.created_at || new Date().toISOString(),
+        linkUrl: '/cuenta',
+        isRead: false,
+      });
+    }
   } else {
     notifs.push({
       id: 'notif_cedula_missing',
@@ -984,13 +988,13 @@ export function getStudentNotifications(
       message: 'Para emitir tu diploma con créditos curriculares COMEFYR al finalizar el curso, es indispensable registrar tu número de cédula.',
       type: 'cedula',
       severity: 'warning',
-      createdAt: '2026-09-10T08:00:00Z',
+      createdAt: profile?.created_at || new Date().toISOString(),
       linkUrl: '/perfil',
       isRead: !!readMap['notif_cedula_missing'],
     });
   }
 
-  // 2. Upcoming Workshops (Rojo si faltan <= 5 min o está en vivo; Amarillo si falta más de 5 min)
+  // 2. Upcoming Workshops reales (Rojo si faltan <= 5 min o está en vivo; Amarillo si falta más de 5 min)
   const activeWorkshops = workshops.filter((w) => w.status === 'scheduled' || w.status === 'live');
   if (activeWorkshops.length > 0) {
     const nextW = activeWorkshops[0];
@@ -1015,46 +1019,11 @@ export function getStudentNotifications(
       type: 'workshop',
       severity: isImminent5Min ? 'urgent' : 'warning',
       scheduledAt: nextW.scheduled_at,
-      createdAt: nextW.created_at || '2026-09-11T10:00:00Z',
+      createdAt: nextW.created_at || nextW.scheduled_at || new Date().toISOString(),
       linkUrl: `/taller/${nextW.id}`,
       isRead: !!readMap[`notif_workshop_${nextW.id}`],
     });
-  } else {
-    notifs.push({
-      id: 'notif_workshop_default',
-      title: 'Próxima Sesión Clínica COMEFYR',
-      message: 'Los profesores de la comisión de Electrodiagnóstico anunciarán el próximo webinar interactivo sobre Conducción Nerviosa.',
-      type: 'workshop',
-      severity: 'info',
-      createdAt: '2026-09-10T14:00:00Z',
-      linkUrl: '/talleres',
-      isRead: !!readMap['notif_workshop_default'],
-    });
   }
-
-  // 3. Academic consensus announcement
-  notifs.push({
-    id: 'notif_academic_consensus',
-    title: 'Actualización de Criterios Clínicos 2026',
-    message: 'Se han integrado los criterios diagnósticos actualizados: Criterios Gold Coast 2019 en ELA y Guía EAN/PNS 2021 en CIDP en los módulos 09 y 10.',
-    type: 'academic',
-    severity: 'info',
-    createdAt: '2026-09-08T09:00:00Z',
-    linkUrl: '/modulo/diagnostic-criteria',
-    isRead: !!readMap['notif_academic_consensus'],
-  });
-
-  // 4. Clinical tool announcement
-  notifs.push({
-    id: 'notif_plexo_tool',
-    title: 'Nueva Calculadora Topográfica de Plexo Braquial',
-    message: 'Utiliza el motor de cálculo diagnóstico de 5 pasos para correlacionar raíces, troncos y cordones con hallazgos electromiográficos.',
-    type: 'system',
-    severity: 'info',
-    createdAt: '2026-09-05T08:00:00Z',
-    linkUrl: '/herramientas/plexo-braquial',
-    isRead: !!readMap['notif_plexo_tool'],
-  });
 
   return notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }

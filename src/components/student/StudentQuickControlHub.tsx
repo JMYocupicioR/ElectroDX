@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -222,18 +223,26 @@ export function StudentQuickControlHub({
   onRecordResumeClick,
 }: StudentQuickControlHubProps) {
   const nowMs = Date.now();
-  const prioritizedNotifications = [...notifications]
-    .sort((a, b) => {
-      if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
-      if (!a.isRead && !b.isRead) {
-        const toneDiff =
-          TONE_PRIORITY_ORDER[resolveNotificationTone(a, nowMs)] -
-          TONE_PRIORITY_ORDER[resolveNotificationTone(b, nowMs)];
-        if (toneDiff !== 0) return toneDiff;
-      }
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    })
-    .slice(0, 4);
+  const [hubNotifFilter, setHubNotifFilter] = useState<'all' | 'unread'>('all');
+
+  const prioritizedNotifications = useMemo(() => {
+    const source = hubNotifFilter === 'unread'
+      ? notifications.filter((n) => !n.isRead)
+      : [...notifications];
+
+    return source
+      .sort((a, b) => {
+        if (a.isRead !== b.isRead) return a.isRead ? 1 : -1;
+        if (!a.isRead && !b.isRead) {
+          const toneDiff =
+            TONE_PRIORITY_ORDER[resolveNotificationTone(a, nowMs)] -
+            TONE_PRIORITY_ORDER[resolveNotificationTone(b, nowMs)];
+          if (toneDiff !== 0) return toneDiff;
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      })
+      .slice(0, 4);
+  }, [notifications, hubNotifFilter, nowMs]);
 
   const highestUnreadTone = getHighestUnreadNotificationTone(notifications, nowMs);
   const headerToneStyle = getNotificationToneStyle(highestUnreadTone);
@@ -326,7 +335,33 @@ export function StudentQuickControlHub({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {notifications.length > 0 && (
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[11px] font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setHubNotifFilter('all')}
+                      className={`px-2 py-0.5 rounded transition ${
+                        hubNotifFilter === 'all'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      Todos ({notifications.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHubNotifFilter('unread')}
+                      className={`px-2 py-0.5 rounded transition ${
+                        hubNotifFilter === 'unread'
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                      }`}
+                    >
+                      Por atender ({unreadCount})
+                    </button>
+                  </div>
+                )}
                 {unreadCount > 0 && (
                   <button
                     type="button"
@@ -349,15 +384,34 @@ export function StudentQuickControlHub({
 
             {/* Lista rápida de avisos */}
             {prioritizedNotifications.length === 0 ? (
-              <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center">
-                <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                  Sin avisos registrados
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Aquí aparecerán notificaciones de calificaciones, tareas y talleres.
-                </p>
-              </div>
+              hubNotifFilter === 'unread' && notifications.length > 0 ? (
+                <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center border border-slate-200/60 dark:border-slate-800">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
+                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    ¡Todo al día!
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    No tienes avisos pendientes por atender.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setHubNotifFilter('all')}
+                    className="mt-2.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  >
+                    Ver historial de avisos atendidos ({notifications.length})
+                  </button>
+                </div>
+              ) : (
+                <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-center">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-500 mx-auto mb-1.5" />
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                    Sin avisos registrados
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Aquí aparecerán notificaciones de calificaciones, tareas y talleres.
+                  </p>
+                </div>
+              )
             ) : (
               <div className="space-y-2.5">
                 {prioritizedNotifications.map((notif) => {

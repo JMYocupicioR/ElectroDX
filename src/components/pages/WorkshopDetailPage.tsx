@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Calendar, CalendarPlus, CheckCircle, Clock, Play, Video } from 'lucide-react';
+import { Calendar, CalendarPlus, CheckCircle, Clock, Play, Video, VideoOff } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthProvider';
 import { BackButton } from '../common/BackButton';
@@ -18,10 +18,13 @@ import { WorkshopDiscussion } from '../course/WorkshopDiscussion';
 import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import { getWorkshopAccessTiming, type WorkshopAccessTiming } from '../../utils/liveSessionUtils';
+import { extractValidUuid } from '../../utils/uuidUtils';
 import type { LiveWorkshop } from '../../types/database';
 
 export default function WorkshopDetailPage() {
   const { workshopId } = useParams();
+  const cleanWorkshopId = extractValidUuid(workshopId);
+
   const { user, isEnrolledPhysician } = useAuth();
   const [workshop, setWorkshop] = useState<LiveWorkshop | null>(null);
   const [brief, setBrief] = useState<SessionBrief | null>(null);
@@ -29,53 +32,89 @@ export default function WorkshopDetailPage() {
   const [loadingReg, setLoadingReg] = useState(false);
   const [timing, setTiming] = useState<WorkshopAccessTiming | null>(null);
   const [rosterLock, setRosterLock] = useState<TrackedAttendanceLockState | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  // Auto-corrección resiliente: si el URL vino con caracteres adicionales o concatenados, normalizar la barra de direcciones
+  useEffect(() => {
+    if (cleanWorkshopId && workshopId && cleanWorkshopId !== workshopId) {
+      window.history.replaceState(null, '', `/taller/${cleanWorkshopId}`);
+    }
+  }, [cleanWorkshopId, workshopId]);
 
   useEffect(() => {
-    if (!workshopId) return;
+    if (!cleanWorkshopId) {
+      setIsLoading(false);
+      setNotFound(true);
+      return;
+    }
+    const targetId = cleanWorkshopId;
     let cancelled = false;
-    supabase
-      .from('live_workshops')
-      .select('*')
-      .eq('id', workshopId)
-      .single()
-      .then(({ data, error }) => {
+    setIsLoading(true);
+    setNotFound(false);
+
+    async function loadWorkshop() {
+      try {
+        const { data, error } = await supabase
+          .from('live_workshops')
+          .select('*')
+          .eq('id', targetId)
+          .maybeSingle();
+
         if (cancelled) return;
+        setIsLoading(false);
         if (error) {
-          console.error(error);
+          console.error('[WorkshopDetailPage] Error cargando taller:', error);
+          setNotFound(true);
           return;
         }
-        if (data) setWorkshop(data as unknown as LiveWorkshop);
-      });
+        if (data) {
+          setWorkshop(data as unknown as LiveWorkshop);
+        } else {
+          setNotFound(true);
+        }
+      } catch (err: unknown) {
+        if (cancelled) return;
+        console.error('[WorkshopDetailPage] Error inesperado:', err);
+        setIsLoading(false);
+        setNotFound(true);
+      }
+    }
+
+    void loadWorkshop();
+
     return () => {
       cancelled = true;
     };
-  }, [workshopId]);
+  }, [cleanWorkshopId]);
 
   useEffect(() => {
-    if (!workshopId) return;
+    if (!cleanWorkshopId) return;
+    const targetId = cleanWorkshopId;
     let cancelled = false;
-    fetchSessionBriefs([workshopId]).then((map) => {
-      if (!cancelled) setBrief(map.get(workshopId) ?? null);
+    fetchSessionBriefs([targetId]).then((map) => {
+      if (!cancelled) setBrief(map.get(targetId) ?? null);
     });
     return () => {
       cancelled = true;
     };
-  }, [workshopId]);
+  }, [cleanWorkshopId]);
 
   useEffect(() => {
-    if (!workshopId || !user) return;
+    if (!cleanWorkshopId || !user) return;
+    const targetId = cleanWorkshopId;
     supabase
       .from('workshop_registrations')
       .select('id')
-      .eq('workshop_id', workshopId)
+      .eq('workshop_id', targetId)
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => setIsRegistered(!!data));
-  }, [workshopId, user]);
+  }, [cleanWorkshopId, user]);
 
   useEffect(() => {
     setRosterLock(null);
-  }, [workshopId]);
+  }, [cleanWorkshopId]);
 
   useEffect(() => {
     if (!workshop) return;
@@ -85,8 +124,48 @@ export default function WorkshopDetailPage() {
     return () => window.clearInterval(id);
   }, [workshop]);
 
-  if (!workshop) {
-    return <div className="pt-28 text-center text-sm text-slate-500">Cargando taller...</div>;
+  if (isLoading) {
+    return (
+      <div className="pt-32 pb-20 text-center text-sm text-slate-500 flex flex-col items-center justify-center gap-3">
+        <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        <span className="font-medium text-slate-600 dark:text-slate-300">Cargando clase en vivo...</span>
+      </div>
+    );
+  }
+
+  if (notFound || !workshop) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 pt-24 pb-16">
+        <div className="mb-6">
+          <BackButton label="Volver a clases en vivo" fallback="/talleres" />
+        </div>
+        <div className="p-8 sm:p-10 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center shadow-xs">
+          <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto mb-4 border border-amber-200/70 dark:border-amber-800/70">
+            <VideoOff className="w-8 h-8" />
+          </div>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-2">
+            Clase o taller no encontrado
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-6 leading-relaxed">
+            El enlace o identificador de la sesión no corresponde a una clase activa, o la sesión fue reprogramada.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              to="/talleres"
+              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold shadow-sm transition"
+            >
+              Explorar cartelera de clases en vivo
+            </Link>
+            <Link
+              to="/portal"
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold transition"
+            >
+              Ir a mi portal
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const currentTiming = timing ?? getWorkshopAccessTiming(workshop, new Date());

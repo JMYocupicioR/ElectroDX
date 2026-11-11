@@ -401,7 +401,15 @@ describe('StudentDashboard UX & Fast-Track Architecture', () => {
     const wsImminentNotif = notifsImminent.find((n) => n.id === 'notif_workshop_ws-4min')!;
     const examNotif = notifsImminent.find((n) => n.id === 'notif_asg_asg-exam-1')!;
     const calmTaskNotif = notifsImminent.find((n) => n.id === 'notif_asg_asg-task-calm')!;
-    const systemNotif = notifsImminent.find((n) => n.id === 'notif_plexo_tool')!;
+    const systemNotif: StudentNotification = {
+      id: 'notif_sys_1',
+      title: 'Aviso del sistema',
+      message: 'Mantenimiento preventivo',
+      type: 'system',
+      severity: 'info',
+      createdAt: new Date(now).toISOString(),
+      isRead: false,
+    };
     const cedulaOkNotif = notifsImminent.find((n) => n.id === 'notif_cedula_verified')!;
 
     expect(resolveNotificationTone(wsImminentNotif, now)).toBe('urgent'); // Rojo (<= 5 min)

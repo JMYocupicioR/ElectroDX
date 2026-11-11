@@ -19,6 +19,7 @@ import { useAuth } from './contexts/AuthProvider';
 import { useStaffViewStore } from './stores/staffViewStore';
 import { shouldRedirectToStaffInbox } from './utils/postLoginPath';
 import { ScrollToTop } from './components/common/ScrollToTop';
+import { PullToRefresh } from './components/common/PullToRefresh';
 
 const LandingPage = lazy(() => import('./components/pages/LandingPage'));
 const SyllabusPage = lazy(() => import('./components/pages/SyllabusPage'));
@@ -116,6 +117,7 @@ function App() {
         <SkipLink />
         <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <ScrollToTop />
+          <PullToRefresh />
           <PWAUpdateBanner />
           <Header />
           <AdminStudentModeBanner />
