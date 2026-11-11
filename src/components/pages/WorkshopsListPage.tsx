@@ -41,6 +41,14 @@ export default function WorkshopsListPage() {
         setWorkshops(data);
         const briefMap = await fetchSessionBriefs(data.map((workshop) => workshop.id));
         setBriefs(briefMap);
+
+        // Si no hay talleres futuros programados pero sí hay grabaciones, mostrar las grabaciones por defecto
+        const now = new Date();
+        const hasUpcoming = data.some((w) => new Date(w.scheduled_at) >= now || w.status === 'live');
+        const hasRecordings = data.some((w) => Boolean(w.recording_url));
+        if (!hasUpcoming && hasRecordings) {
+          setActiveTab('recordings');
+        }
       } catch (err) {
         console.error('Error loading workshops:', err);
         setLoadError(err instanceof Error && err.message ? err.message : 'No se pudieron cargar los talleres.');
@@ -156,11 +164,7 @@ export default function WorkshopsListPage() {
         <StudentAgenda studentId={user?.id ?? null} showPrivateNote />
       ) : activeTab === 'upcoming' ? (
         upcomingWorkshops.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center p-12 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
-          >
+          <div className="text-center p-12 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-sm">
             <Calendar className="w-12 h-12 text-slate-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
               No hay talleres programados próximos
@@ -178,7 +182,7 @@ export default function WorkshopsListPage() {
                 Explorar {recordedWorkshops.length} clases grabadas
               </button>
             )}
-          </motion.div>
+          </div>
         ) : (
           <div className="space-y-8">
             {moduleOptions.length > 1 ? (
@@ -217,20 +221,15 @@ export default function WorkshopsListPage() {
                   <h2 className="text-sm font-black uppercase tracking-wider text-slate-500 mb-3">
                     {section.title}
                   </h2>
-                  <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-                  >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {section.rows.map((ws) => (
-                      <motion.div key={ws.id} variants={itemVariants}>
+                      <div key={ws.id}>
                         <Link to={`/taller/${ws.id}`} className="block h-full">
                           <WorkshopCard workshop={ws} brief={briefs.get(ws.id)} />
                         </Link>
-                      </motion.div>
+                      </div>
                     ))}
-                  </motion.div>
+                  </div>
                 </section>
               ))}
             {visibleUpcoming.length === 0 ? (
@@ -241,11 +240,7 @@ export default function WorkshopsListPage() {
       ) : (
         /* Tab Recordings */
         recordedWorkshops.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center p-12 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700"
-          >
+          <div className="text-center p-12 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shadow-sm">
             <PlayCircle className="w-12 h-12 text-slate-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
               Aún no hay grabaciones subidas
@@ -253,20 +248,15 @@ export default function WorkshopsListPage() {
             <p className="text-slate-500 max-w-md mx-auto">
               Las clases en vivo se grabarán y se publicarán aquí (Google Drive, YouTube, etc.) para que puedas verlas cuando desees.
             </p>
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recordedWorkshops.map((ws) => {
               const d = new Date(ws.scheduled_at);
+              const durInfo = getWorkshopDurationInfo(ws);
               return (
-                <motion.div
+                <div
                   key={ws.id}
-                  variants={itemVariants}
                   className="group rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-purple-500/10 transition-all flex flex-col"
                 >
                   <div className="p-6 flex-1 flex flex-col">
@@ -293,10 +283,10 @@ export default function WorkshopsListPage() {
                     <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-3">
                       <span
                         className="inline-flex items-center gap-1.5 text-xs text-slate-500"
-                        title={getWorkshopDurationInfo(ws).isReal ? 'Duración real del video grabado' : 'Duración estimada'}
+                        title={durInfo.isReal ? 'Duración real del video grabado' : 'Duración estimada'}
                       >
                         <Clock className="w-3.5 h-3.5" />
-                        {getWorkshopDurationInfo(ws).display}
+                        {durInfo.display}
                       </span>
 
                       <div className="flex items-center gap-2">
@@ -322,10 +312,10 @@ export default function WorkshopsListPage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
-          </motion.div>
+          </div>
         )
       )}
 
