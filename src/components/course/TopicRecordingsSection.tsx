@@ -1,9 +1,29 @@
-import { useState } from 'react';
-import { Calendar, Clock, ExternalLink, Link2Off, Loader2, Play, Video, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Link2Off,
+  Loader2,
+  Play,
+  ShieldAlert,
+  Sparkles,
+  Video,
+  X,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { TopicRecordingEntry } from '../../utils/recordedWorkshopTopics';
+import { isRecordingAttendanceAccredited } from '../../utils/recordedWorkshopTopics';
 import { getVideoEmbedSrc, parseVideoUrl } from '../../utils/mediaValidation';
 import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
+import { getStudentAttendance } from '../../services/attendanceService';
+import { listMyWorkshopVideoProgress } from '../../services/videoProgressService';
+import { getMyRegistrations } from '../../services/courseService';
+import {
+  notifyRecordingLinksChanged,
+  RECORDING_LINKS_CHANGED_EVENT,
+} from '../../utils/recordingLinksEvents';
 import { TrackedLiveClassPlayer } from './TrackedLiveClassPlayer';
 
 interface TopicRecordingsSectionProps {
@@ -33,6 +53,72 @@ export function TopicRecordingsSection({
   onUnlink,
 }: TopicRecordingsSectionProps) {
   const [activeWorkshopId, setActiveWorkshopId] = useState<string | null>(null);
+  const [accreditedWorkshopIds, setAccreditedWorkshopIds] = useState<Set<string>>(new Set());
+  const [accreditationVersion, setAccreditationVersion] = useState(0);
+
+  useEffect(() => {
+    if (!userId || entries.length === 0) {
+      setAccreditedWorkshopIds(new Set());
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [progressRows, registrations, attendanceRows] = await Promise.all([
+          listMyWorkshopVideoProgress(userId),
+          getMyRegistrations(userId),
+          getStudentAttendance(userId),
+        ]);
+        if (cancelled) return;
+
+        const accredited = new Set<string>();
+        for (const entry of entries) {
+          const ws = entry.workshop;
+          const progress = progressRows.find((r) => r.workshop_id === ws.id) ?? null;
+          const registration = registrations.find((r) => r.workshop_id === ws.id) ?? null;
+          const attendance =
+            attendanceRows.find(
+              (r) =>
+                r.workshop_id === ws.id ||
+                (Boolean(ws.title) && r.session_title === ws.title)
+            ) ?? null;
+
+          if (
+            isRecordingAttendanceAccredited({
+              workshopId: ws.id,
+              progress,
+              registration,
+              attendance,
+            })
+          ) {
+            accredited.add(ws.id);
+          }
+        }
+        setAccreditedWorkshopIds(accredited);
+      } catch (err) {
+        console.warn('[TopicRecordingsSection] Error cargando acreditaciones:', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, entries, accreditationVersion]);
+
+  useEffect(() => {
+    const handleLinksChanged = () => {
+      setAccreditationVersion((v) => v + 1);
+    };
+    window.addEventListener(RECORDING_LINKS_CHANGED_EVENT, handleLinksChanged);
+    return () => window.removeEventListener(RECORDING_LINKS_CHANGED_EVENT, handleLinksChanged);
+  }, []);
+
+  const handleAttendanceAccredited = (workshopId: string) => {
+    setAccreditedWorkshopIds((prev) => new Set([...prev, workshopId]));
+    setAccreditationVersion((v) => v + 1);
+    notifyRecordingLinksChanged();
+  };
 
   if (entries.length === 0) return null;
 
@@ -92,6 +178,29 @@ export function TopicRecordingsSection({
                         </span>
                       ) : null}
                       <span className="truncate">Tema: {topicTitle}</span>
+
+                      {userId && (
+                        accreditedWorkshopIds.has(workshop.id) ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                            <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                            Asistencia acreditada
+                          </span>
+                        ) : workshop.allow_recording_attendance === false ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                            Grabación de repaso
+                          </span>
+                        ) : workshop.attendance_closed ? (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                            <ShieldAlert className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                            Asistencia cerrada
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-violet-200 dark:border-violet-800/60 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
+                            <Sparkles className="h-3 w-3 text-violet-500" />
+                            Acredita asistencia al ver el video
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
@@ -135,7 +244,12 @@ export function TopicRecordingsSection({
               {isActive && recordingUrl ? (
                 <div className="border-t border-violet-200/60 dark:border-violet-800/40 p-3">
                   {userId ? (
-                    <TrackedLiveClassPlayer workshop={workshop} userId={userId} compact />
+                    <TrackedLiveClassPlayer
+                      workshop={workshop}
+                      userId={userId}
+                      compact
+                      onAttendanceAccredited={() => handleAttendanceAccredited(workshop.id)}
+                    />
                   ) : parsed ? (
                     <div className="relative w-full overflow-hidden rounded-xl bg-black" style={{ paddingBottom: '56.25%' }}>
                       <iframe

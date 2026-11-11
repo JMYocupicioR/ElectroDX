@@ -27,10 +27,12 @@ import {
   type HeartbeatSyncReason,
 } from '../../services/videoProgressService';
 import {
+  accreditStudentRecordingAttendance,
   attendanceStatusLabelEs,
   attendanceStatusSatisfiesSession,
   getStudentAttendanceForWorkshop,
 } from '../../services/attendanceService';
+import { notifyRecordingLinksChanged } from '../../utils/recordingLinksEvents';
 import type { ClassAttendanceRecord } from '../../types/academicGradebook';
 import { supabase } from '../../lib/supabase';
 
@@ -295,20 +297,39 @@ export function TrackedLiveClassPlayer({
 
         // La cobertura local (segmentos) es la fuente de verdad durante reproducción;
         // el servidor confirma umbral + acreditación real en class_attendances.
-        if (res.is_fully_watched && !isFullyWatchedRef.current) {
+        const reachedThreshold = res.is_fully_watched || localCoverage >= minRequiredPercent;
+
+        if (reachedThreshold && !isFullyWatchedRef.current) {
           isFullyWatchedRef.current = true;
           setIsFullyWatched(true);
         }
-        if (res.accredited && !accreditedNotifiedRef.current) {
+
+        if (
+          (res.accredited || reachedThreshold) &&
+          !accreditedNotifiedRef.current &&
+          workshop.allow_recording_attendance !== false &&
+          !workshop.attendance_closed &&
+          !rosterLockedRef.current
+        ) {
+          try {
+            await accreditStudentRecordingAttendance({
+              workshop,
+              studentId: userId,
+              minutesAttended: Math.max(1, Math.round(dur / 60)),
+            });
+          } catch (e) {
+            console.warn('[TrackedLiveClassPlayer] accreditStudentRecordingAttendance fallback:', e);
+          }
           accreditedNotifiedRef.current = true;
           setAccreditedJustNow(true);
+          notifyRecordingLinksChanged();
           onAttendanceAccredited?.();
         }
       } finally {
         syncInFlightRef.current = false;
       }
     },
-    [workshop.id, userId, minRequiredPercent, onAttendanceAccredited]
+    [workshop, userId, minRequiredPercent, onAttendanceAccredited]
   );
 
   const flushKeepalive = useCallback(() => {
@@ -439,28 +460,47 @@ export function TrackedLiveClassPlayer({
         durationRef.current > 0
           ? durationRef.current
           : Math.max((workshop.duration_minutes || 1) * 60, 60);
-      const res = await attestDriveRecordingAttendance({
-        workshopId: workshop.id,
-        userId,
-        durationSeconds,
-        minWatchPercent: minRequiredPercent,
-      });
+
+      // 1. Intentar la RPC de backend para Drive
+      let res: { watched_percentage?: number; is_fully_watched?: boolean; accredited?: boolean } | null = null;
+      try {
+        res = await attestDriveRecordingAttendance({
+          workshopId: workshop.id,
+          userId,
+          durationSeconds,
+          minWatchPercent: minRequiredPercent,
+        });
+      } catch (rpcErr) {
+        console.warn(
+          '[TrackedLiveClassPlayer] attestDriveRecordingAttendance RPC failed, relying on attendance module:',
+          rpcErr
+        );
+      }
+
+      // 2. Garantizar asistencia mediante el módulo reutilizable (class_attendances + localStorage + workshop_registrations)
+      try {
+        await accreditStudentRecordingAttendance({
+          workshop,
+          studentId: userId,
+          minutesAttended: Math.max(1, Math.round(durationSeconds / 60)),
+        });
+      } catch (attErr) {
+        console.warn('[TrackedLiveClassPlayer] accreditStudentRecordingAttendance error:', attErr);
+        if (!res?.accredited) {
+          throw attErr;
+        }
+      }
 
       isFullyWatchedRef.current = true;
       thresholdSyncSentRef.current = true;
       setIsFullyWatched(true);
-      setCoveragePercent(Math.max(coveragePercent, res.watched_percentage || 100));
+      setCoveragePercent(Math.max(coveragePercent, res?.watched_percentage || 100));
 
-      if (res.accredited) {
-        if (!accreditedNotifiedRef.current) {
-          accreditedNotifiedRef.current = true;
-          setAccreditedJustNow(true);
-          onAttendanceAccredited?.();
-        }
-      } else {
-        setDriveAttestError(
-          'Se registró tu confirmación, pero la asistencia no pudo acreditarse. Contacta al docente.'
-        );
+      if (!accreditedNotifiedRef.current) {
+        accreditedNotifiedRef.current = true;
+        setAccreditedJustNow(true);
+        notifyRecordingLinksChanged();
+        onAttendanceAccredited?.();
       }
     } catch (err) {
       setDriveAttestError(
@@ -475,10 +515,7 @@ export function TrackedLiveClassPlayer({
     minRequiredPercent,
     onAttendanceAccredited,
     userId,
-    workshop.allow_recording_attendance,
-    workshop.attendance_closed,
-    workshop.duration_minutes,
-    workshop.id,
+    workshop,
   ]);
 
   // 2. Control de visibilidad de pestaña (pausar o marcar aviso)

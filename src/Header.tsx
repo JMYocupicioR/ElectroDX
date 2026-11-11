@@ -45,7 +45,7 @@ import { isSupabaseConfigured } from './lib/supabase';
 import { flushProgressOutbox, getLastVisitedTopic } from './services/studentService';
 
 function navClass(active: boolean) {
-  return `flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+  return `flex items-center gap-1.5 px-2 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs xl:text-sm font-medium whitespace-nowrap transition-all ${
     active
       ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/50 dark:text-cyan-400 font-semibold'
       : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800/60'
@@ -157,8 +157,8 @@ export function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-slate-800/70 transition-colors">
-        <div className="max-w-[1680px] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 h-14 sm:h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-[1680px] 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-5 xl:px-8 2xl:px-10 h-14 sm:h-16 flex items-center justify-between gap-2 xl:gap-4">
+          <div className="flex items-center gap-2 xl:gap-3 shrink-0">
             <Link to={homeHref} className="flex items-center group transition-transform hover:scale-[1.01]">
               <BrandLogo variant="full" size="md" />
             </Link>
@@ -166,7 +166,7 @@ export function Header() {
             {(isAdmin || isEditor) && !studentMode && (
               <>
                 <span className="hidden lg:block h-5 w-px bg-slate-200 dark:bg-slate-800 ml-1" />
-                <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Navegación administrativa">
+                <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5" aria-label="Navegación administrativa">
                   <button
                     type="button"
                     onClick={openCourseSidebar}
@@ -194,7 +194,7 @@ export function Header() {
           </div>
 
           {(!isAdmin || studentMode) && (
-            <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Principal">
+            <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1.5 min-w-0" aria-label="Principal">
               {showPublicNav && (
                 <>
                   <Link to="/temario" className={navClass(location.pathname === '/temario' || location.pathname === '/programa')}>
@@ -280,19 +280,21 @@ export function Header() {
             </nav>
           )}
 
-          <div className="hidden lg:flex items-center gap-2.5">
+          <div className="hidden lg:flex items-center gap-1.5 xl:gap-2.5 shrink-0">
             {/* Buscador Rápido Global (Cmd+K / Ctrl+K) */}
             <button
               type="button"
               onClick={openCommandPalette}
-              className="flex items-center justify-between gap-3 px-3 py-1.5 min-w-[200px] xl:min-w-[260px] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs transition-all shadow-xs cursor-pointer group"
+              className="flex items-center justify-between gap-2 xl:gap-3 px-2.5 xl:px-3 py-1.5 xl:min-w-[200px] 2xl:min-w-[260px] rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-xs transition-all shadow-xs cursor-pointer group"
               title="Búsqueda global (Ctrl + K)"
             >
-              <span className="flex items-center gap-2 truncate">
+              <span className="flex items-center gap-1.5 xl:gap-2 truncate">
                 <Search className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition-colors shrink-0" />
-                <span className="text-slate-500 dark:text-slate-400 truncate">Buscar tema, módulo o acción...</span>
+                <span className="text-slate-500 dark:text-slate-400 truncate hidden 2xl:inline">Buscar tema, módulo o acción...</span>
+                <span className="text-slate-500 dark:text-slate-400 truncate hidden xl:inline 2xl:hidden">Buscar tema...</span>
+                <span className="text-slate-500 dark:text-slate-400 xl:hidden">Buscar</span>
               </span>
-              <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[10px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+              <kbd className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-[10px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
                 ⌘K
               </kbd>
             </button>
@@ -327,19 +329,19 @@ export function Header() {
             {isSupabaseConfigured && user ? (
               <UserMenu />
             ) : isSupabaseConfigured ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 xl:gap-1.5 shrink-0">
                 <Link
                   to="/auth/login"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                  className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-cyan-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition whitespace-nowrap"
                 >
-                  <LogIn className="w-3.5 h-3.5" />
+                  <LogIn className="w-3.5 h-3.5 shrink-0" />
                   <span>Ingresar</span>
                 </Link>
                 <Link
                   to="/auth/registro"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white hover:opacity-95 shadow-sm shadow-blue-500/20 transition"
+                  className="flex items-center gap-1.5 px-3 xl:px-3.5 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 text-white hover:opacity-95 shadow-sm shadow-blue-500/20 transition whitespace-nowrap"
                 >
-                  <GraduationCap className="w-3.5 h-3.5" />
+                  <GraduationCap className="w-3.5 h-3.5 shrink-0" />
                   <span>Registro</span>
                 </Link>
               </div>

@@ -4,6 +4,7 @@ import {
   isTableMissingInSupabase,
   markTableAsMissingInSupabase,
 } from './tableAvailability';
+import { markAttendance, registerForWorkshop } from './courseService';
 import type {
   AttendanceStatus,
   ClassAttendanceRecord,
@@ -13,6 +14,16 @@ import type { WorkshopAttendanceSummary } from '../types/academicAnalytics';
 import type { LiveWorkshop } from '../types/database';
 
 const KEY_LOCAL_ATTENDANCE = 'neurosafe_class_attendances_';
+
+function safeGetLocalStorage(): Storage | null {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+    if (typeof globalThis !== 'undefined' && (globalThis as any).localStorage) {
+      return (globalThis as any).localStorage;
+    }
+  } catch {}
+  return null;
+}
 
 export function normalizeSessionModality(value: unknown): SessionModality {
   return value === 'in_person' ? 'in_person' : 'online';
@@ -80,7 +91,8 @@ export async function getStudentAttendance(studentId: string): Promise<ClassAtte
   }
 
   try {
-    const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`);
+    const storage = safeGetLocalStorage();
+    const raw = storage ? storage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`) : null;
     if (raw) {
       return (JSON.parse(raw) as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
     }
@@ -145,14 +157,17 @@ export async function getWorkshopAttendance(workshopId: string): Promise<ClassAt
   // Fallback cache
   const results: ClassAttendanceRecord[] = [];
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(KEY_LOCAL_ATTENDANCE)) {
-        const raw = localStorage.getItem(key);
-        if (raw) {
-          const list = JSON.parse(raw) as ClassAttendanceRecord[];
-          const matches = list.filter((r) => r.workshop_id === workshopId);
-          results.push(...matches.map(normalizeAttendanceRecord));
+    const storage = safeGetLocalStorage();
+    if (storage) {
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i);
+        if (key && key.startsWith(KEY_LOCAL_ATTENDANCE)) {
+          const raw = storage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw) as ClassAttendanceRecord[];
+            const matches = list.filter((r) => r.workshop_id === workshopId);
+            results.push(...matches.map(normalizeAttendanceRecord));
+          }
         }
       }
     }
@@ -168,22 +183,25 @@ export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord)
 
   // 1. Local storage cache
   try {
-    const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`);
-    const list: ClassAttendanceRecord[] = raw ? JSON.parse(raw) : [];
-    const existingIdx = list.findIndex((r) => {
-      if (normalized.workshop_id && r.workshop_id) {
-        return r.workshop_id === normalized.workshop_id;
+    const storage = safeGetLocalStorage();
+    if (storage) {
+      const raw = storage.getItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`);
+      const list: ClassAttendanceRecord[] = raw ? JSON.parse(raw) : [];
+      const existingIdx = list.findIndex((r) => {
+        if (normalized.workshop_id && r.workshop_id) {
+          return r.workshop_id === normalized.workshop_id;
+        }
+        return r.session_title === normalized.session_title && r.session_date === normalized.session_date;
+      });
+
+      if (existingIdx !== -1) {
+        list[existingIdx] = { ...list[existingIdx], ...normalized, updated_at: new Date().toISOString() };
+      } else {
+        list.push({ ...normalized, updated_at: new Date().toISOString() });
       }
-      return r.session_title === normalized.session_title && r.session_date === normalized.session_date;
-    });
 
-    if (existingIdx !== -1) {
-      list[existingIdx] = { ...list[existingIdx], ...normalized, updated_at: new Date().toISOString() };
-    } else {
-      list.push({ ...normalized, updated_at: new Date().toISOString() });
+      storage.setItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`, JSON.stringify(list));
     }
-
-    localStorage.setItem(`${KEY_LOCAL_ATTENDANCE}${normalized.student_id}`, JSON.stringify(list));
   } catch (e) {
     console.warn('[attendanceService] Error saving local attendance:', e);
   }
@@ -236,6 +254,66 @@ export async function saveStudentAttendanceRecord(record: ClassAttendanceRecord)
   }
 }
 
+/**
+ * Acredita asistencia al alumno por haber visto la clase grabada.
+ * Reutiliza saveStudentAttendanceRecord y actualiza también el registro del taller si aplica.
+ */
+export async function accreditStudentRecordingAttendance(params: {
+  workshop: LiveWorkshop;
+  studentId: string;
+  minutesAttended?: number;
+  notes?: string;
+}): Promise<ClassAttendanceRecord> {
+  const { workshop, studentId, minutesAttended, notes } = params;
+
+  let sessionDate = new Date().toISOString().split('T')[0];
+  if (workshop.scheduled_at) {
+    const d = new Date(workshop.scheduled_at);
+    if (!Number.isNaN(d.getTime())) {
+      sessionDate = d.toISOString().split('T')[0];
+    }
+  }
+
+  const durationMin =
+    minutesAttended && minutesAttended > 0
+      ? Math.round(minutesAttended)
+      : workshop.duration_minutes && workshop.duration_minutes > 0
+      ? workshop.duration_minutes
+      : 60;
+
+  const now = new Date().toISOString();
+  const record: ClassAttendanceRecord = {
+    id: `att_${studentId}_${workshop.id}`,
+    workshop_id: workshop.id,
+    student_id: studentId,
+    session_title: workshop.title,
+    session_date: sessionDate,
+    status: 'present',
+    session_modality: normalizeSessionModality(workshop.session_modality || 'online'),
+    minutes_attended: durationMin,
+    notes: notes || 'Asistencia acreditada automáticamente por visualización de clase grabada',
+    created_at: now,
+    updated_at: now,
+  };
+
+  // 1. Guardar en class_attendances y cache local reutilizando saveStudentAttendanceRecord
+  await saveStudentAttendanceRecord(record);
+
+  // 2. Sincronizar en workshop_registrations reutilizando markAttendance / registerForWorkshop
+  try {
+    await markAttendance(workshop.id, studentId, true);
+  } catch {
+    try {
+      await registerForWorkshop(workshop.id, studentId);
+      await markAttendance(workshop.id, studentId, true);
+    } catch {
+      // Continuar si RLS o restricciones de tabla lo impiden
+    }
+  }
+
+  return record;
+}
+
 export async function getCohortAttendance(studentIds: string[] = []): Promise<ClassAttendanceRecord[]> {
   const byKey = new Map<string, ClassAttendanceRecord>();
   const validIds = Array.from(new Set(studentIds.filter(Boolean)));
@@ -261,17 +339,20 @@ export async function getCohortAttendance(studentIds: string[] = []): Promise<Cl
     }
   }
 
-  for (const studentId of studentIds) {
-    try {
-      const raw = localStorage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`);
-      if (!raw) continue;
-      const list = (JSON.parse(raw) as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
-      for (const row of list) {
-        const key = attendanceKey(row);
-        if (!byKey.has(key)) byKey.set(key, row);
+  const storage = safeGetLocalStorage();
+  if (storage) {
+    for (const studentId of studentIds) {
+      try {
+        const raw = storage.getItem(`${KEY_LOCAL_ATTENDANCE}${studentId}`);
+        if (!raw) continue;
+        const list = (JSON.parse(raw) as ClassAttendanceRecord[]).map(normalizeAttendanceRecord);
+        for (const row of list) {
+          const key = attendanceKey(row);
+          if (!byKey.has(key)) byKey.set(key, row);
+        }
+      } catch {
+        // ignore cache parse errors
       }
-    } catch {
-      // ignore cache parse errors
     }
   }
 

@@ -216,7 +216,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             {BRAND.wordmarkAccent}
           </span>
           {variant !== 'compact' && (
-            <span className={`text-[11px] font-bold ${badgeColor} uppercase tracking-wider ml-1.5 hidden sm:inline`}>
+            <span className={`text-[11px] font-bold ${badgeColor} uppercase tracking-wider ml-1.5 hidden sm:inline lg:hidden 2xl:inline`}>
               {BRAND.badge}
             </span>
           )}
