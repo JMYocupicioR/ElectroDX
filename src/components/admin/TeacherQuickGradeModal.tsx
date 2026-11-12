@@ -130,7 +130,10 @@ export default function TeacherQuickGradeModal({
       const rubricTotal = EMG_RUBRIC.reduce((sum, row) => sum + Number(rubric[row.id] ?? 0), 0);
       const finalGrade = assignment.type === 'emg_report' ? Math.min(100, rubricTotal) : Number(grade);
       const baseFeedback = feedback.trim() || 'Evaluado por el Profesor Titular.';
-      const signedFeedback = `${baseFeedback} — ${reviewerName}`;
+      const escapedReviewer = reviewerName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const signatureRegex = new RegExp(`\\s*—\\s*(${escapedReviewer}|Profesor Titular|Docente).*?$`, 'i');
+      const cleanFeedback = baseFeedback.replace(signatureRegex, '').trim();
+      const signedFeedback = `${cleanFeedback || baseFeedback} — ${reviewerName}`;
       if (assignment.type === 'emg_report' && emgReportId) {
         await gradeEmgReport({
           reportId: emgReportId,
@@ -195,12 +198,33 @@ export default function TeacherQuickGradeModal({
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
                   {badge.label}
                 </span>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  assignment.status === 'approved'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : assignment.status === 'needs_revision'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    : assignment.status === 'submitted'
+                    ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40'
+                    : 'bg-slate-500/20 text-slate-300 border-slate-500/40'
+                }`}>
+                  {assignment.status === 'approved'
+                    ? 'Aprobada'
+                    : assignment.status === 'needs_revision'
+                    ? 'Requiere revisión'
+                    : assignment.status === 'submitted'
+                    ? 'Enviada'
+                    : 'Pendiente'}
+                </span>
                 <span className="text-[10px] text-indigo-200 font-mono">
                   ID: {assignment.id.slice(0, 10)}
                 </span>
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Calificación Docente de Entrega
+                {assignment.status === 'needs_revision'
+                  ? 'Revisión y Ajuste de Entrega'
+                  : assignment.status === 'approved'
+                  ? 'Editar Calificación de Entrega'
+                  : 'Calificación Docente de Entrega'}
               </h3>
             </div>
           </div>
@@ -451,7 +475,7 @@ export default function TeacherQuickGradeModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Cancelar
               </button>
@@ -459,17 +483,23 @@ export default function TeacherQuickGradeModal({
                 type="button"
                 disabled={saving}
                 onClick={(event) => void handleSave(event, 'needs_revision')}
-                className="px-4 py-2.5 rounded-xl border border-amber-300 text-amber-800 dark:text-amber-200 text-xs font-bold disabled:opacity-50"
+                className="px-4 py-2.5 rounded-xl border border-amber-300 dark:border-amber-700/80 bg-amber-50/50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-800 dark:text-amber-200 text-xs font-bold transition disabled:opacity-50 cursor-pointer"
               >
-                Devolver para corrección
+                {assignment.status === 'needs_revision' ? 'Guardar como Requiere Revisión' : 'Devolver para corrección'}
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-md shadow-emerald-600/25 transition disabled:opacity-50 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
-                <span>{saving ? 'Guardando calificación…' : 'Guardar y Acreditar Entrega'}</span>
+                <span>
+                  {saving
+                    ? 'Guardando calificación…'
+                    : assignment.status === 'approved'
+                    ? 'Actualizar Aprobación'
+                    : 'Guardar y Acreditar Entrega'}
+                </span>
               </button>
             </div>
           </form>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from './AdminLayout';
+import { ParticipationLegalAuditPanel } from './ParticipationLegalAuditPanel';
 import { getAuditLog, getProfilesByIds, getStudentActivityFeed } from '../../services/editorialService';
 import type { AuditLogEntry } from '../../types/admin';
 import {
@@ -246,17 +247,34 @@ function ActivityLog() {
 }
 
 export default function AdminAuditPage() {
-  const [tab, setTab] = useState<'direccion' | 'actividad'>('direccion');
+  const [tab, setTab] = useState<'participacion' | 'direccion' | 'actividad'>('participacion');
 
   return (
-    <AdminLayout title="Registro de auditoría">
+    <AdminLayout title="Registro de auditoría y participación legal">
       <p className="text-sm text-slate-500 mb-4 -mt-4">
-        {tab === 'direccion'
-          ? 'Historial de acciones administrativas y editoriales.'
-          : 'Lecturas, evaluaciones, simulacros y comentarios de los alumnos.'}
+        {tab === 'participacion'
+          ? 'Conteo contractual de participación (Docencia, Obra y Labor Editorial), atribuciones léxicas (>50%) y bitácora inmutable para el Acta de Créditos.'
+          : tab === 'direccion'
+            ? 'Historial de acciones administrativas y editoriales.'
+            : 'Lecturas, evaluaciones, simulacros y comentarios de los alumnos.'}
       </p>
 
       <div className="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="Vistas de auditoría">
+        <button
+          type="button"
+          role="tab"
+          id="audit-tab-participacion"
+          aria-selected={tab === 'participacion'}
+          aria-controls="audit-panel-participacion"
+          onClick={() => setTab('participacion')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium border cursor-pointer ${
+            tab === 'participacion'
+              ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100'
+              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:text-slate-300 dark:border-slate-700 dark:hover:bg-slate-800'
+          }`}
+        >
+          Participación y Acta Legal (Contratos)
+        </button>
         <button
           type="button"
           role="tab"
@@ -289,7 +307,11 @@ export default function AdminAuditPage() {
         </button>
       </div>
 
-      {tab === 'direccion' ? (
+      {tab === 'participacion' ? (
+        <div role="tabpanel" id="audit-panel-participacion" aria-labelledby="audit-tab-participacion">
+          <ParticipationLegalAuditPanel />
+        </div>
+      ) : tab === 'direccion' ? (
         <div role="tabpanel" id="audit-panel-direccion" aria-labelledby="audit-tab-direccion">
           <DirectionLog />
         </div>

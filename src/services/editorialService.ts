@@ -15,6 +15,10 @@ import type {
   RevisionPayload,
   RevisionStatus,
 } from '../types/database';
+import {
+  computeSingleTopicAttribution,
+  recordParticipationAuditLog,
+} from './participationAuditService';
 
 export async function getPublicProfiles(): Promise<Profile[]> {
   const { data, error } = await sb
@@ -466,6 +470,97 @@ export async function reviewRevision(
   if (error) {
     throw new Error(error.message || error.details || 'Error al procesar la revisión');
   }
+
+  // Si se aprobó un tema, recalcular atribución léxica palabra por palabra y registrar log legal
+  if (status === 'approved') {
+    try {
+      const rev = await getRevisionById(revisionId);
+      const revType = rev?.payload?.revisionType ?? 'topic';
+      if (rev && revType === 'topic') {
+        const topicId = rev.target_topic_id ?? rev.payload.id ?? rev.payload.slug;
+        if (topicId) {
+          const [publishedTopic, allApprovedForTopicRes, authRes] = await Promise.all([
+            getPublishedTopic(topicId).catch(() => null),
+            supabase
+              .from('content_revisions')
+              .select('*')
+              .eq('status', 'approved')
+              .eq('module_id', rev.module_id),
+            supabase.auth.getUser(),
+          ]);
+
+          const approvedForTopic = ((allApprovedForTopicRes.data ?? []) as ContentRevision[]).filter(
+            (r) =>
+              (r.payload?.revisionType ?? 'topic') === 'topic' &&
+              (r.target_topic_id ?? r.payload?.id ?? r.payload?.slug) === topicId
+          );
+
+          const summary = computeSingleTopicAttribution({
+            editionLabel: '1.0',
+            moduleId: rev.module_id,
+            topicId,
+            publishedTopic,
+            approvedRevisions: approvedForTopic,
+          });
+
+          if (summary.attributions.length > 0) {
+            await supabase.from('topic_word_attributions').upsert(
+              summary.attributions.map(({ id: _omit, ...rest }) => rest) as never,
+              { onConflict: 'edition_label,topic_id,author_id' }
+            );
+          }
+
+          await supabase
+            .from('published_topics')
+            .update({
+              baseline_word_count: summary.baselineWords,
+              clean_word_count: summary.totalAuthoredWords,
+            } as never)
+            .eq('id', topicId);
+
+          const diag = summary.revisionDiagnostics.find((d) => d.revisionId === revisionId);
+          const authorAttribution = summary.attributions.find((a) => a.author_id === rev.author_id);
+
+          await recordParticipationAuditLog({
+            actorId: authRes.data.user?.id ?? rev.reviewer_id ?? rev.author_id,
+            authorId: rev.author_id,
+            bagCategory: diag?.bagCategory ?? 'obra',
+            actionType: diag?.isOrthographicOrFormatOnly
+              ? 'topic_revision_orthographic_filtered'
+              : diag?.isMediaOnlyChange
+                ? 'topic_revision_media_only'
+                : diag?.isReferencesOnlyChange
+                  ? 'topic_revision_references_only'
+                  : 'topic_revision_words_credited',
+            entityType: 'published_topic',
+            entityId: topicId,
+            moduleId: rev.module_id,
+            topicId,
+            deltaWords: diag?.netWordsAdded ?? 0,
+            survivingWordsAfter: authorAttribution?.surviving_words ?? 0,
+            isOrthographicOnly: Boolean(diag?.isOrthographicOrFormatOnly),
+            exclusionReason:
+              diag?.bagCategory === 'excluded' ? diag.legalClauseRef : null,
+            legalClauseRef:
+              diag?.legalClauseRef ??
+              'Contrato Cl. 7 y Reglamento Editorial Art. 5-8 (Conteo de palabras publicadas)',
+            diffSummary: diag?.summary ?? `Revisión aprobada en tema ${topicId}`,
+            metadata: {
+              revisionId,
+              survivingWordsForAuthor: authorAttribution?.surviving_words ?? 0,
+              authorSharePct: authorAttribution?.author_share_pct ?? 0,
+              isPrincipalAuthor: authorAttribution?.is_principal_author ?? false,
+              orthographicTokensFixed: diag?.orthographicTokensFixed ?? 0,
+              totalTopicAuthoredWords: summary.totalAuthoredWords,
+              baselineWordsExcluded: summary.baselineWords,
+            },
+          });
+        }
+      }
+    } catch (auditErr) {
+      console.warn('[editorialService] Error en cálculo de atribución post-revisión:', auditErr);
+    }
+  }
 }
 
 export async function getPublishedModules(): Promise<PublishedModule[]> {
@@ -497,21 +592,71 @@ export async function getPublishedTopicsByModule(moduleId: string): Promise<Publ
   return (data ?? []) as PublishedTopic[];
 }
 
-export async function getApprovedRevisionCredits(): Promise<{ topicId: string; moduleId?: string; authorId: string; at?: string }[]> {
+export async function getApprovedRevisionCredits(): Promise<{
+  topicId: string;
+  moduleId?: string;
+  authorId: string;
+  at?: string;
+  survivingWords?: number;
+  authorSharePct?: number;
+  isPrincipalAuthor?: boolean;
+  authorRank?: number;
+}[]> {
+  // Primero intentar leer desde la tabla auditada topic_word_attributions (excluye ediciones de 0 palabras / ortográficas)
+  try {
+    const { data: attrRows, error: attrErr } = await supabase
+      .from('topic_word_attributions')
+      .select('topic_id, module_id, author_id, surviving_words, author_share_pct, is_principal_author, author_rank, computed_at')
+      .eq('is_platform_baseline', false)
+      .gt('surviving_words', 0);
+
+    if (!attrErr && attrRows && attrRows.length > 0) {
+      return (attrRows as Array<{
+        topic_id: string;
+        module_id: string;
+        author_id: string | null;
+        surviving_words: number;
+        author_share_pct: number;
+        is_principal_author: boolean;
+        author_rank: number;
+        computed_at: string;
+      }>)
+        .filter((r) => r.topic_id && r.author_id && r.surviving_words > 0)
+        .map((r) => ({
+          topicId: r.topic_id,
+          moduleId: r.module_id || undefined,
+          authorId: r.author_id as string,
+          at: r.computed_at,
+          survivingWords: r.surviving_words,
+          authorSharePct: Number(r.author_share_pct),
+          isPrincipalAuthor: Boolean(r.is_principal_author),
+          authorRank: r.author_rank,
+        }));
+    }
+  } catch {
+    // Fallback a content_revisions si la tabla aún no tiene registros sincronizados
+  }
+
   const { data, error } = await supabase
     .from('content_revisions')
-    .select('target_topic_id, module_id, author_id, reviewed_at, updated_at, submitted_at')
+    .select('target_topic_id, module_id, author_id, payload, reviewed_at, updated_at, submitted_at')
     .eq('status', 'approved');
   if (error) throw error;
   return ((data ?? []) as Array<{
     target_topic_id: string | null;
     module_id: string | null;
     author_id: string;
+    payload: RevisionPayload | null;
     reviewed_at: string | null;
     updated_at: string | null;
     submitted_at: string | null;
   }>)
-    .filter((row) => row.target_topic_id && row.author_id)
+    .filter(
+      (row) =>
+        row.target_topic_id &&
+        row.author_id &&
+        (row.payload?.revisionType ?? 'topic') === 'topic'
+    )
     .map((row) => ({
       topicId: row.target_topic_id as string,
       moduleId: row.module_id || undefined,

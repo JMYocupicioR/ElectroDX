@@ -17,6 +17,7 @@ export function usePlexoBraquialAssessment() {
 
   const [datosEvaluacion, setDatosEvaluacion] = useState<DatosEvaluacion>({
     fuerzasMuscular: initialMuscleStrengths,
+    musculosEvaluados: [...MUSCULOS_EVALUACION],
     sintomasSeleccionados: [],
     areasSeleccionadas: [],
     reflejos: {
@@ -38,13 +39,17 @@ export function usePlexoBraquialAssessment() {
 
   // Funciones de actualización
   const updateFuerzaMuscular = (musculo: string, fuerza: number) => {
-    setDatosEvaluacion(prev => ({
-      ...prev,
-      fuerzasMuscular: {
-        ...prev.fuerzasMuscular,
-        [musculo]: fuerza
-      }
-    }));
+    setDatosEvaluacion(prev => {
+      const evaluados = prev.musculosEvaluados ?? Object.keys(prev.fuerzasMuscular);
+      return {
+        ...prev,
+        fuerzasMuscular: {
+          ...prev.fuerzasMuscular,
+          [musculo]: fuerza
+        },
+        musculosEvaluados: evaluados.includes(musculo) ? evaluados : [...evaluados, musculo]
+      };
+    });
     setCalculoRealizado(false);
   };
 
@@ -145,6 +150,7 @@ export function usePlexoBraquialAssessment() {
   const reiniciarCalculadora = () => {
     setDatosEvaluacion({
       fuerzasMuscular: initialMuscleStrengths,
+      musculosEvaluados: [...MUSCULOS_EVALUACION],
       sintomasSeleccionados: [],
       areasSeleccionadas: [],
       reflejos: {
@@ -172,7 +178,7 @@ export function usePlexoBraquialAssessment() {
   const isStepComplete = (step: number): boolean => {
     switch (step) {
       case 1:
-        return Object.keys(datosEvaluacion.fuerzasMuscular).length > 0;
+        return (datosEvaluacion.musculosEvaluados ?? Object.keys(datosEvaluacion.fuerzasMuscular)).length > 0;
       case 2:
         return true; // Los síntomas son opcionales
       case 3:
@@ -190,7 +196,7 @@ export function usePlexoBraquialAssessment() {
   const getStepValidationMessage = (step: number): string | null => {
     switch (step) {
       case 1:
-        const musculosEvaluados = Object.keys(datosEvaluacion.fuerzasMuscular).length;
+        const musculosEvaluados = (datosEvaluacion.musculosEvaluados ?? Object.keys(datosEvaluacion.fuerzasMuscular)).length;
         if (musculosEvaluados === 0) {
           return "Debe evaluar al menos un músculo para continuar";
         }
@@ -213,7 +219,8 @@ export function usePlexoBraquialAssessment() {
 
   // Validación para el cálculo final
   const getCalculationValidationMessage = (): string | null => {
-    const musculosAfectados = Object.values(datosEvaluacion.fuerzasMuscular).filter(mrc => mrc < 5).length;
+    const evaluados = datosEvaluacion.musculosEvaluados ?? Object.keys(datosEvaluacion.fuerzasMuscular);
+    const musculosAfectados = evaluados.filter(musculo => (datosEvaluacion.fuerzasMuscular[musculo] ?? 5) < 5).length;
     
     if (musculosAfectados === 0) {
       return "No se encontraron músculos afectados. ¿Está seguro de que todos los músculos están normales (MRC 5)?";
@@ -230,7 +237,7 @@ export function usePlexoBraquialAssessment() {
   const getStepSuggestions = (step: number): string[] => {
     switch (step) {
       case 1:
-        const musculosEvaluados = Object.keys(datosEvaluacion.fuerzasMuscular);
+        const musculosEvaluados = datosEvaluacion.musculosEvaluados ?? Object.keys(datosEvaluacion.fuerzasMuscular);
         const suggestions = [];
         
         if (musculosEvaluados.length === 0) {
@@ -278,7 +285,8 @@ export function usePlexoBraquialAssessment() {
     if (!caso) return;
 
     setDatosEvaluacion({
-      fuerzasMuscular: { ...caso.musculos },
+      fuerzasMuscular: { ...initialMuscleStrengths, ...caso.musculos },
+      musculosEvaluados: Object.keys(caso.musculos),
       sintomasSeleccionados: [...caso.sintomas],
       areasSeleccionadas: [...caso.sensibilidad],
       reflejos: { ...caso.reflejos },

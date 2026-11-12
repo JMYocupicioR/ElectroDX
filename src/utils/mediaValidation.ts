@@ -29,7 +29,12 @@ const ALLOWED_EMBED_HOSTS = [
   'loom.com',
 ];
 
-export type ExternalVideoInput = { title: string; url: string };
+export type ExternalVideoInput = {
+  title: string;
+  url: string;
+  durationSeconds?: number;
+  authorId?: string;
+};
 
 export type VideoPlatformInfo = {
   kind: 'drive' | 'youtube' | 'vimeo' | 'loom' | 'dailymotion' | 'embed' | 'unknown';
@@ -201,6 +206,10 @@ export function normalizeExternalVideoItem(
   return {
     title: item.title ?? '',
     url: toCanonicalVideoUrl(rawUrl, fallbackKind),
+    ...(typeof item.durationSeconds === 'number' && item.durationSeconds > 0
+      ? { durationSeconds: item.durationSeconds }
+      : {}),
+    ...(item.authorId ? { authorId: item.authorId } : {}),
   };
 }
 
@@ -257,10 +266,10 @@ export type ParsedVideo =
   | { kind: 'embed'; embedUrl: string };
 
 export type VideoMediaPayload = {
-  videoUrls?: { title: string; driveId: string }[];
-  youtubeUrls?: { title: string; videoId: string; startTime?: number }[];
-  vimeoUrls?: { title: string; videoId: string }[];
-  embedUrls?: { title: string; embedUrl: string }[];
+  videoUrls?: { title: string; driveId: string; durationSeconds?: number; authorId?: string }[];
+  youtubeUrls?: { title: string; videoId: string; startTime?: number; durationSeconds?: number; authorId?: string }[];
+  vimeoUrls?: { title: string; videoId: string; durationSeconds?: number; authorId?: string }[];
+  embedUrls?: { title: string; embedUrl: string; durationSeconds?: number; authorId?: string }[];
 };
 
 export function parseDriveId(url: string): string | null {
@@ -364,49 +373,73 @@ export function getVideoEmbedSrc(parsed: ParsedVideo): string {
 export function videoMediaToExternalList(media: VideoMediaPayload): ExternalVideoInput[] {
   const list: ExternalVideoInput[] = [];
   for (const v of media.videoUrls ?? []) {
-    list.push({ title: v.title, url: toCanonicalVideoUrl(v.driveId, 'drive') });
+    list.push({
+      title: v.title,
+      url: toCanonicalVideoUrl(v.driveId, 'drive'),
+      ...(v.durationSeconds ? { durationSeconds: v.durationSeconds } : {}),
+      ...(v.authorId ? { authorId: v.authorId } : {}),
+    });
   }
   for (const v of media.youtubeUrls ?? []) {
     const timeParam = v.startTime ? `?t=${v.startTime}` : '';
     list.push({
       title: v.title,
       url: toCanonicalVideoUrl(`https://www.youtube.com/watch?v=${v.videoId}${timeParam}`, 'youtube'),
+      ...(v.durationSeconds ? { durationSeconds: v.durationSeconds } : {}),
+      ...(v.authorId ? { authorId: v.authorId } : {}),
     });
   }
   for (const v of media.vimeoUrls ?? []) {
-    list.push({ title: v.title, url: toCanonicalVideoUrl(`https://vimeo.com/${v.videoId}`, 'vimeo') });
+    list.push({
+      title: v.title,
+      url: toCanonicalVideoUrl(`https://vimeo.com/${v.videoId}`, 'vimeo'),
+      ...(v.durationSeconds ? { durationSeconds: v.durationSeconds } : {}),
+      ...(v.authorId ? { authorId: v.authorId } : {}),
+    });
   }
   for (const v of media.embedUrls ?? []) {
-    list.push({ title: v.title, url: v.embedUrl });
+    list.push({
+      title: v.title,
+      url: v.embedUrl,
+      ...(v.durationSeconds ? { durationSeconds: v.durationSeconds } : {}),
+      ...(v.authorId ? { authorId: v.authorId } : {}),
+    });
   }
   return list;
 }
 
 export function externalListToVideoMedia(videos: ExternalVideoInput[]): VideoMediaPayload {
-  const videoUrls: { title: string; driveId: string }[] = [];
-  const youtubeUrls: { title: string; videoId: string; startTime?: number }[] = [];
-  const vimeoUrls: { title: string; videoId: string }[] = [];
-  const embedUrls: { title: string; embedUrl: string }[] = [];
+  const videoUrls: { title: string; driveId: string; durationSeconds?: number; authorId?: string }[] = [];
+  const youtubeUrls: { title: string; videoId: string; startTime?: number; durationSeconds?: number; authorId?: string }[] = [];
+  const vimeoUrls: { title: string; videoId: string; durationSeconds?: number; authorId?: string }[] = [];
+  const embedUrls: { title: string; embedUrl: string; durationSeconds?: number; authorId?: string }[] = [];
 
   for (const video of videos) {
     const parsed = parseVideoUrl(video.url);
     if (!parsed) continue;
+    const meta = {
+      ...(typeof video.durationSeconds === 'number' && video.durationSeconds > 0
+        ? { durationSeconds: video.durationSeconds }
+        : {}),
+      ...(video.authorId ? { authorId: video.authorId } : {}),
+    };
     switch (parsed.kind) {
       case 'drive':
-        videoUrls.push({ title: video.title, driveId: parsed.driveId });
+        videoUrls.push({ title: video.title, driveId: parsed.driveId, ...meta });
         break;
       case 'youtube':
         youtubeUrls.push({
           title: video.title,
           videoId: parsed.videoId,
           startTime: parsed.startTime,
+          ...meta,
         });
         break;
       case 'vimeo':
-        vimeoUrls.push({ title: video.title, videoId: parsed.videoId });
+        vimeoUrls.push({ title: video.title, videoId: parsed.videoId, ...meta });
         break;
       case 'embed':
-        embedUrls.push({ title: video.title, embedUrl: parsed.embedUrl });
+        embedUrls.push({ title: video.title, embedUrl: parsed.embedUrl, ...meta });
         break;
     }
   }

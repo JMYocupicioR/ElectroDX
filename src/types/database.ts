@@ -264,12 +264,12 @@ export interface UserRole {
 }
 
 export interface TopicMedia {
-  videoUrls?: { title: string; driveId: string }[];
-  youtubeUrls?: { title: string; videoId: string; startTime?: number }[];
-  vimeoUrls?: { title: string; videoId: string }[];
-  embedUrls?: { title: string; embedUrl: string }[];
-  imageUrls?: { src: string; alt: string; caption?: string }[];
-  pdfUrls?: { title: string; url: string; description?: string; author?: string }[];
+  videoUrls?: { title: string; driveId: string; durationSeconds?: number; authorId?: string }[];
+  youtubeUrls?: { title: string; videoId: string; startTime?: number; durationSeconds?: number; authorId?: string }[];
+  vimeoUrls?: { title: string; videoId: string; durationSeconds?: number; authorId?: string }[];
+  embedUrls?: { title: string; embedUrl: string; durationSeconds?: number; authorId?: string }[];
+  imageUrls?: { src: string; alt: string; caption?: string; authorId?: string }[];
+  pdfUrls?: { title: string; url: string; description?: string; author?: string; authorId?: string }[];
   references?: { authors: string; title: string; journal: string; year: number | string; url?: string }[];
 }
 
@@ -291,12 +291,12 @@ export interface RevisionPayload {
   icon?: string;
   number?: number;
   sortOrder?: number;
-  videoUrls?: { title: string; driveId: string }[];
-  youtubeUrls?: { title: string; videoId: string; startTime?: number }[];
-  vimeoUrls?: { title: string; videoId: string }[];
-  embedUrls?: { title: string; embedUrl: string }[];
-  imageUrls?: { src: string; alt: string; caption?: string }[];
-  pdfUrls?: { title: string; url: string; description?: string; author?: string }[];
+  videoUrls?: { title: string; driveId: string; durationSeconds?: number; authorId?: string }[];
+  youtubeUrls?: { title: string; videoId: string; startTime?: number; durationSeconds?: number; authorId?: string }[];
+  vimeoUrls?: { title: string; videoId: string; durationSeconds?: number; authorId?: string }[];
+  embedUrls?: { title: string; embedUrl: string; durationSeconds?: number; authorId?: string }[];
+  imageUrls?: { src: string; alt: string; caption?: string; authorId?: string }[];
+  pdfUrls?: { title: string; url: string; description?: string; author?: string; authorId?: string }[];
   media?: TopicMedia;
   clinicalPearls?: string[];
   clinicalPearlsEn?: string[];
@@ -306,7 +306,7 @@ export interface RevisionPayload {
   tags?: string[];
   keyTerms?: string[];
   /** Raw video list for editing; normalized to typed arrays on save */
-  externalVideos?: { title: string; url: string }[];
+  externalVideos?: { title: string; url: string; durationSeconds?: number; authorId?: string }[];
   /** Quiz-only fields */
   quizTopicId?: string;
   passScore?: number;
@@ -378,8 +378,12 @@ export interface PublishedTopic {
   published_at: string;
   published_by: string | null;
   last_edited_by: string | null;
+  last_reviewed_by?: string | null;
   source_revision_id: string | null;
   video_url: string | null;
+  is_static_baseline?: boolean;
+  baseline_word_count?: number;
+  clean_word_count?: number;
 }
 
 export interface Subscription {
@@ -424,9 +428,142 @@ export interface LiveWorkshop {
   min_watch_percent?: number;
   allow_recording_attendance?: boolean;
   attendance_closed?: boolean;
+  edition_label?: string;
+  actual_duration_seconds?: number | null;
+  recording_duration_seconds?: number | null;
+  computable_session_value?: number;
+  material_delivered?: boolean;
+  recording_available?: boolean;
+  validated_by_direction?: string | null;
+  validated_at?: string | null;
+  validation_notes?: string | null;
   created_by: string;
   updated_at: string;
   created_at: string;
+}
+
+export type ParticipationBagCategory = 'docencia' | 'obra' | 'editorial' | 'excluded' | 'governance';
+
+export interface ParticipationAuditLogRow {
+  id: string;
+  occurred_at: string;
+  edition_label: string;
+  actor_id: string | null;
+  author_id: string | null;
+  marked_role_at_event: PhysicianMarkedRole | null;
+  bag_category: ParticipationBagCategory;
+  action_type: string;
+  entity_type: string;
+  entity_id: string;
+  module_id: string | null;
+  topic_id: string | null;
+  delta_words: number;
+  surviving_words_after: number | null;
+  delta_editorial_units: number;
+  delta_sessions: number;
+  duration_seconds: number | null;
+  is_orthographic_only: boolean;
+  exclusion_reason: string | null;
+  legal_clause_ref: string;
+  payload_sha256: string | null;
+  diff_summary: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface TopicMediaAssetRow {
+  id: string;
+  topic_id: string;
+  module_id: string;
+  asset_type: 'image' | 'pdf' | 'video' | 'emg_trace';
+  url: string;
+  title: string | null;
+  caption: string | null;
+  duration_seconds: number | null;
+  uploaded_by: string;
+  is_own_authored_figure: boolean;
+  counts_as_docencia_session_id: string | null;
+  created_at: string;
+}
+
+export interface EditorialConfigTaskRow {
+  id: string;
+  edition_label: string;
+  assigned_to: string;
+  title: string;
+  written_brief: string;
+  deliverable_reference: string | null;
+  editorial_units: number;
+  status: 'assigned' | 'submitted' | 'closed_by_direction' | 'cancelled';
+  assigned_by: string;
+  assigned_at: string;
+  closed_by_direction: string | null;
+  closed_at: string | null;
+  direction_notes: string | null;
+}
+
+export interface TopicWordAttributionRow {
+  id?: string;
+  edition_label: string;
+  topic_id: string;
+  module_id: string;
+  author_id: string | null;
+  is_platform_baseline: boolean;
+  surviving_words: number;
+  total_topic_authored_words: number;
+  total_topic_all_words: number;
+  author_share_pct: number;
+  is_principal_author: boolean;
+  author_rank: number;
+  orthographic_edits_ignored: number;
+  source_revision_ids: string[];
+  computed_at: string;
+}
+
+export interface EditionCreditActRow {
+  id: string;
+  edition_label: string;
+  status: 'draft' | 'notified' | 'final_frozen';
+  total_computable_sessions: number;
+  total_published_words: number;
+  total_editorial_units: number;
+  docencia_pool_mxn: number;
+  obra_pool_mxn: number;
+  editorial_pool_mxn: number;
+  snapshot_sha256: string;
+  frozen_by: string | null;
+  notified_at: string | null;
+  objection_deadline_at: string | null;
+  frozen_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EditionCreditActItemRow {
+  id: string;
+  act_id: string;
+  physician_id: string;
+  agreement_folio: string | null;
+  marked_role: PhysicianMarkedRole | 'sin_convenio';
+  validated_sessions: number;
+  computable_sessions: number;
+  docencia_share_pct: number;
+  docencia_payout_mxn: number;
+  raw_surviving_words: number;
+  computable_words: number;
+  obra_share_pct: number;
+  obra_payout_mxn: number;
+  principal_author_topic_ids: string[];
+  coauthor_topic_ids: string[];
+  published_quiz_questions: number;
+  published_clinical_cases: number;
+  closed_config_tasks: number;
+  raw_editorial_units: number;
+  computable_editorial_units: number;
+  editorial_share_pct: number;
+  editorial_payout_mxn: number;
+  total_payout_mxn: number;
+  breakdown_json: Record<string, unknown>;
 }
 
 export interface WorkshopVideoProgress {
@@ -1048,6 +1185,55 @@ interface RawDatabase {
         };
         Insert: Record<string, unknown>;
         Update: Record<string, unknown>;
+      };
+      participation_audit_logs: {
+        Row: ParticipationAuditLogRow;
+        Insert: Partial<ParticipationAuditLogRow> & {
+          action_type: string;
+          entity_type: string;
+          entity_id: string;
+        };
+        Update: never;
+      };
+      topic_media_assets: {
+        Row: TopicMediaAssetRow;
+        Insert: Partial<TopicMediaAssetRow> & {
+          module_id: string;
+          topic_id: string;
+          url: string;
+        };
+        Update: Partial<TopicMediaAssetRow>;
+      };
+      editorial_config_tasks: {
+        Row: EditorialConfigTaskRow;
+        Insert: Partial<EditorialConfigTaskRow> & {
+          title: string;
+          assigned_to: string;
+        };
+        Update: Partial<EditorialConfigTaskRow>;
+      };
+      topic_word_attributions: {
+        Row: TopicWordAttributionRow;
+        Insert: Partial<TopicWordAttributionRow> & {
+          topic_id: string;
+          module_id: string;
+        };
+        Update: Partial<TopicWordAttributionRow>;
+      };
+      edition_credit_acts: {
+        Row: EditionCreditActRow;
+        Insert: Partial<EditionCreditActRow> & {
+          edition_label: string;
+          snapshot_sha256: string;
+        };
+        Update: Partial<EditionCreditActRow>;
+      };
+      edition_credit_act_items: {
+        Row: EditionCreditActItemRow;
+        Insert: Partial<EditionCreditActItemRow> & {
+          act_id: string;
+        };
+        Update: Partial<EditionCreditActItemRow>;
       };
     };
     Functions: {

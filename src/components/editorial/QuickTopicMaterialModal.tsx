@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthProvider';
 import type { Topic } from '../../types/content';
 import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
+import { registerTopicMediaAsset } from '../../services/participationAuditService';
 import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
 import { uploadTeachingFile } from '../../services/teachingStorage';
 import { CLINICAL_PRESETS } from '../simulator/traceEngine/defaultPresets';
@@ -88,6 +89,7 @@ export function QuickTopicMaterialModal({
   // Video
   const [videoTitle, setVideoTitle] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
+  const [videoDurationMinutes, setVideoDurationMinutes] = useState('30');
 
   // PDF
   const [pdfTitle, setPdfTitle] = useState('');
@@ -155,23 +157,35 @@ export function QuickTopicMaterialModal({
           );
         }
 
+        const mins = Math.max(1, parseInt(videoDurationMinutes, 10) || 30);
+        const durationSeconds = mins * 60;
+
         switch (parsed.kind) {
           case 'drive':
-            payload.videoUrls = [...(payload.videoUrls ?? []), { title: videoTitle.trim(), driveId: parsed.driveId }];
+            payload.videoUrls = [...(payload.videoUrls ?? []), { title: videoTitle.trim(), driveId: parsed.driveId, durationSeconds, authorId: user.id }];
             break;
           case 'youtube':
             payload.youtubeUrls = [
               ...(payload.youtubeUrls ?? []),
-              { title: videoTitle.trim(), videoId: parsed.videoId, startTime: parsed.startTime },
+              { title: videoTitle.trim(), videoId: parsed.videoId, startTime: parsed.startTime, durationSeconds, authorId: user.id },
             ];
             break;
           case 'vimeo':
-            payload.vimeoUrls = [...(payload.vimeoUrls ?? []), { title: videoTitle.trim(), videoId: parsed.videoId }];
+            payload.vimeoUrls = [...(payload.vimeoUrls ?? []), { title: videoTitle.trim(), videoId: parsed.videoId, durationSeconds, authorId: user.id }];
             break;
           case 'embed':
-            payload.embedUrls = [...(payload.embedUrls ?? []), { title: videoTitle.trim(), embedUrl: parsed.embedUrl }];
+            payload.embedUrls = [...(payload.embedUrls ?? []), { title: videoTitle.trim(), embedUrl: parsed.embedUrl, durationSeconds, authorId: user.id }];
             break;
         }
+        await registerTopicMediaAsset({
+          topicId: targetTopic.id,
+          moduleId,
+          assetType: 'video',
+          url: videoUrl.trim(),
+          title: videoTitle.trim(),
+          durationSeconds,
+          uploadedBy: user.id,
+        });
       } else if (activeTab === 'pdf') {
         if (!pdfTitle.trim()) {
           throw new Error('Por favor ingresa el nombre del documento.');
@@ -194,8 +208,18 @@ export function QuickTopicMaterialModal({
             url: cleanPdfUrl,
             description: cleanDesc,
             author: authorName,
+            authorId: user.id,
           },
         ];
+        await registerTopicMediaAsset({
+          topicId: targetTopic.id,
+          moduleId,
+          assetType: 'pdf',
+          url: cleanPdfUrl,
+          title: pdfTitle.trim(),
+          caption: cleanDesc,
+          uploadedBy: user.id,
+        });
       } else if (activeTab === 'image') {
         let cleanImageSrc = imageSrc.trim();
         if (imageSource === 'file') {
@@ -215,8 +239,18 @@ export function QuickTopicMaterialModal({
             src: cleanImageSrc,
             alt: imageCaption.trim() || targetTopic.title,
             caption: imageCaption.trim() ? `${imageCaption.trim()} — Aportado por ${authorName}` : `Aportado por ${authorName}`,
+            authorId: user.id,
           },
         ];
+        await registerTopicMediaAsset({
+          topicId: targetTopic.id,
+          moduleId,
+          assetType: 'image',
+          url: cleanImageSrc,
+          title: imageCaption.trim() || targetTopic.title,
+          caption: imageCaption.trim() ? `${imageCaption.trim()} — Aportado por ${authorName}` : `Aportado por ${authorName}`,
+          uploadedBy: user.id,
+        });
       } else if (activeTab === 'pearl') {
         if (!pearlText.trim()) {
           throw new Error('Por favor redacta la perla clínica.');
@@ -454,6 +488,24 @@ export function QuickTopicMaterialModal({
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     Los videos no se guardan en la plataforma: el plan gratuito solo tiene 1 GB y se llenaría con pocas clases. Usa YouTube, Drive, Vimeo o Loom. Los alumnos lo reproducen dentro de la lección.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Duración real del video (en minutos, ej. 10 min o 90 min) *
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={600}
+                    required
+                    value={videoDurationMinutes}
+                    onChange={(e) => setVideoDurationMinutes(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Se registra en la bitácora legal con su duración exacta. Conforme al Reglamento Editorial Art. 13 (Hora ≠ Palabra), los videos no suman palabras en Obra.
                   </p>
                 </div>
               </div>

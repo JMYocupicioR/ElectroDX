@@ -333,7 +333,8 @@ export const LESIONES: Lesion[] = [
       { nombre: "Extensor Carpi Ulnaris", peso: 1.0 },
       { nombre: "Flexor Carpi Radialis", peso: 0.8 },
       { nombre: "Pronador Redondo", peso: 0.5 },
-      { nombre: "Dorsal Ancho", peso: 0.5 }
+      { nombre: "Dorsal Ancho", peso: 0.5 },
+      { nombre: "Serrato Anterior", peso: 0.5 }
     ],
     nerviosPerifericos: ["N. Radial", "N. Mediano (parcial)"],
     areasSensibilidad: ["Zona Posterior Brazo/Antebrazo (Radial)", "Dermatoma C7"],
@@ -390,11 +391,9 @@ export const LESIONES: Lesion[] = [
       { nombre: "Bíceps Braquial", peso: 1.5 },
       { nombre: "Braquiorradial", peso: 1.2 },
       { nombre: "Extensor Carpi Radialis", peso: 1.0 },
-      { nombre: "Braquial", peso: 0.8 },
-      { nombre: "Romboides", peso: 1.0 },
-      { nombre: "Elevador Escápula", peso: 0.8 }
+      { nombre: "Braquial", peso: 0.8 }
     ],
-    nerviosPerifericos: ["N. Axilar", "N. Musculocutáneo", "N. Supraescapular", "N. Dorsal Escápula"],
+    nerviosPerifericos: ["N. Axilar", "N. Musculocutáneo", "N. Supraescapular"],
     areasSensibilidad: ["Zona Lateral Hombro (Axilar)", "Zona Lateral Antebrazo (Musculocutáneo)", "Dermatoma C5", "Dermatoma C6"],
     sintomasClave: ["Dolor Neurítico", "Parestesias"],
     reflejosClave: { bicipital: "disminuido", braquiorradial: "disminuido", tricipital: "normal" },
@@ -454,8 +453,6 @@ export const LESIONES: Lesion[] = [
       { nombre: "Braquial", peso: 1.2 },
       { nombre: "Flexor Carpi Radialis", peso: 1.0 },
       { nombre: "Pronador Redondo", peso: 1.0 },
-      { nombre: "Flexor Largo del Pulgar", peso: 0.8 },
-      { nombre: "Flexor Profundo de los Dedos", peso: 0.5 },
       { nombre: "Pectoral Mayor (Porción Clavicular)", peso: 1.2 }
     ],
     nerviosPerifericos: ["N. Musculocutáneo", "Raíz Lateral N. Mediano", "N. Pectoral Lateral"],
@@ -487,10 +484,12 @@ export const LESIONES: Lesion[] = [
     nombre: "Lesión de Fascículo Posterior",
     musculosClave: [
       { nombre: "Deltoides", peso: 1.5 },
+      { nombre: "Redondo Menor", peso: 0.8 },
       { nombre: "Tríceps Braquial", peso: 1.5 },
       { nombre: "Extensor de los Dedos", peso: 1.2 },
       { nombre: "Extensor Carpi Radialis", peso: 1.0 },
       { nombre: "Extensor Carpi Ulnaris", peso: 1.0 },
+      { nombre: "Extensor Largo del Pulgar", peso: 1.0 },
       { nombre: "Braquiorradial", peso: 1.0 },
       { nombre: "Supinador", peso: 0.8 },
       { nombre: "Dorsal Ancho", peso: 1.0 }
@@ -507,7 +506,8 @@ export const LESIONES: Lesion[] = [
   {
     nombre: "Neuropatía del Nervio Axilar",
     musculosClave: [
-      { nombre: "Deltoides", peso: 2.0 }
+      { nombre: "Deltoides", peso: 2.0 },
+      { nombre: "Redondo Menor", peso: 1.0 }
     ],
     nerviosPerifericos: ["N. Axilar"],
     areasSensibilidad: ["Zona Lateral Hombro (Axilar)"],
@@ -538,6 +538,7 @@ export const LESIONES: Lesion[] = [
       { nombre: "Extensor de los Dedos", peso: 1.5 },
       { nombre: "Extensor Carpi Radialis", peso: 1.2 },
       { nombre: "Extensor Carpi Ulnaris", peso: 1.2 },
+      { nombre: "Extensor Largo del Pulgar", peso: 1.2 },
       { nombre: "Braquiorradial", peso: 1.0 },
       { nombre: "Supinador", peso: 1.0 }
     ],
@@ -555,7 +556,10 @@ export const LESIONES: Lesion[] = [
       { nombre: "Flexor Carpi Radialis", peso: 1.5 },
       { nombre: "Pronador Redondo", peso: 1.5 },
       { nombre: "Flexor Largo del Pulgar", peso: 1.2 },
-      { nombre: "Flexor Profundo de los Dedos", peso: 1.0 }
+      { nombre: "Flexor Profundo de los Dedos", peso: 1.0 },
+      { nombre: "Abductor Corto del Pulgar", peso: 1.2 },
+      { nombre: "Flexor Corto del Pulgar", peso: 1.0 },
+      { nombre: "Lumbricales 1 y 2", peso: 1.0 }
     ],
     nerviosPerifericos: ["N. Mediano"],
     areasSensibilidad: ["Mano Lateral (Mediano)"],
@@ -572,7 +576,10 @@ export const LESIONES: Lesion[] = [
       { nombre: "Flexor Profundo de los Dedos", peso: 1.5 },
       { nombre: "Interóseos Dorsales", peso: 1.5 },
       { nombre: "Interóseos Palmares", peso: 1.5 },
+      { nombre: "Lumbricales 3 y 4", peso: 1.0 },
       { nombre: "Abductor del Meñique", peso: 1.2 },
+      { nombre: "Oponente del Meñique", peso: 1.0 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.0 },
       { nombre: "Aductor del Pulgar", peso: 1.0 }
     ],
     nerviosPerifericos: ["N. Ulnar"],
@@ -591,15 +598,28 @@ export const LESIONES: Lesion[] = [
       { nombre: "Deltoides", peso: 2.0 },
       { nombre: "Supraespinoso", peso: 1.8 },
       { nombre: "Infraespinoso", peso: 1.8 },
+      { nombre: "Redondo Menor", peso: 1.2 },
       { nombre: "Bíceps Braquial", peso: 2.0 },
       { nombre: "Tríceps Braquial", peso: 2.0 },
+      { nombre: "Braquial", peso: 1.2 },
       { nombre: "Braquiorradial", peso: 1.5 },
       { nombre: "Extensor de los Dedos", peso: 1.5 },
+      { nombre: "Extensor Carpi Ulnaris", peso: 1.2 },
+      { nombre: "Extensor Largo del Pulgar", peso: 1.2 },
       { nombre: "Flexor Carpi Radialis", peso: 1.5 },
       { nombre: "Flexor Carpi Ulnaris", peso: 1.5 },
+      { nombre: "Flexor Profundo de los Dedos", peso: 1.5 },
+      { nombre: "Flexor Largo del Pulgar", peso: 1.2 },
+      { nombre: "Pronador Redondo", peso: 1.0 },
+      { nombre: "Supinador", peso: 1.0 },
       { nombre: "Interóseos Dorsales", peso: 2.0 },
       { nombre: "Interóseos Palmares", peso: 2.0 },
+      { nombre: "Lumbricales 3 y 4", peso: 1.5 },
       { nombre: "Abductor del Meñique", peso: 1.8 },
+      { nombre: "Oponente del Meñique", peso: 1.5 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.5 },
+      { nombre: "Abductor Corto del Pulgar", peso: 1.5 },
+      { nombre: "Flexor Corto del Pulgar", peso: 1.0 },
       { nombre: "Romboides", peso: 1.2 },
       { nombre: "Elevador Escápula", peso: 1.2 }
     ],
@@ -631,11 +651,9 @@ export const LESIONES: Lesion[] = [
       { nombre: "Bíceps Braquial", peso: 2.0 },
       { nombre: "Braquiorradial", peso: 1.5 },
       { nombre: "Extensor Carpi Radialis", peso: 1.2 },
-      { nombre: "Braquial", peso: 1.0 },
-      { nombre: "Romboides", peso: 1.5 },
-      { nombre: "Elevador Escápula", peso: 1.2 }
+      { nombre: "Braquial", peso: 1.0 }
     ],
-    nerviosPerifericos: ["N. Axilar", "N. Musculocutáneo", "N. Supraescapular", "N. Dorsal Escápula"],
+    nerviosPerifericos: ["N. Axilar", "N. Musculocutáneo", "N. Supraescapular"],
     areasSensibilidad: ["Zona Lateral Hombro (Axilar)", "Zona Lateral Antebrazo (Musculocutáneo)", "Dermatoma C5", "Dermatoma C6"],
     sintomasClave: ["Dolor Neurítico"],
     reflejosClave: { bicipital: "ausente", braquiorradial: "disminuido", tricipital: "normal" },
@@ -665,6 +683,7 @@ export const LESIONES: Lesion[] = [
       { nombre: "Lumbricales 3 y 4", peso: 1.5 },
       { nombre: "Abductor del Meñique", peso: 2.0 },
       { nombre: "Oponente del Meñique", peso: 2.0 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.5 },
       { nombre: "Aductor del Pulgar", peso: 1.8 }
     ],
     nerviosPerifericos: ["N. Ulnar", "N. Mediano (parcial)", "Fibras simpáticas"],
@@ -719,7 +738,10 @@ export const LESIONES: Lesion[] = [
     musculosClave: [
       { nombre: "Interóseos Dorsales", peso: 2.0 },
       { nombre: "Interóseos Palmares", peso: 2.0 },
+      { nombre: "Lumbricales 3 y 4", peso: 1.2 },
       { nombre: "Abductor del Meñique", peso: 1.8 },
+      { nombre: "Oponente del Meñique", peso: 1.2 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.2 },
       { nombre: "Aductor del Pulgar", peso: 1.5 },
       { nombre: "Flexor Carpi Ulnaris", peso: 1.2 }
     ],
@@ -776,14 +798,29 @@ export const LESIONES: Lesion[] = [
     musculosClave: [
       { nombre: "Deltoides", peso: 2.0 },
       { nombre: "Supraespinoso", peso: 1.8 },
+      { nombre: "Infraespinoso", peso: 1.8 },
+      { nombre: "Redondo Menor", peso: 1.2 },
       { nombre: "Bíceps Braquial", peso: 2.0 },
+      { nombre: "Braquial", peso: 1.2 },
       { nombre: "Tríceps Braquial", peso: 2.0 },
       { nombre: "Braquiorradial", peso: 1.5 },
       { nombre: "Extensor de los Dedos", peso: 1.5 },
+      { nombre: "Extensor Carpi Ulnaris", peso: 1.2 },
+      { nombre: "Extensor Largo del Pulgar", peso: 1.2 },
       { nombre: "Flexor Carpi Radialis", peso: 1.5 },
       { nombre: "Flexor Carpi Ulnaris", peso: 1.5 },
+      { nombre: "Flexor Profundo de los Dedos", peso: 1.5 },
+      { nombre: "Flexor Largo del Pulgar", peso: 1.2 },
+      { nombre: "Pronador Redondo", peso: 1.0 },
+      { nombre: "Supinador", peso: 1.0 },
       { nombre: "Interóseos Dorsales", peso: 2.0 },
-      { nombre: "Abductor del Meñique", peso: 2.0 }
+      { nombre: "Interóseos Palmares", peso: 2.0 },
+      { nombre: "Lumbricales 3 y 4", peso: 1.5 },
+      { nombre: "Abductor del Meñique", peso: 2.0 },
+      { nombre: "Oponente del Meñique", peso: 1.5 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.5 },
+      { nombre: "Abductor Corto del Pulgar", peso: 1.5 },
+      { nombre: "Flexor Corto del Pulgar", peso: 1.0 }
     ],
     nerviosPerifericos: ["Todo el plexo braquial"],
     areasSensibilidad: ["Toda la extremidad superior"],
@@ -1016,6 +1053,8 @@ export const LESIONES: Lesion[] = [
       { nombre: "Interóseos Palmares", peso: 2.0 },
       { nombre: "Lumbricales 3 y 4", peso: 1.2 },
       { nombre: "Abductor del Meñique", peso: 1.8 },
+      { nombre: "Oponente del Meñique", peso: 1.2 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.2 },
       { nombre: "Aductor del Pulgar", peso: 1.5 }
     ],
     nerviosPerifericos: ["N. Ulnar (a nivel del codo)"],
@@ -1045,6 +1084,8 @@ export const LESIONES: Lesion[] = [
       { nombre: "Interóseos Palmares", peso: 2.0 },
       { nombre: "Lumbricales 3 y 4", peso: 1.2 },
       { nombre: "Abductor del Meñique", peso: 1.8 },
+      { nombre: "Oponente del Meñique", peso: 1.2 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.2 },
       { nombre: "Aductor del Pulgar", peso: 1.5 }
     ],
     nerviosPerifericos: ["N. Ulnar (canal de Guyon)"],
@@ -1157,8 +1198,6 @@ export const LESIONES: Lesion[] = [
       { nombre: "Extensor de los Dedos", peso: 1.2 },
       { nombre: "Extensor Carpi Ulnaris", peso: 1.0 },
       { nombre: "Braquial", peso: 0.8 },
-      { nombre: "Romboides", peso: 1.0 },
-      { nombre: "Elevador Escápula", peso: 0.8 },
       { nombre: "Pronador Redondo", peso: 0.5 },
       { nombre: "Flexor Carpi Radialis", peso: 0.5 }
     ],
@@ -1224,7 +1263,10 @@ export const LESIONES: Lesion[] = [
       { nombre: "Flexor Carpi Ulnaris", peso: 1.5 },
       { nombre: "Interóseos Dorsales", peso: 2.0 },
       { nombre: "Interóseos Palmares", peso: 2.0 },
+      { nombre: "Lumbricales 3 y 4", peso: 1.2 },
       { nombre: "Abductor del Meñique", peso: 1.8 },
+      { nombre: "Oponente del Meñique", peso: 1.2 },
+      { nombre: "Flexor Corto del Meñique", peso: 1.2 },
       { nombre: "Aductor del Pulgar", peso: 1.5 },
       { nombre: "Tríceps Braquial", peso: 0.8 },
       { nombre: "Extensor de los Dedos", peso: 0.8 }
@@ -1250,6 +1292,47 @@ export const LESIONES: Lesion[] = [
   }
 ];
 
+// Niveles topográficos y análisis derivado del motor de lesiones
+export type NivelLesion = 'radicular' | 'tronco' | 'fasciculo' | 'nervio_periferico' | 'multifocal';
+export type NivelBroad = NivelLesion | 'indeterminado';
+
+export interface LesionNivel {
+  nombre: string;
+  score: number;
+  probabilidad: number;
+}
+
+export interface NivelResultado {
+  nivel: NivelLesion;
+  etiqueta: string;
+  descripcion: string;
+  score: number;
+  scoreAjustado: number;
+  probabilidad: number;
+  confianza: number;
+  cobertura: number;
+  lesiones: LesionNivel[];
+  evidenciaPositiva: string[];
+  evidenciaNegativa: string[];
+  advertencias: string[];
+  musculosClave: string[];
+  musculosEvaluados: string[];
+  musculosAfectados: string[];
+  musculosFaltantes: string[];
+}
+
+export interface AnalisisNiveles {
+  nivelMasProbable: NivelResultado | null;
+  nivelSecundario?: NivelResultado;
+  niveles: NivelResultado[];
+  coherencia: number;
+  patron: 'coherente' | 'parchado' | 'difuso' | 'indeterminado';
+  evidenciaPositiva: string[];
+  evidenciaNegativa: string[];
+  advertencias: string[];
+  cobertura: number;
+}
+
 // Tipos para los resultados del diagnóstico
 export interface ResultadoDiagnostico {
   nombreLesion: string;
@@ -1257,6 +1340,8 @@ export interface ResultadoDiagnostico {
   normalizedScore: number;
   umbral: number;
   categoria: string;
+  nivel?: NivelLesion;
+  analisisNiveles?: AnalisisNiveles;
   severidadEsperada?: SeveridadLesion;
   contextoClinico?: {
     mecanismoFrecuente: string[];
@@ -1266,8 +1351,10 @@ export interface ResultadoDiagnostico {
   indicadoresConfianza?: IndicadoresConfianza;
   analisisTemporal?: AnalisisTemporal;
   detalles: {
-    musculos: { nombre: string; mrc: number; esperado: boolean; peso: number }[];
+    musculos: { nombre: string; mrc: number; esperado: boolean; peso: number; evaluado?: boolean }[];
     musculosInesperados?: { nombre: string; mrc: number }[];
+    musculosFaltantes?: string[];
+    coberturaMuscular?: number;
     sensibilidad: string[];
     sintomas: string[];
     reflejos: { nombre: string; esperado: string; encontrado: string; match: boolean }[];
@@ -1277,6 +1364,7 @@ export interface ResultadoDiagnostico {
 
 export interface DatosEvaluacion {
   fuerzasMuscular: { [musculo: string]: number };
+  musculosEvaluados?: string[];
   sintomasSeleccionados: string[];
   areasSeleccionadas: string[];
   reflejos: {
@@ -1352,7 +1440,7 @@ export const INERVACION_DUAL: { [musculo: string]: InervacionDual } = {
     implicacion: "Lesión aislada del musculocutáneo puede no paralizar completamente el músculo",
     relevanciaClinica: "En lesiones del fascículo lateral, el braquial puede mantener función parcial gracias a su inervación radial"
   },
-  "Pectoral Mayor": {
+  "Pectoral Mayor (Porción Clavicular)": {
     principal: "N. Pectoral Lateral (C5-C7)",
     secundario: "N. Pectoral Medial (C8-T1)",
     implicacion: "Lesión de un solo nervio pectoral puede preservar función parcial",
@@ -1376,11 +1464,17 @@ export const INERVACION_DUAL: { [musculo: string]: InervacionDual } = {
     implicacion: "Lesiones selectivas afectan solo algunos dedos",
     relevanciaClinica: "Patrón característico: flexión preservada en índice-medio (mediano) vs anular-meñique (ulnar)"
   },
-  "Lumbricales": {
-    principal: "N. Mediano (1º y 2º)",
-    secundario: "N. Ulnar (3º y 4º)",
-    implicacion: "Inervación dividida entre mediano y ulnar",
-    relevanciaClinica: "En lesiones del mediano, se preserva la función de los lumbricales 3 y 4 (ulnar)"
+  "Lumbricales 1 y 2": {
+    principal: "N. Mediano",
+    secundario: "N. Ulnar (variante anatómica)",
+    implicacion: "Inervación predominantemente mediana",
+    relevanciaClinica: "En lesiones del mediano se afectan los lumbricales 1 y 2, mientras los 3 y 4 permanecen normales"
+  },
+  "Lumbricales 3 y 4": {
+    principal: "N. Ulnar",
+    secundario: "N. Mediano (variante anatómica)",
+    implicacion: "Inervación predominantemente ulnar",
+    relevanciaClinica: "En lesiones del ulnar se afectan los lumbricales 3 y 4, mientras los 1 y 2 permanecen normales"
   }
 };
 
@@ -1886,8 +1980,13 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       "Deltoides": 0,
       "Supraespinoso": 1,
       "Infraespinoso": 1,
+      "Redondo Menor": 2,
       "Bíceps Braquial": 2,
+      "Braquial": 2,
       "Braquiorradial": 3,
+      "Extensor Carpi Radialis": 3,
+      "Supinador": 3,
+      "Pronador Redondo": 4,
       "Tríceps Braquial": 5,
       "Flexor Carpi Radialis": 5,
       "Interóseos Dorsales": 5
@@ -1919,11 +2018,15 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       "Tríceps Braquial": 5,
       "Extensor de los Dedos": 5,
       "Flexor Carpi Ulnaris": 2,
+      "Flexor Profundo de los Dedos": 2,
+      "Flexor Largo del Pulgar": 2,
       "Interóseos Dorsales": 0,
       "Interóseos Palmares": 0,
       "Lumbricales 3 y 4": 1,
       "Aductor del Pulgar": 1,
-      "Abductor del Meñique": 1
+      "Abductor del Meñique": 1,
+      "Oponente del Meñique": 1,
+      "Flexor Corto del Meñique": 1
     },
     sintomas: ["Parestesias", "Signo de Horner"],
     sensibilidad: ["Mano Medial (Cubital)", "Zona Medial Antebrazo (Cut. Med. Antebrazo)", "Dermatoma C8", "Dermatoma T1"],
@@ -1948,6 +2051,7 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
     historia: "Paciente de 30 años con luxación anterior de hombro tras caída. Después de la reducción presenta imposibilidad para abducir el hombro y pérdida sensitiva en la región deltoidea.",
     musculos: {
       "Deltoides": 0,
+      "Redondo Menor": 1,
       "Supraespinoso": 5,
       "Infraespinoso": 5,
       "Bíceps Braquial": 5,
@@ -1985,6 +2089,8 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       "Extensor Carpi Radialis": 0,
       "Extensor de los Dedos": 1,
       "Extensor Carpi Ulnaris": 0,
+      "Extensor Largo del Pulgar": 0,
+      "Supinador": 4,
       "Flexor Carpi Radialis": 5,
       "Interóseos Dorsales": 5
     },
@@ -2017,7 +2123,9 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       "Pronador Redondo": 5,
       "Flexor Largo del Pulgar": 5,
       "Flexor Profundo de los Dedos": 5,
+      "Abductor Corto del Pulgar": 2,
       "Flexor Corto del Pulgar": 3,
+      "Lumbricales 1 y 2": 3,
       "Interóseos Dorsales": 5
     },
     sintomas: ["Parestesias"],
@@ -2028,7 +2136,7 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       evolucion: "Crónica (> 6 meses)",
       tipoPlexo: "normal"
     },
-    diagnosticoEsperado: "Neuropatía del Nervio Mediano (Proximal)",
+    diagnosticoEsperado: "Neuropatía del Nervio Mediano Distal (STC)",
     puntosEnsenanza: [
       "Lesión distal del mediano",
       "Afecta solo músculos tenares",
@@ -2146,6 +2254,8 @@ export const CASOS_CLINICOS_DEMO: { [nombre: string]: CasoClinico } = {
       "Interóseos Palmares": 2,
       "Lumbricales 3 y 4": 3,
       "Abductor del Meñique": 2,
+      "Oponente del Meñique": 2,
+      "Flexor Corto del Meñique": 2,
       "Aductor del Pulgar": 3,
       "Deltoides": 5,
       "Bíceps Braquial": 5,

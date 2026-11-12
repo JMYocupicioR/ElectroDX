@@ -101,7 +101,12 @@ export default function AdminAssignmentsAnalyticsPage() {
 
   const submitted = filtered.filter((row) => {
     if (describeReadingAssignment(row).readingOnly) return false;
-    return row.status === 'submitted' || row.status === 'approved' || Boolean(row.submitted_at);
+    return (
+      row.status === 'submitted' ||
+      row.status === 'approved' ||
+      row.status === 'needs_revision' ||
+      Boolean(row.submitted_at)
+    );
   });
   const graded = filtered.filter((row) => typeof row.grade === 'number');
   const avgGrade = average(graded.map((row) => row.grade || 0));
@@ -315,7 +320,23 @@ export default function AdminAssignmentsAnalyticsPage() {
                         <p className="text-xs text-slate-400">{row.studentEmail}</p>
                       </td>
                       <td className="px-4 py-3">
-                        <p className="font-medium">{row.title}</p>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setGradingItem({
+                              assignment: row,
+                              studentProfile: {
+                                id: row.student_id,
+                                display_name: row.studentName,
+                                email: row.studentEmail,
+                              },
+                            })
+                          }
+                          className="font-medium text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 text-left transition cursor-pointer"
+                          title="Hacer clic para revisar o calificar"
+                        >
+                          {row.title}
+                        </button>
                         <p className="text-xs text-slate-400">
                           Límite: {row.due_date ? new Date(row.due_date).toLocaleDateString('es-MX') : '—'}
                         </p>
@@ -336,9 +357,25 @@ export default function AdminAssignmentsAnalyticsPage() {
                           : TYPE_LABELS[row.type] || row.type}
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs font-bold">
-                          {reading.statusLabel || STATUS_LABELS[row.status] || row.status}
-                        </span>
+                        {(() => {
+                          const label = reading.statusLabel || STATUS_LABELS[row.status] || row.status;
+                          const badgeClass =
+                            row.status === 'approved'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                              : row.status === 'needs_revision'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800'
+                              : row.status === 'submitted'
+                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+                              : row.status === 'overdue'
+                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800'
+                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+
+                          return (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border ${badgeClass}`}>
+                              {label}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">
                         {reading.readingOnly
@@ -365,33 +402,41 @@ export default function AdminAssignmentsAnalyticsPage() {
                                   count: mates,
                                 })
                               }
-                              className="text-xs font-bold text-amber-700 hover:underline cursor-pointer"
+                              className="text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline cursor-pointer"
                             >
                               Fecha del grupo
                             </button>
                           )}
-                          {row.status === 'submitted' && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setGradingItem({
-                                  assignment: row,
-                                  studentProfile: {
-                                    id: row.student_id,
-                                    display_name: row.studentName,
-                                    email: row.studentEmail,
-                                  },
-                                })
-                              }
-                              className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
-                            >
-                              Calificar
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setGradingItem({
+                                assignment: row,
+                                studentProfile: {
+                                  id: row.student_id,
+                                  display_name: row.studentName,
+                                  email: row.studentEmail,
+                                },
+                              })
+                            }
+                            className={`text-xs font-bold hover:underline cursor-pointer ${
+                              row.status === 'needs_revision'
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : row.status === 'approved'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-indigo-600 dark:text-indigo-400'
+                            }`}
+                          >
+                            {row.status === 'needs_revision'
+                              ? 'Revisar'
+                              : row.status === 'approved'
+                              ? 'Editar nota'
+                              : 'Calificar'}
+                          </button>
                           <Link
                             to={`/admin/alumnos/${row.student_id}`}
                             state={{ from: location.pathname + location.search }}
-                            className="text-xs font-bold text-slate-500 hover:text-indigo-600"
+                            className="text-xs font-bold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400"
                           >
                             Expediente
                           </Link>

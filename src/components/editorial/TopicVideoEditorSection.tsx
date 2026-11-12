@@ -36,7 +36,7 @@ export function TopicVideoEditorSection({
     onChange(items.filter((_, idx) => idx !== index));
   };
 
-  const updateVideo = (index: number, key: keyof ExternalVideoInput, value: string) => {
+  const updateVideo = (index: number, key: keyof ExternalVideoInput, value: string | number | undefined) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [key]: value };
     onChange(updated);
@@ -133,7 +133,7 @@ export function TopicVideoEditorSection({
               >
                 <div className="grid gap-3 sm:grid-cols-12 items-start">
                   {/* Campo de título */}
-                  <div className="sm:col-span-5">
+                  <div className="sm:col-span-4">
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                       Título o descripción del video *
                     </label>
@@ -147,7 +147,7 @@ export function TopicVideoEditorSection({
                   </div>
 
                   {/* Campo de URL completa */}
-                  <div className="sm:col-span-6">
+                  <div className="sm:col-span-5">
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">
                         URL completa del video *
@@ -171,6 +171,29 @@ export function TopicVideoEditorSection({
                       onBlur={(e) => handleUrlBlur(idx, e.target.value)}
                       placeholder="https://drive.google.com/file/d/... o https://www.youtube.com/watch?v=..."
                       className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono text-xs"
+                    />
+                  </div>
+
+                  {/* Duración en minutos para trazabilidad (10 min vs 90 min) */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                      Duración (min)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={600}
+                      value={video.durationSeconds ? Math.round(video.durationSeconds / 60) : ''}
+                      onChange={(e) => {
+                        const mins = parseInt(e.target.value, 10);
+                        updateVideo(
+                          idx,
+                          'durationSeconds',
+                          Number.isFinite(mins) && mins > 0 ? mins * 60 : undefined
+                        );
+                      }}
+                      placeholder="Ej. 10 o 90"
+                      className="w-full px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                     />
                   </div>
 

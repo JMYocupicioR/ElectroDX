@@ -224,7 +224,7 @@ export function isWorkshopCompleted(
 ): boolean {
   if (workshop.status === 'completed') return true;
   if (workshop.status === 'draft' || workshop.status === 'cancelled') return false;
-  if (Boolean(workshop.recording_url?.trim())) return true;
+  if (workshop.recording_url?.trim()) return true;
   if (workshop.scheduled_at) {
     const startMs = new Date(workshop.scheduled_at).getTime();
     if (!Number.isNaN(startMs)) {

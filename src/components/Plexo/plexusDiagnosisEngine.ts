@@ -1,35 +1,38 @@
-import { 
-    CONFIG, 
+import {
+    CONFIG,
     CONFIG_CONTEXTUAL,
     AJUSTES_TEMPORALES,
-    LESIONES, 
+    LESIONES,
     INERVACION_DUAL,
-    type DatosEvaluacion, 
+    type DatosEvaluacion,
     type ResultadoDiagnostico,
     type Lesion,
     type HallazgoInervacionDual,
     type AnalisisTemporal,
-    type IndicadoresConfianza
+    type IndicadoresConfianza,
+    type AnalisisNiveles,
   } from './plexoBraquial';
-  
-  // =============================================
-  // MÚSCULOS ESCAPULARES / PERIESCAPULARES
-  // Usados para discriminación supra vs. infraclavicular
-  // =============================================
-  const MUSCULOS_SUPRACLAVICULARES = [
-    'Romboides',        // N. Dorsal Escápula (pre-tronco, directo de C5)
-    'Elevador Escápula', // N. Dorsal Escápula (pre-tronco)
-    'Serrato Anterior',  // N. Torácico Largo (pre-tronco, C5-C7 directo)
-    'Supraespinoso',     // N. Supraescapular (del tronco superior)
-    'Infraespinoso',     // N. Supraescapular (del tronco superior)
-  ];
+import { MUSCULOS_PRE_TRONCALES, getLesionLevel } from './plexusAnatomy';
+import { analizarNiveles } from './plexusLevelAnalyzer';
 
-  // Músculo "pivot" que diferencia raíz de tronco
-  const MUSCULOS_PRE_TRONCALES = [
-    'Romboides',        // Sale ANTES de formarse el tronco (N. Dorsal Escápula)
-    'Elevador Escápula', // Sale ANTES de formarse el tronco
-    'Serrato Anterior',  // Sale ANTES de formarse el tronco (N. Torácico Largo)
-  ];
+const MUSCULOS_SUPRACLAVICULARES = [...MUSCULOS_PRE_TRONCALES, 'Supraespinoso', 'Infraespinoso'];
+
+// MRC 0 pesa más que MRC 4; MRC 5 no aporta al score muscular.
+const PESO_SEVERIDAD: Record<number, number> = {
+  0: 1.0,
+  1: 0.9,
+  2: 0.75,
+  3: 0.55,
+  4: 0.3,
+  5: 0,
+};
+
+const estaEvaluado = (nombre: string, datos: DatosEvaluacion): boolean => {
+  if (datos.musculosEvaluados) {
+    return datos.musculosEvaluados.includes(nombre);
+  }
+  return datos.fuerzasMuscular[nombre] !== undefined;
+};
 
   // =============================================
   // SISTEMA DE RED FLAGS
@@ -50,19 +53,6 @@ import {
     musculosAguja: { musculo: string; razon: string; prioridad: 'esencial' | 'complementario' }[];
     pruebasEspeciales?: string[];
     notaClinica?: string;
-  }
-
-  // =============================================
-  // ANÁLISIS TOPOGRÁFICO AVANZADO
-  // =============================================
-  export interface AnalisisTopografico {
-    nivelLesion: 'supraclavicular' | 'infraclavicular' | 'indeterminado';
-    subnivel?: 'radicular' | 'troncal' | 'fascicular' | 'nervio_terminal';
-    confianzaNivel: number; // 0-100
-    evidenciaPositiva: string[];
-    evidenciaNegativa: string[];
-    coherenciaTopografica: number; // 0-100, coherente vs parchado
-    patronDistribucion: 'coherente' | 'parchado' | 'difuso';
   }
 
   // =============================================
@@ -151,142 +141,13 @@ import {
     };
   
   // =============================================
-  // NUEVO: Análisis Supra vs. Infraclavicular
-  // =============================================
-  const analizarNivelTopografico = (
-    fuerzasMuscular: { [musculo: string]: number }
-  ): AnalisisTopografico => {
-    const evidenciaPositiva: string[] = [];
-    const evidenciaNegativa: string[] = [];
-
-    // ¿Hay músculos supraclaviculares débiles?
-    const supraclavicularesDebiles = MUSCULOS_SUPRACLAVICULARES.filter(m => {
-      const mrc = fuerzasMuscular[m];
-      return mrc !== undefined && mrc < 5;
-    });
-
-    // ¿Hay músculos pre-troncales débiles?
-    const preTroncalesDebiles = MUSCULOS_PRE_TRONCALES.filter(m => {
-      const mrc = fuerzasMuscular[m];
-      return mrc !== undefined && mrc < 5;
-    });
-
-    let nivelLesion: 'supraclavicular' | 'infraclavicular' | 'indeterminado' = 'indeterminado';
-    let subnivel: 'radicular' | 'troncal' | 'fascicular' | 'nervio_terminal' | undefined;
-    let confianzaNivel = 50;
-
-    if (supraclavicularesDebiles.length > 0) {
-      nivelLesion = 'supraclavicular';
-      evidenciaPositiva.push(`Músculos escapulares afectados: ${supraclavicularesDebiles.join(', ')}`);
-      confianzaNivel = 70 + (supraclavicularesDebiles.length * 5);
-
-      if (preTroncalesDebiles.length > 0) {
-        subnivel = 'radicular';
-        evidenciaPositiva.push(`Músculos pre-troncales afectados (${preTroncalesDebiles.join(', ')}): sugiere lesión a nivel de RAÍZ`);
-        confianzaNivel += 10;
-      } else {
-        subnivel = 'troncal';
-        evidenciaPositiva.push('Escapulares afectados pero pre-troncales normales: compatible con lesión TRONCAL');
-      }
-    } else {
-      const tieneDebilidadDistal = Object.entries(fuerzasMuscular)
-        .some(([m, mrc]) => mrc < 5 && !MUSCULOS_SUPRACLAVICULARES.includes(m));
-      
-      if (tieneDebilidadDistal) {
-        nivelLesion = 'infraclavicular';
-        evidenciaPositiva.push('Músculos escapulares NORMALES con debilidad distal: lesión INFRACLAVICULAR');
-        confianzaNivel = 75;
-
-        // ¿Fascicular o nervio terminal?
-        const territoriosAfectados = new Set<string>();
-        Object.entries(fuerzasMuscular).forEach(([m, mrc]) => {
-          if (mrc < 5) {
-            // Simplificación: mapear músculos a territorios nerviosos
-            if (['Deltoides', 'Redondo Menor'].includes(m)) territoriosAfectados.add('axilar');
-            if (['Bíceps Braquial', 'Braquial'].includes(m)) territoriosAfectados.add('musculocutaneo');
-            if (['Tríceps Braquial', 'Braquiorradial', 'Extensor Carpi Radialis', 'Extensor de los Dedos', 'Extensor Carpi Ulnaris', 'Extensor Largo del Pulgar', 'Supinador'].includes(m)) territoriosAfectados.add('radial');
-            if (['Flexor Carpi Radialis', 'Pronador Redondo', 'Flexor Largo del Pulgar', 'Pronador Cuadrado', 'Abductor Corto del Pulgar', 'Lumbricales 1 y 2'].includes(m)) territoriosAfectados.add('mediano');
-            if (['Flexor Carpi Ulnaris', 'Interóseos Dorsales', 'Interóseos Palmares', 'Lumbricales 3 y 4', 'Abductor del Meñique', 'Aductor del Pulgar'].includes(m)) territoriosAfectados.add('ulnar');
-          }
-        });
-
-        if (territoriosAfectados.size === 1) {
-          subnivel = 'nervio_terminal';
-          evidenciaPositiva.push(`Distribución de un solo nervio (${[...territoriosAfectados][0]}): MONONEUROPATÍA`);
-          confianzaNivel += 10;
-        } else if (territoriosAfectados.size >= 2) {
-          subnivel = 'fascicular';
-          evidenciaPositiva.push(`Múltiples territorios nerviosos afectados: lesión FASCICULAR o combinada`);
-        }
-      }
-    }
-
-    // Calcular coherencia topográfica
-    const musculosDebiles = Object.entries(fuerzasMuscular)
-      .filter(([_, mrc]) => mrc < 5)
-      .map(([m]) => m);
-
-    let coherenciaTopografica = 100;
-    let patronDistribucion: 'coherente' | 'parchado' | 'difuso' = 'coherente';
-
-    // Verificar si la distribución es coherente con un territorio anatómico
-    const regiones = {
-      proximal: ['Deltoides', 'Supraespinoso', 'Infraespinoso', 'Redondo Menor', 'Romboides', 'Elevador Escápula', 'Serrato Anterior'],
-      mediaProximal: ['Bíceps Braquial', 'Tríceps Braquial', 'Braquial'],
-      mediaDistal: ['Braquiorradial', 'Extensor Carpi Radialis', 'Extensor de los Dedos', 'Flexor Carpi Radialis', 'Flexor Carpi Ulnaris', 'Pronador Redondo', 'Supinador'],
-      distal: ['Interóseos Dorsales', 'Interóseos Palmares', 'Lumbricales 1 y 2', 'Lumbricales 3 y 4', 'Abductor del Meñique', 'Abductor Corto del Pulgar', 'Aductor del Pulgar']
-    };
-
-    const regionesAfectadas = new Set<string>();
-    musculosDebiles.forEach(m => {
-      if (regiones.proximal.includes(m)) regionesAfectadas.add('proximal');
-      if (regiones.mediaProximal.includes(m)) regionesAfectadas.add('mediaProximal');
-      if (regiones.mediaDistal.includes(m)) regionesAfectadas.add('mediaDistal');
-      if (regiones.distal.includes(m)) regionesAfectadas.add('distal');
-    });
-
-    // Patrón parchado: regiones no contiguas afectadas con saltos
-    const regionOrder = ['proximal', 'mediaProximal', 'mediaDistal', 'distal'];
-    const regionIndices = [...regionesAfectadas].map(r => regionOrder.indexOf(r)).sort();
-    
-    if (regionIndices.length >= 2) {
-      let gaps = 0;
-      for (let i = 1; i < regionIndices.length; i++) {
-        if (regionIndices[i] - regionIndices[i-1] > 1) gaps++;
-      }
-      if (gaps > 0) {
-        coherenciaTopografica -= gaps * 25;
-        patronDistribucion = 'parchado';
-        evidenciaNegativa.push(`Distribución parchada (${gaps} salto(s) entre regiones): considerar Parsonage-Turner o lesión multifocal`);
-      }
-    }
-
-    if (musculosDebiles.length > 10) {
-      patronDistribucion = 'difuso';
-      coherenciaTopografica -= 15;
-    }
-
-    confianzaNivel = Math.max(0, Math.min(100, confianzaNivel));
-    coherenciaTopografica = Math.max(0, Math.min(100, coherenciaTopografica));
-
-    return {
-      nivelLesion,
-      subnivel,
-      confianzaNivel,
-      evidenciaPositiva,
-      evidenciaNegativa,
-      coherenciaTopografica,
-      patronDistribucion
-    };
-  };
-
-  // =============================================
   // NUEVO: Bonus de Exclusión Negativa
   // =============================================
   const calcularBonusExclusionNegativa = (
     lesion: Lesion,
-    fuerzasMuscular: { [musculo: string]: number }
+    datosEvaluacion: DatosEvaluacion
   ): number => {
+    const { fuerzasMuscular } = datosEvaluacion;
     // Define músculos que DEBEN estar normales para cada categoría de lesión
     const exclusionesEsperadas: { [categoria: string]: string[] } = {
       'tronco': [],
@@ -302,16 +163,21 @@ import {
       'Neuropatía del Nervio Axilar': ['Bíceps Braquial', 'Tríceps Braquial', 'Extensor de los Dedos', 'Interóseos Dorsales', 'Supraespinoso'],
       'Neuropatía del Nervio Interóseo Posterior (PIN)': ['Tríceps Braquial', 'Braquiorradial', 'Extensor Carpi Radialis', 'Deltoides'],
       'Neuropatía del Nervio Interóseo Anterior (Kiloh-Nevin)': ['Abductor Corto del Pulgar', 'Interóseos Dorsales', 'Extensor de los Dedos'],
+      'Neuropatía del Nervio Radial (Proximal)': ['Deltoides', 'Interóseos Dorsales', 'Interóseos Palmares'],
       'Neuropatía del Nervio Radial (Distal / Surco Espiral)': ['Tríceps Braquial', 'Deltoides', 'Interóseos Dorsales'],
+      'Neuropatía del Nervio Ulnar (Proximal)': ['Deltoides', 'Bíceps Braquial', 'Tríceps Braquial', 'Abductor Corto del Pulgar'],
+      'Neuropatía del Nervio Ulnar a Nivel del Codo': ['Deltoides', 'Bíceps Braquial', 'Tríceps Braquial', 'Abductor Corto del Pulgar'],
+      'Neuropatía del Nervio Ulnar a Nivel de la Muñeca (Guyon)': ['Deltoides', 'Bíceps Braquial', 'Tríceps Braquial', 'Abductor Corto del Pulgar', 'Flexor Carpi Ulnaris', 'Flexor Profundo de los Dedos'],
       'Lesión de Fascículo Lateral': ['Romboides', 'Elevador Escápula', 'Serrato Anterior', 'Interóseos Dorsales', 'Flexor Carpi Ulnaris'],
       'Lesión de Fascículo Medial': ['Romboides', 'Elevador Escápula', 'Deltoides', 'Bíceps Braquial'],
       'Lesión de Fascículo Posterior': ['Romboides', 'Elevador Escápula', 'Flexor Carpi Ulnaris', 'Interóseos Dorsales'],
     };
 
-    const musculosExcluidos = [
+    const propios = new Set(lesion.musculosClave.map(m => m.nombre));
+    const musculosExcluidos = Array.from(new Set([
       ...(exclusionesEsperadas[lesion.categoria] || []),
       ...(exclusionesPorLesion[lesion.nombre] || [])
-    ];
+    ])).filter(m => !propios.has(m));
 
     if (musculosExcluidos.length === 0) return 0;
 
@@ -319,11 +185,10 @@ import {
     let evaluadosCount = 0;
 
     musculosExcluidos.forEach(m => {
+      if (!estaEvaluado(m, datosEvaluacion)) return;
       const mrc = fuerzasMuscular[m];
-      if (mrc !== undefined) {
-        evaluadosCount++;
-        if (mrc === 5) normalesCount++;
-      }
+      evaluadosCount++;
+      if (mrc === 5) normalesCount++;
     });
 
     if (evaluadosCount === 0) return 0;
@@ -560,11 +425,15 @@ import {
   const calcularIndicadoresConfianza = (
       resultado: ResultadoDiagnostico,
       datosEvaluacion: DatosEvaluacion,
-      analisisTopografico: AnalisisTopografico
+      analisisNiveles: AnalisisNiveles
     ): IndicadoresConfianza => {
       const { informacionAdicional } = datosEvaluacion;
-      
-      let nivelConfianza = resultado.normalizedScore * 100;
+      const nivelResultado = analisisNiveles.niveles.find(
+        nivel => nivel.nivel === getLesionLevel(resultado.nombreLesion)
+      );
+      const coberturaNivel = nivelResultado?.cobertura ?? 0;
+      const confianzaNivel = nivelResultado?.confianza ?? 0;
+      let nivelConfianza = resultado.normalizedScore * 60 + confianzaNivel * 0.4;
       const factoresPositivos: string[] = [];
       const factoresNegativos: string[] = [];
       const recomendacionesAdicionales: string[] = [];
@@ -595,25 +464,34 @@ import {
         nivelConfianza += 10;
       }
 
-      // NUEVO: Bonus por coherencia topográfica
-      if (analisisTopografico.coherenciaTopografica >= 80) {
+      if (analisisNiveles.patron === 'coherente') {
         factoresPositivos.push("Distribución anatómicamente coherente");
         nivelConfianza += 5;
       }
 
-      // NUEVO: Bonus por nivel topográfico concordante
-      const esSupraclavicular = ['radicular', 'tronco'].includes(resultado.categoria);
-      const esInfraclavicular = ['fasciculo', 'nervio_periferico'].includes(resultado.categoria);
-      if ((esSupraclavicular && analisisTopografico.nivelLesion === 'supraclavicular') ||
-          (esInfraclavicular && analisisTopografico.nivelLesion === 'infraclavicular')) {
-        factoresPositivos.push(`Nivel topográfico concordante (${analisisTopografico.nivelLesion})`);
+      const nivelConcordante = analisisNiveles.nivelMasProbable?.nivel === nivelResultado?.nivel;
+      if (nivelConcordante && nivelResultado) {
+        factoresPositivos.push(`Nivel topográfico concordante (${nivelResultado.etiqueta})`);
         nivelConfianza += 8;
+      } else if (analisisNiveles.nivelMasProbable && nivelResultado) {
+        factoresNegativos.push(
+          `Nivel topográfico discordante: el patrón favorece ${analisisNiveles.nivelMasProbable.etiqueta}`
+        );
+        nivelConfianza -= 10;
+      }
+
+      if (coberturaNivel < 0.5) {
+        factoresNegativos.push(`Cobertura incompleta del nivel (${Math.round(coberturaNivel * 100)}%)`);
+        nivelConfianza -= 10;
       }
   
       // Evaluar factores que disminuyen la confianza
-      if (resultado.detalles.musculos.filter(m => !m.esperado && m.mrc === 5).length >= 3) {
-        factoresNegativos.push("Músculos esperados normales");
-        nivelConfianza -= 15;
+      const esperadosNormales = resultado.detalles.musculos.filter(
+        m => m.esperado && m.evaluado !== false && m.mrc === 5
+      ).length;
+      if (esperadosNormales >= 3 && resultado.normalizedScore < 0.7) {
+        factoresNegativos.push("Músculos clave conservados");
+        nivelConfianza -= 10;
       }
   
       if (resultado.detalles.sensibilidad.length === 0 && resultado.normalizedScore < 0.6) {
@@ -627,11 +505,13 @@ import {
         nivelConfianza -= 20;
       }
 
-      // NUEVO: Penalización por patrón parchado en lesión no-Parsonage
-      if (analisisTopografico.patronDistribucion === 'parchado' && 
-          !resultado.nombreLesion.includes('Parsonage')) {
+      if (analisisNiveles.patron === 'parchado' && !resultado.nombreLesion.includes('Parsonage')) {
         factoresNegativos.push("Distribución parchada no típica de esta lesión");
         nivelConfianza -= 10;
+      }
+      if (analisisNiveles.patron === 'difuso') {
+        factoresNegativos.push("Debilidad difusa que dificulta la localización");
+        nivelConfianza -= 5;
       }
   
       // Recomendaciones adicionales
@@ -773,9 +653,6 @@ import {
       // Realizar análisis temporal
       const analisisTemporal = realizarAnalisisTemporal(datosEvaluacion);
 
-      // NUEVO: Análisis topográfico avanzado
-      const analisisTopografico = analizarNivelTopografico(fuerzasMuscular);
-      
       const resultadosDetallados: ResultadoDiagnostico[] = LESIONES.map(lesion => {
         // Ajustar lesión por tipo de plexo
         const lesionAjustada = ajustarLesionPorTipoPlexo(lesion, informacionAdicional.tipoPlexo);
@@ -783,51 +660,51 @@ import {
         // 1. Calcular Score de Músculos
         let muscleScore = 0;
         let totalMuscleWeight = 0;
-        const muscleMatches: { nombre: string; mrc: number; esperado: boolean; peso: number }[] = [];
-        let penalizacionMusculoNormal = 1.0;
-  
+        let musculosClaveEvaluados = 0;
+        const muscleMatches: { nombre: string; mrc: number; esperado: boolean; peso: number; evaluado?: boolean }[] = [];
+
         lesionAjustada.musculosClave.forEach(musculoClave => {
-          const mrc = fuerzasMuscular[musculoClave.nombre];
-          if (mrc !== undefined) {
-            totalMuscleWeight += musculoClave.peso;
-            
-            const estaDebil = mrc < 5;
-            
-            if (estaDebil) {
-              const contribucion = (5 - mrc) / 5;
-              muscleScore += contribucion * musculoClave.peso;
-              muscleMatches.push({ 
-                nombre: musculoClave.nombre, 
-                mrc, 
-                esperado: true,
-                peso: musculoClave.peso 
-              });
-            } else {
-              penalizacionMusculoNormal *= configAdaptativa.PENALIZACION_MUSCULO_NORMAL;
-              muscleMatches.push({ 
-                nombre: musculoClave.nombre, 
-                mrc, 
-                esperado: false,
-                peso: musculoClave.peso 
-              });
-            }
+          const evaluado = estaEvaluado(musculoClave.nombre, datosEvaluacion);
+          const mrc = fuerzasMuscular[musculoClave.nombre] ?? 5;
+
+          muscleMatches.push({
+            nombre: musculoClave.nombre,
+            mrc,
+            esperado: true,
+            peso: musculoClave.peso,
+            evaluado,
+          });
+
+          if (!evaluado) return;
+
+          musculosClaveEvaluados++;
+          totalMuscleWeight += musculoClave.peso;
+
+          if (mrc < 5) {
+            muscleScore += (PESO_SEVERIDAD[mrc] ?? Math.max(0, (5 - mrc) / 5)) * musculoClave.peso;
           }
         });
   
-        const musculosEsperadosNombres = lesionAjustada.musculosClave.map(m => m.nombre);
-        let penalizacionMusculosInesperados = 1.0;
+        const musculosEsperadosNombres = new Set(lesionAjustada.musculosClave.map(m => m.nombre));
         const musculosInesperadamenteDebiles: { nombre: string; mrc: number }[] = [];
-        
-        Object.keys(fuerzasMuscular).forEach(musculoNombre => {
+        const evaluados = datosEvaluacion.musculosEvaluados ?? Object.keys(fuerzasMuscular);
+
+        evaluados.forEach(musculoNombre => {
+          if (!estaEvaluado(musculoNombre, datosEvaluacion)) return;
           const mrc = fuerzasMuscular[musculoNombre];
-          if (mrc < 5 && !musculosEsperadosNombres.includes(musculoNombre)) {
-            penalizacionMusculosInesperados *= 0.9;
+          if (mrc < 5 && !musculosEsperadosNombres.has(musculoNombre)) {
             musculosInesperadamenteDebiles.push({ nombre: musculoNombre, mrc });
           }
         });
-  
-        const normalizedMuscleScore = totalMuscleWeight > 0 ? 
-          (muscleScore / totalMuscleWeight) * penalizacionMusculoNormal * penalizacionMusculosInesperados : 0;
+
+        const penalizacionMusculosInesperados = Math.max(
+          0.5,
+          Math.pow(0.92, musculosInesperadamenteDebiles.length),
+        );
+
+        const normalizedMuscleScore = totalMuscleWeight > 0
+          ? (muscleScore / totalMuscleWeight) * penalizacionMusculosInesperados
+          : 0;
   
         // 2. Calcular Score de Sensibilidad
         let sensitivityScore = 0;
@@ -901,14 +778,39 @@ import {
           finalScore += configAdaptativa.PESO_HORNER;
         }
   
-        const maxPossibleScore = configAdaptativa.PESO_MUSCULOS + configAdaptativa.PESO_SENSIBILIDAD + 
-                                 configAdaptativa.PESO_SINTOMAS + configAdaptativa.PESO_REFLEJOS + 
-                                 (lesion.sintomasClave.includes("Signo de Horner") ? configAdaptativa.PESO_HORNER : 0);
+        const maxPossibleScore =
+          configAdaptativa.PESO_MUSCULOS +
+          (lesionAjustada.areasSensibilidad.length > 0 ? configAdaptativa.PESO_SENSIBILIDAD : 0) +
+          (lesionAjustada.sintomasClave.length > 0 ? configAdaptativa.PESO_SINTOMAS : 0) +
+          (Object.keys(lesionAjustada.reflejosClave).length > 0 ? configAdaptativa.PESO_REFLEJOS : 0) +
+          (lesion.sintomasClave.includes("Signo de Horner") ? configAdaptativa.PESO_HORNER : 0);
         const normalizedFinalScore = maxPossibleScore > 0 ? finalScore / maxPossibleScore : 0;
 
-        // NUEVO: Bonus de exclusión negativa
-        const bonusExclusion = calcularBonusExclusionNegativa(lesionAjustada, fuerzasMuscular);
-  
+        const musculosFaltantes = muscleMatches
+          .filter(m => m.esperado && m.evaluado === false)
+          .map(m => m.nombre);
+        const totalClave = muscleMatches.filter(m => m.esperado).length;
+        const coberturaMuscular = totalClave > 0 ? musculosClaveEvaluados / totalClave : 0;
+        const ajusteCobertura = coberturaMuscular < 0.5 ? 0.75 + 0.5 * coberturaMuscular : 1;
+
+        const bonusExclusion = calcularBonusExclusionNegativa(lesionAjustada, datosEvaluacion);
+
+        let scoreAjustado = (normalizedFinalScore + bonusExclusion) * ajusteCobertura;
+
+        const esLesionContextual = ['iatrogena', 'obstetrica', 'traumatica'].includes(lesionAjustada.categoria);
+        if (esLesionContextual && !informacionAdicional.contextoClinico) {
+          scoreAjustado *= 0.3;
+        } else if (esLesionContextual && informacionAdicional.contextoClinico) {
+          const contextosCompatibles: { [key: string]: string[] } = {
+            'iatrogena': ['iatrogeno'],
+            'obstetrica': ['obstetrico'],
+            'traumatica': ['traumatico'],
+          };
+          if (!contextosCompatibles[lesionAjustada.categoria]?.includes(informacionAdicional.contextoClinico)) {
+            scoreAjustado *= 0.2;
+          }
+        }
+
         const umbralAplicable = lesionAjustada.exclusivos
           ? (lesionAjustada.umbralMinimo || configAdaptativa.UMBRAL_MINIMO_EXCLUSIVO)
           : configAdaptativa.UMBRAL_COINCIDENCIA_GENERAL;
@@ -916,15 +818,18 @@ import {
         return {
           nombreLesion: lesionAjustada.nombre,
           score: finalScore,
-          normalizedScore: Math.min(1.0, normalizedFinalScore + bonusExclusion),
+          normalizedScore: Math.min(1.0, scoreAjustado),
           umbral: umbralAplicable,
           categoria: lesionAjustada.categoria,
+          nivel: getLesionLevel(lesionAjustada.nombre),
           severidadEsperada: lesionAjustada.severidadEsperada,
           contextoClinico: lesionAjustada.contextoClinico,
           analisisTemporal,
           detalles: {
             musculos: muscleMatches,
             musculosInesperados: musculosInesperadamenteDebiles.length > 0 ? musculosInesperadamenteDebiles : undefined,
+            musculosFaltantes: musculosFaltantes.length > 0 ? musculosFaltantes : undefined,
+            coberturaMuscular,
             sensibilidad: sensitivityMatches,
             sintomas: symptomMatches,
             reflejos: reflexMatches,
@@ -932,94 +837,46 @@ import {
           }
         };
       });
-  
-      const resultadosFiltrados = resultadosDetallados.filter(r => r.normalizedScore >= r.umbral);
-  
-      const resultadosConContexto = resultadosFiltrados.map(resultado => {
-        let scoreFinal = resultado.normalizedScore;
-        
-        const esLesionContextual = ['iatrogena', 'obstetrica', 'traumatica'].includes(resultado.categoria);
-        const tieneContextoClinico = informacionAdicional.contextoClinico;
-        
-        if (esLesionContextual && !tieneContextoClinico) {
-          scoreFinal *= 0.3;
-        } else if (esLesionContextual && tieneContextoClinico) {
-          const contextosCompatibles: { [key: string]: string[] } = {
-            'iatrogena': ['iatrogeno'],
-            'obstetrica': ['obstetrico'],
-            'traumatica': ['traumatico']
-          };
-          
-          const esCompatible = contextosCompatibles[resultado.categoria]?.includes(tieneContextoClinico);
-          if (!esCompatible) {
-            scoreFinal *= 0.2;
-          }
-        }
-        
-        const esLesionTopografica = ['radicular', 'tronco', 'fasciculo', 'nervio_periferico'].includes(resultado.categoria);
-        if (esLesionTopografica) {
-          scoreFinal *= 1.2;
-        }
 
-        // NUEVO: Bonus por concordancia con análisis topográfico
-        const esSupraclavicular = ['radicular', 'tronco'].includes(resultado.categoria);
-        const esInfraclavicular = ['fasciculo', 'nervio_periferico'].includes(resultado.categoria);
-        if ((esSupraclavicular && analisisTopografico.nivelLesion === 'supraclavicular') ||
-            (esInfraclavicular && analisisTopografico.nivelLesion === 'infraclavicular')) {
-          scoreFinal *= 1.1; // +10% por concordancia
-        } else if ((esSupraclavicular && analisisTopografico.nivelLesion === 'infraclavicular') ||
-                   (esInfraclavicular && analisisTopografico.nivelLesion === 'supraclavicular')) {
-          scoreFinal *= 0.85; // -15% por discordancia
-        }
+      const analisisNiveles = analizarNiveles(resultadosDetallados, datosEvaluacion);
 
-        // NUEVO: Bonus por coherencia topográfica para Parsonage-Turner con patrón parchado
-        if (resultado.nombreLesion.includes('Parsonage') && analisisTopografico.patronDistribucion === 'parchado') {
-          scoreFinal *= 1.15; // +15% bonus si patrón es parchado
-        }
-        
-        return {
+      const resultadosFiltrados = resultadosDetallados.filter(
+        resultado => resultado.normalizedScore >= resultado.umbral,
+      );
+
+      const resultadosConAnalisis = resultadosFiltrados.map(resultado => {
+        const resultadoConNivel: ResultadoDiagnostico = {
           ...resultado,
-          normalizedScore: Math.min(1.0, scoreFinal)
+          nivel: getLesionLevel(resultado.nombreLesion),
+          analisisNiveles,
+        };
+        return {
+          ...resultadoConNivel,
+          indicadoresConfianza: calcularIndicadoresConfianza(resultadoConNivel, datosEvaluacion, analisisNiveles),
         };
       });
-  
-      const resultadosConIndicadores = resultadosConContexto.map(resultado => ({
-        ...resultado,
-        indicadoresConfianza: calcularIndicadoresConfianza(resultado, datosEvaluacion, analisisTopografico)
-      }));
-  
-      const resultadosOrdenados = resultadosConIndicadores.sort((a, b) => {
+
+      const prioridadNivel: { [key: string]: number } = {
+        radicular: 5,
+        tronco: 4,
+        fasciculo: 3,
+        nervio_periferico: 2,
+        multifocal: 1,
+      };
+
+      return resultadosConAnalisis.sort((a, b) => {
         if (b.normalizedScore !== a.normalizedScore) {
           return b.normalizedScore - a.normalizedScore;
         }
-        
-        const prioridadTopografica: { [key: string]: number } = {
-          'radicular': 4,
-          'tronco': 3,
-          'fasciculo': 2,
-          'nervio_periferico': 1,
-          'combinada': 0,
-          'iatrogena': -1,
-          'obstetrica': -1,
-          'traumatica': -1
-        };
-        
-        const prioridadA = prioridadTopografica[a.categoria] || 0;
-        const prioridadB = prioridadTopografica[b.categoria] || 0;
-        
-        return prioridadB - prioridadA;
+        return (prioridadNivel[b.nivel ?? 'multifocal'] ?? 0) -
+          (prioridadNivel[a.nivel ?? 'multifocal'] ?? 0);
       });
-
-      return resultadosOrdenados;
     };
 
   // =============================================
   // EXPORTACIONES DE ANÁLISIS AVANZADO
   // =============================================
   
-  /** Ejecuta el análisis topográfico supra vs. infraclavicular */
-  export { analizarNivelTopografico };
-
   /** Detecta red flags clínicas urgentes */
   export { detectarRedFlags };
 

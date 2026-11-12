@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { type ResultadoDiagnostico, type HallazgoInervacionDual, type DatosEvaluacion, EXPLICACIONES_ANATOMICAS } from './plexoBraquial';
 import { generarCadenaRazonamiento } from './clinicalReasoningChain';
 import GuidedReasoningPanel from './GuidedReasoningPanel';
+import { calcularDiscriminacion, detectarRedFlags, generarRecomendacionesEMG } from './plexusDiagnosisEngine';
 
 interface Props {
   resultados: ResultadoDiagnostico[];
@@ -10,7 +11,7 @@ interface Props {
   datos: DatosEvaluacion;
 }
 
-function ConfidenceBar({ score }: { score: number }) {
+function ConfidenceBar({ score, label = 'Coincidencia del patrón' }: { score: number; label?: string }) {
   const pct = Math.round(score * 100);
   const color =
     pct >= 70 ? 'from-emerald-400 to-emerald-600' :
@@ -20,7 +21,7 @@ function ConfidenceBar({ score }: { score: number }) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Coincidencia</span>
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span>
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200">{pct}%</span>
       </div>
       <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -32,6 +33,23 @@ function ConfidenceBar({ score }: { score: number }) {
         />
       </div>
     </div>
+  );
+}
+
+const LEVEL_LABELS: Record<string, string> = {
+  radicular: 'Radicular',
+  tronco: 'Troncal',
+  fasciculo: 'Fascicular',
+  nervio_periferico: 'Nervio periférico',
+  multifocal: 'Multifocal',
+};
+
+function LevelBadge({ nivel }: { nivel?: string }) {
+  if (!nivel) return null;
+  return (
+    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200">
+      {LEVEL_LABELS[nivel] ?? nivel}
+    </span>
   );
 }
 
@@ -65,6 +83,20 @@ export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
     return null;
   }, [resultados, datos]);
 
+  const analisisNiveles = resultados[0]?.analisisNiveles;
+  const nivelTop = analisisNiveles?.nivelMasProbable;
+  const nivelSecundario = analisisNiveles?.nivelSecundario;
+
+  const redFlags = useMemo(() => detectarRedFlags(resultados, datos), [resultados, datos]);
+  const recomendaciones = useMemo(
+    () => (resultados[0] ? generarRecomendacionesEMG(resultados[0]) : null),
+    [resultados],
+  );
+  const discriminacion = useMemo(
+    () => calcularDiscriminacion(resultados, datos.fuerzasMuscular),
+    [resultados, datos.fuerzasMuscular],
+  );
+
   if (resultados.length === 0) {
     return (
       <div className="text-center py-12">
@@ -85,6 +117,75 @@ export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
           <p className="text-sm text-slate-500 dark:text-slate-400">{resultados.length} diagnóstico{resultados.length !== 1 ? 's' : ''} supera{resultados.length === 1 ? '' : 'n'} el umbral</p>
         </div>
       </div>
+
+      {analisisNiveles && nivelTop && (
+        <div className="rounded-xl border border-indigo-200/60 dark:border-indigo-700/40 bg-indigo-50/60 dark:bg-indigo-900/10 p-5 space-y-4">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-500 dark:text-indigo-300">
+                Nivel topográfico más probable
+              </p>
+              <h4 className="text-lg font-bold text-slate-800 dark:text-white">{nivelTop.etiqueta}</h4>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{nivelTop.descripcion}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-300">
+                {Math.round(nivelTop.probabilidad * 100)}%
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">del peso topográfico</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ConfidenceBar score={nivelTop.confianza / 100} label="Confianza del nivel" />
+            <ConfidenceBar score={nivelTop.cobertura} label="Cobertura muscular" />
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="px-2 py-1 rounded-md bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
+              Patrón: {analisisNiveles.patron}
+            </span>
+            <span className="px-2 py-1 rounded-md bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
+              Coherencia: {analisisNiveles.coherencia}%
+            </span>
+            {nivelSecundario && (
+              <span className="px-2 py-1 rounded-md bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300">
+                Alternativa: {nivelSecundario.etiqueta} ({Math.round(nivelSecundario.probabilidad * 100)}%)
+              </span>
+            )}
+          </div>
+
+          {nivelTop.lesiones.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">Lesiones del nivel</p>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {nivelTop.lesiones.slice(0, 4).map(lesion => (
+                  <span
+                    key={lesion.nombre}
+                    className="text-xs px-2 py-1 rounded-md bg-white/70 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300"
+                  >
+                    {lesion.nombre} ({Math.round(lesion.probabilidad * 100)}%)
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {nivelTop.musculosFaltantes.length > 0 && (
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              Faltan músculos clave: {nivelTop.musculosFaltantes.join(', ')}
+            </p>
+          )}
+
+          {analisisNiveles.advertencias.length > 0 && (
+            <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1">
+              {analisisNiveles.advertencias.map((advertencia, indice) => (
+                <li key={indice}>• {advertencia}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {/* Results */}
       <div className="space-y-4">
@@ -112,13 +213,20 @@ export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       {idx === 0 && <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-bold">🥇 Más probable</span>}
                       <CategoryBadge cat={r.categoria} />
+                      <LevelBadge nivel={r.nivel} />
                     </div>
                     <h4 className="font-bold text-slate-800 dark:text-white text-base">{r.nombreLesion}</h4>
                   </div>
                   <span className="text-slate-400 text-xl transition-transform" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0)' }}>▾</span>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 space-y-2">
                   <ConfidenceBar score={r.normalizedScore} />
+                  {r.indicadoresConfianza && (
+                    <ConfidenceBar
+                      score={r.indicadoresConfianza.nivelConfianza / 100}
+                      label="Confianza global"
+                    />
+                  )}
                 </div>
               </button>
 
@@ -137,18 +245,28 @@ export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
                       <div>
                         <h5 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">💪 Músculos Evaluados</h5>
                         <div className="flex flex-wrap gap-1.5">
-                          {r.detalles.musculos.map(m => (
-                            <span key={m.nombre} className={`text-xs px-2 py-1 rounded-md font-medium ${
-                              m.esperado && m.mrc < 5
-                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                                : m.esperado
-                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                                  : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                            }`}>
-                              {m.nombre} (MRC {m.mrc})
-                            </span>
-                          ))}
+                          {r.detalles.musculos.map(m => {
+                            const noEvaluado = m.evaluado === false;
+                            return (
+                              <span key={m.nombre} className={`text-xs px-2 py-1 rounded-md font-medium ${
+                                noEvaluado
+                                  ? 'bg-slate-100 text-slate-400 dark:bg-slate-700/40 dark:text-slate-500'
+                                  : m.esperado && m.mrc < 5
+                                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                                    : m.esperado
+                                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                                      : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+                              }`}>
+                                {m.nombre} {noEvaluado ? 'sin evaluar' : `(MRC ${m.mrc})`}
+                              </span>
+                            );
+                          })}
                         </div>
+                        {r.detalles.musculosFaltantes && r.detalles.musculosFaltantes.length > 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                            Sin evaluar: {r.detalles.musculosFaltantes.join(', ')}
+                          </p>
+                        )}
                       </div>
 
                       {/* Reflexes */}
@@ -249,6 +367,75 @@ export default function ResultsPanel({ resultados, hallazgos, datos }: Props) {
           );
         })}
       </div>
+
+      <div className="rounded-xl bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-700/40 p-5">
+        <h4 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Discriminación diagnóstica</h4>
+        <p className="text-sm text-slate-600 dark:text-slate-300">{discriminacion.mensaje}</p>
+        {discriminacion.musculosPivot && discriminacion.musculosPivot.length > 0 && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            Músculos pivote: {discriminacion.musculosPivot.join(', ')}
+          </p>
+        )}
+      </div>
+
+      {redFlags.length > 0 && (
+        <div className="rounded-xl bg-red-50/80 dark:bg-red-900/10 border border-red-200/60 dark:border-red-700/40 p-5">
+          <h4 className="font-semibold text-red-700 dark:text-red-300 mb-3">Señales de alarma</h4>
+          <ul className="space-y-2">
+            {redFlags.map((flag, indice) => (
+              <li key={indice} className="text-sm text-slate-700 dark:text-slate-200">
+                <span className="font-semibold">{flag.titulo}</span>: {flag.descripcion}
+                <span className="block text-xs text-red-600 dark:text-red-300 mt-0.5">Acción: {flag.accion}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {recomendaciones && (
+        <div className="rounded-xl bg-blue-50/80 dark:bg-blue-900/10 border border-blue-200/60 dark:border-blue-700/40 p-5 space-y-4">
+          <h4 className="font-semibold text-blue-700 dark:text-blue-300">Plan EMG/NCS</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300 mb-2">
+                Conducción nerviosa
+              </p>
+              <ul className="space-y-1">
+                {recomendaciones.nerviosConduccion.map((nervio, indice) => (
+                  <li key={indice} className="text-sm text-slate-600 dark:text-slate-300">
+                    {nervio.nervio} ({nervio.tipo}, {nervio.prioridad})
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300 mb-2">
+                Aguja
+              </p>
+              <ul className="space-y-1">
+                {recomendaciones.musculosAguja.map((musculo, indice) => (
+                  <li key={indice} className="text-sm text-slate-600 dark:text-slate-300">
+                    <span className="font-medium">{musculo.musculo}</span>: {musculo.razon}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {recomendaciones.pruebasEspeciales && recomendaciones.pruebasEspeciales.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300 mb-1">
+                Pruebas especiales
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">
+                {recomendaciones.pruebasEspeciales.join(', ')}
+              </p>
+            </div>
+          )}
+          {recomendaciones.notaClinica && (
+            <p className="text-xs text-blue-700 dark:text-blue-300">{recomendaciones.notaClinica}</p>
+          )}
+        </div>
+      )}
 
       {/* 🧠 Guided Clinical Reasoning */}
       {cadenaRazonamiento && (

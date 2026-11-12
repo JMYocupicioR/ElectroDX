@@ -13,6 +13,7 @@ import type {
   EvaluationResult,
 } from '../../ejercicios/src/types/ClinicalCase';
 import { createAssignment, getStudentAssignmentById } from './studentPlanService';
+import { recordParticipationAuditLog } from './participationAuditService';
 import type {
   AssignmentPriority,
   AssignmentStatus,
@@ -229,23 +230,66 @@ export async function saveCaseTemplate(
   };
 
   try {
+    const isStaticSystemCase = ALL_CASE_TEMPLATES.some((t) => t.patternId === template.patternId);
+
     const { data: existing, error: existingError } = await (supabase
       .from('emg_case_templates') as any)
-      .select('id, created_by')
+      .select('id, created_by, is_system_baseline')
       .eq('pattern_id', template.patternId)
       .maybeSingle();
 
     if (existingError) throw existingError;
 
+    const isBaseline = Boolean(existing?.is_system_baseline || isStaticSystemCase);
+
     const query = existing
-      ? (supabase.from('emg_case_templates') as any).update(payload).eq('pattern_id', template.patternId)
-      : (supabase.from('emg_case_templates') as any).insert({ ...payload, created_by: userId || null });
+      ? (supabase.from('emg_case_templates') as any)
+          .update({
+            ...payload,
+            last_edited_by: userId || null,
+            is_system_baseline: isBaseline,
+          })
+          .eq('pattern_id', template.patternId)
+      : (supabase.from('emg_case_templates') as any).insert({
+          ...payload,
+          created_by: isBaseline ? null : userId || null,
+          last_edited_by: userId || null,
+          is_system_baseline: isBaseline,
+        });
 
     const { data, error } = await query.select('*').single();
     if (error) throw error;
 
     const saved = rowToTemplate(data);
     updateLocalStorageCustom(saved);
+
+    await recordParticipationAuditLog({
+      actorId: userId || null,
+      authorId: isBaseline ? null : existing?.created_by ?? userId ?? null,
+      bagCategory: isBaseline ? 'excluded' : 'editorial',
+      actionType: existing ? 'clinical_case_updated' : 'clinical_case_created',
+      entityType: 'emg_case_template',
+      entityId: template.patternId,
+      deltaEditorialUnits: !existing && !isBaseline ? 2 : 0,
+      exclusionReason: isBaseline
+        ? 'Caso clínico base de la plataforma (ALL_CASE_TEMPLATES): su ajuste no genera 2 unidades de autoría nueva.'
+        : existing
+          ? 'Actualización sobre caso existente (las 2 unidades ya están acreditadas al autor creador del caso).'
+          : null,
+      legalClauseRef:
+        'Contrato Cl. 8 y Reglamento Editorial Art. 10 (Caso clínico o ejercicio EMG publicado = 2 unidades)',
+      diffSummary: isBaseline
+        ? `Ajuste sobre plantilla base del sistema «${template.patternName}» (0 unidades editoriales).`
+        : existing
+          ? `Edición de caso clínico «${template.patternName}» (crédito original conservado).`
+          : `Nuevo caso clínico EMG publicado «${template.patternName}» (+2.00 unidades editoriales).`,
+      metadata: {
+        patternId: template.patternId,
+        title: template.patternName,
+        isSystemBaseline: isBaseline,
+      },
+    });
+
     return { success: true, data: saved };
   } catch (err: any) {
     return {

@@ -141,7 +141,7 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', (chunk: string) => {
   buffer += chunk;
 
-  while (true) {
+  for (;;) {
     if (buffer.startsWith('Content-Length:')) {
       useContentLengthFraming = true;
       const headerEnd = buffer.indexOf('\r\n\r\n');

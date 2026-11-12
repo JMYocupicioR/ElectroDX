@@ -34,6 +34,7 @@ export interface QuizQuestionDraft {
   explanationEn?: string;
   difficulty?: QuizDifficulty;
   citations?: QuizCitation[];
+  authorId?: string | null;
 }
 
 export type ClinicalValidationStatus = 'pending_review' | 'approved' | 'rejected';
@@ -52,6 +53,7 @@ export interface PublishedQuiz {
   published_at: string;
   published_by: string | null;
   last_edited_by: string | null;
+  last_reviewed_by?: string | null;
   source_revision_id: string | null;
   clinical_validation_status?: ClinicalValidationStatus;
   validated_by?: string | null;
@@ -73,6 +75,10 @@ export interface QuizQuestion {
   explanation_en: string | null;
   difficulty: QuizDifficulty | null;
   citations?: QuizCitation[] | null;
+  stable_question_key?: string | null;
+  author_id?: string | null;
+  last_edited_by?: string | null;
+  is_system_baseline?: boolean;
 }
 
 export interface QuizTopicFlag {

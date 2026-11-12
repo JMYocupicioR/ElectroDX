@@ -9,6 +9,10 @@ export interface TopicCreditSeed {
   userId: string;
   role: ContributorRole;
   at?: string;
+  survivingWords?: number;
+  authorSharePct?: number;
+  isPrincipalAuthor?: boolean;
+  authorRank?: number;
 }
 
 export interface TextbookContributor {
@@ -20,6 +24,9 @@ export interface TextbookContributor {
   topicIds: string[];
   moduleIds: string[];
   lastAt?: string;
+  wordsByTopic?: Record<string, number>;
+  principalTopicIds?: string[];
+  totalSurvivingWords?: number;
 }
 
 export interface RevisionCreditRow {
@@ -27,6 +34,10 @@ export interface RevisionCreditRow {
   moduleId?: string;
   authorId: string;
   at?: string;
+  survivingWords?: number;
+  authorSharePct?: number;
+  isPrincipalAuthor?: boolean;
+  authorRank?: number;
 }
 
 const ROLE_RANK: Record<ContributorRole, number> = {
@@ -71,13 +82,17 @@ export function seedsFromRevisionCredits(
   topicModule: Map<string, string>
 ): TopicCreditSeed[] {
   return rows
-    .filter((row) => row.topicId && row.authorId)
+    .filter((row) => row.topicId && row.authorId && (row.survivingWords === undefined || row.survivingWords > 0))
     .map((row) => ({
       topicId: row.topicId,
       moduleId: row.moduleId || topicModule.get(row.topicId) || '',
       userId: row.authorId,
-      role: 'contributor' as const,
+      role: row.isPrincipalAuthor ? ('editor' as const) : ('contributor' as const),
       at: row.at,
+      survivingWords: row.survivingWords,
+      authorSharePct: row.authorSharePct,
+      isPrincipalAuthor: row.isPrincipalAuthor,
+      authorRank: row.authorRank,
     }));
 }
 
@@ -95,6 +110,10 @@ export function buildTextbookContributors(
     const credentials = profile?.credentials ?? null;
     const existing = byId.get(seed.userId);
     if (!existing) {
+      const wordsByTopic: Record<string, number> = {};
+      if (typeof seed.survivingWords === 'number' && seed.survivingWords > 0) {
+        wordsByTopic[seed.topicId] = seed.survivingWords;
+      }
       byId.set(seed.userId, {
         id: seed.userId,
         name,
@@ -104,6 +123,9 @@ export function buildTextbookContributors(
         topicIds: [seed.topicId],
         moduleIds: seed.moduleId ? [seed.moduleId] : [],
         lastAt: seed.at,
+        wordsByTopic,
+        principalTopicIds: seed.isPrincipalAuthor ? [seed.topicId] : [],
+        totalSurvivingWords: seed.survivingWords ?? 0,
       });
       continue;
     }
@@ -111,6 +133,20 @@ export function buildTextbookContributors(
     if (seed.moduleId && !existing.moduleIds.includes(seed.moduleId)) existing.moduleIds.push(seed.moduleId);
     if (ROLE_RANK[seed.role] > ROLE_RANK[existing.role]) existing.role = seed.role;
     if (seed.at && (!existing.lastAt || seed.at > existing.lastAt)) existing.lastAt = seed.at;
+    if (typeof seed.survivingWords === 'number' && seed.survivingWords > 0) {
+      existing.wordsByTopic = existing.wordsByTopic ?? {};
+      existing.wordsByTopic[seed.topicId] = Math.max(
+        existing.wordsByTopic[seed.topicId] ?? 0,
+        seed.survivingWords
+      );
+      existing.totalSurvivingWords = Object.values(existing.wordsByTopic).reduce((a, b) => a + b, 0);
+    }
+    if (seed.isPrincipalAuthor) {
+      existing.principalTopicIds = existing.principalTopicIds ?? [];
+      if (!existing.principalTopicIds.includes(seed.topicId)) {
+        existing.principalTopicIds.push(seed.topicId);
+      }
+    }
     if (profile?.display_name) {
       existing.name = profile.display_name;
       existing.credentials = profile.credentials ?? existing.credentials;
@@ -118,7 +154,12 @@ export function buildTextbookContributors(
     }
   }
 
-  return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  return [...byId.values()].sort(
+    (a, b) =>
+      (b.totalSurvivingWords ?? 0) - (a.totalSurvivingWords ?? 0) ||
+      ROLE_RANK[b.role] - ROLE_RANK[a.role] ||
+      a.name.localeCompare(b.name, 'es')
+  );
 }
 
 export function contributorsForTopics(
@@ -128,7 +169,27 @@ export function contributorsForTopics(
 ): TextbookContributor[] {
   const wanted = new Set(topicIds);
   const disabled = new Set(disabledAuthorIds);
-  return all.filter((person) => !disabled.has(person.id) && person.topicIds.some((id) => wanted.has(id)));
+  const filtered = all.filter(
+    (person) => !disabled.has(person.id) && person.topicIds.some((id) => wanted.has(id))
+  );
+
+  // Reglamento Editorial Art. 8: aparece primero como Autor Principal quien supere >50% de las palabras del tema,
+  // seguido de los coautores según el aporte de palabras de cada quien.
+  return filtered.sort((a, b) => {
+    const aPrincipal = (a.principalTopicIds ?? []).some((id) => wanted.has(id)) ? 1 : 0;
+    const bPrincipal = (b.principalTopicIds ?? []).some((id) => wanted.has(id)) ? 1 : 0;
+    if (aPrincipal !== bPrincipal) return bPrincipal - aPrincipal;
+
+    let aWords = 0;
+    let bWords = 0;
+    for (const tid of wanted) {
+      aWords += a.wordsByTopic?.[tid] ?? 0;
+      bWords += b.wordsByTopic?.[tid] ?? 0;
+    }
+    if (aWords !== bWords) return bWords - aWords;
+    if (ROLE_RANK[a.role] !== ROLE_RANK[b.role]) return ROLE_RANK[b.role] - ROLE_RANK[a.role];
+    return a.name.localeCompare(b.name, 'es');
+  });
 }
 
 export function contributorsForModule(
@@ -137,7 +198,15 @@ export function contributorsForModule(
   disabledAuthorIds: Iterable<string> = []
 ): TextbookContributor[] {
   const disabled = new Set(disabledAuthorIds);
-  return all.filter((person) => !disabled.has(person.id) && person.moduleIds.includes(moduleId));
+  return all
+    .filter((person) => !disabled.has(person.id) && person.moduleIds.includes(moduleId))
+    .sort(
+      (a, b) =>
+        (b.totalSurvivingWords ?? 0) - (a.totalSurvivingWords ?? 0) ||
+        (b.principalTopicIds?.length ?? 0) - (a.principalTopicIds?.length ?? 0) ||
+        ROLE_RANK[b.role] - ROLE_RANK[a.role] ||
+        a.name.localeCompare(b.name, 'es')
+    );
 }
 
 export function formatEditedDate(iso: string | undefined, lang: 'es' | 'en'): string | undefined {

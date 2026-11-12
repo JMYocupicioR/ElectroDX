@@ -58,6 +58,7 @@ export default function StepMuscles({ datos, onUpdate }: Props) {
           <div className="divide-y divide-slate-100 dark:divide-slate-700/30">
             {musculos.map(musculo => {
               const mrc = datos.fuerzasMuscular[musculo] ?? 5;
+              const evaluado = !datos.musculosEvaluados || datos.musculosEvaluados.includes(musculo);
               const dualInfo = INERVACION_DUAL[musculo];
 
               return (
@@ -65,6 +66,11 @@ export default function StepMuscles({ datos, onUpdate }: Props) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-slate-700 dark:text-slate-200 truncate">{musculo}</span>
+                      {!evaluado && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300 shrink-0">
+                          sin evaluar
+                        </span>
+                      )}
                       {dualInfo && (
                         <span className="relative group">
                           <span className="text-xs text-amber-500 cursor-help">⚡dual</span>
