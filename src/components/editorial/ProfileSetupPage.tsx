@@ -28,6 +28,7 @@ import { adminUpdateProfile } from '../../services/editorialService';
 import { sb } from '../../lib/supabase';
 import type { Profile } from '../../types/database';
 import { isEnrollmentProfileComplete } from '../../utils/adminUtils';
+import { canChoosePublicSpecialistListing } from '../../utils/physicianDirectory';
 import { verifyCedula, type CedulaVerificationResult } from '../../services/cedulaService';
 import { BRAND } from '../../config/brand';
 import {
@@ -72,6 +73,7 @@ export default function ProfileSetupPage() {
   const {
     user,
     profile: ownProfile,
+    roles,
     isAdmin,
     updateProfile,
     uploadAvatar,
@@ -82,12 +84,17 @@ export default function ProfileSetupPage() {
 
   const editingOther = Boolean(routeUserId && isAdmin && routeUserId !== user?.id);
   const [targetProfile, setTargetProfile] = useState<Profile | null>(null);
+  const [targetRoles, setTargetRoles] = useState<string[]>([]);
   const [loadingTarget, setLoadingTarget] = useState(Boolean(routeUserId));
   const [targetError, setTargetError] = useState<string | null>(null);
   const profile = editingOther ? targetProfile : ownProfile;
+  const canChoosePublicListing = canChoosePublicSpecialistListing({
+    roles: editingOther ? targetRoles : roles,
+  });
 
   useEffect(() => {
     if (!routeUserId) {
+      setTargetRoles([]);
       setLoadingTarget(false);
       return;
     }
@@ -99,17 +106,20 @@ export default function ProfileSetupPage() {
     let cancelled = false;
     setLoadingTarget(true);
     setTargetError(null);
-    sb.from('profiles')
-      .select('*')
-      .eq('id', routeUserId)
-      .maybeSingle()
-      .then(({ data, error }: { data: Profile | null; error: { message: string } | null }) => {
-        if (cancelled) return;
-        if (error) setTargetError(error.message);
-        else if (!data) setTargetError('No se encontró el perfil de este usuario.');
-        else setTargetProfile(data);
-        setLoadingTarget(false);
-      });
+    Promise.all([
+      sb.from('profiles').select('*').eq('id', routeUserId).maybeSingle(),
+      sb.from('user_roles').select('role').eq('user_id', routeUserId),
+    ]).then(([profileRes, rolesRes]) => {
+      if (cancelled) return;
+      const data = profileRes.data as Profile | null;
+      if (profileRes.error) setTargetError(profileRes.error.message);
+      else if (!data) setTargetError('No se encontró el perfil de este usuario.');
+      else setTargetProfile(data);
+      setTargetRoles(
+        ((rolesRes.data as { role: string }[] | null) ?? []).map((row) => row.role)
+      );
+      setLoadingTarget(false);
+    });
     return () => {
       cancelled = true;
     };
@@ -327,13 +337,15 @@ export default function ProfileSetupPage() {
     setError(null);
     setMessage(null);
 
+    const updates: Partial<Profile> = { ...form };
+    if (!canChoosePublicListing) delete updates.is_public;
     const result = editingOther && routeUserId
-      ? await adminUpdateProfile(routeUserId, form)
+      ? await adminUpdateProfile(routeUserId, updates)
           .then(() => ({ error: null as string | null }))
           .catch((err: unknown) => ({
             error: err instanceof Error ? err.message : 'No se pudo guardar el perfil.',
           }))
-      : await updateProfile(form as Partial<Profile>);
+      : await updateProfile(updates as Partial<Profile>);
     if (!result.error && editingOther && routeUserId) {
       setTargetProfile((prev) => (prev ? { ...prev, ...form } : prev));
     }
@@ -1167,23 +1179,29 @@ export default function ProfileSetupPage() {
 
           {/* Checkboxes de visibilidad y declaración */}
           <div className="space-y-3 pt-2">
-            <div>
-              <label className={`flex items-center gap-3 text-xs text-slate-700 dark:text-slate-300 ${profile?.enrollment_status === 'approved' ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}>
-                <input
-                  type="checkbox"
-                  checked={form.is_public}
-                  disabled={profile?.enrollment_status !== 'approved'}
-                  onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
-                  className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300 dark:border-slate-700 disabled:cursor-not-allowed"
-                />
-                <span>Mostrar mi perfil públicamente en la lista de especialistas de ElectroDx Diplomado</span>
-              </label>
-              {profile?.enrollment_status !== 'approved' && (
-                <p className="mt-1 pl-7 text-[11px] text-slate-500 dark:text-slate-400">
-                  Disponible cuando tu inscripción al diplomado esté aprobada.
-                </p>
-              )}
-            </div>
+            {canChoosePublicListing && (
+              <div>
+                <label className={`flex items-center gap-3 text-xs text-slate-700 dark:text-slate-300 ${profile?.enrollment_status === 'approved' ? 'cursor-pointer' : 'cursor-not-allowed opacity-70'}`}>
+                  <input
+                    type="checkbox"
+                    checked={form.is_public}
+                    disabled={profile?.enrollment_status !== 'approved'}
+                    onChange={(e) => setForm({ ...form, is_public: e.target.checked })}
+                    className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-slate-300 dark:border-slate-700 disabled:cursor-not-allowed"
+                  />
+                  <span>
+                    {editingOther
+                      ? 'Mostrar este perfil públicamente en la lista de especialistas de ElectroDx Diplomado'
+                      : 'Mostrar mi perfil públicamente en la lista de especialistas de ElectroDx Diplomado'}
+                  </span>
+                </label>
+                {profile?.enrollment_status !== 'approved' && (
+                  <p className="mt-1 pl-7 text-[11px] text-slate-500 dark:text-slate-400">
+                    Disponible cuando la inscripción al diplomado esté aprobada.
+                  </p>
+                )}
+              </div>
+            )}
 
             <label className="flex items-start gap-3 text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
               <input

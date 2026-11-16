@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isEditorialOrSpecialist, isTeachingCollaborator } from './physicianDirectory';
+import {
+  canChoosePublicSpecialistListing,
+  isEditorialOrSpecialist,
+  isTeachingCollaborator,
+} from './physicianDirectory';
 
 const base = {
   roles: [] as ('admin' | 'editor' | 'contributor' | 'student')[],
@@ -24,5 +28,14 @@ describe('physician directory filters', () => {
     const both = { ...base, roles: ['editor' as const, 'contributor' as const] };
     expect(isTeachingCollaborator(both)).toBe(true);
     expect(isEditorialOrSpecialist(both)).toBe(true);
+  });
+
+  it('lets faculty choose the public diplomado listing and keeps students out of that choice', () => {
+    expect(canChoosePublicSpecialistListing({ roles: ['student'] })).toBe(false);
+    expect(canChoosePublicSpecialistListing({ roles: [] })).toBe(false);
+    expect(canChoosePublicSpecialistListing({ roles: ['contributor'] })).toBe(true);
+    expect(canChoosePublicSpecialistListing({ roles: ['editor'] })).toBe(true);
+    expect(canChoosePublicSpecialistListing({ roles: ['admin'] })).toBe(true);
+    expect(canChoosePublicSpecialistListing({ roles: ['student', 'contributor'] })).toBe(true);
   });
 });

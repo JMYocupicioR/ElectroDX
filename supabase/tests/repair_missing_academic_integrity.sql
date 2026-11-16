@@ -88,7 +88,9 @@ BEGIN
     avatar_url = CASE WHEN p_updates ? 'avatar_url' THEN p_updates->>'avatar_url' ELSE avatar_url END,
     bio = COALESCE(p_updates->>'bio', bio),
     is_public = CASE
-      WHEN p_updates ? 'is_public' THEN COALESCE((p_updates->>'is_public')::boolean, is_public)
+      WHEN (public.is_admin() OR public.is_editor() OR public.has_role('contributor'))
+        AND (p_updates ? 'is_public')
+        THEN COALESCE((p_updates->>'is_public')::boolean, is_public)
       ELSE is_public
     END,
     subspecialty = COALESCE(p_updates->>'subspecialty', subspecialty),
