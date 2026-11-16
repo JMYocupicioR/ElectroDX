@@ -17,6 +17,7 @@ import { useOmittedQuizTopics } from '../../../hooks/useOmittedQuizTopics';
 import { TopicsMissingQuizQueue } from './TopicsMissingQuizQueue';
 import { getAllQuizFlags } from '../../../services/quizService';
 import { getTopicPublicUrl } from '../../../utils/adminUtils';
+import type { Module } from '../../../types/content';
 import type { QuizTopicFlag, QuizQuestionDraft } from '../../../types/quiz';
 import { AdminQuizSimulatorModal } from './AdminQuizSimulatorModal';
 import { getQuizEditorDataForTopic } from '../../../services/editorialService';
@@ -140,21 +141,23 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
     const withQuiz = new Set(
       flags.filter((flag) => flag.question_count > 0).map((flag) => flag.topic_id),
     );
+    const targetModules =
+      selectedModuleFilter !== 'all'
+        ? modules.filter((m) => m.id === selectedModuleFilter)
+        : modules;
     return {
-      ...topTopicsMissingQuiz(modules, withQuiz, undefined, omittedQuizTopicIds),
-      omitted: listOmittedQuizTopics(modules, omittedQuizTopicIds, withQuiz),
+      ...topTopicsMissingQuiz(targetModules, withQuiz, undefined, omittedQuizTopicIds, {
+        preserveModuleOrder: true,
+      }),
+      omitted: listOmittedQuizTopics(targetModules, omittedQuizTopicIds, withQuiz, {
+        preserveModuleOrder: true,
+      }),
     };
-  }, [flags, loadingFlags, modules, omittedQuizTopicIds]);
+  }, [flags, loadingFlags, modules, selectedModuleFilter, omittedQuizTopicIds]);
 
-  // Filtered topics list
-  const filteredTopics = useMemo(() => {
+  // Temas dentro del alcance de módulo y búsqueda seleccionados
+  const scopedLeafTopics = useMemo(() => {
     return allLeafTopics.filter((item) => {
-      const flag = flagsMap.get(item.topic.id);
-      const hasQuiz = Boolean(flag && flag.question_count > 0);
-      const omitted = !hasQuiz && omittedQuizTopicIds.has(item.topic.id);
-
-      if (statusFilter === 'with_quiz' && !hasQuiz) return false;
-      if (statusFilter === 'no_quiz' && (hasQuiz || omitted)) return false;
       if (selectedModuleFilter !== 'all' && item.moduleId !== selectedModuleFilter) return false;
 
       if (searchQuery.trim()) {
@@ -167,7 +170,21 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
 
       return true;
     });
-  }, [allLeafTopics, flagsMap, statusFilter, selectedModuleFilter, searchQuery, omittedQuizTopicIds]);
+  }, [allLeafTopics, selectedModuleFilter, searchQuery]);
+
+  // Filtered topics list (aplicando el filtro de estado: Todos / Con Quiz / Sin Quiz)
+  const filteredTopics = useMemo(() => {
+    return scopedLeafTopics.filter((item) => {
+      const flag = flagsMap.get(item.topic.id);
+      const hasQuiz = Boolean(flag && flag.question_count > 0);
+      const omitted = !hasQuiz && omittedQuizTopicIds.has(item.topic.id);
+
+      if (statusFilter === 'with_quiz' && !hasQuiz) return false;
+      if (statusFilter === 'no_quiz' && (hasQuiz || omitted)) return false;
+
+      return true;
+    });
+  }, [scopedLeafTopics, flagsMap, statusFilter, omittedQuizTopicIds]);
 
   useEffect(() => {
     if (!focusedRowId || modulesLoading) return;
@@ -177,17 +194,27 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
     return () => window.clearTimeout(timer);
   }, [focusedRowId, modulesLoading, filteredTopics.length]);
 
+  // Métricas globales del curso completo (tarjetas KPI)
   const totalTopics = allLeafTopics.length;
   const topicsWithQuiz = allLeafTopics.filter((t) => {
     const f = flagsMap.get(t.topic.id);
     return Boolean(f && f.question_count > 0);
   }).length;
-  const omittedWithoutQuiz = allLeafTopics.filter((t) => {
+  const totalQuestions = flags.reduce((acc, f) => acc + (f.question_count || 0), 0);
+  const coveragePercentage = totalTopics > 0 ? Math.round((topicsWithQuiz / totalTopics) * 100) : 0;
+
+  // Conteo reactivo según el módulo y búsqueda actualmente seleccionados
+  const scopedTotal = scopedLeafTopics.length;
+  const scopedWithQuiz = scopedLeafTopics.filter((t) => {
+    const f = flagsMap.get(t.topic.id);
+    return Boolean(f && f.question_count > 0);
+  }).length;
+  const scopedOmittedWithoutQuiz = scopedLeafTopics.filter((t) => {
     const f = flagsMap.get(t.topic.id);
     return !(f && f.question_count > 0) && omittedQuizTopicIds.has(t.topic.id);
   }).length;
-  const totalQuestions = flags.reduce((acc, f) => acc + (f.question_count || 0), 0);
-  const coveragePercentage = totalTopics > 0 ? Math.round((topicsWithQuiz / totalTopics) * 100) : 0;
+  const scopedWithoutQuiz = Math.max(0, scopedTotal - scopedWithQuiz - scopedOmittedWithoutQuiz);
+
   const catalogFilters = {
     q: searchQuery,
     modulo: selectedModuleFilter,
@@ -295,6 +322,8 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
         topics={topicsMissingQuiz.topics}
         total={topicsMissingQuiz.total}
         omitted={topicsMissingQuiz.omitted}
+        modules={modules}
+        selectedModuleId={selectedModuleFilter !== 'all' ? selectedModuleFilter : undefined}
         onOmit={(topic) => omitQuizTopicId(topic.topicId)}
         onRestore={(topic) => restoreQuizTopicId(topic.topicId)}
         onAddQuiz={(topic) => onSelectTopic(topic.topicId, topic.moduleId)}
@@ -330,19 +359,19 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
 
         <div className="grid grid-cols-3 rounded-xl bg-slate-100 dark:bg-slate-800 p-1 border border-slate-200/80 dark:border-slate-700 sm:flex sm:w-fit">
           <StatusTab
-            label={`Todos (${allLeafTopics.length})`}
+            label={`Todos (${scopedTotal})`}
             active={statusFilter === 'all'}
             onClick={() => writeFilters({ estado: 'all' })}
             activeClass="text-indigo-600 dark:text-indigo-400"
           />
           <StatusTab
-            label={`Con Quiz (${topicsWithQuiz})`}
+            label={`Con Quiz (${scopedWithQuiz})`}
             active={statusFilter === 'with_quiz'}
             onClick={() => writeFilters({ estado: 'with_quiz' })}
             activeClass="text-emerald-600 dark:text-emerald-400"
           />
           <StatusTab
-            label={`Sin Quiz (${Math.max(0, totalTopics - topicsWithQuiz - omittedWithoutQuiz)})`}
+            label={`Sin Quiz (${scopedWithoutQuiz})`}
             active={statusFilter === 'no_quiz'}
             onClick={() => writeFilters({ estado: 'no_quiz' })}
             activeClass="text-amber-600 dark:text-amber-400"
@@ -382,6 +411,7 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
                   })}
                   onSelectTopic={onSelectTopic}
                   onPreview={() => handleQuickPreview(item.topic.id, item.topic.title)}
+                  modules={modules}
                   isModal={isModal}
                 />
               );
@@ -438,6 +468,7 @@ function CatalogTopicRow({
   returnTo,
   onSelectTopic,
   onPreview,
+  modules,
   isModal,
 }: {
   item: CatalogTopic;
@@ -450,9 +481,10 @@ function CatalogTopicRow({
   returnTo: string;
   onSelectTopic: (topicId: string, moduleId: string) => void;
   onPreview: () => void;
+  modules?: Module[];
   isModal?: boolean;
 }) {
-  const publicUrl = getTopicPublicUrl(item.moduleId, item.topic.id);
+  const publicUrl = getTopicPublicUrl(item.moduleId, item.topic.id, modules);
   const openLesson = (event: MouseEvent<HTMLAnchorElement>) => {
     rememberQuizCatalogReturn(returnTo);
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;

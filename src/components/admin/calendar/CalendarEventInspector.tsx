@@ -6,7 +6,7 @@ import { calendarItemStartDate } from '../../../utils/academicCalendar';
 import { calendarChipStyle, calendarEventColor, calendarTypeLabel, useCalendarColorLabels } from '../../../utils/calendarColorLabels';
 import { listWorkshopInstructorNames } from '../../../services/topicTeachingService';
 import { AssignmentMaterialsList } from '../../student/AssignmentMaterialsList';
-import { allModules } from '../../../content/modules';
+import { useSyllabusCatalog } from '../../../hooks/useSyllabusCatalog';
 
 function deleteActionLabel(item: CalendarItem): string {
   if (item.type === 'session') return 'Eliminar clase';
@@ -56,6 +56,7 @@ export function CalendarEventInspector({
   onDeleteMilestone?: (milestoneId: string) => void | Promise<void>;
 }) {
   const { labels } = useCalendarColorLabels();
+  const { modulesForStaff } = useSyllabusCatalog();
   const closeRef = useRef<HTMLButtonElement>(null);
   const itemId = item?.id;
   const workshopId = item?.workshopId ?? null;
@@ -65,7 +66,7 @@ export function CalendarEventInspector({
 
   const topicTitle = useMemo(() => {
     if (!item?.topicId) return null;
-    for (const m of allModules) {
+    for (const m of modulesForStaff) {
       for (const t of m.topics) {
         if (t.id === item.topicId) return t.title;
         if (t.children) {
@@ -75,7 +76,7 @@ export function CalendarEventInspector({
       }
     }
     return item.topicId;
-  }, [item?.topicId]);
+  }, [item?.topicId, modulesForStaff]);
 
   useEffect(() => {
     if (!workshopId) {

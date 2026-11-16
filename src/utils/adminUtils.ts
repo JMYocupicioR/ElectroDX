@@ -1,14 +1,19 @@
 import { getModuleById } from '../content/modules';
+import type { Module } from '../types/content';
 import { findTopicInTree, findTopicPathInTree } from '../services/contentMerge';
 
-export function getModuleLabel(moduleId: string): string {
-  const mod = getModuleById(moduleId);
+export function getModuleLabel(moduleId: string, modules?: Module[]): string {
+  const mod = modules?.find((m) => m.id === moduleId) ?? getModuleById(moduleId);
   return mod ? `Módulo ${mod.number}: ${mod.title}` : moduleId;
 }
 
-export function getTopicLabel(moduleId: string, topicId: string | null | undefined): string {
+export function getTopicLabel(
+  moduleId: string,
+  topicId: string | null | undefined,
+  modules?: Module[]
+): string {
   if (!topicId) return 'Tema no especificado';
-  const mod = getModuleById(moduleId);
+  const mod = modules?.find((m) => m.id === moduleId) ?? getModuleById(moduleId);
   if (!mod) return topicId;
   const topic = findTopicInTree(mod.topics, topicId);
   return topic?.title || topicId;
@@ -16,10 +21,11 @@ export function getTopicLabel(moduleId: string, topicId: string | null | undefin
 
 export function getTopicPublicUrl(
   moduleId: string,
-  topicId: string | null | undefined
+  topicId: string | null | undefined,
+  modules?: Module[]
 ): string | null {
   if (!topicId) return null;
-  const mod = getModuleById(moduleId);
+  const mod = modules?.find((m) => m.id === moduleId) ?? getModuleById(moduleId);
   if (!mod) return `/modulo/${moduleId}/${topicId}`;
   const path = findTopicPathInTree(mod.topics, topicId);
   return path ? `/modulo/${moduleId}/${path.join('/')}` : `/modulo/${moduleId}/${topicId}`;

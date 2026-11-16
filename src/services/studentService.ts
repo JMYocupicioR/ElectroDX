@@ -3,7 +3,7 @@ import { allModules } from '../content/modules';
 import { supabase, sb } from '../lib/supabase';
 import { findTopicInTree, findTopicPathInTree } from './contentMerge';
 import { getLeafTopicIds } from './studentResume';
-import type { Topic } from '../types/content';
+import type { Module, Topic } from '../types/content';
 import type { LiveWorkshop, Profile } from '../types/database';
 import type { ModuleQuizProgress } from '../types/quiz';
 import type { StudentAssignment } from '../types/studentPlan';
@@ -803,13 +803,14 @@ export async function fetchLastVisitedTopic(userId: string): Promise<LastVisited
 export function calculateStudentMetrics(
   userId: string,
   moduleProgressList: ModuleQuizProgress[] = [],
-  customCompletedTopics?: Set<string>
+  customCompletedTopics?: Set<string>,
+  modules: Module[] = allModules
 ) {
   const completed = customCompletedTopics ?? getCompletedTopics(userId);
   let totalCurriculumTopics = 0;
   let totalCompletedCurriculumTopics = 0;
 
-  const moduleStats: StudentModuleStats[] = allModules.map((m) => {
+  const moduleStats: StudentModuleStats[] = modules.map((m) => {
     const countsTowardCurriculum = !isAppendixModule(m.id);
     const topicIds = getAllTopicIds(m.topics);
     const totalTopics = topicIds.length;

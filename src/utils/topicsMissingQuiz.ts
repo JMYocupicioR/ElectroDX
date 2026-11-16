@@ -26,8 +26,11 @@ export function listTopicsMissingQuiz(
   modules: Module[],
   quizTopicIds: ReadonlySet<string>,
   omittedTopicIds: ReadonlySet<string> = new Set(),
+  options?: { preserveModuleOrder?: boolean },
 ): TopicMissingQuiz[] {
-  const ordered = [...modules].sort((a, b) => a.number - b.number);
+  const ordered = options?.preserveModuleOrder
+    ? modules
+    : [...modules].sort((a, b) => a.number - b.number);
   const missing: TopicMissingQuiz[] = [];
   let curriculumIndex = 0;
 
@@ -55,9 +58,12 @@ export function listOmittedQuizTopics(
   modules: Module[],
   omittedTopicIds: ReadonlySet<string>,
   quizTopicIds: ReadonlySet<string> = new Set(),
+  options?: { preserveModuleOrder?: boolean },
 ): TopicMissingQuiz[] {
   if (omittedTopicIds.size === 0) return [];
-  const ordered = [...modules].sort((a, b) => a.number - b.number);
+  const ordered = options?.preserveModuleOrder
+    ? modules
+    : [...modules].sort((a, b) => a.number - b.number);
   const omitted: TopicMissingQuiz[] = [];
   let curriculumIndex = 0;
 
@@ -85,7 +91,8 @@ export function topTopicsMissingQuiz(
   quizTopicIds: ReadonlySet<string>,
   limit = TOP_TOPICS_MISSING_QUIZ,
   omittedTopicIds: ReadonlySet<string> = new Set(),
+  options?: { preserveModuleOrder?: boolean },
 ): { topics: TopicMissingQuiz[]; total: number } {
-  const all = listTopicsMissingQuiz(modules, quizTopicIds, omittedTopicIds);
+  const all = listTopicsMissingQuiz(modules, quizTopicIds, omittedTopicIds, options);
   return { topics: all.slice(0, limit), total: all.length };
 }

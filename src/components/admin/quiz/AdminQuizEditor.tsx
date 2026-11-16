@@ -90,7 +90,7 @@ export function AdminQuizEditor({
 
   // Selected module & topic
   const [selectedModuleId, setSelectedModuleId] = useState<string>(availableModules[0]?.id ?? 'fundamentals');
-  const { module: mergedModule } = useMergedModule(selectedModuleId);
+  const { module: mergedModule } = useMergedModule(selectedModuleId, { includeHidden: true });
   const [selectedTopicId, setSelectedTopicId] = useState<string>(initialTopicId ?? '');
   const [selectedTopicPath, setSelectedTopicPath] = useState('');
 
@@ -136,7 +136,11 @@ export function AdminQuizEditor({
     if (!mergedModule) return [];
     const seen = new Map<string, number>();
     return getAllFlatTopics(mergedModule.topics)
-      .filter(({ topic }) => !topic.children?.length && Boolean(topic.content?.trim() || topic.description?.trim()))
+      .filter(
+        ({ topic }) =>
+          (!topic.children?.length && Boolean(topic.content?.trim() || topic.description?.trim())) ||
+          topic.id === selectedTopicId
+      )
       .map(({ topic, path }) => {
         const occurrence = seen.get(path.join('/')) ?? 0;
         seen.set(path.join('/'), occurrence + 1);

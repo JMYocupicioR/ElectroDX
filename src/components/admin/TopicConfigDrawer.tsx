@@ -74,6 +74,8 @@ interface TopicConfigDrawerProps {
   parentTopic?: Topic | null;
   isVisible: boolean;
   sortOrder: number;
+  currentPosition?: number;
+  totalSiblings?: number;
   canMoveUp: boolean;
   canMoveDown: boolean;
   initialTab?: TopicDrawerTab;
@@ -85,6 +87,7 @@ interface TopicConfigDrawerProps {
   hasQuiz: boolean;
   onToggleVisible: () => Promise<void> | void;
   onMove: (direction: -1 | 1) => Promise<void> | void;
+  onMoveToPosition?: (targetIndex: number) => Promise<void> | void;
   onAssignTeacher: (input: {
     teacherId: string;
     teacherName: string;
@@ -144,6 +147,8 @@ export function TopicConfigDrawer({
   topic,
   parentTopic,
   isVisible,
+  currentPosition,
+  totalSiblings,
   canMoveUp,
   canMoveDown,
   initialTab = 'teaching',
@@ -155,6 +160,7 @@ export function TopicConfigDrawer({
   hasQuiz,
   onToggleVisible,
   onMove,
+  onMoveToPosition,
   onAssignTeacher,
   onRemoveTeacher,
   onScheduleClass,
@@ -1486,12 +1492,17 @@ export function TopicConfigDrawer({
                 <div>
                   <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
                     Orden dentro del módulo
+                    {currentPosition && totalSiblings ? (
+                      <span className="ml-2 text-[11px] font-mono text-blue-600 dark:text-cyan-400">
+                        (#{currentPosition} de {totalSiblings})
+                      </span>
+                    ) : null}
                   </h4>
                   <p className="text-[11px] text-slate-500">
-                    Cambia la posición en que aparece para los alumnos.
+                    Cambia la posición en que aparece para los alumnos (se pedirá confirmación).
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
                     disabled={!canMoveUp || busyAction !== null}
@@ -1510,6 +1521,26 @@ export function TopicConfigDrawer({
                     <ChevronDown className="w-3.5 h-3.5" />
                     <span>Bajar</span>
                   </button>
+                  {onMoveToPosition && currentPosition && totalSiblings && totalSiblings > 2 && (
+                    <select
+                      aria-label="Mover a posición específica"
+                      disabled={busyAction !== null}
+                      value={currentPosition - 1}
+                      onChange={(e) => {
+                        const nextIdx = Number(e.target.value);
+                        if (!Number.isNaN(nextIdx) && nextIdx !== currentPosition - 1) {
+                          void onMoveToPosition(nextIdx);
+                        }
+                      }}
+                      className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-200 cursor-pointer disabled:opacity-40"
+                    >
+                      {Array.from({ length: totalSiblings }, (_, i) => (
+                        <option key={i} value={i}>
+                          Posición #{i + 1}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
               </div>
             </div>

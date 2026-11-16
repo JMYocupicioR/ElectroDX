@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Save, Send, Plus, Trash2 } from 'lucide-react';
-import { allModules, getModuleById } from '../../content/modules';
+import { getModuleById } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
 import { getRevisionById, saveRevision, submitRevision } from '../../services/editorialService';
 import { findTopicInTree, findTopicPathInTree, topicAsShownToStudents, topicToRevisionPayload, getAllFlatTopics } from '../../services/contentMerge';
@@ -52,8 +52,8 @@ export default function RevisionEditorPage() {
   const queryAction = searchParams.get('action') as RevisionAction | null;
   const queryParentId = searchParams.get('parentId');
 
-  const [moduleId, setModuleId] = useState(queryModuleId ?? allModules[0]?.id ?? '');
-  const { module: mergedModule, staticModule, published: publishedTopics, loading: mergedLoading } = useMergedModule(moduleId);
+  const [moduleId, setModuleId] = useState(queryModuleId ?? availableModules[0]?.id ?? '');
+  const { module: mergedModule, staticModule, published: publishedTopics, loading: mergedLoading } = useMergedModule(moduleId, { includeHidden: true });
   const sourceHydrated = useRef(false);
   const [sourceReady, setSourceReady] = useState(() => Boolean(revisionId) || !queryTopicId);
   const [targetTopicId, setTargetTopicId] = useState<string | null>(queryTopicId);

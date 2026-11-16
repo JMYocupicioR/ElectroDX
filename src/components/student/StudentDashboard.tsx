@@ -139,7 +139,6 @@ import {
   resolveClinicalAssignmentMode,
 } from '../../services/emgExerciseService';
 import type { StudentAssignment, StudentStreakInfo, ActiveExamLock, StudentLearningPlan } from '../../types/studentPlan';
-import { allModules } from '../../content/modules';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { LiveWorkshop, Course } from '../../types/database';
@@ -201,7 +200,7 @@ export default function StudentDashboard() {
     needsAgreementSignature,
   } = useAuth();
   const { quizGate } = useQuizTopicFlags();
-  const { grouped, assignments: courseAssignments, courses } = useSyllabusCatalog();
+  const { grouped, assignments: courseAssignments, courses, visibleModules } = useSyllabusCatalog();
   const sellable = useMemo(() => sellableCourses(courses), [courses]);
   const nextSuggested = recommendedNextCourse(courseIds, courses);
 
@@ -515,30 +514,36 @@ export default function StudentDashboard() {
 
   // Derived metrics
   const resumeLesson = useMemo(() => {
-    return resolveResumeLesson(completedTopicsSet, lastVisited, undefined, quizGate);
-  }, [completedTopicsSet, lastVisited, quizGate]);
+    return resolveResumeLesson(completedTopicsSet, lastVisited, visibleModules, quizGate);
+  }, [completedTopicsSet, lastVisited, visibleModules, quizGate]);
 
   const upcomingPendingLessons = useMemo(() => {
-    return listPendingCurriculumLessons(completedTopicsSet, { lastVisited, limit: 4, quizGate });
-  }, [completedTopicsSet, lastVisited, quizGate]);
+    return listPendingCurriculumLessons(completedTopicsSet, {
+      lastVisited,
+      limit: 4,
+      modules: visibleModules,
+      quizGate,
+    });
+  }, [completedTopicsSet, lastVisited, visibleModules, quizGate]);
 
   const pendingLessonByModule = useMemo(() => {
     const map: Record<string, string> = {};
-    for (const mod of allModules) {
+    for (const mod of visibleModules) {
       const pending = listPendingCurriculumLessons(completedTopicsSet, {
         moduleId: mod.id,
         limit: 1,
+        modules: visibleModules,
         quizGate,
       });
       if (pending[0]) map[mod.id] = pending[0].url;
     }
     return map;
-  }, [completedTopicsSet, quizGate]);
+  }, [completedTopicsSet, visibleModules, quizGate]);
 
   const metrics = useMemo(() => {
     if (!user) return null;
-    return calculateStudentMetrics(user.id, moduleProgress, completedTopicsSet);
-  }, [user, moduleProgress, completedTopicsSet]);
+    return calculateStudentMetrics(user.id, moduleProgress, completedTopicsSet, visibleModules);
+  }, [user, moduleProgress, completedTopicsSet, visibleModules]);
 
   const hasStartedCurriculum = (metrics?.totalCompletedCurriculumTopics || 0) > 0 || Boolean(lastVisited);
 
@@ -911,7 +916,7 @@ export default function StudentDashboard() {
 
     let found: ReturnType<typeof findTopicInTree> = null;
     let moduleId: string | null = null;
-    for (const mod of allModules) {
+    for (const mod of visibleModules) {
       found = findTopicInTree(mod.topics, topicId);
       if (found) {
         moduleId = mod.id;
@@ -2360,7 +2365,7 @@ export default function StudentDashboard() {
               })
               .map((mod) => {
                 const isExpanded = expandedModuleId === mod.moduleId;
-                const fullModule = allModules.find((m) => m.id === mod.moduleId);
+                const fullModule = visibleModules.find((m) => m.id === mod.moduleId);
 
                 return (
                   <div
@@ -2636,7 +2641,7 @@ export default function StudentDashboard() {
                   >
                     <div>
                       <p className="font-semibold text-slate-800 dark:text-slate-200">
-                        {getModuleLabel(att.module_id)}
+                        {getModuleLabel(att.module_id, visibleModules)}
                       </p>
                       <p className="text-slate-400">
                         {new Date(att.completed_at).toLocaleString('es-MX', {

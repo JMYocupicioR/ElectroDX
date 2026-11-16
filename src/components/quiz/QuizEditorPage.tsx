@@ -58,7 +58,7 @@ export default function QuizEditorPage() {
   const queryTopicId = searchParams.get('topicId');
 
   const [moduleId, setModuleId] = useState(queryModuleId ?? availableModules[0]?.id ?? '');
-  const { module: mergedModule } = useMergedModule(moduleId);
+  const { module: mergedModule } = useMergedModule(moduleId, { includeHidden: true });
   const [topicId, setTopicId] = useState<string | null>(queryTopicId);
   const [action, setAction] = useState<RevisionAction>('create');
   const [payload, setPayload] = useState<RevisionPayload>(emptyPayload());

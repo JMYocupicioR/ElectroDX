@@ -68,7 +68,7 @@ export default function StudentCoursePage() {
     isCoursePending,
   } = useAuth();
 
-  const { courses, assignments, modulesForStaff, reload } = useSyllabusCatalog();
+  const { courses, assignments, visibleModules, reload } = useSyllabusCatalog();
   const { isCompleted, completedTopicIds } = useTopicProgress();
   const { hasQuiz } = useQuizTopicFlags();
 
@@ -110,9 +110,9 @@ export default function StudentCoursePage() {
   }, [assignments, currentCourse]);
 
   const courseModules = useMemo(() => {
-    const map = new Map(modulesForStaff.map((m) => [m.id, m]));
+    const map = new Map(visibleModules.map((m) => [m.id, m]));
     return courseModuleIds.map((id) => map.get(id)).filter(Boolean) as Module[];
-  }, [courseModuleIds, modulesForStaff]);
+  }, [courseModuleIds, visibleModules]);
 
   // Expandir el primer módulo por defecto
   useEffect(() => {

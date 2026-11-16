@@ -13,7 +13,7 @@ const workshop = {
   recording_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
   clinical_case_json: { actual_duration_seconds: 1945 },
   topic_id: null,
-} as LiveWorkshop;
+} as unknown as LiveWorkshop;
 
 describe('RecordedWorkshopCard', () => {
   it('muestra la miniatura del video y los datos de la clase', () => {

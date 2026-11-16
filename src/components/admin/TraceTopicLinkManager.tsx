@@ -6,7 +6,7 @@ import {
   detachTraceFromTopic,
   type TraceTopicOccurrence,
 } from '../../services/traceTopicLinkService';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { useAuth } from '../../contexts/AuthProvider';
 import {
   BookOpen,
@@ -27,6 +27,7 @@ interface TraceTopicLinkManagerProps {
 
 export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkManagerProps) {
   const { user, profile, isAdmin, isEditor } = useAuth();
+  const { modulesForStaff } = useSyllabusCatalog();
   const canEdit = isAdmin || isEditor;
 
   const [occurrences, setOccurrences] = useState<TraceTopicOccurrence[]>([]);
@@ -36,7 +37,7 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
 
   // Estados para vincular a un nuevo tema
   const [isAdding, setIsAdding] = useState(false);
-  const [selectedModuleId, setSelectedModuleId] = useState<string>(allModules[0]?.id || '');
+  const [selectedModuleId, setSelectedModuleId] = useState<string>(modulesForStaff[0]?.id || '');
   const [selectedTopicId, setSelectedTopicId] = useState<string>('');
   const [traceMode, setTraceMode] = useState<'comparison' | 'static' | 'interactive'>('comparison');
   const [saving, setSaving] = useState(false);
@@ -45,7 +46,7 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
     setLoading(true);
     setError(null);
     try {
-      const data = await findTopicOccurrencesForTrace(presetId);
+      const data = await findTopicOccurrencesForTrace(presetId, modulesForStaff);
       setOccurrences(data);
     } catch (err: any) {
       setError(err?.message || 'Error al buscar los temas asociados');
@@ -56,11 +57,17 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
 
   useEffect(() => {
     void loadOccurrences();
-  }, [presetId]);
+  }, [presetId, modulesForStaff]);
 
   // Obtener los subtemas del módulo seleccionado
-  const currentModule = allModules.find((m) => m.id === selectedModuleId);
+  const currentModule = modulesForStaff.find((m) => m.id === selectedModuleId) ?? modulesForStaff[0];
   const moduleTopics = currentModule ? currentModule.topics : [];
+
+  useEffect(() => {
+    if (!modulesForStaff.some((m) => m.id === selectedModuleId) && modulesForStaff[0]) {
+      setSelectedModuleId(modulesForStaff[0].id);
+    }
+  }, [modulesForStaff, selectedModuleId]);
 
   // Al cambiar módulo, seleccionar el primer tema por defecto
   useEffect(() => {
@@ -91,6 +98,7 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
         authorId: user.id,
         authorName: profile?.display_name || 'Profesor Docente',
         mode: traceMode,
+        modules: modulesForStaff,
       });
 
       setSuccess('¡Trazo vinculado e incrustado con éxito en el tema!');
@@ -119,6 +127,7 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
         topicId: occ.topicId,
         authorId: user.id,
         authorName: profile?.display_name || 'Profesor Docente',
+        modules: modulesForStaff,
       });
 
       setSuccess('Trazo retirado del tema correctamente.');
@@ -212,7 +221,7 @@ export function TraceTopicLinkManager({ presetId, presetTitle }: TraceTopicLinkM
                 }}
                 className="w-full px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-200 outline-none"
               >
-                {allModules.map((m) => (
+                {modulesForStaff.map((m) => (
                   <option key={m.id} value={m.id}>
                     M{m.number}: {m.title.split(':')[0]}
                   </option>

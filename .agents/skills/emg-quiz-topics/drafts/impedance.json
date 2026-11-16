@@ -4,159 +4,48 @@
   "quizTopicId": "impedance",
   "moduleId": "fundamentals",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "imp-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Impedancia objetivo: <5-10 kΩ. ¿Esta afirmación es la que corresponde enseñar en «Impedancia de electrodos»?",
+      "stem": "Antes de iniciar un estudio de conducción nerviosa, ¿por qué es tan importante limpiar la piel y usar gel conductor para bajar la impedancia de los electrodos (< 5–10 kΩ)?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "imp-q1-a",
+          "text": "Porque una impedancia alta llena el trazo de ruido eléctrico y puede ocultar respuestas pequeñas (como un SNAP), simulando falsamente una lesión nerviosa.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "imp-q1-b",
+          "text": "Porque la impedancia de la piel cambia directamente la velocidad real a la que viajan los impulsos dentro del axón.",
+          "isCorrect": false
+        },
+        {
+          "id": "imp-q1-c",
+          "text": "Porque mientras más alta sea la impedancia entre la piel y el electrodo, más nítido se verá el potencial en pantalla.",
+          "isCorrect": false
+        },
+        {
+          "id": "imp-q1-d",
+          "text": "Porque el gel conductor sirve únicamente para enfriar la piel del paciente durante el estudio.",
           "isCorrect": false
         }
       ],
-      "explanation": "Impedancia objetivo: <5-10 kΩ.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q2",
-      "type": "single",
-      "difficulty": "intermediate",
-      "stem": "En «Impedancia de electrodos», ¿cuál afirmación es la correcta?\nBalance entre electrodos: <1 kΩ de diferencia.",
-      "options": [
+      "explanation": "La impedancia electrodo-piel es la oposición al paso de la señal desde el cuerpo hacia el equipo. En la práctica clínica, la primera causa de un registro ruidoso o de un potencial sensitivo aparentemente «ausente» no es una neuropatía, sino una piel mal preparada (crema, grasa o poco gel). Limpiar con alcohol y asegurar buen contacto mantiene la impedancia baja (< 5–10 kΩ) y protege contra falsos positivos.\n\n📚 Referencia: Dumitru D, Amato AA, Zwarts MJ. Electrodiagnostic Medicine (2nd ed.). Hanley & Belfus (2002).",
+      "citations": [
         {
-          "id": "a",
-          "text": "Balance entre electrodos: <1 kΩ de diferencia.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
+          "authors": "Dumitru D, Amato AA, Zwarts MJ",
+          "title": "Electrodiagnostic Medicine (2nd ed)",
+          "journal": "Hanley & Belfus",
+          "year": 2002
         }
-      ],
-      "explanation": "Balance entre electrodos: <1 kΩ de diferencia.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q3",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Impedancia de electrodos», ¿cuál afirmación es la correcta?\nPreparación: alcohol + abrasión + gel conductor.",
-      "options": [
-        {
-          "id": "a",
-          "text": "Preparación: alcohol + abrasión + gel conductor.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "Preparación: alcohol + abrasión + gel conductor.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Impedancia de electrodos», ¿cuál afirmación es la correcta?\nImpedancia alta = más ruido = potenciales de peor calidad.",
-      "options": [
-        {
-          "id": "a",
-          "text": "Impedancia alta = más ruido = potenciales de peor calidad.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "Impedancia alta = más ruido = potenciales de peor calidad.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
+      ]
     }
   ],
-  "examQuestions": [
-    {
-      "module_id": "fundamentals",
-      "topic_id": "impedance",
-      "topic_name": "Impedancia de electrodos",
-      "island_name": "EMG",
-      "stem": "Caso breve ligado a «Impedancia de electrodos». Impedancia objetivo: <5-10 kΩ. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Impedancia objetivo: <5-10 kΩ.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "Si un SNAP no se puede obtener, antes de declararlo \"ausente\", verifica la impedancia. Una impedancia alta puede enterrar la señal en el ruido.",
-      "source_reference": "Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "tags": [
-        "fundamentals",
-        "impedance"
-      ],
-      "status": "DRAFT"
-    }
-  ]
+  "examQuestions": []
 }

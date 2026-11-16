@@ -93,12 +93,17 @@ import type {
 import type { Module, Topic } from '../../types/content';
 import type { AcademicMilestone } from '../../types/academicGradebook';
 import type { AdminProfileRow } from '../../types/admin';
-import { allModules } from '../../content/modules';
 import {
   isTopicDeletedOverride,
   nextCourseSortOrder,
 } from '../../content/courseCatalog';
-import { moveItem, siblingOverrideInputs } from '../../utils/syllabusTree';
+import {
+  buildModuleReorderProposal,
+  buildTopicReorderProposal,
+  type PendingSyllabusReorder,
+  type ReorderTriggerSource,
+} from '../../utils/syllabusReorder';
+import { SyllabusReorderConfirmModal } from './SyllabusReorderConfirmModal';
 import {
   accessWriteForOpenTopics,
   isTopicOpenToRegistered,
@@ -285,6 +290,8 @@ export default function AdminSyllabusPage() {
     workshopId: string;
     topicTitle: string;
   } | null>(null);
+  const [pendingReorder, setPendingReorder] = useState<PendingSyllabusReorder | null>(null);
+  const [confirmingReorder, setConfirmingReorder] = useState(false);
 
   // Active Topic Configuration Drawer
   const [activeTopicDrawer, setActiveTopicDrawer] = useState<{
@@ -911,50 +918,148 @@ export default function AdminSyllabusPage() {
     }
   };
 
-  const reorderModules = (courseId: CourseId, from: number, to: number) => {
-    const ids = rowsForCourse(courseId).map((row) => row.assignment.module_id);
-    const swapped = moveItem(ids, from, to);
-    void run(`reorder-${courseId}`, () => reorderCourseModules(courseId, swapped), 'Orden de módulos actualizado.');
+  const hasActiveOrderFilter = Boolean(searchQuery.trim()) || filterMode !== 'all';
+
+  const requestModuleReorder = (
+    courseId: CourseId,
+    from: number,
+    to: number,
+    source: ReorderTriggerSource
+  ) => {
+    if (hasActiveOrderFilter && source !== 'temario-salto') return;
+    const rows = rowsForCourse(courseId);
+    const targetRow = rows[from];
+    if (!targetRow) return;
+    const courseTitle =
+      courses.find((c) => c.id === courseId)?.title ?? String(courseId);
+    const modAccess = accessMap.get(targetRow.mod.id);
+    const openTopicsInModuleCount = topicRowsForModule(targetRow.mod).filter((r) =>
+      isTopicOpenToRegistered(modAccess, [r.topic.id])
+    ).length;
+
+    const proposal = buildModuleReorderProposal({
+      courseId,
+      courseTitle,
+      modules: rows.map((row) => ({ id: row.mod.id, title: row.mod.title })),
+      fromIndex: from,
+      toIndex: to,
+      source,
+      impacts: {
+        isHidden: !targetRow.assignment.is_visible,
+        openTopicsInModuleCount,
+      },
+    });
+    if (proposal) setPendingReorder(proposal);
   };
 
-  const moveTopic = (moduleId: string, topicId: string, direction: -1 | 1) => {
+  const requestTopicReorder = (
+    moduleId: string,
+    topicId: string,
+    move: { delta: -1 | 1 } | { targetIndex: number },
+    source: ReorderTriggerSource
+  ) => {
+    if (hasActiveOrderFilter && (source === 'temario-flechas' || source === 'temario-drag')) return;
     const mod = moduleById.get(moduleId);
     if (!mod) return;
     const rows = topicRowsForModule(mod);
     const idx = rows.findIndex((r) => r.topic.id === topicId);
-    const next = idx + direction;
-    if (idx < 0 || next < 0 || next >= rows.length) return;
-    const swapped = [...rows];
-    [swapped[idx], swapped[next]] = [swapped[next], swapped[idx]];
-    void run(
-      `topic-${topicId}`,
-      () =>
-        setSyllabusTopicOverrides(
-          moduleId,
-          swapped.map((r, i) => ({ topic_id: r.topic.id, sort_order: i, is_visible: r.visible }))
-        ),
-      'Orden de temas actualizado.'
-    );
+    if (idx < 0) return;
+    const next = 'delta' in move ? idx + move.delta : move.targetIndex;
+    if (next < 0 || next >= rows.length || next === idx) return;
+
+    const targetRow = rows[idx];
+    const scheduled = workshopByTopicId.get(topicId);
+    const modAccess = accessMap.get(moduleId);
+
+    const proposal = buildTopicReorderProposal({
+      moduleId,
+      containerTitle: mod.title,
+      siblings: rows.map((r) => ({ id: r.topic.id, title: r.topic.title })),
+      overrides,
+      fromIndex: idx,
+      toIndex: next,
+      entityType: 'tema',
+      source,
+      impacts: {
+        isHidden: !targetRow.visible,
+        hasScheduledDate: Boolean(scheduled),
+        scheduledDateLabel: scheduled
+          ? new Date(scheduled.scheduled_at).toLocaleDateString('es-MX', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : undefined,
+        isOpenToRegistration: isTopicOpenToRegistered(modAccess, [topicId]),
+      },
+    });
+    if (proposal) setPendingReorder(proposal);
   };
 
-  const moveSiblings = (moduleId: string, siblings: Topic[], topicId: string, direction: -1 | 1) => {
+  const requestSiblingReorder = (
+    moduleId: string,
+    parentTopicTitle: string,
+    siblings: Topic[],
+    topicId: string,
+    move: { delta: -1 | 1 } | { targetIndex: number },
+    source: ReorderTriggerSource
+  ) => {
     const idx = siblings.findIndex((topic) => topic.id === topicId);
-    const next = idx + direction;
-    if (idx < 0 || next < 0 || next >= siblings.length) return;
-    const swapped = moveItem(siblings, idx, next);
-    void run(
-      `topic-${topicId}`,
-      () =>
-        setSyllabusTopicOverrides(
-          moduleId,
-          siblingOverrideInputs(
-            swapped.map((topic) => topic.id),
-            moduleId,
-            overrides
-          )
-        ),
-      'Orden de subtemas actualizado.'
-    );
+    if (idx < 0) return;
+    const next = 'delta' in move ? idx + move.delta : move.targetIndex;
+    if (next < 0 || next >= siblings.length || next === idx) return;
+
+    const ov = overrides.find((o) => o.module_id === moduleId && o.topic_id === topicId);
+    const scheduled = workshopByTopicId.get(topicId);
+    const modAccess = accessMap.get(moduleId);
+
+    const proposal = buildTopicReorderProposal({
+      moduleId,
+      containerTitle: parentTopicTitle,
+      siblings: siblings.map((t) => ({ id: t.id, title: t.title })),
+      overrides,
+      fromIndex: idx,
+      toIndex: next,
+      entityType: 'subtema',
+      source,
+      impacts: {
+        isHidden: !(ov?.is_visible ?? true),
+        hasScheduledDate: Boolean(scheduled),
+        scheduledDateLabel: scheduled
+          ? new Date(scheduled.scheduled_at).toLocaleDateString('es-MX', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : undefined,
+        isOpenToRegistration: isTopicOpenToRegistered(modAccess, [topicId]),
+      },
+    });
+    if (proposal) setPendingReorder(proposal);
+  };
+
+  const handleConfirmReorder = async () => {
+    if (!pendingReorder) return;
+    const current = pendingReorder;
+    setConfirmingReorder(true);
+    try {
+      if (current.entityType === 'modulo' && current.courseId && current.orderedModuleIds) {
+        await run(
+          `reorder-${current.courseId}`,
+          () => reorderCourseModules(current.courseId!, current.orderedModuleIds!),
+          current.successMessage
+        );
+      } else if (current.topicOverrideInputs?.length) {
+        await run(
+          `topic-${current.itemId}`,
+          () => setSyllabusTopicOverrides(current.moduleId, current.topicOverrideInputs!),
+          current.successMessage
+        );
+      }
+      setPendingReorder(null);
+    } finally {
+      setConfirmingReorder(false);
+    }
   };
 
   const toggleTopicVisible = (
@@ -1129,6 +1234,8 @@ export default function AdminSyllabusPage() {
         parentTopic: parent,
         isVisible: ov?.is_visible ?? true,
         sortOrder: ov?.sort_order ?? subIdx,
+        currentPosition: subIdx + 1,
+        totalSiblings: siblings.length,
         canMoveUp: subIdx > 0,
         canMoveDown: subIdx >= 0 && subIdx < siblings.length - 1,
         siblings,
@@ -1144,6 +1251,8 @@ export default function AdminSyllabusPage() {
       parentTopic: null,
       isVisible: row.visible,
       sortOrder: row.order,
+      currentPosition: idx + 1,
+      totalSiblings: tRows.length,
       canMoveUp: idx > 0,
       canMoveDown: idx >= 0 && idx < tRows.length - 1,
       siblings: tRows.map((r) => r.topic),
@@ -1966,6 +2075,24 @@ export default function AdminSyllabusPage() {
                   </div>
                 </div>
 
+                {hasActiveOrderFilter && courseStats.moduleCount > 0 && (
+                  <div className="px-3.5 py-2 rounded-xl border border-amber-200/80 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/30 text-[11px] font-medium text-amber-800 dark:text-amber-200 flex items-center justify-between gap-2">
+                    <span>
+                      El reordenamiento (flechas y arrastre) está bloqueado mientras tengas filtros o búsqueda activos para proteger la secuencia de los temas ocultos.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setFilterMode('all');
+                      }}
+                      className="shrink-0 font-bold underline cursor-pointer"
+                    >
+                      Mostrar todos
+                    </button>
+                  </div>
+                )}
+
                 {/* Lista de Módulos del Curso */}
                 {courseStats.moduleCount === 0 ? (
                   <div className="p-8 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
@@ -2004,8 +2131,10 @@ export default function AdminSyllabusPage() {
                   <SortableList
                     items={rowsForCourse(selectedCourse.id)}
                     getId={(row) => row.mod.id}
-                    disabled={busyKey !== null}
-                    onReorder={(from, to) => reorderModules(selectedCourse.id, from, to)}
+                    disabled={busyKey !== null || hasActiveOrderFilter}
+                    onReorder={(from, to) =>
+                      requestModuleReorder(selectedCourse.id, from, to, 'temario-drag')
+                    }
                     renderItem={(row, handle, index) => {
                       const moduleRows = rowsForCourse(selectedCourse.id);
                       const { assignment, mod } = row;
@@ -2249,6 +2378,35 @@ export default function AdminSyllabusPage() {
                                         Mover a {course.title}
                                       </button>
                                     ))}
+                                    {moduleRows.length > 2 && !hasActiveOrderFilter && (
+                                      <div className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 mt-1 space-y-1">
+                                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                          Mover a posición
+                                        </label>
+                                        <select
+                                          value={index}
+                                          onChange={(e) => {
+                                            const targetIdx = Number(e.target.value);
+                                            setModuleMenuId(null);
+                                            if (!Number.isNaN(targetIdx) && targetIdx !== index) {
+                                              requestModuleReorder(
+                                                selectedCourse.id,
+                                                index,
+                                                targetIdx,
+                                                'temario-salto'
+                                              );
+                                            }
+                                          }}
+                                          className="w-full px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200"
+                                        >
+                                          {moduleRows.map((_, posIdx) => (
+                                            <option key={posIdx} value={posIdx}>
+                                              Posición #{posIdx + 1}{posIdx === index ? ' (actual)' : ''}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                    )}
                                     <button
                                       type="button"
                                       className="w-full text-left px-3 py-2 text-xs text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 border-t border-slate-100 dark:border-slate-800 mt-1 pt-2"
@@ -2272,9 +2430,10 @@ export default function AdminSyllabusPage() {
                                 type="button"
                                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-25 disabled:pointer-events-none transition cursor-pointer hidden sm:flex"
                                 aria-label="Subir módulo"
-                                disabled={busyKey !== null || index === 0}
+                                title={hasActiveOrderFilter ? 'Desactiva filtros/búsqueda para reordenar' : 'Subir módulo'}
+                                disabled={busyKey !== null || hasActiveOrderFilter || index === 0}
                                 onClick={() =>
-                                  reorderModules(selectedCourse.id, index, index - 1)
+                                  requestModuleReorder(selectedCourse.id, index, index - 1, 'temario-flechas')
                                 }
                               >
                                 <ChevronUp className="w-3.5 h-3.5" />
@@ -2283,9 +2442,14 @@ export default function AdminSyllabusPage() {
                                 type="button"
                                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-25 disabled:pointer-events-none transition cursor-pointer hidden sm:flex"
                                 aria-label="Bajar módulo"
-                                disabled={busyKey !== null || index === moduleRows.length - 1}
+                                title={hasActiveOrderFilter ? 'Desactiva filtros/búsqueda para reordenar' : 'Bajar módulo'}
+                                disabled={
+                                  busyKey !== null ||
+                                  hasActiveOrderFilter ||
+                                  index === moduleRows.length - 1
+                                }
                                 onClick={() =>
-                                  reorderModules(selectedCourse.id, index, index + 1)
+                                  requestModuleReorder(selectedCourse.id, index, index + 1, 'temario-flechas')
                                 }
                               >
                                 <ChevronDown className="w-3.5 h-3.5" />
@@ -2619,9 +2783,24 @@ export default function AdminSyllabusPage() {
 
                                               <button
                                                 type="button"
-                                                onClick={() => moveTopic(mod.id, topic.id, -1)}
-                                                disabled={busyKey !== null || tIndex === 0}
-                                                title="Subir tema"
+                                                onClick={() =>
+                                                  requestTopicReorder(
+                                                    mod.id,
+                                                    topic.id,
+                                                    { delta: -1 },
+                                                    'temario-flechas'
+                                                  )
+                                                }
+                                                disabled={
+                                                  busyKey !== null ||
+                                                  hasActiveOrderFilter ||
+                                                  tIndex === 0
+                                                }
+                                                title={
+                                                  hasActiveOrderFilter
+                                                    ? 'Desactiva filtros/búsqueda para reordenar'
+                                                    : 'Subir tema'
+                                                }
                                                 className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-20 transition cursor-pointer hidden sm:inline-flex"
                                               >
                                                 <ChevronUp className="w-3.5 h-3.5" />
@@ -2629,12 +2808,24 @@ export default function AdminSyllabusPage() {
 
                                               <button
                                                 type="button"
-                                                onClick={() => moveTopic(mod.id, topic.id, 1)}
+                                                onClick={() =>
+                                                  requestTopicReorder(
+                                                    mod.id,
+                                                    topic.id,
+                                                    { delta: 1 },
+                                                    'temario-flechas'
+                                                  )
+                                                }
                                                 disabled={
                                                   busyKey !== null ||
+                                                  hasActiveOrderFilter ||
                                                   tIndex === filteredTopicRows.length - 1
                                                 }
-                                                title="Bajar tema"
+                                                title={
+                                                  hasActiveOrderFilter
+                                                    ? 'Desactiva filtros/búsqueda para reordenar'
+                                                    : 'Bajar tema'
+                                                }
                                                 className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-20 transition cursor-pointer hidden sm:inline-flex"
                                               >
                                                 <ChevronDown className="w-3.5 h-3.5" />
@@ -2802,6 +2993,8 @@ export default function AdminSyllabusPage() {
         parentTopic={drawerContext?.parentTopic ?? null}
         isVisible={drawerContext?.isVisible ?? true}
         sortOrder={drawerContext?.sortOrder ?? 0}
+        currentPosition={drawerContext?.currentPosition}
+        totalSiblings={drawerContext?.totalSiblings}
         canMoveUp={drawerContext?.canMoveUp ?? false}
         canMoveDown={drawerContext?.canMoveDown ?? false}
         initialTab={activeTopicDrawer?.initialTab ?? 'teaching'}
@@ -2823,14 +3016,41 @@ export default function AdminSyllabusPage() {
         onMove={(direction) => {
           if (!drawerContext) return;
           if (drawerContext.parentTopic) {
-            moveSiblings(
+            requestSiblingReorder(
               drawerContext.mod.id,
+              drawerContext.parentTopic.title,
               drawerContext.siblings,
               drawerContext.topic.id,
-              direction
+              { delta: direction },
+              'drawer-flechas'
             );
           } else {
-            moveTopic(drawerContext.mod.id, drawerContext.topic.id, direction);
+            requestTopicReorder(
+              drawerContext.mod.id,
+              drawerContext.topic.id,
+              { delta: direction },
+              'drawer-flechas'
+            );
+          }
+        }}
+        onMoveToPosition={(targetIndex) => {
+          if (!drawerContext) return;
+          if (drawerContext.parentTopic) {
+            requestSiblingReorder(
+              drawerContext.mod.id,
+              drawerContext.parentTopic.title,
+              drawerContext.siblings,
+              drawerContext.topic.id,
+              { targetIndex },
+              'temario-salto'
+            );
+          } else {
+            requestTopicReorder(
+              drawerContext.mod.id,
+              drawerContext.topic.id,
+              { targetIndex },
+              'temario-salto'
+            );
           }
         }}
         onAssignTeacher={async ({
@@ -3307,7 +3527,7 @@ export default function AdminSyllabusPage() {
         templateCourse={createCourseOpen ? templateCourseForClone : null}
         initialTab={courseModalInitialTab}
         allCourses={courses}
-        allModules={allModules}
+        allModules={modulesForStaff}
         assignedModuleIds={
           editCourseModalOpen && selectedCourse
             ? rowsForCourse(selectedCourse.id).map((r) => r.assignment.module_id)
@@ -3381,6 +3601,13 @@ export default function AdminSyllabusPage() {
           await loadAuxiliaryData();
           notifySuccess('Calendario de cortes actualizado.');
         }}
+      />
+
+      <SyllabusReorderConfirmModal
+        pending={pendingReorder}
+        busy={confirmingReorder}
+        onCancel={() => setPendingReorder(null)}
+        onConfirm={handleConfirmReorder}
       />
     </AdminLayout>
   );

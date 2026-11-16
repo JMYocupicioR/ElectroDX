@@ -3,6 +3,7 @@ import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { findTopicByPath, findTopicInTree, getAllFlatTopics } from '../../services/contentMerge';
 import { useMergedModule } from '../../hooks/useMergedModule';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { useAuth } from '../../contexts/AuthProvider';
 import { ContributionBanner, ContributorContentActions, ProposeQuizLink } from '../editorial/TopicContribution';
 import { TopicStudyTools } from '../student/TopicStudyTools';
@@ -656,6 +657,7 @@ export default function TopicPage() {
   const homeHref = user ? '/portal' : '/';
   const homeLabel = lang === 'en' ? 'Home' : user ? 'Portal' : 'Inicio';
   const { module: mod, loading: moduleLoading, refresh: refreshModule } = useMergedModule(moduleId);
+  const { visibleModules } = useSyllabusCatalog();
   const highlightQuery = useMemo(
     () => new URLSearchParams(location.search).get('q')?.trim() ?? '',
     [location.search],
@@ -1031,12 +1033,12 @@ export default function TopicPage() {
         moduleId: mod.id,
         topicId: pathParts[0] || topic.id,
       },
-      undefined,
+      visibleModules,
       quizGate
     );
     if (!nextAcross) return null;
     return { title: nextAcross.topicTitle, url: nextAcross.url.split('#')[0] };
-  }, [allFlat, currentIndex, completedTopicIds, lang, mod, pathParts, quizGate, topic]);
+  }, [allFlat, currentIndex, completedTopicIds, lang, mod, pathParts, quizGate, topic, visibleModules]);
 
   const topicHasQuiz = useCallback(
     (topicId: string) => quizGate.quizTopicIds.has(topicId),
@@ -1508,17 +1510,37 @@ export default function TopicPage() {
                           </div>
                         </div>
                       )}
-                      {canProposeContent && mod && !hasGrandchildren && (
+                      {mod && !hasGrandchildren && (canProposeContent || topicHasQuiz(child.id)) && (
                         <div className="px-5 sm:px-6 pb-5 pt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-700/40">
                           <p className="text-xs text-slate-500 dark:text-slate-400">
-                            {topicHasQuiz(child.id) ? 'Este tema ya tiene cuestionario' : 'Este tema aún no tiene cuestionario'}
+                            {topicHasQuiz(child.id)
+                              ? quizGate.passedQuizTopicIds.has(child.id)
+                                ? 'Cuestionario del subtema acreditado ✓'
+                                : 'Este subtema cuenta con 1 pregunta clave de evaluación'
+                              : 'Este tema aún no tiene cuestionario'}
                           </p>
-                          <ProposeQuizLink
-                            moduleId={mod.id}
-                            topicId={child.id}
-                            hasQuiz={topicHasQuiz(child.id)}
-                            prominent
-                          />
+                          <div className="flex flex-wrap items-center gap-2">
+                            {topicHasQuiz(child.id) && (
+                              <Link
+                                to={`/modulo/${mod.id}/evaluacion/${child.id}`}
+                                onClick={resetScrollToTop}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-cyan-800 dark:text-cyan-100 bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-300/70 dark:border-cyan-700/50 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition"
+                              >
+                                <ClipboardList className="w-4 h-4" />
+                                {quizGate.passedQuizTopicIds.has(child.id)
+                                  ? 'Revisar cuestionario'
+                                  : 'Responder pregunta'}
+                              </Link>
+                            )}
+                            {canProposeContent && (
+                              <ProposeQuizLink
+                                moduleId={mod.id}
+                                topicId={child.id}
+                                hasQuiz={topicHasQuiz(child.id)}
+                                prominent
+                              />
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>

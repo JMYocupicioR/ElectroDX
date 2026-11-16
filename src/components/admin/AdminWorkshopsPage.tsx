@@ -31,11 +31,10 @@ import {
   getCohortAttendance,
   computeWorkshopAttendanceSummary,
 } from '../../services/attendanceService';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { useAuth } from '../../contexts/AuthProvider';
 import { isWorkshopCompleted } from '../../utils/liveSessionUtils';
 import type { LiveWorkshop, WorkshopStatus } from '../../types/database';
-import type { Module } from '../../types/content';
 import type { AdminProfileRow } from '../../types/admin';
 import type { ClassAttendanceRecord } from '../../types/academicGradebook';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
@@ -56,9 +55,9 @@ function normalizeSearchText(str: string): string {
 export default function AdminWorkshopsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { modulesForStaff: modules } = useSyllabusCatalog();
 
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
-  const [modules, setModules] = useState<Module[]>([]);
   const [students, setStudents] = useState<AdminProfileRow[]>([]);
   const [cohortRecords, setCohortRecords] = useState<ClassAttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +82,6 @@ export default function AdminWorkshopsPage() {
         loadGradeableStudents(user?.id),
       ]);
       setWorkshops(ws);
-      setModules(allModules);
       setStudents(stud);
 
       const records = await getCohortAttendance(stud.map((s) => s.id));
@@ -111,7 +109,7 @@ export default function AdminWorkshopsPage() {
 
   const topicTitleMap = useMemo(() => {
     const map = new Map<string, string>();
-    for (const m of allModules) {
+    for (const m of modules) {
       for (const t of m.topics) {
         map.set(t.id, t.title);
         if (t.children) {
@@ -122,7 +120,7 @@ export default function AdminWorkshopsPage() {
       }
     }
     return map;
-  }, []);
+  }, [modules]);
 
   const counts = useMemo(() => {
     let active = 0;

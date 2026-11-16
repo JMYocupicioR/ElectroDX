@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, Clock, ExternalLink, Play, UserCheck } from 'lucide-react';
 import type { LiveWorkshop } from '../../types/database';
-import { allModules, getModuleById } from '../../content/modules';
-import type { Topic } from '../../types/content';
+import { getModuleById } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import type { Module, Topic } from '../../types/content';
 import {
   briefForWorkshop,
   sessionSummaryText,
@@ -24,9 +25,9 @@ function findTopicTitle(topics: Topic[], topicId: string): string | null {
   return null;
 }
 
-function topicTitleById(topicId: string): string | null {
+function topicTitleById(topicId: string, modules: Module[]): string | null {
   const canonical = canonicalTopicId(topicId);
-  for (const mod of allModules) {
+  for (const mod of modules) {
     const title = findTopicTitle(mod.topics, topicId) ?? findTopicTitle(mod.topics, canonical);
     if (title) return title;
   }
@@ -42,11 +43,15 @@ function recordingSourceLabel(url: string | null): string | null {
   return 'Video';
 }
 
-function topicLabel(workshop: LiveWorkshop, brief?: SessionBrief | null): string | null {
+function topicLabel(
+  workshop: LiveWorkshop,
+  modules: Module[],
+  brief?: SessionBrief | null
+): string | null {
   const topics = briefForWorkshop(workshop, brief).topics;
   if (topics.length === 0) return null;
   if (topics.length > 1) return `${topics.length} temas`;
-  return topicTitleById(topics[0].topicId);
+  return topicTitleById(topics[0].topicId, modules);
 }
 
 interface RecordedWorkshopCardProps {
@@ -55,12 +60,15 @@ interface RecordedWorkshopCardProps {
 }
 
 export function RecordedWorkshopCard({ workshop, brief }: RecordedWorkshopCardProps) {
+  const { modulesWithOverrides } = useSyllabusCatalog();
   const [thumbFailed, setThumbFailed] = useState(false);
   const when = new Date(workshop.scheduled_at);
   const duration = getWorkshopDurationInfo(workshop);
   const thumbnailUrl = getVideoThumbnailUrl(workshop.recording_url);
   const showThumb = Boolean(thumbnailUrl) && !thumbFailed;
-  const moduleInfo = getModuleById(workshop.module_id);
+  const moduleInfo =
+    modulesWithOverrides.find((m) => m.id === workshop.module_id) ??
+    getModuleById(workshop.module_id);
   const summary = sessionSummaryText(workshop.description);
   const resolved = briefForWorkshop(workshop, brief);
   const teachers = resolved.teachers;
@@ -71,7 +79,7 @@ export function RecordedWorkshopCard({ workshop, brief }: RecordedWorkshopCardPr
     .join(', ');
   const extraTeachers = Math.max(0, teachers.length - 2);
   const specialty = teachers.length === 1 ? teachers[0].specialty : null;
-  const topic = topicLabel(workshop, brief);
+  const topic = topicLabel(workshop, modulesWithOverrides, brief);
   const source = recordingSourceLabel(workshop.recording_url);
   const dateLabel = when.toLocaleDateString('es-MX', {
     day: 'numeric',

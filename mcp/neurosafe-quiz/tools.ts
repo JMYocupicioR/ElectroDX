@@ -509,7 +509,7 @@ export async function validateQuizDraft(args: {
   if (allMatchingLeaves.length === 0) {
     errors.push(`quizTopicId '${targetTopicId}' no existe en ningún módulo de src/content/modules/.`);
   } else if (!allMatchingLeaves.some(({ topic }) => isQuizEligibleLeaf(topic))) {
-    errors.push(`El tema '${targetTopicId}' es un contenedor sin contenido; los quizzes solo van en temas hoja.`);
+    warnings.push(`El tema '${targetTopicId}' es un tema contenedor; verifica si deseas evaluación general del bloque además de sus subtemas hoja.`);
   }
 
   const questions: QuizQuestionDraft[] = payload.questions ?? [];

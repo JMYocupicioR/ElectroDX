@@ -4,159 +4,49 @@
   "quizTopicId": "differential-amplification",
   "moduleId": "fundamentals",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "da-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Amplificador diferencial: registra A - B, rechazando ruido común. ¿Esta afirmación es la que corresponde enseñar en «Amplificación diferencial»?",
+      "stem": "¿Cuál es la función principal del amplificador diferencial (electrodos activo G1 y de referencia G2) durante un estudio de electrodiagnóstico?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "da-q1-a",
+          "text": "Restar las señales de G1 y G2 para cancelar el ruido eléctrico ambiental común a ambos y amplificar únicamente la señal real del nervio o músculo.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "da-q1-b",
+          "text": "Enviar corriente eléctrica desde la pantalla hacia el músculo para provocar su contracción.",
+          "isCorrect": false
+        },
+        {
+          "id": "da-q1-c",
+          "text": "Aumentar por igual tanto el ruido de la habitación como la señal del paciente para ver trazos más gruesos.",
+          "isCorrect": false
+        },
+        {
+          "id": "da-q1-d",
+          "text": "Sustituir al electrodo de tierra (ground) para que solo se necesite pegar un cable en la piel.",
           "isCorrect": false
         }
       ],
-      "explanation": "Amplificador diferencial: registra A - B, rechazando ruido común.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q2",
-      "type": "single",
-      "difficulty": "intermediate",
-      "stem": "En «Amplificación diferencial», ¿cuál afirmación es la correcta?\nG1 (activo): sobre punto motor o nervio. G2 (referencia): sitio inactivo.",
-      "options": [
+      "explanation": "En cualquier consultorio u hospital el ruido electromagnético ambiental (lámparas, enchufes de 60 Hz) es mucho más grande que la señal del nervio. El amplificador diferencial resuelve este problema restando lo que captan G1 y G2 (A − B): como el ruido ambiental entra igual por ambos electrodos, se cancela (Ruido − Ruido = 0) y en pantalla queda limpia la respuesta biológica del paciente.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice (4th ed.). Oxford University Press (2013).",
+      "citations": [
         {
-          "id": "a",
-          "text": "G1 (activo): sobre punto motor o nervio. G2 (referencia): sitio inactivo.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
+          "authors": "Kimura J",
+          "title": "Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice",
+          "journal": "Oxford University Press",
+          "year": 2013,
+          "url": "https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687"
         }
-      ],
-      "explanation": "G1 (activo): sobre punto motor o nervio. G2 (referencia): sitio inactivo.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q3",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Amplificación diferencial», ¿cuál afirmación es la correcta?\nGround: entre estimulador y registro.",
-      "options": [
-        {
-          "id": "a",
-          "text": "Ground: entre estimulador y registro.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "Ground: entre estimulador y registro.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
-    },
-    {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Amplificación diferencial», ¿cuál afirmación es la correcta?\nDeflexión inicial positiva = electrodo mal posicionado.",
-      "options": [
-        {
-          "id": "a",
-          "text": "Deflexión inicial positiva = electrodo mal posicionado.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "Deflexión inicial positiva = electrodo mal posicionado.\n\n📚 Referencia: Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "citations": []
+      ]
     }
   ],
-  "examQuestions": [
-    {
-      "module_id": "fundamentals",
-      "topic_id": "differential-amplification",
-      "topic_name": "Amplificación diferencial",
-      "island_name": "EMG",
-      "stem": "Caso breve ligado a «Amplificación diferencial». Amplificador diferencial: registra A - B, rechazando ruido común. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Amplificador diferencial: registra A - B, rechazando ruido común.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "Una deflexión inicial positiva en el CMAP indica electrodo activo mal posicionado. Reubica G1 sobre el punto motor del músculo.",
-      "source_reference": "Brown WF. The Physiological and Technical Basis of Electromyography. Butterworth (1984).",
-      "tags": [
-        "fundamentals",
-        "differential-amplification"
-      ],
-      "status": "DRAFT"
-    }
-  ]
+  "examQuestions": []
 }

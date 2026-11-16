@@ -11,7 +11,7 @@ import {
   Pencil,
   X,
 } from 'lucide-react';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import {
   listQuizzesForValidation,
   setQuizValidationStatus,
@@ -31,6 +31,7 @@ function isCorrectOption(opt: QuizQuestion['options'][number]) {
 }
 
 export function ClinicalQuizValidationPanel() {
+  const { modulesForStaff } = useSyllabusCatalog();
   const [quizzes, setQuizzes] = useState<QuizValidationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +61,8 @@ export function ClinicalQuizValidationPanel() {
   }, []);
 
   const moduleOrder = useMemo(
-    () => new Map(allModules.map((mod, index) => [mod.id, mod.number || index + 1])),
-    []
+    () => new Map(modulesForStaff.map((mod, index) => [mod.id, index + 1])),
+    [modulesForStaff]
   );
 
   const duplicates = useMemo(() => {
@@ -132,8 +133,8 @@ export function ClinicalQuizValidationPanel() {
   }, [quizzes]);
 
   const suggestedModule = useMemo(() => {
-    return allModules.find((mod) => (pendingByModule.get(mod.id) ?? 0) > 0) ?? null;
-  }, [pendingByModule]);
+    return modulesForStaff.find((mod) => (pendingByModule.get(mod.id) ?? 0) > 0) ?? null;
+  }, [modulesForStaff, pendingByModule]);
 
   const pendingTotal = quizzes.filter((q) => q.clinical_validation_status === 'pending_review').length;
 
@@ -208,9 +209,9 @@ export function ClinicalQuizValidationPanel() {
           className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800"
         >
           <option value="">Todos los módulos</option>
-          {allModules.map((mod) => (
+          {modulesForStaff.map((mod, idx) => (
             <option key={mod.id} value={mod.id}>
-              {String(mod.number).padStart(2, '0')}. {mod.title} ({pendingByModule.get(mod.id) ?? 0} pend.)
+              {String(idx + 1).padStart(2, '0')}. {mod.title} ({pendingByModule.get(mod.id) ?? 0} pend.)
             </option>
           ))}
         </select>
@@ -277,7 +278,7 @@ export function ClinicalQuizValidationPanel() {
           <section key={group.moduleId} className="rounded-2xl border border-slate-200 dark:border-slate-700">
             <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="font-semibold">{getModuleLabel(group.moduleId)}</h3>
+                <h3 className="font-semibold">{getModuleLabel(group.moduleId, modulesForStaff)}</h3>
                 <p className="text-xs text-slate-500">{group.items.length} en este filtro</p>
               </div>
               <button
@@ -292,7 +293,7 @@ export function ClinicalQuizValidationPanel() {
               {group.items.map((quiz) => {
                 const dup = duplicateByQuizId.get(quiz.id);
                 const open = openQuizId === quiz.id;
-                const topicUrl = getTopicPublicUrl(quiz.module_id, quiz.topic_id);
+                const topicUrl = getTopicPublicUrl(quiz.module_id, quiz.topic_id, modulesForStaff);
                 return (
                   <li key={quiz.id} className="p-4">
                     <div className="flex items-start gap-3">

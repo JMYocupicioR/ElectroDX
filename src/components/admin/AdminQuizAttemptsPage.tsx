@@ -6,10 +6,11 @@ import { getAdminQuizAttempts } from '../../services/editorialService';
 import { getQuestionStats } from '../../services/quizValidationService';
 import { deleteQuizAttempt } from '../../services/quizService';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import type { AdminQuizAttemptRow } from '../../types/admin';
 
 export default function AdminQuizAttemptsPage() {
+  const { modulesForStaff } = useSyllabusCatalog();
   const [attempts, setAttempts] = useState<AdminQuizAttemptRow[]>([]);
   const [stats, setStats] = useState<Awaited<ReturnType<typeof getQuestionStats>>>([]);
   const [moduleFilter, setModuleFilter] = useState('');
@@ -85,9 +86,9 @@ export default function AdminQuizAttemptsPage() {
             className="text-sm px-3 py-1.5 rounded-lg border"
           >
             <option value="">Todos los módulos</option>
-            {allModules.map((mod) => (
+            {modulesForStaff.map((mod, idx) => (
               <option key={mod.id} value={mod.id}>
-                {mod.number}. {mod.title}
+                {idx + 1}. {mod.title}
               </option>
             ))}
           </select>
@@ -112,7 +113,7 @@ export default function AdminQuizAttemptsPage() {
                       <p className="line-clamp-2">{row.stem}</p>
                       <p className="text-[11px] text-slate-400">{row.quiz_title}</p>
                     </td>
-                    <td className="px-3 py-2 text-xs">{getModuleLabel(row.module_id)}</td>
+                    <td className="px-3 py-2 text-xs">{getModuleLabel(row.module_id, modulesForStaff)}</td>
                     <td className="px-3 py-2">{row.attempt_count}</td>
                     <td className="px-3 py-2 font-semibold text-amber-700">{row.miss_rate}%</td>
                   </tr>
@@ -143,7 +144,7 @@ export default function AdminQuizAttemptsPage() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {attempts.map((row) => {
-                const topicUrl = getTopicPublicUrl(row.module_id, row.topic_id);
+                const topicUrl = getTopicPublicUrl(row.module_id, row.topic_id, modulesForStaff);
                 return (
                   <tr key={row.id} className="bg-white/70 dark:bg-slate-900/40">
                     <td className="px-4 py-3">
@@ -151,7 +152,7 @@ export default function AdminQuizAttemptsPage() {
                       <p className="text-xs text-slate-400">{row.user_email}</p>
                     </td>
                     <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                      {getModuleLabel(row.module_id)}
+                      {getModuleLabel(row.module_id, modulesForStaff)}
                     </td>
                     <td className="px-4 py-3">
                       <span

@@ -192,6 +192,107 @@ export function groupModulesByCourse(
   return { grouped, unassigned };
 }
 
+/**
+ * Reasigna dinámicamente `module.number` (1, 2, 3...) según el orden recibido,
+ * devolviendo copias inmutables sin alterar las definiciones estáticas ni IDs/slugs de enlace.
+ */
+export function renumberModulesSequentially(modules: Module[]): Module[] {
+  return modules.map((mod, idx) => (mod.number === idx + 1 ? mod : { ...mod, number: idx + 1 }));
+}
+
+export interface NumberedSyllabusResult {
+  grouped: GroupedSyllabusCourse[];
+  unassigned: Module[];
+  visibleModules: Module[];
+  numberById: Map<string, number>;
+}
+
+/**
+ * Agrupa y renumera dinámicamente `module.number` (1, 2, 3...) según el orden
+ * vigente de cursos y módulos en el temario.
+ */
+export function buildNumberedSyllabusGroups(
+  modules: Module[],
+  courses: Course[],
+  assignments: CourseModuleRow[],
+  options?: { includeHiddenInSequence?: boolean }
+): NumberedSyllabusResult {
+  const { grouped, unassigned } = groupModulesByCourse(modules, courses, assignments);
+  const numberById = new Map<string, number>();
+  let nextNumber = 1;
+
+  if (options?.includeHiddenInSequence) {
+    for (const group of grouped) {
+      for (const row of group.rows) {
+        numberById.set(row.module.id, nextNumber++);
+      }
+    }
+  } else {
+    for (const group of grouped) {
+      for (const mod of group.modules) {
+        numberById.set(mod.id, nextNumber++);
+      }
+    }
+  }
+
+  for (const mod of unassigned) {
+    if (!numberById.has(mod.id)) {
+      numberById.set(mod.id, nextNumber++);
+    }
+  }
+
+  for (const group of grouped) {
+    for (const row of group.rows) {
+      if (!numberById.has(row.module.id)) {
+        numberById.set(row.module.id, nextNumber++);
+      }
+    }
+  }
+
+  const applyNumber = (mod: Module): Module => {
+    const assigned = numberById.get(mod.id);
+    return assigned !== undefined && mod.number !== assigned ? { ...mod, number: assigned } : mod;
+  };
+
+  const numberedGrouped: GroupedSyllabusCourse[] = grouped.map((group) => ({
+    ...group,
+    modules: group.modules.map(applyNumber),
+    hiddenModules: group.hiddenModules.map(applyNumber),
+    rows: group.rows.map((row) => ({ ...row, module: applyNumber(row.module) })),
+  }));
+  const numberedUnassigned = unassigned.map(applyNumber);
+  const visibleModules = numberedGrouped.flatMap((group) => group.modules);
+
+  return {
+    grouped: numberedGrouped,
+    unassigned: numberedUnassigned,
+    visibleModules,
+    numberById,
+  };
+}
+
+/**
+ * Ordena los módulos según la secuencia vigente del temario:
+ * primero por orden de curso (`courses.sort_order`), luego por orden dentro
+ * del curso (`course_modules.sort_order`), y al final los módulos sin asignar,
+ * renumerando dinámicamente `number` de forma consecutiva (1..N).
+ */
+export function orderModulesBySyllabus(
+  modules: Module[],
+  courses: Course[],
+  assignments: CourseModuleRow[]
+): Module[] {
+  const { grouped, unassigned } = groupModulesByCourse(modules, courses, assignments);
+  const ordered = grouped.flatMap((group) => group.rows.map((row) => row.module));
+  const seen = new Set(ordered.map((mod) => mod.id));
+  for (const mod of unassigned) {
+    if (!seen.has(mod.id)) {
+      ordered.push(mod);
+    }
+  }
+  return renumberModulesSequentially(ordered);
+}
+
 export const DELETED_TOPIC_SORT_ORDER = -999;
 
 export function isTopicDeletedOverride(ov?: SyllabusTopicOverride | null): boolean {

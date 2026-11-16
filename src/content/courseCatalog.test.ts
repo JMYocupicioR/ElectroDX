@@ -1,12 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   applySyllabusTopicOverrides,
+  buildNumberedSyllabusGroups,
   DEFAULT_COURSE_MODULES,
   DEFAULT_COURSES,
   getCourseIdForModule,
   groupModulesByCourse,
   moduleIdsForCourse,
+  orderModulesBySyllabus,
   recommendedNextCourse,
+  renumberModulesSequentially,
   sellableCourseIds,
   assertCreateableCourseId,
 } from './courseCatalog';
@@ -125,5 +128,63 @@ describe('courseCatalog', () => {
     expect(unassigned.map((m) => m.id)).toContain('quick-reference');
     // And no group should exist for 'referencia'
     expect(grouped.find((g) => (g.course.id as string) === 'referencia')).toBeUndefined();
+  });
+
+  it('orders modules deterministically by course sort_order then assignment sort_order and keeps unassigned last', () => {
+    const courses = [
+      { ...DEFAULT_COURSES[1], sort_order: 1 }, // intermedio first
+      { ...DEFAULT_COURSES[0], sort_order: 2 }, // principiante second
+    ];
+    const assignments = [
+      { module_id: 'm-b1', course_id: 'principiante' as const, sort_order: 2, is_visible: true },
+      { module_id: 'm-b2', course_id: 'principiante' as const, sort_order: 1, is_visible: false },
+      { module_id: 'm-i1', course_id: 'intermedio' as const, sort_order: 1, is_visible: true },
+    ];
+    const rawModules: Module[] = [
+      { id: 'orphan', number: 1, title: 'Orphan', titleEn: 'Orphan', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+      { id: 'm-b1', number: 2, title: 'B1', titleEn: 'B1', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+      { id: 'm-i1', number: 3, title: 'I1', titleEn: 'I1', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+      { id: 'm-b2', number: 4, title: 'B2', titleEn: 'B2', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+    ];
+
+    const ordered = orderModulesBySyllabus(rawModules, courses, assignments);
+    expect(ordered.map((m) => m.id)).toEqual(['m-i1', 'm-b2', 'm-b1', 'orphan']);
+    expect(ordered.map((m) => m.number)).toEqual([1, 2, 3, 4]);
+    // Static input objects must not be mutated in-place (preserves resolveModuleId fallback)
+    expect(rawModules.find((m) => m.id === 'm-i1')?.number).toBe(3);
+  });
+
+  it('renumbers visible modules without gaps in student mode and preserves full sequence in staff mode', () => {
+    const courses = [{ ...DEFAULT_COURSES[0], sort_order: 1 }];
+    const assignments = [
+      { module_id: 'm1', course_id: 'principiante' as const, sort_order: 1, is_visible: true },
+      { module_id: 'm-hidden', course_id: 'principiante' as const, sort_order: 2, is_visible: false },
+      { module_id: 'm13', course_id: 'principiante' as const, sort_order: 3, is_visible: true },
+    ];
+    const mods: Module[] = [
+      { id: 'm1', number: 1, title: 'Uno', titleEn: 'One', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+      { id: 'm13', number: 13, title: 'Seguridad', titleEn: 'Safety', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+      { id: 'm-hidden', number: 7, title: 'Oculto', titleEn: 'Hidden', emoji: '', description: '', descriptionEn: '', color: '', icon: 'BookOpen', topics: [] },
+    ];
+
+    const student = buildNumberedSyllabusGroups(mods, courses, assignments);
+    expect(student.visibleModules.map((m) => [m.id, m.number])).toEqual([
+      ['m1', 1],
+      ['m13', 2],
+    ]);
+
+    const staff = buildNumberedSyllabusGroups(mods, courses, assignments, {
+      includeHiddenInSequence: true,
+    });
+    expect(staff.grouped[0]?.rows.map((r) => [r.module.id, r.module.number])).toEqual([
+      ['m1', 1],
+      ['m-hidden', 2],
+      ['m13', 3],
+    ]);
+
+    expect(renumberModulesSequentially([mods[1], mods[0]]).map((m) => [m.id, m.number])).toEqual([
+      ['m13', 1],
+      ['m1', 2],
+    ]);
   });
 });

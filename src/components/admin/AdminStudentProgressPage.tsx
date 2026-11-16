@@ -54,7 +54,7 @@ import {
   rejectExamRetake,
 } from '../../services/studentPlanService';
 import { isAppendixModule } from '../../content/appendixModules';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { getAllTopicIds } from '../../services/studentService';
 import { getModuleLabel, getTopicPublicUrl } from '../../utils/adminUtils';
 import type { Topic, Module } from '../../types/content';
@@ -395,6 +395,7 @@ export default function AdminStudentProgressPage() {
   const { studentId } = useParams<{ studentId: string }>();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { modulesWithOverrides: allModules } = useSyllabusCatalog();
 
   const [dossier, setDossier] = useState<StudentFullDossier | null>(null);
   const [loading, setLoading] = useState(true);
@@ -455,7 +456,7 @@ export default function AdminStudentProgressPage() {
         setExpandedModuleIds(new Set(modsWithProgress));
       }
     }
-  }, [dossier]);
+  }, [dossier, allModules]);
 
   const toggleModuleExpanded = (moduleId: string) => {
     setExpandedModuleIds((prev) => {
@@ -1182,7 +1183,7 @@ export default function AdminStudentProgressPage() {
                             {att.topic_id}
                           </p>
                           <p className="text-[11px] text-slate-400">
-                            {getModuleLabel(att.module_id)}
+                            {getModuleLabel(att.module_id, allModules)}
                           </p>
                         </button>
                       );

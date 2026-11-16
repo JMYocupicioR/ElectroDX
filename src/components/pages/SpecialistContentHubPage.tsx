@@ -21,11 +21,11 @@ import {
   Film,
 } from 'lucide-react';
 import { getWorkshops } from '../../services/courseService';
-import { getAllPublishedTopics, getPublicProfiles, getPublishedModules } from '../../services/editorialService';
-import { allModules } from '../../content/modules';
+import { getPublicProfiles } from '../../services/editorialService';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { resolveAllTopicVideos, parseVideoUrl, getVideoEmbedSrc, getVideoThumbnailUrl, type TopicVideoItem } from '../../utils/mediaValidation';
 import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
-import type { LiveWorkshop, PublishedTopic, Profile, PublishedModule } from '../../types/database';
+import type { LiveWorkshop, Profile, PublishedModule } from '../../types/database';
 import type { Topic } from '../../types/content';
 
 type ContentFilter = 'all' | 'recordings' | 'guides' | 'pearls' | 'images';
@@ -417,10 +417,9 @@ function VideoCard({
 }
 
 export default function SpecialistContentHubPage() {
+  const { visibleModules, publishedTopics } = useSyllabusCatalog();
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
-  const [topics, setTopics] = useState<HubTopic[]>([]);
   const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map());
-  const [modules, setModules] = useState<Map<string, PublishedModule>>(new Map());
   const [loading, setLoading] = useState(true);
 
   // Active playing video modal
@@ -435,132 +434,16 @@ export default function SpecialistContentHubPage() {
     async function loadData() {
       try {
         setLoading(true);
-        const [wsData, topData, profData, modData] = await Promise.all([
+        const [wsData, profData] = await Promise.all([
           getWorkshops(),
-          getAllPublishedTopics(),
           getPublicProfiles(),
-          getPublishedModules(),
         ]);
 
         setWorkshops(wsData);
 
-        // Build modules dictionary (Curriculum modules + Published custom modules)
-        const modMap = new Map<string, PublishedModule>();
-        for (const m of allModules) {
-          modMap.set(m.id, {
-            id: m.id,
-            number: m.number,
-            title: m.title,
-            title_en: m.titleEn || null,
-            emoji: m.emoji,
-            description: m.description || null,
-            description_en: m.descriptionEn || null,
-            color: m.color,
-            icon: m.icon,
-            sort_order: m.number,
-            version: 1,
-            published_at: new Date().toISOString(),
-            published_by: null,
-            last_edited_by: null,
-            source_revision_id: null,
-          });
-        }
-        for (const m of modData) {
-          modMap.set(m.id, m);
-        }
-        setModules(modMap);
-
-        // Profiles
         const profMap = new Map<string, Profile>();
         for (const p of profData) profMap.set(p.id, p);
         setProfiles(profMap);
-
-        // Build Topics list: Combine static curriculum topics from allModules with Supabase published topics
-        const staticTopicsList: HubTopic[] = [];
-        for (const m of allModules) {
-          const flat = flattenTopics(m.topics);
-          for (const t of flat) {
-            const videos = resolveAllTopicVideos(t);
-            staticTopicsList.push({
-              id: t.id,
-              module_id: m.id,
-              title: t.title,
-              title_en: t.titleEn,
-              description: t.description,
-              description_en: t.descriptionEn,
-              content: t.content,
-              content_en: t.contentEn,
-              media: {
-                videoUrls: t.videoUrls,
-                youtubeUrls: t.youtubeUrls,
-                vimeoUrls: t.vimeoUrls,
-                embedUrls: t.embedUrls,
-                imageUrls: t.imageUrls,
-                pdfUrls: t.pdfUrls,
-              },
-              clinical_pearls: t.clinicalPearls,
-              clinical_pearls_en: t.clinicalPearlsEn,
-              key_points: t.keyPoints,
-              key_points_en: t.keyPointsEn,
-              tags: t.tags,
-              key_terms: t.keyTerms,
-              slug: t.id,
-              last_edited_by: t.contributionMeta?.lastEditedBy,
-              published_at: t.contributionMeta?.publishedAt,
-              videos,
-            });
-          }
-        }
-
-        // Map published topics from Supabase
-        const publishedMap = new Map<string, PublishedTopic>();
-        for (const pt of topData) {
-          publishedMap.set(pt.id, pt);
-          if (pt.slug) publishedMap.set(pt.slug, pt);
-          if (pt.module_id) publishedMap.set(`${pt.module_id}:${pt.id}`, pt);
-        }
-
-        // Merge: If a static topic has an approved published version, use published; otherwise static.
-        const finalTopics: HubTopic[] = [];
-        const processedCompositeKeys = new Set<string>();
-
-        for (const st of staticTopicsList) {
-          const compKey = `${st.module_id}:${st.id}`;
-          if (processedCompositeKeys.has(compKey)) continue;
-          processedCompositeKeys.add(compKey);
-
-          const pub =
-            publishedMap.get(compKey) ??
-            publishedMap.get(st.id) ??
-            (st.slug ? publishedMap.get(st.slug) : undefined);
-
-          if (pub) {
-            const videos = resolveAllTopicVideos(pub);
-            finalTopics.push({
-              ...pub,
-              module_id: pub.module_id || st.module_id,
-              videos,
-            });
-          } else {
-            finalTopics.push(st);
-          }
-        }
-
-        // Any published topic in database that wasn't in static curriculum
-        for (const pt of topData) {
-          const compKey = `${pt.module_id || ''}:${pt.id}`;
-          if (!processedCompositeKeys.has(compKey) && !processedCompositeKeys.has(pt.id)) {
-            const videos = resolveAllTopicVideos(pt);
-            finalTopics.push({
-              ...pt,
-              videos,
-            });
-            processedCompositeKeys.add(compKey);
-            processedCompositeKeys.add(pt.id);
-          }
-        }
-
-        setTopics(finalTopics);
       } catch (err) {
         console.error('Error loading specialist content hub data:', err);
       } finally {
@@ -569,6 +452,76 @@ export default function SpecialistContentHubPage() {
     }
     loadData();
   }, []);
+
+  const modules = useMemo(() => {
+    const modMap = new Map<string, PublishedModule>();
+    visibleModules.forEach((m, index) => {
+      modMap.set(m.id, {
+        id: m.id,
+        number: m.number,
+        title: m.title,
+        title_en: m.titleEn || null,
+        emoji: m.emoji,
+        description: m.description || null,
+        description_en: m.descriptionEn || null,
+        color: m.color,
+        icon: m.icon,
+        sort_order: index + 1,
+        version: 1,
+        published_at: new Date().toISOString(),
+        published_by: null,
+        last_edited_by: null,
+        source_revision_id: null,
+      });
+    });
+    return modMap;
+  }, [visibleModules]);
+
+  const topics = useMemo<HubTopic[]>(() => {
+    const publishedByKey = new Map<string, (typeof publishedTopics)[number]>();
+    for (const pt of publishedTopics) {
+      publishedByKey.set(`${pt.module_id}:${pt.id}`, pt);
+    }
+
+    const list: HubTopic[] = [];
+    for (const m of visibleModules) {
+      const flat = flattenTopics(m.topics);
+      for (const t of flat) {
+        const pub = publishedByKey.get(`${m.id}:${t.id}`);
+        const videos = resolveAllTopicVideos(t);
+        list.push({
+          id: t.id,
+          module_id: m.id,
+          title: t.title,
+          title_en: t.titleEn,
+          description: t.description,
+          description_en: t.descriptionEn,
+          content: t.content,
+          content_en: t.contentEn,
+          video_url: pub?.video_url ?? null,
+          media: {
+            videoUrls: t.videoUrls,
+            youtubeUrls: t.youtubeUrls,
+            vimeoUrls: t.vimeoUrls,
+            embedUrls: t.embedUrls,
+            imageUrls: t.imageUrls,
+            pdfUrls: t.pdfUrls,
+          },
+          clinical_pearls: t.clinicalPearls,
+          clinical_pearls_en: t.clinicalPearlsEn,
+          key_points: t.keyPoints,
+          key_points_en: t.keyPointsEn,
+          tags: t.tags,
+          key_terms: t.keyTerms,
+          slug: pub?.slug ?? t.id,
+          last_edited_by: pub?.last_edited_by ?? t.contributionMeta?.lastEditedBy,
+          published_at: pub?.published_at ?? t.contributionMeta?.publishedAt,
+          videos,
+        });
+      }
+    }
+    return list;
+  }, [visibleModules, publishedTopics]);
 
   // Filtered workshops with recordings
   const recordedWorkshops = useMemo(() => {
@@ -795,10 +748,10 @@ export default function SpecialistContentHubPage() {
             >
               <option value="all">Todos los módulos curriculares</option>
               {Array.from(modules.values())
-                .sort((a, b) => a.number - b.number)
-                .map((m) => (
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((m, idx) => (
                   <option key={m.id} value={m.id}>
-                    {m.emoji} Módulo {m.number}: {m.title}
+                    {m.emoji} Módulo {idx + 1}: {m.title}
                   </option>
                 ))}
             </select>

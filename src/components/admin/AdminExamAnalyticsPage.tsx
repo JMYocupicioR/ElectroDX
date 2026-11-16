@@ -14,7 +14,8 @@ import { deleteQuizAttempt } from '../../services/quizService';
 import { filterExamAttempts, summarizeExamsByTopic, average } from '../../utils/academicAnalytics';
 import { getTopicPublicUrl } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import { getAllFlatTopics } from '../../services/contentMerge';
 import type { AdminProfileRow } from '../../types/admin';
 import type { ExamAttemptAnalyticsRow, ExamAnalyticsFilters } from '../../types/academicAnalytics';
 
@@ -30,6 +31,7 @@ const EMPTY_FILTERS: Omit<ExamAnalyticsFilters, 'studentId'> = {
 
 export default function AdminExamAnalyticsPage() {
   const { user } = useAuth();
+  const { modulesForStaff } = useSyllabusCatalog();
   const [params, setParams] = useSearchParams();
   const studentId = params.get('alumno') || '';
 
@@ -75,11 +77,15 @@ export default function AdminExamAnalyticsPage() {
 
   const topicsForModule = useMemo(() => {
     if (!filters.moduleId) {
-      return allModules.flatMap((m) => m.topics.map((t) => [t.id, t.title] as const));
+      return modulesForStaff.flatMap((m) =>
+        getAllFlatTopics(m.topics).map(({ topic }) => [topic.id, topic.title] as const)
+      );
     }
-    const target = allModules.find((m) => m.id === filters.moduleId);
-    return (target?.topics ?? []).map((t) => [t.id, t.title] as const);
-  }, [filters.moduleId]);
+    const target = modulesForStaff.find((m) => m.id === filters.moduleId);
+    return target
+      ? getAllFlatTopics(target.topics).map(({ topic }) => [topic.id, topic.title] as const)
+      : [];
+  }, [filters.moduleId, modulesForStaff]);
 
   const setStudentId = (id: string) => {
     const next = new URLSearchParams(params);
@@ -165,9 +171,9 @@ export default function AdminExamAnalyticsPage() {
               className={analyticsControlClass()}
             >
               <option value="">Todos los módulos</option>
-              {allModules.map((mod) => (
+              {modulesForStaff.map((mod, idx) => (
                 <option key={mod.id} value={mod.id}>
-                  {mod.number}. {mod.title}
+                  {idx + 1}. {mod.title}
                 </option>
               ))}
             </select>

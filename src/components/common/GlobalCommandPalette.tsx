@@ -20,13 +20,14 @@ import {
 import { useCommandPaletteStore } from '../../stores/commandPaletteStore';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuth } from '../../contexts/AuthProvider';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import {
+  buildCourseDocuments,
   lessonHrefWithQuery,
   mergeSearchHits,
   searchCommandItems,
+  searchDocuments,
   searchLabel,
-  searchStaticCourse,
 } from '../../search/courseSearch';
 import { HighlightedSearchText } from '../../search/HighlightedSearchText';
 
@@ -48,6 +49,12 @@ export function GlobalCommandPalette() {
   const { isOpen, close, toggle } = useCommandPaletteStore();
   const { isDarkMode, toggleDarkMode } = useSettingsStore();
   const { isAdmin, isEditor } = useAuth();
+  const { visibleModules, modulesForStaff } = useSyllabusCatalog();
+  const paletteModules = isAdmin || isEditor ? modulesForStaff : visibleModules;
+  const courseDocuments = useMemo(
+    () => buildCourseDocuments(paletteModules),
+    [paletteModules]
+  );
   const navigate = useNavigate();
 
   const [query, setQuery] = useState('');
@@ -176,7 +183,7 @@ export function GlobalCommandPalette() {
       },
     ];
 
-    allModules.forEach((m) => {
+    paletteModules.forEach((m) => {
       items.push({
         id: `mod-${m.id}`,
         title: m.title,
@@ -260,7 +267,7 @@ export function GlobalCommandPalette() {
     }
 
     return items;
-  }, [allModules, isDarkMode, toggleDarkMode, isAdmin, isEditor]);
+  }, [paletteModules, isDarkMode, toggleDarkMode, isAdmin, isEditor]);
 
   const filteredItems = useMemo(() => {
     const q = query.trim();
@@ -287,7 +294,7 @@ export function GlobalCommandPalette() {
       q,
       20,
     );
-    const merged = mergeSearchHits([...commandHits, ...searchStaticCourse(q, 20)], 20);
+    const merged = mergeSearchHits([...commandHits, ...searchDocuments(courseDocuments, q, 20)], 20);
     const commands = new Map(allItems.map((item) => [item.id, item]));
 
     return merged.flatMap((hit): CommandItem[] => {
@@ -309,7 +316,7 @@ export function GlobalCommandPalette() {
         },
       ];
     });
-  }, [allItems, query]);
+  }, [allItems, courseDocuments, query]);
 
   // Reset selected index when results change
   useEffect(() => {

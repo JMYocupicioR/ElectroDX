@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { BookOpen, Search } from 'lucide-react';
-import { allModules } from '../../content/modules';
 import { isAppendixModule } from '../../content/appendixModules';
-import type { Topic } from '../../types/content';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
+import type { Module, Topic } from '../../types/content';
 import { READING_TOPIC_LIMIT } from '../../utils/readingAssignments';
 
 interface LeafTopic {
@@ -27,8 +27,8 @@ function collectLeaves(topics: Topic[], trail: string[], into: LeafTopic[]) {
   }
 }
 
-function topicGroups(): ModuleGroup[] {
-  return allModules
+function topicGroups(modules: Module[]): ModuleGroup[] {
+  return modules
     .filter((mod) => !isAppendixModule(mod.id))
     .map((mod) => {
       const topics: LeafTopic[] = [];
@@ -48,7 +48,8 @@ interface ReadingTopicPickerProps {
 }
 
 export function ReadingTopicPicker({ selectedIds, onChange }: ReadingTopicPickerProps) {
-  const groups = useMemo(() => topicGroups(), []);
+  const { modulesWithOverrides } = useSyllabusCatalog();
+  const groups = useMemo(() => topicGroups(modulesWithOverrides), [modulesWithOverrides]);
   const [query, setQuery] = useState('');
   const [openModuleId, setOpenModuleId] = useState<string | null>(groups[0]?.id ?? null);
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);

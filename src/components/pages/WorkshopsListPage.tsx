@@ -8,7 +8,7 @@ import { RecordedWorkshopCard } from '../course/RecordedWorkshopCard';
 import { StudentAgenda } from '../student/StudentAgenda';
 import { getWorkshops } from '../../services/courseService';
 import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import type { LiveWorkshop } from '../../types/database';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import { endOfWeekMonday, startOfWeekMonday } from '../../utils/academicCalendar';
@@ -25,6 +25,7 @@ const itemVariants = {
 
 export default function WorkshopsListPage() {
   const { user, isEnrolledPhysician } = useAuth();
+  const { visibleModules } = useSyllabusCatalog();
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [briefs, setBriefs] = useState<Map<string, SessionBrief>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -69,8 +70,8 @@ export default function WorkshopsListPage() {
 
   const moduleOptions = useMemo(() => {
     const ids = new Set(upcomingWorkshops.map((workshop) => workshop.module_id));
-    return allModules.filter((mod) => ids.has(mod.id));
-  }, [upcomingWorkshops]);
+    return visibleModules.filter((mod) => ids.has(mod.id));
+  }, [upcomingWorkshops, visibleModules]);
 
   const visibleUpcoming = upcomingWorkshops.filter(
     (workshop) => moduleFilter === 'all' || workshop.module_id === moduleFilter,

@@ -1,44 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
-import { allModules } from '../content/modules';
-import type { Module } from '../types/content';
-import type { PublishedModule } from '../types/database';
-import { isSupabaseConfigured } from '../lib/supabase';
-import { getPublishedModules } from '../services/editorialService';
-import { mergeModuleLists } from '../services/moduleMerge';
+import { useSyllabusCatalog } from './useSyllabusCatalog';
 
-export function useAllModules() {
-  const [published, setPublished] = useState<PublishedModule[]>([]);
-  const [loading, setLoading] = useState(isSupabaseConfigured);
+export interface UseAllModulesOptions {
+  /** Si es false, excluye módulos y temas ocultos (ideal para vistas de alumno/públicas). Por defecto true para herramientas docentes. */
+  includeHidden?: boolean;
+}
 
-  useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setPublished([]);
-      setLoading(false);
-      return;
-    }
+/**
+ * Fuente unificada y ordenada del temario (respetando cursos, sort_order de módulos,
+ * temas publicados en Supabase y overrides de orden/visibilidad).
+ */
+export function useAllModules(options?: UseAllModulesOptions) {
+  const {
+    modulesForStaff,
+    visibleModules,
+    publishedModules,
+    loading,
+  } = useSyllabusCatalog();
 
-    let cancelled = false;
-    setLoading(true);
-    getPublishedModules()
-      .then((data) => {
-        if (!cancelled) setPublished(data);
-      })
-      .catch(() => {
-        if (!cancelled) setPublished([]);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+  const includeHidden = options?.includeHidden ?? true;
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const modules: Module[] = useMemo(() => {
-    if (!published.length) return allModules;
-    return mergeModuleLists(published);
-  }, [published]);
-
-  return { modules, published, loading };
+  return {
+    modules: includeHidden ? modulesForStaff : visibleModules,
+    published: publishedModules,
+    loading,
+  };
 }

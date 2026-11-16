@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getAllSearchableTopics } from '../../content/modules';
+import { getAllFlatTopics } from '../../services/contentMerge';
 import { useAllModules } from '../../hooks/useAllModules';
 import { useAuth } from '../../contexts/AuthProvider';
 import { isSupabaseConfigured } from '../../lib/supabase';
@@ -115,12 +115,24 @@ function countTopics(topics: any[]): number {
 }
 
 export default function LandingPage() {
-  const { modules } = useAllModules();
+  const { modules } = useAllModules({ includeHidden: false });
   const { isAdmin, isEditor, isEnrolledPhysician } = useAuth();
   const isStaff = isAdmin || isEditor;
   const studentMode = useStaffViewStore((s) => s.view) === 'student' && isStaff;
   const [searchQuery, setSearchQuery] = useState('');
-  const allTopics = useMemo(() => getAllSearchableTopics(), []);
+  const allTopics = useMemo(
+    () =>
+      modules.flatMap((mod) =>
+        getAllFlatTopics(mod.topics).map(({ topic, path }) => ({
+          moduleId: mod.id,
+          moduleTitle: mod.title,
+          topicPath: path,
+          title: topic.title,
+          description: topic.description,
+        }))
+      ),
+    [modules]
+  );
   const { upcomingWorkshops, load: loadCourse } = useCourseStore();
 
   useEffect(() => {

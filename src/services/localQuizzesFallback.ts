@@ -3,13 +3,67 @@ import type { QuizTopicFlag, QuizWithQuestions } from '../types/quiz';
 
 export const LOCAL_QUIZ_FLAGS: QuizTopicFlag[] = [
   {
-    "topic_id": "voltage-current",
+    "topic_id": "electricity-basics",
     "module_id": "fundamentals",
-    "title": "Evaluación: Principios Básicos y Electricidad",
+    "title": "Evaluación: Bases de Electricidad y Electrónica",
     "pass_score": 70,
     "max_attempts": null,
     "version": 1,
-    "question_count": 13
+    "question_count": 1
+  },
+  {
+    "topic_id": "voltage-current",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Principios de electricidad: voltaje, corriente, resistencia",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
+  },
+  {
+    "topic_id": "differential-amplification",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Amplificación diferencial",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
+  },
+  {
+    "topic_id": "filters",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Filtros: pasa-bajos, pasa-altos, notch",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
+  },
+  {
+    "topic_id": "impedance",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Impedancia de electrodos",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
+  },
+  {
+    "topic_id": "signal-noise-cmrr",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Relación señal/ruido y CMRR",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
+  },
+  {
+    "topic_id": "digitalization",
+    "module_id": "fundamentals",
+    "title": "Evaluación: Digitalización y muestreo de señales",
+    "pass_score": 70,
+    "max_attempts": null,
+    "version": 1,
+    "question_count": 1
   },
   {
     "topic_id": "muscle-contraction-physiology",

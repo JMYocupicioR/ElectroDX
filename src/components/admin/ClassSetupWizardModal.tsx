@@ -30,7 +30,7 @@ import {
   Minimize2,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { detectVideoPlatform } from '../../utils/mediaValidation';
 import { createWorkshop, getWorkshops, updateWorkshop, deleteWorkshop } from '../../services/courseService';
 import {
@@ -86,6 +86,7 @@ export function ClassSetupWizardModal({
   initialMode = 'wizard',
 }: ClassSetupWizardModalProps) {
   const { user } = useAuth();
+  const { modulesForStaff: allModules } = useSyllabusCatalog();
 
   // Mode: Wizard (Modo Fácil) vs Advanced (Modo Técnico)
   const [mode, _setMode] = useState<'wizard' | 'advanced'>(initialMode);
@@ -380,7 +381,7 @@ export function ClassSetupWizardModal({
       }
     }
     return list;
-  }, []);
+  }, [allModules]);
 
   const selectedTopicsDetails = useMemo(() => {
     return selectedTopicIds
@@ -414,21 +415,21 @@ export function ClassSetupWizardModal({
   // ── Secuencia Pedagógica Curricular y Módulo Activo ──
   const currentModule = useMemo(() => {
     return allModules.find((m) => m.id === moduleId) || allModules[0];
-  }, [moduleId]);
+  }, [allModules, moduleId]);
 
   const currentModIndex = useMemo(() => {
     return allModules.findIndex((m) => m.id === currentModule.id);
-  }, [currentModule]);
+  }, [allModules, currentModule]);
 
   const nextModule = useMemo(() => {
     return currentModIndex >= 0 && currentModIndex < allModules.length - 1
       ? allModules[currentModIndex + 1]
       : null;
-  }, [currentModIndex]);
+  }, [allModules, currentModIndex]);
 
   const prevModule = useMemo(() => {
     return currentModIndex > 0 ? allModules[currentModIndex - 1] : null;
-  }, [currentModIndex]);
+  }, [allModules, currentModIndex]);
 
   // Desglose de secciones y subtemas del módulo activo
   const currentModuleSections = useMemo(() => {
@@ -524,7 +525,7 @@ export function ClassSetupWizardModal({
         isActive: m.id === currentModule.id,
       };
     });
-  }, [selectedTopicIds, currentModule.id]);
+  }, [allModules, selectedTopicIds, currentModule.id]);
 
   // Acciones rápidas de 1 Clic para el temario del módulo
   const selectAllCurrentModuleSubtopics = () => {

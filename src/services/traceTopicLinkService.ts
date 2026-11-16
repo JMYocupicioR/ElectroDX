@@ -1,5 +1,5 @@
 import { allModules } from '../content/modules';
-import type { Topic } from '../types/content';
+import type { Module, Topic } from '../types/content';
 import { getAllPublishedTopics } from './editorialService';
 import { getTopicPublicUrl } from '../utils/adminUtils';
 import { findTopicInTree, findTopicPathInTree, topicToRevisionPayload } from './contentMerge';
@@ -35,7 +35,10 @@ function extractDirectivesForPreset(content: string, presetId: string): string[]
  * Escanea todos los temas de todos los módulos (estáticos y publicados en Supabase)
  * para encontrar en cuáles está incrustado un trazo específico (por su presetId).
  */
-export async function findTopicOccurrencesForTrace(presetId: string): Promise<TraceTopicOccurrence[]> {
+export async function findTopicOccurrencesForTrace(
+  presetId: string,
+  modules: Module[] = allModules
+): Promise<TraceTopicOccurrence[]> {
   const occurrences: TraceTopicOccurrence[] = [];
   const visitedKey = new Set<string>();
 
@@ -71,7 +74,7 @@ export async function findTopicOccurrencesForTrace(presetId: string): Promise<Tr
         moduleTitle: modTitle,
         topicId: topic.id,
         topicTitle: pub?.title ?? topic.title,
-        publicUrl: getTopicPublicUrl(modId, topic.id) || `/modulo/${modId}/${topic.id}`,
+        publicUrl: getTopicPublicUrl(modId, topic.id, modules) || `/modulo/${modId}/${topic.id}`,
         fullDirective,
         source,
       });
@@ -84,7 +87,7 @@ export async function findTopicOccurrencesForTrace(presetId: string): Promise<Tr
     }
   };
 
-  for (const mod of allModules) {
+  for (const mod of modules) {
     for (const t of mod.topics) {
       walkTopic(mod.id, mod.number, mod.title, t);
     }
@@ -95,7 +98,7 @@ export async function findTopicOccurrencesForTrace(presetId: string): Promise<Tr
     const key = `${pt.module_id}:${pt.id}`;
     if (!visitedKey.has(key)) {
       visitedKey.add(key);
-      const mod = allModules.find((m) => m.id === pt.module_id);
+      const mod = modules.find((m) => m.id === pt.module_id);
       const directives = extractDirectivesForPreset(pt.content || '', presetId);
       for (const fullDirective of directives) {
         occurrences.push({
@@ -104,7 +107,7 @@ export async function findTopicOccurrencesForTrace(presetId: string): Promise<Tr
           moduleTitle: mod?.title ?? pt.module_id,
           topicId: pt.id,
           topicTitle: pt.title,
-          publicUrl: getTopicPublicUrl(pt.module_id, pt.id) || `/modulo/${pt.module_id}/${pt.id}`,
+          publicUrl: getTopicPublicUrl(pt.module_id, pt.id, modules) || `/modulo/${pt.module_id}/${pt.id}`,
           fullDirective,
           source: 'published',
         });
@@ -126,9 +129,10 @@ export async function attachTraceToTopic(input: {
   authorId: string;
   authorName?: string;
   mode?: 'comparison' | 'static' | 'interactive';
+  modules?: Module[];
 }): Promise<void> {
-  const { presetId, moduleId, topicId, authorId, authorName = 'Administrador Docente', mode = 'comparison' } = input;
-  const mod = allModules.find((m) => m.id === moduleId);
+  const { presetId, moduleId, topicId, authorId, authorName = 'Administrador Docente', mode = 'comparison', modules = allModules } = input;
+  const mod = modules.find((m) => m.id === moduleId);
   if (!mod) throw new Error(`Módulo no encontrado: ${moduleId}`);
 
   const topic = findTopicInTree(mod.topics, topicId);
@@ -183,9 +187,10 @@ export async function detachTraceFromTopic(input: {
   topicId: string;
   authorId: string;
   authorName?: string;
+  modules?: Module[];
 }): Promise<void> {
-  const { presetId, moduleId, topicId, authorId, authorName = 'Administrador Docente' } = input;
-  const mod = allModules.find((m) => m.id === moduleId);
+  const { presetId, moduleId, topicId, authorId, authorName = 'Administrador Docente', modules = allModules } = input;
+  const mod = modules.find((m) => m.id === moduleId);
   if (!mod) throw new Error(`Módulo no encontrado: ${moduleId}`);
 
   const topic = findTopicInTree(mod.topics, topicId);

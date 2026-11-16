@@ -2,11 +2,14 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, ExternalLink, Pencil, RotateCcw, SkipForward } from 'lucide-react';
 import { buildQuizCatalogPath } from '../../../utils/quizCatalogNavigation';
 import { getTopicPublicUrl } from '../../../utils/adminUtils';
+import type { Module } from '../../../types/content';
 import type { TopicMissingQuiz } from '../../../utils/topicsMissingQuiz';
 
 export function TopicsMissingQuizQueue({
   topics,
   total,
+  modules,
+  selectedModuleId,
   onAddQuiz,
   onOmit,
   omitted = [],
@@ -14,6 +17,8 @@ export function TopicsMissingQuizQueue({
 }: {
   topics: TopicMissingQuiz[];
   total: number;
+  modules?: Module[];
+  selectedModuleId?: string;
   onAddQuiz: (topic: TopicMissingQuiz) => void;
   onOmit?: (topic: TopicMissingQuiz) => void;
   omitted?: TopicMissingQuiz[];
@@ -21,7 +26,11 @@ export function TopicsMissingQuizQueue({
 }) {
   if (topics.length === 0 && omitted.length === 0) return null;
 
-  const catalogPath = buildQuizCatalogPath({ estado: 'no_quiz', tab: 'topics' });
+  const catalogPath = buildQuizCatalogPath({
+    estado: 'no_quiz',
+    modulo: selectedModuleId,
+    tab: 'topics',
+  });
 
   return (
     <div className="rounded-2xl border border-amber-200/80 dark:border-amber-900/50 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
@@ -38,7 +47,7 @@ export function TopicsMissingQuizQueue({
       )}
       <ul className="divide-y divide-slate-100 dark:divide-slate-800">
         {topics.map((topic) => {
-          const lessonUrl = getTopicPublicUrl(topic.moduleId, topic.topicId);
+          const lessonUrl = getTopicPublicUrl(topic.moduleId, topic.topicId, modules);
           return (
             <li
               key={`${topic.moduleId}:${topic.curriculumIndex}`}

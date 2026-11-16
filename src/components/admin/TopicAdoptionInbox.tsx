@@ -21,11 +21,11 @@ import {
   Trash2,
   ArrowRight,
 } from 'lucide-react';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { useAuth } from '../../contexts/AuthProvider';
 import { sb } from '../../lib/supabase';
 import { getTopicPublicUrl } from '../../utils/adminUtils';
-import { getSyllabusTopicOverrides, getWorkshops } from '../../services/courseService';
+import { getWorkshops } from '../../services/courseService';
 import {
   DEFAULT_ACADEMIC_MILESTONES,
   getAcademicMilestones,
@@ -58,7 +58,10 @@ export interface TopicAdoptionSummary {
   assignedCount: number;
 }
 
-function indexVisibleBlocks(overrides: SyllabusTopicOverride[]): Map<string, Map<string, string[]>> {
+function indexVisibleBlocks(
+  modules: import('../../types/content').Module[],
+  overrides: SyllabusTopicOverride[]
+): Map<string, Map<string, string[]>> {
   const map = new Map<string, Map<string, string[]>>();
   const walk = (moduleId: string, topics: Topic[], into: Map<string, string[]>, roots: Topic[]) => {
     for (const topic of topics) {
@@ -67,7 +70,7 @@ function indexVisibleBlocks(overrides: SyllabusTopicOverride[]): Map<string, Map
       if (topic.children?.length) walk(moduleId, topic.children, into, roots);
     }
   };
-  for (const mod of allModules) {
+  for (const mod of modules) {
     const into = new Map<string, string[]>();
     walk(mod.id, mod.topics, into, mod.topics);
     map.set(mod.id, into);
@@ -127,8 +130,8 @@ export function TopicAdoptionInbox({
   const { user, isAdmin, isEditor } = useAuth();
   const canAdopt = isAdmin || isEditor;
   const userId = user?.id ?? null;
+  const { modulesWithOverrides: allModules, overrides } = useSyllabusCatalog();
 
-  const [overrides, setOverrides] = useState<SyllabusTopicOverride[]>([]);
   const [commitments, setCommitments] = useState<TopicTeachingCommitment[]>([]);
   const [workshops, setWorkshops] = useState<LiveWorkshop[]>([]);
   const [, setMilestones] = useState<AcademicMilestone[]>([]);
@@ -175,13 +178,11 @@ export function TopicAdoptionInbox({
     setLoading(true);
     setError(null);
     try {
-      const [overrideRows, commitmentRows, milestoneRows, workshopRows] = await Promise.all([
-        getSyllabusTopicOverrides().catch(() => []),
+      const [commitmentRows, milestoneRows, workshopRows] = await Promise.all([
         listTopicTeachingCommitments(),
         getAcademicMilestones().catch(() => []),
         getWorkshops().catch(() => [] as LiveWorkshop[]),
       ]);
-      setOverrides(overrideRows);
       setCommitments(commitmentRows);
       setMilestones(milestoneRows.length ? milestoneRows : DEFAULT_ACADEMIC_MILESTONES);
       setWorkshops(workshopRows);
@@ -198,9 +199,12 @@ export function TopicAdoptionInbox({
 
   const coverage = useMemo(
     () => buildTopicCoverage(allModules, overrides, commitments),
-    [overrides, commitments]
+    [allModules, overrides, commitments]
   );
-  const blocksByModule = useMemo(() => indexVisibleBlocks(overrides), [overrides]);
+  const blocksByModule = useMemo(
+    () => indexVisibleBlocks(allModules, overrides),
+    [allModules, overrides]
+  );
   const coverageByKey = useMemo(() => {
     const map = new Map<string, TopicCoverageNode<TopicTeachingCommitment>>();
     for (const node of coverage) map.set(`${node.moduleId}:${node.topicId}`, node);
@@ -243,7 +247,7 @@ export function TopicAdoptionInbox({
         nodes: groups.get(mod.id) ?? [],
       }))
       .filter((group) => group.nodes.length > 0);
-  }, [withoutTeacher]);
+  }, [withoutTeacher, allModules]);
 
   const titleForTopic = (topicId: string, moduleId: string) =>
     coverageByKey.get(`${moduleId}:${topicId}`)?.topicTitle || topicId;
@@ -385,17 +389,17 @@ export function TopicAdoptionInbox({
   // ── Secuencia Pedagógica Curricular para Selección Docente en Bandeja ──
   const currentPedagogicalModule = useMemo(() => {
     return allModules.find((m) => m.id === selectedPedagogicalModuleId) || allModules[0];
-  }, [selectedPedagogicalModuleId]);
+  }, [allModules, selectedPedagogicalModuleId]);
 
   const currentPedagogicalModIndex = useMemo(() => {
     return allModules.findIndex((m) => m.id === currentPedagogicalModule.id);
-  }, [currentPedagogicalModule]);
+  }, [allModules, currentPedagogicalModule]);
 
   const nextPedagogicalModule = useMemo(() => {
     return currentPedagogicalModIndex >= 0 && currentPedagogicalModIndex < allModules.length - 1
       ? allModules[currentPedagogicalModIndex + 1]
       : null;
-  }, [currentPedagogicalModIndex]);
+  }, [allModules, currentPedagogicalModIndex]);
 
 
   const currentPedagogicalSections = useMemo(() => {
@@ -592,7 +596,7 @@ export function TopicAdoptionInbox({
         isActive: m.id === currentPedagogicalModule.id,
       };
     });
-  }, [commitments, userId, currentPedagogicalModule.id]);
+  }, [allModules, commitments, userId, currentPedagogicalModule.id]);
 
   const handleTogglePedagogicalSubtopic = (
     topicId: string,

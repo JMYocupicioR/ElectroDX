@@ -33,11 +33,16 @@ import { RECORDING_LINKS_CHANGED_EVENT } from '../utils/recordingLinksEvents';
 import {
   assignmentsWithModuleOrder,
   assignmentsWithModuleVisibility,
+  isTopicVisible,
   mergeOverrideInputs,
-  moveItem,
-  siblingOverrideInputs,
   visibilityOverrideInput,
 } from '../utils/syllabusTree';
+import {
+  buildModuleReorderProposal,
+  buildTopicReorderProposal,
+  type PendingSyllabusReorder,
+} from '../utils/syllabusReorder';
+import { SyllabusReorderConfirmModal } from './admin/SyllabusReorderConfirmModal';
 import {
   reorderCourseModules,
   setCourseModuleVisible,
@@ -96,6 +101,7 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   const [draftAssignments, setDraftAssignments] = useState<CourseModuleRow[] | null>(null);
   const [draftOverrides, setDraftOverrides] = useState<SyllabusTopicOverride[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingReorder, setPendingReorder] = useState<PendingSyllabusReorder | null>(null);
   const [undo, setUndo] = useState<{
     label: string;
     assignments: CourseModuleRow[];
@@ -319,37 +325,107 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   };
 
   const handleReorderModules = (courseId: string, moduleIds: string[], from: number, to: number) => {
-    const nextIds = moveItem(moduleIds, from, to);
-    const nextAssignments = assignmentsWithModuleOrder(assignmentsEff, courseId, nextIds);
-    persistSnapshot(
-      'Orden de módulos actualizado',
-      nextAssignments,
-      overridesEff,
-      () => reorderCourseModules(courseId as CourseId, moduleIds)
-    );
-    void runPersist(() => reorderCourseModules(courseId as CourseId, nextIds), assignmentsEff, overridesEff);
+    const group = staffGrouped.find((g) => g.course.id === courseId);
+    const modList = group
+      ? group.rows.map((r) => ({ id: r.module.id, title: r.module.title, isVisible: r.isVisible }))
+      : moduleIds.map((id) => ({ id, title: id, isVisible: true }));
+    const target = modList[from];
+    if (!target) return;
+    const modAccess = moduleAccess.get(target.id);
+    const openTopicsInModuleCount = (group?.rows[from]?.module.topics ?? []).filter((t) =>
+      isTopicOpenToRegistered(modAccess, [t.id])
+    ).length;
+
+    const proposal = buildModuleReorderProposal({
+      courseId: courseId as CourseId,
+      courseTitle: group?.course.title ?? courseId,
+      modules: modList.map((m) => ({ id: m.id, title: m.title })),
+      fromIndex: from,
+      toIndex: to,
+      source: 'sidebar-drag',
+      impacts: {
+        isHidden: !target.isVisible,
+        openTopicsInModuleCount,
+      },
+    });
+    if (proposal) setPendingReorder(proposal);
   };
 
   const handleReorderTopics = (moduleId: string, siblings: Topic[], from: number, to: number) => {
-    const nextSiblings = moveItem(siblings, from, to);
-    const inputs = siblingOverrideInputs(
-      nextSiblings.map((t) => t.id),
+    const target = siblings[from];
+    if (!target) return;
+    const mod = staffGrouped.flatMap((g) => g.rows.map((r) => r.module)).find((m) => m.id === moduleId);
+    const isTopLevel = mod?.topics.some((t) => t.id === target.id) ?? true;
+    const scheduled = workshops.find((w) => w.topic_id === target.id && w.status !== 'cancelled');
+    const modAccess = moduleAccess.get(moduleId);
+
+    const proposal = buildTopicReorderProposal({
       moduleId,
-      overridesEff
-    );
-    const previousInputs = siblingOverrideInputs(
-      siblings.map((t) => t.id),
-      moduleId,
-      overridesEff
-    );
-    const nextOverrides = mergeOverrideInputs(moduleId, overridesEff, inputs);
-    persistSnapshot(
-      'Orden del alumno actualizado',
-      assignmentsEff,
-      nextOverrides,
-      () => setSyllabusTopicOverrides(moduleId, previousInputs)
-    );
-    void runPersist(() => setSyllabusTopicOverrides(moduleId, inputs), assignmentsEff, overridesEff);
+      containerTitle: mod?.title ?? moduleId,
+      siblings: siblings.map((t) => ({ id: t.id, title: t.title })),
+      overrides: overridesEff,
+      fromIndex: from,
+      toIndex: to,
+      entityType: isTopLevel ? 'tema' : 'subtema',
+      source: 'sidebar-drag',
+      impacts: {
+        isHidden: !isTopicVisible(overridesEff, moduleId, target.id),
+        hasScheduledDate: Boolean(scheduled),
+        scheduledDateLabel: scheduled
+          ? new Date(scheduled.scheduled_at).toLocaleDateString('es-MX', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : undefined,
+        isOpenToRegistration: isTopicOpenToRegistered(modAccess, [target.id]),
+      },
+    });
+    if (proposal) setPendingReorder(proposal);
+  };
+
+  const handleConfirmReorder = async () => {
+    if (!pendingReorder) return;
+    const current = pendingReorder;
+    if (current.entityType === 'modulo' && current.courseId && current.orderedModuleIds) {
+      const nextAssignments = assignmentsWithModuleOrder(
+        assignmentsEff,
+        current.courseId,
+        current.orderedModuleIds
+      );
+      const prevIds = current.previousModuleIds ?? [];
+      persistSnapshot(
+        current.successMessage,
+        nextAssignments,
+        overridesEff,
+        () => reorderCourseModules(current.courseId!, prevIds)
+      );
+      setPendingReorder(null);
+      await runPersist(
+        () => reorderCourseModules(current.courseId!, current.orderedModuleIds!),
+        assignmentsEff,
+        overridesEff
+      );
+    } else if (current.topicOverrideInputs?.length) {
+      const nextOverrides = mergeOverrideInputs(
+        current.moduleId,
+        overridesEff,
+        current.topicOverrideInputs
+      );
+      const prevInputs = current.previousTopicOverrideInputs ?? [];
+      persistSnapshot(
+        'Orden del alumno actualizado',
+        assignmentsEff,
+        nextOverrides,
+        () => setSyllabusTopicOverrides(current.moduleId, prevInputs)
+      );
+      setPendingReorder(null);
+      await runPersist(
+        () => setSyllabusTopicOverrides(current.moduleId, current.topicOverrideInputs!),
+        assignmentsEff,
+        overridesEff
+      );
+    }
   };
 
   const handleToggleModuleVisible = (moduleId: string, nextVisible: boolean) => {
@@ -438,14 +514,14 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
   };
 
   const isSearching = searchQuery.trim().length >= 2;
-  const modalOpen = Boolean(createTopic || material || liveClass || linkRecording);
+  const modalOpen = Boolean(createTopic || material || liveClass || linkRecording || pendingReorder);
   const panelRef = useFocusTrap(isOpen && !modalOpen);
 
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (createTopic || material || liveClass || linkRecording) return;
+      if (createTopic || material || liveClass || linkRecording || pendingReorder) return;
       onClose();
     };
     document.addEventListener('keydown', onKey);
@@ -845,6 +921,12 @@ export function CourseSidebar({ isOpen, onClose }: CourseSidebarProps) {
               }}
             />
           )}
+          <SyllabusReorderConfirmModal
+            pending={pendingReorder}
+            busy={busy}
+            onCancel={() => setPendingReorder(null)}
+            onConfirm={handleConfirmReorder}
+          />
         </>
       )}
     </AnimatePresence>

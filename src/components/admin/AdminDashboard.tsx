@@ -45,7 +45,6 @@ import { listOmittedQuizTopics, topTopicsMissingQuiz } from '../../utils/topicsM
 import { useOmittedQuizTopics } from '../../hooks/useOmittedQuizTopics';
 import { TopicsMissingQuizQueue } from './quiz/TopicsMissingQuizQueue';
 import { findDuplicateStems } from '../../utils/quizDuplicates';
-import { allModules } from '../../content/modules';
 import { getCohortAcademicSummaries } from '../../services/gradebookService';
 import { filterGradeableStudents } from '../../utils/adminUtils';
 import { useAuth } from '../../contexts/AuthProvider';
@@ -504,14 +503,14 @@ export default function AdminDashboard() {
 
   // Quizzes sorted by module sequence and title
   const sortedPendingQuizzes = useMemo(() => {
-    const moduleOrder = new Map(allModules.map((mod, index) => [mod.id, mod.number || index + 1]));
+    const moduleOrder = new Map(syllabusModules.map((mod, index) => [mod.id, index + 1]));
     return [...pendingQuizzes].sort((a, b) => {
       const orderA = moduleOrder.get(a.module_id) ?? 99;
       const orderB = moduleOrder.get(b.module_id) ?? 99;
       if (orderA !== orderB) return orderA - orderB;
       return (a.title ?? a.topic_id).localeCompare(b.title ?? b.topic_id, 'es');
     });
-  }, [pendingQuizzes]);
+  }, [pendingQuizzes, syllabusModules]);
 
   // Duplicate questions detection for quizzes
   const duplicateQuizIds = useMemo(() => {
@@ -546,8 +545,14 @@ export default function AdminDashboard() {
         quizTopicIdsWithQuestions,
         undefined,
         omittedQuizTopicIds,
+        { preserveModuleOrder: true },
       ),
-      omitted: listOmittedQuizTopics(syllabusModules, omittedQuizTopicIds, quizTopicIdsWithQuestions),
+      omitted: listOmittedQuizTopics(
+        syllabusModules,
+        omittedQuizTopicIds,
+        quizTopicIdsWithQuestions,
+        { preserveModuleOrder: true },
+      ),
     };
   }, [quizTopicIdsWithQuestions, syllabusModules, omittedQuizTopicIds]);
 
@@ -1196,7 +1201,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-2xs">
               {displayedQuizzes.map((quiz) => {
                 const title = quiz.title || `Evaluación: ${quiz.topic_id}`;
-                const mod = allModules.find((m) => m.id === quiz.module_id);
+                const mod = syllabusModules.find((m) => m.id === quiz.module_id);
                 const modLabel = mod ? `Módulo ${mod.number}: ${mod.title}` : `Módulo ${quiz.module_id}`;
                 const isDuplicate = duplicateQuizIds.has(quiz.id);
 

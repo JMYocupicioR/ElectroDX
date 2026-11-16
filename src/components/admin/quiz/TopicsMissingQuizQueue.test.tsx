@@ -44,4 +44,28 @@ describe('TopicsMissingQuizQueue', () => {
     );
     expect(html).toBe('');
   });
+
+  it('preserves selectedModuleId in the view-all catalog link', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <TopicsMissingQuizQueue
+          total={3}
+          selectedModuleId="safety-qc"
+          onAddQuiz={vi.fn()}
+          topics={[
+            {
+              topicId: 'gap-1',
+              title: 'Hueco de seguridad',
+              moduleId: 'safety-qc',
+              moduleNumber: 2,
+              moduleTitle: 'Seguridad',
+              curriculumIndex: 1,
+            },
+          ]}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(html).toContain('modulo=safety-qc');
+  });
 });

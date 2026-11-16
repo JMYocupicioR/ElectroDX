@@ -45,6 +45,7 @@ export default function ModulePage() {
     if (!mod) return null;
     return listPendingCurriculumLessons(completedTopicIds, {
       moduleId: mod.id,
+      modules: [mod],
       limit: 1,
     })[0] ?? null;
   }, [mod, completedTopicIds]);

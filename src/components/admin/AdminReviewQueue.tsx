@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Check, X, MessageSquare, ExternalLink, User, Filter } from 'lucide-react';
-import { allModules } from '../../content/modules';
+import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { AdminLayout } from './AdminLayout';
 import {
   getPendingRevisions,
@@ -27,7 +27,10 @@ import { ClinicalQuizValidationPanel } from './ClinicalQuizValidationPanel';
 
 type QueueTab = 'pending' | 'history' | 'clinical';
 
-async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayload | null> {
+async function resolveCurrentPayload(
+  rev: ContentRevision,
+  modules: import('../../types/content').Module[]
+): Promise<RevisionPayload | null> {
   if (rev.payload.revisionType === 'quiz') {
     const topicId = rev.target_topic_id ?? rev.payload.quizTopicId;
     if (!topicId) return null;
@@ -60,7 +63,7 @@ async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayl
   const topicId = rev.target_topic_id ?? rev.payload.id;
   if (!topicId) return null;
 
-  const mod = allModules.find((m) => m.id === rev.module_id);
+  const mod = modules.find((m) => m.id === rev.module_id);
   const path = mod ? findTopicPathInTree(mod.topics, topicId) : null;
   const inheritedReferences = getReferencesForTopic(rev.module_id, topicId, path ? path.slice(0, -1) : []);
 
@@ -74,6 +77,7 @@ async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayl
 }
 
 export default function AdminReviewQueue() {
+  const { modulesForStaff } = useSyllabusCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as QueueTab) || 'pending';
   const [queueTab, setQueueTab] = useState<QueueTab>(initialTab);
@@ -122,12 +126,12 @@ export default function AdminReviewQueue() {
       setNotes('');
       setConfirmApprove(false);
       if (rev && (rev.action === 'update' || rev.target_topic_id || rev.payload.revisionType === 'quiz')) {
-        setCurrentPayload(await resolveCurrentPayload(rev));
+        setCurrentPayload(await resolveCurrentPayload(rev, modulesForStaff));
       } else {
         setCurrentPayload(null);
       }
     });
-  }, [selectedId]);
+  }, [selectedId, modulesForStaff]);
 
   const filtered = useMemo(() => {
     return revisions.filter((r) => {
@@ -147,7 +151,7 @@ export default function AdminReviewQueue() {
   );
 
   const topicUrl = selected
-    ? getTopicPublicUrl(selected.module_id, selected.target_topic_id ?? selected.payload.id)
+    ? getTopicPublicUrl(selected.module_id, selected.target_topic_id ?? selected.payload.id, modulesForStaff)
     : null;
 
   const handleReview = async (status: 'approved' | 'rejected' | 'changes_requested') => {
@@ -204,9 +208,9 @@ export default function AdminReviewQueue() {
           className="text-sm px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800"
         >
           <option value="">Todos los módulos</option>
-          {allModules.map((m) => (
+          {modulesForStaff.map((m, idx) => (
             <option key={m.id} value={m.id}>
-              {m.number}. {m.title}
+              {idx + 1}. {m.title}
             </option>
           ))}
         </select>
@@ -244,7 +248,7 @@ export default function AdminReviewQueue() {
                 <p className="font-medium line-clamp-2">
                   {rev.payload.revisionType === 'quiz' ? '📝 ' : ''}{rev.payload.title}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{getModuleLabel(rev.module_id)}</p>
+                <p className="text-xs text-slate-500 mt-1">{getModuleLabel(rev.module_id, modulesForStaff)}</p>
                 <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                   <User className="w-3 h-3" />
                   {authorNames.get(rev.author_id) ?? 'Colaborador'}
@@ -266,7 +270,7 @@ export default function AdminReviewQueue() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="font-semibold text-lg">{selected.payload.title}</h2>
-                <p className="text-sm text-slate-500">{getModuleLabel(selected.module_id)}</p>
+                <p className="text-sm text-slate-500">{getModuleLabel(selected.module_id, modulesForStaff)}</p>
                 <p className="text-xs text-slate-400 mt-1">
                   Por {authorNames.get(selected.author_id) ?? 'Colaborador'}
                   {selected.submitted_at &&

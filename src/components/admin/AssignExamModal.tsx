@@ -15,7 +15,6 @@ import {
   FileQuestion,
   ShieldCheck,
 } from 'lucide-react';
-import { allModules } from '../../content/modules';
 import { loadExamQuestions } from '../../services/examService';
 import { createBatchAssignments } from '../../services/studentPlanService';
 import { getAdminProfiles, getQuizEditorDataForTopic } from '../../services/editorialService';
@@ -53,7 +52,7 @@ export default function AssignExamModal({
   initialTopicId,
   initialSubtopicId,
 }: AssignExamModalProps) {
-  const { courses, assignments: courseModuleAssignments } = useSyllabusCatalog();
+  const { courses, assignments: courseModuleAssignments, modulesForStaff } = useSyllabusCatalog();
 
   // ─── Estado de Alumnos ───────────────────────────────────────────────────────
   const [profiles, setProfiles] = useState<AdminProfileRow[]>(initialProfiles || []);
@@ -166,9 +165,9 @@ export default function AssignExamModal({
   }, [selectedCourseId, courseModuleAssignments]);
 
   const availableModules = useMemo(() => {
-    if (!courseAssignedModuleIds) return allModules;
-    return allModules.filter((m) => courseAssignedModuleIds.has(m.id));
-  }, [courseAssignedModuleIds]);
+    if (!courseAssignedModuleIds) return modulesForStaff;
+    return modulesForStaff.filter((m) => courseAssignedModuleIds.has(m.id));
+  }, [courseAssignedModuleIds, modulesForStaff]);
 
   // Módulo seleccionado y sus temas
   const currentModule = useMemo(() => {
