@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Músculos de riesgo: diafragma, serrato, romboides",
+  "revisionType": "quiz",
+  "quizTopicId": "risky-muscles",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El diafragma, el serrato anterior y los romboides tienen una cercanía crítica al pulmón y la pleura. ¿Esta afirmación es la que corresponde enseñar en «Músculos de riesgo: diafragma, serrato, romboides»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El diafragma, el serrato anterior y los romboides tienen una cercanía crítica al pulmón y la pleura.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Músculos de riesgo: diafragma, serrato, romboides», ¿cuál afirmación es la correcta?\nSu punción requiere técnica depurada para evitar el neumotórax.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Su punción requiere técnica depurada para evitar el neumotórax.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Su punción requiere técnica depurada para evitar el neumotórax.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Músculos de riesgo: diafragma, serrato, romboides», ¿cuál afirmación es la correcta?\nInserción tangencial: Nunca insertar la aguja perpendicularmente al tórax.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Inserción tangencial: Nunca insertar la aguja perpendicularmente al tórax.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inserción tangencial: Nunca insertar la aguja perpendicularmente al tórax.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Músculos de riesgo: diafragma, serrato, romboides», ¿cuál afirmación es la correcta?\nGuía ecográfica: Altamente recomendada para el diafragma y el serrato anterior.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Guía ecográfica: Altamente recomendada para el diafragma y el serrato anterior.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Guía ecográfica: Altamente recomendada para el diafragma y el serrato anterior.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "risky-muscles",
+      "topic_name": "Músculos de riesgo: diafragma, serrato, romboides",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Músculos de riesgo: diafragma, serrato, romboides». El diafragma, el serrato anterior y los romboides tienen una cercanía crítica al pulmón y la pleura. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El diafragma, el serrato anterior y los romboides tienen una cercanía crítica al pulmón y la pleura.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El diafragma, el serrato anterior y los romboides tienen una cercanía crítica al pulmón y la pleura.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "risky-muscles"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

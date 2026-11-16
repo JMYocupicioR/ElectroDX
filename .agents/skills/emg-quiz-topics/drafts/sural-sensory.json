@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Sural",
+  "revisionType": "quiz",
+  "quizTopicId": "sural-sensory",
+  "moduleId": "nerve-conduction",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El nervio sensitivo de referencia para polineuropatías. ¿Esta afirmación es la que corresponde enseñar en «Nervio Sural»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El nervio sensitivo de referencia para polineuropatías.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nRegistro: posterior al maléolo lateral. Distancia: 14 cm.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Registro: posterior al maléolo lateral. Distancia: 14 cm.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Registro: posterior al maléolo lateral. Distancia: 14 cm.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nAmplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Amplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nSural normal + síntomas sensitivos = radiculopatía S1.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sural normal + síntomas sensitivos = radiculopatía S1.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sural normal + síntomas sensitivos = radiculopatía S1.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "sural-sensory",
+      "topic_name": "Nervio Sural",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Sural». El nervio sensitivo de referencia para polineuropatías. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El nervio sensitivo de referencia para polineuropatías.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Un SNAP sural NORMAL en presencia de síntomas sensitivos en el pie = radiculopatía S1 (lesión preganglionar). Este es uno de los principios más importantes del electrodiagnóstico.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "sural-sensory"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

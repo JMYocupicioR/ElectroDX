@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: El PANS (SNAP): morfología y medición",
+  "revisionType": "quiz",
+  "quizTopicId": "snap-morphology",
+  "moduleId": "nerve-conduction",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Misma medición que la tabla de normas. ¿Esta afirmación es la que corresponde enseñar en «El PANS (SNAP): morfología y medición»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Misma medición que la tabla de normas.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nEl SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nUna convención por laboratorio, siempre.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Una convención por laboratorio, siempre.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Una convención por laboratorio, siempre.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nEl Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "snap-morphology",
+      "topic_name": "El PANS (SNAP): morfología y medición",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «El PANS (SNAP): morfología y medición». Misma medición que la tabla de normas. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Misma medición que la tabla de normas.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "snap-morphology"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

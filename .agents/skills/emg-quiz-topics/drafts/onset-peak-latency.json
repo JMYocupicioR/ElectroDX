@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Latencia de inicio y latencia pico",
+  "revisionType": "quiz",
+  "quizTopicId": "onset-peak-latency",
+  "moduleId": "nerve-conduction",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Pico = reproducibilidad en SNAP chicos. ¿Esta afirmación es la que corresponde enseñar en «Latencia de inicio y latencia pico»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pico = reproducibilidad en SNAP chicos.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nEl cursor es un acto diagnóstico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El cursor es un acto diagnóstico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El cursor es un acto diagnóstico.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nPico no es más lento: es otra magnitud.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pico no es más lento: es otra magnitud.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pico no es más lento: es otra magnitud.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nLa latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "onset-peak-latency",
+      "topic_name": "Latencia de inicio y latencia pico",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Latencia de inicio y latencia pico». Pico = reproducibilidad en SNAP chicos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Pico = reproducibilidad en SNAP chicos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El cursor es un acto diagnóstico.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "onset-peak-latency"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

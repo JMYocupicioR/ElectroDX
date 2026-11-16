@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Vago motor (X)",
+  "revisionType": "quiz",
+  "quizTopicId": "vagus-motor",
+  "moduleId": "nerve-conduction",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El vago se respeta: menos miliamperios, más atención al pulso. ¿Esta afirmación es la que corresponde enseñar en «Nervio Vago motor (X)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El vago se respeta: menos miliamperios, más atención al pulso.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Vago motor (X)», ¿cuál afirmación es la correcta?\nDisfonía + lengua + mano es un patrón, no tres rarezas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Disfonía + lengua + mano es un patrón, no tres rarezas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Disfonía + lengua + mano es un patrón, no tres rarezas.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Vago motor (X)», ¿cuál afirmación es la correcta?\n- Vigilar bradicardia al estimular cuello.",
+      "options": [
+        {
+          "id": "a",
+          "text": "- Vigilar bradicardia al estimular cuello.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "- Vigilar bradicardia al estimular cuello.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Vago motor (X)», ¿cuál afirmación es la correcta?\nEl estímulo en cuello puede causar bradicardia: intensidad justa y monitor clínico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El estímulo en cuello puede causar bradicardia: intensidad justa y monitor clínico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El estímulo en cuello puede causar bradicardia: intensidad justa y monitor clínico.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "vagus-motor",
+      "topic_name": "Nervio Vago motor (X)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Vago motor (X)». El vago se respeta: menos miliamperios, más atención al pulso. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El vago se respeta: menos miliamperios, más atención al pulso.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El vago se respeta: menos miliamperios, más atención al pulso.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "vagus-motor"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: early-recruitment (Module: emg-needle)
+-- Generated at: 2026-11-15T23:31:09.294Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'early-recruitment',
+  'emg-needle',
+  'update',
+  $payload${"title":"Evaluación: Reclutamiento precoz (miopático)","revisionType":"quiz","quizTopicId":"early-recruitment","moduleId":"emg-needle","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Interferencia temprana + PUM cortos. ¿Esta afirmación es la que corresponde enseñar en «Reclutamiento precoz (miopático)»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Interferencia temprana + PUM cortos.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Reclutamiento precoz (miopático)», ¿cuál afirmación es la correcta?\nEsfuerzo incompleto no es miopatía.","options":[{"id":"a","text":"Esfuerzo incompleto no es miopatía.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Esfuerzo incompleto no es miopatía.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Reclutamiento precoz (miopático)», ¿cuál afirmación es la correcta?\nEl reclutamiento precoz es mucha gente para poco trabajo.","options":[{"id":"a","text":"El reclutamiento precoz es mucha gente para poco trabajo.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El reclutamiento precoz es mucha gente para poco trabajo.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Reclutamiento precoz (miopático)», ¿cuál afirmación es la correcta?\nMire el tendón, no solo el altavoz.","options":[{"id":"a","text":"Mire el tendón, no solo el altavoz.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Mire el tendón, no solo el altavoz.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]}],"examQuestions":[{"module_id":"emg-needle","topic_id":"early-recruitment","topic_name":"Reclutamiento precoz (miopático)","island_name":"EMG","stem":"Caso breve ligado a «Reclutamiento precoz (miopático)». Interferencia temprana + PUM cortos. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Interferencia temprana + PUM cortos.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"El reclutamiento precoz es mucha gente para poco trabajo.","source_reference":"Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","tags":["emg-needle","early-recruitment"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'early-recruitment'
+    AND r.module_id = 'emg-needle'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

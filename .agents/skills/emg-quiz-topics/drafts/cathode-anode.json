@@ -1,42 +1,162 @@
 {
-  "revisionType": "quiz",
   "title": "Evaluación: Estimulación eléctrica: cátodo vs. ánodo",
+  "revisionType": "quiz",
   "quizTopicId": "cathode-anode",
+  "moduleId": "nerve-conduction",
   "passScore": 70,
-  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "type": "single",
-      "stem": "¿Por qué el cátodo debe orientarse siempre hacia los electrodos de registro en los estudios de conducción nerviosa?",
-      "options": [
-        { "id": "ca1-opt1", "text": "Porque el cátodo hiperpolariza la membrana y aumenta la velocidad.", "isCorrect": false },
-        { "id": "ca1-opt2", "text": "Porque el cátodo despolariza el nervio y evita el bloqueo anódico.", "isCorrect": true },
-        { "id": "ca1-opt3", "text": "Porque el cátodo actúa como electrodo de referencia y reduce el ruido.", "isCorrect": false },
-        { "id": "ca1-opt4", "text": "Para evitar la contracción muscular excesiva debajo del estimulador.", "isCorrect": false }
-      ],
-      "explanation": "El cátodo (negativo) produce la despolarización que genera el potencial de acción. Si el ánodo estuviese entre el cátodo y el registro, causaría hiperpolarización y un posible bloqueo anódico."
-    },
-    {
+      "id": "q1",
       "type": "true_false",
-      "stem": "La inversión de la polaridad (ánodo dirigido hacia el registro) puede causar una reducción de la amplitud del CMAP y prolongación de la latencia.",
+      "difficulty": "basic",
+      "stem": "Cátodo (negativo) = despolariza el nervio. Ánodo (positivo) = hiperpolariza. ¿Esta afirmación es la que corresponde enseñar en «Estimulación eléctrica: cátodo vs. ánodo»?",
       "options": [
-        { "id": "ca2-opt1", "text": "Verdadero", "isCorrect": true },
-        { "id": "ca2-opt2", "text": "Falso", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "Verdadero. Al invertir la polaridad, la despolarización ocurre en el ánodo (más lejos), lo que prolonga la latencia, y el bloqueo anódico puede reducir la amplitud del potencial."
+      "explanation": "Cátodo (negativo) = despolariza el nervio. Ánodo (positivo) = hiperpolariza.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
     },
     {
+      "id": "q2",
       "type": "single",
-      "stem": "En un estudio de conducción sensitiva antidrómica, ¿cómo se debe posicionar el estimulador?",
+      "difficulty": "intermediate",
+      "stem": "En «Estimulación eléctrica: cátodo vs. ánodo», ¿cuál afirmación es la correcta?\nEl cátodo siempre se orienta hacia los electrodos de registro.",
       "options": [
-        { "id": "ca3-opt1", "text": "El cátodo se coloca proximal al electrodo de registro.", "isCorrect": true },
-        { "id": "ca3-opt2", "text": "El ánodo se coloca distal, más cerca de los dedos.", "isCorrect": false },
-        { "id": "ca3-opt3", "text": "El cátodo debe estar sobre el punto motor del músculo.", "isCorrect": false },
-        { "id": "ca3-opt4", "text": "La polaridad no importa en los estudios antidrómicos.", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "El cátodo siempre se orienta hacia los electrodos de registro.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "En un estudio sensitivo antidrómico, el estímulo viaja desde proximal hacia distal (hacia los dedos). Por tanto, el cátodo debe estar proximal, apuntando hacia los electrodos de registro distales."
+      "explanation": "El cátodo siempre se orienta hacia los electrodos de registro.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación eléctrica: cátodo vs. ánodo», ¿cuál afirmación es la correcta?\nBloqueo anódico: la inversión reduce amplitud y prolonga latencia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bloqueo anódico: la inversión reduce amplitud y prolonga latencia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Bloqueo anódico: la inversión reduce amplitud y prolonga latencia.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación eléctrica: cátodo vs. ánodo», ¿cuál afirmación es la correcta?\nVerificar polaridad del estimulador debe ser el primer paso ante un resultado inesperado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Verificar polaridad del estimulador debe ser el primer paso ante un resultado inesperado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Verificar polaridad del estimulador debe ser el primer paso ante un resultado inesperado.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "cathode-anode",
+      "topic_name": "Estimulación eléctrica: cátodo vs. ánodo",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Estimulación eléctrica: cátodo vs. ánodo». Cátodo (negativo) = despolariza el nervio. Ánodo (positivo) = hiperpolariza. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Cátodo (negativo) = despolariza el nervio. Ánodo (positivo) = hiperpolariza.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si al estimular obtienes un CMAP de menor amplitud de lo esperado, lo PRIMERO que debes verificar es la orientación del estimulador — la inversión cátodo-ánodo es uno de los errores más frecuentes en principiantes.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "cathode-anode"
+      ],
+      "status": "DRAFT"
     }
   ]
 }

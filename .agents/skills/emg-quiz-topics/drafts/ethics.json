@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Ética y prevención cuaternaria en electrodiagnóstico",
+  "revisionType": "quiz",
+  "quizTopicId": "ethics",
+  "moduleId": "fundamentals",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Prevención cuaternaria: evitar estudios innecesarios o dañinos. ¿Esta afirmación es la que corresponde enseñar en «Ética y prevención cuaternaria en electrodiagnóstico»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Prevención cuaternaria: evitar estudios innecesarios o dañinos.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Ética y prevención cuaternaria en electrodiagnóstico», ¿cuál afirmación es la correcta?\nConsentimiento informado obligatorio: explicar procedimiento, molestias y riesgos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Consentimiento informado obligatorio: explicar procedimiento, molestias y riesgos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Consentimiento informado obligatorio: explicar procedimiento, molestias y riesgos.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ética y prevención cuaternaria en electrodiagnóstico», ¿cuál afirmación es la correcta?\nEl método clínico guía la indicación, no la disponibilidad del equipo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El método clínico guía la indicación, no la disponibilidad del equipo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El método clínico guía la indicación, no la disponibilidad del equipo.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ética y prevención cuaternaria en electrodiagnóstico», ¿cuál afirmación es la correcta?\nReportar hallazgos con honestidad, incluyendo estudios normales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Reportar hallazgos con honestidad, incluyendo estudios normales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Reportar hallazgos con honestidad, incluyendo estudios normales.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "fundamentals",
+      "topic_id": "ethics",
+      "topic_name": "Ética y prevención cuaternaria en electrodiagnóstico",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Ética y prevención cuaternaria en electrodiagnóstico». Prevención cuaternaria: evitar estudios innecesarios o dañinos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Prevención cuaternaria: evitar estudios innecesarios o dañinos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El mejor electrodiagnóstico es aquel que responde una pregunta clínica específica con el mínimo de molestias para el paciente.",
+      "source_reference": "Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "tags": [
+        "fundamentals",
+        "ethics"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

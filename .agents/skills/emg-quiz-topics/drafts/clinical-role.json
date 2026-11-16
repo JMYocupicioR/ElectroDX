@@ -1,79 +1,162 @@
 {
-  "revisionType": "quiz",
   "title": "Evaluación: Rol del electrodiagnóstico en medicina",
+  "revisionType": "quiz",
   "quizTopicId": "clinical-role",
+  "moduleId": "fundamentals",
   "passScore": 70,
-  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "cr-q1",
-      "sortOrder": 0,
-      "type": "single",
-      "stem": "¿Cuál es la relación correcta entre el electrodiagnóstico (EDx) y el examen neurológico?",
-      "difficulty": "basic",
-      "options": [
-        { "id": "cr-q1-a", "text": "El EDx sustituye el examen neurológico cuando el paciente no coopera", "isCorrect": false },
-        { "id": "cr-q1-b", "text": "El EDx es una extensión del examen neurológico que aporta datos objetivos", "isCorrect": true },
-        { "id": "cr-q1-c", "text": "El EDx solo se interpreta sin historia clínica ni examen físico", "isCorrect": false },
-        { "id": "cr-q1-d", "text": "El EDx se limita a confirmar diagnósticos ya establecidos por imagen", "isCorrect": false }
-      ],
-      "explanation": "El EDx extiende el examen neurológico con datos objetivos y cuantitativos sobre el SNP y el músculo; siempre debe interpretarse en contexto clínico."
-    },
-    {
-      "id": "cr-q2",
-      "sortOrder": 1,
+      "id": "q1",
       "type": "true_false",
-      "stem": "Un protocolo electrodiagnóstico \"de rutina\" sin hipótesis clínica específica tiene bajo rendimiento diagnóstico.",
       "difficulty": "basic",
+      "stem": "El EDx localiza lesiones: raíz, plexo, nervio, UNM o músculo. ¿Esta afirmación es la que corresponde enseñar en «Rol del electrodiagnóstico en medicina»?",
       "options": [
-        { "id": "cr-q2-true", "text": "Verdadero", "isCorrect": true },
-        { "id": "cr-q2-false", "text": "Falso", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "El protocolo debe adaptarse a la pregunta clínica; estudios sin hipótesis reducen la utilidad diagnóstica."
+      "explanation": "El EDx localiza lesiones: raíz, plexo, nervio, UNM o músculo.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
     },
     {
-      "id": "cr-q3",
-      "sortOrder": 2,
-      "type": "multiple",
-      "stem": "Seleccione las funciones principales del electrodiagnóstico (marque todas las correctas):",
-      "difficulty": "intermediate",
-      "options": [
-        { "id": "cr-q3-a", "text": "Localización anatómica de la lesión", "isCorrect": true },
-        { "id": "cr-q3-b", "text": "Determinación de fisiopatología (axonal vs. desmielinizante)", "isCorrect": true },
-        { "id": "cr-q3-c", "text": "Estimación de severidad y pronóstico", "isCorrect": true },
-        { "id": "cr-q3-d", "text": "Diagnóstico histológico definitivo de miopatía", "isCorrect": false }
-      ],
-      "explanation": "El EDx localiza, tipifica fisiopatología, estima severidad/pronóstico y guía terapia. El diagnóstico histológico definitivo requiere biopsia, no EDx."
-    },
-    {
-      "id": "cr-q4",
-      "sortOrder": 3,
+      "id": "q2",
       "type": "single",
-      "stem": "¿Qué niveles anatómicos puede distinguir el electrodiagnóstico en la localización de lesiones?",
       "difficulty": "intermediate",
+      "stem": "En «Rol del electrodiagnóstico en medicina», ¿cuál afirmación es la correcta?\nDiferencia fisiopatología: axonal vs. desmielinizante.",
       "options": [
-        { "id": "cr-q4-a", "text": "Solo nervio periférico y músculo", "isCorrect": false },
-        { "id": "cr-q4-b", "text": "Raíz, plexo, nervio periférico, unión neuromuscular o músculo", "isCorrect": true },
-        { "id": "cr-q4-c", "text": "Solo raíz nerviosa y corteza cerebral", "isCorrect": false },
-        { "id": "cr-q4-d", "text": "Únicamente unión neuromuscular y médula espinal", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "Diferencia fisiopatología: axonal vs. desmielinizante.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "El EDx permite distinguir lesión en raíz, plexo, nervio periférico, unión neuromuscular o músculo."
+      "explanation": "Diferencia fisiopatología: axonal vs. desmielinizante.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
     },
     {
-      "id": "cr-q5",
-      "sortOrder": 4,
+      "id": "q3",
       "type": "single",
-      "stem": "¿Cuáles son los tres componentes principales del electrodiagnóstico mencionados en el módulo de fundamentos?",
-      "difficulty": "basic",
+      "difficulty": "advanced",
+      "stem": "En «Rol del electrodiagnóstico en medicina», ¿cuál afirmación es la correcta?\nEstima severidad, pronóstico y guía decisiones terapéuticas.",
       "options": [
-        { "id": "cr-q5-a", "text": "NCS, EMG de aguja y pruebas especiales (ENR, SFEMG, PE)", "isCorrect": true },
-        { "id": "cr-q5-b", "text": "EEG, EMG y potenciales evocados visuales", "isCorrect": false },
-        { "id": "cr-q5-c", "text": "NCS, ecografía y resonancia magnética", "isCorrect": false },
-        { "id": "cr-q5-d", "text": "Solo electromiografía de superficie y NCS", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "Estima severidad, pronóstico y guía decisiones terapéuticas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "Los componentes principales son estudios de conducción nerviosa (NCS), EMG de aguja y pruebas especiales como ENR, SFEMG y potenciales evocados."
+      "explanation": "Estima severidad, pronóstico y guía decisiones terapéuticas.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Rol del electrodiagnóstico en medicina», ¿cuál afirmación es la correcta?\nLos tres componentes son: NCS, EMG de aguja y pruebas especiales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los tres componentes son: NCS, EMG de aguja y pruebas especiales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los tres componentes son: NCS, EMG de aguja y pruebas especiales.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "fundamentals",
+      "topic_id": "clinical-role",
+      "topic_name": "Rol del electrodiagnóstico en medicina",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Rol del electrodiagnóstico en medicina». El EDx localiza lesiones: raíz, plexo, nervio, UNM o músculo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El EDx localiza lesiones: raíz, plexo, nervio, UNM o músculo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Siempre adapta el protocolo EDx a la pregunta clínica específica. Un estudio \"de rutina\" sin hipótesis clínica tiene bajo rendimiento diagnóstico.",
+      "source_reference": "Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "tags": [
+        "fundamentals",
+        "clinical-role"
+      ],
+      "status": "DRAFT"
     }
   ]
 }

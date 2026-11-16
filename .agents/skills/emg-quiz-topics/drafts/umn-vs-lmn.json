@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Neurona motora superior vs. inferior",
+  "revisionType": "quiz",
+  "quizTopicId": "umn-vs-lmn",
+  "moduleId": "fundamentals",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "UMN: corteza → médula. Lesión causa espasticidad, hiperreflexia, Babinski. ¿Esta afirmación es la que corresponde enseñar en «Neurona motora superior vs. inferior»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "UMN: corteza → médula. Lesión causa espasticidad, hiperreflexia, Babinski.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Neurona motora superior vs. inferior», ¿cuál afirmación es la correcta?\nLMN: asta anterior → músculo. Lesión causa atrofia, fasciculaciones, hiporreflexia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "LMN: asta anterior → músculo. Lesión causa atrofia, fasciculaciones, hiporreflexia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "LMN: asta anterior → músculo. Lesión causa atrofia, fasciculaciones, hiporreflexia.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neurona motora superior vs. inferior», ¿cuál afirmación es la correcta?\nEMG evalúa directamente solo LMN y músculo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "EMG evalúa directamente solo LMN y músculo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "EMG evalúa directamente solo LMN y músculo.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neurona motora superior vs. inferior», ¿cuál afirmación es la correcta?\nELA: coexistencia de signos UMN + LMN.",
+      "options": [
+        {
+          "id": "a",
+          "text": "ELA: coexistencia de signos UMN + LMN.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "ELA: coexistencia de signos UMN + LMN.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "fundamentals",
+      "topic_id": "umn-vs-lmn",
+      "topic_name": "Neurona motora superior vs. inferior",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Neurona motora superior vs. inferior». UMN: corteza → médula. Lesión causa espasticidad, hiperreflexia, Babinski. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "UMN: corteza → médula. Lesión causa espasticidad, hiperreflexia, Babinski.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "En ELA coexisten signos de UMN y LMN. La EMG documenta los signos de LMN; los signos de UMN deben documentarse clínicamente.",
+      "source_reference": "Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "tags": [
+        "fundamentals",
+        "umn-vs-lmn"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

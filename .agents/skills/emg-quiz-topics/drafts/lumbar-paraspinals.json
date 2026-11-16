@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Paraespinales lumbares",
+  "revisionType": "quiz",
+  "quizTopicId": "lumbar-paraspinals",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Ramos dorsales, confirman radiculopatía. ¿Esta afirmación es la que corresponde enseñar en «Paraespinales lumbares»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ramos dorsales, confirman radiculopatía.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Paraespinales lumbares», ¿cuál afirmación es la correcta?\nPosición fetal clave para lograr relajación.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Posición fetal clave para lograr relajación.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Posición fetal clave para lograr relajación.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Paraespinales lumbares», ¿cuál afirmación es la correcta?\nInútil diagnosticar lesión nueva si hay cirugía de columna previa en ese nivel.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Inútil diagnosticar lesión nueva si hay cirugía de columna previa en ese nivel.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inútil diagnosticar lesión nueva si hay cirugía de columna previa en ese nivel.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Paraespinales lumbares», ¿cuál afirmación es la correcta?\nMapeo segmentario orientativo, no absoluto.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Mapeo segmentario orientativo, no absoluto.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Mapeo segmentario orientativo, no absoluto.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "lumbar-paraspinals",
+      "topic_name": "Paraespinales lumbares",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Paraespinales lumbares». Ramos dorsales, confirman radiculopatía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Ramos dorsales, confirman radiculopatía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Falta de relajación: El paciente suele tensarse. La posición fetal (decúbito lateral con columna flexionada) es obligatoria para relajar la musculatura y valorar la actividad de reposo.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "lumbar-paraspinals"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

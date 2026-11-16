@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Geniogloso (lengua)",
+  "revisionType": "quiz",
+  "quizTopicId": "genioglossus",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Inervación: nervio hipogloso (XII par). ¿Esta afirmación es la que corresponde enseñar en «Geniogloso (lengua)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inervación: nervio hipogloso (XII par).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Geniogloso (lengua)», ¿cuál afirmación es la correcta?\nCLAVE en ELA: fibrilaciones en lengua = región bulbar afectada.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CLAVE en ELA: fibrilaciones en lengua = región bulbar afectada.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CLAVE en ELA: fibrilaciones en lengua = región bulbar afectada.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Geniogloso (lengua)», ¿cuál afirmación es la correcta?\nTécnica: inserción submentoniana, paciente protruye la lengua.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Técnica: inserción submentoniana, paciente protruye la lengua.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Técnica: inserción submentoniana, paciente protruye la lengua.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Geniogloso (lengua)», ¿cuál afirmación es la correcta?\nTambién en: parálisis del XII par, lesiones bulbares.",
+      "options": [
+        {
+          "id": "a",
+          "text": "También en: parálisis del XII par, lesiones bulbares.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "También en: parálisis del XII par, lesiones bulbares.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "genioglossus",
+      "topic_name": "Geniogloso (lengua)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Geniogloso (lengua)». Inervación: nervio hipogloso (XII par). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Inervación: nervio hipogloso (XII par).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Fibrilaciones en geniogloso son CLAVE para el diagnóstico de ELA. En El Escorial/Awaji, la región bulbar + extremidades = diagnóstico de ELA probable o definitivo.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "genioglossus"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Fibras musculares tipo I vs. tipo II",
+  "revisionType": "quiz",
+  "quizTopicId": "muscle-fiber-types",
+  "moduleId": "fundamentals",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Tipo I vs II es fisiología; la EMG describe reclutamiento. ¿Esta afirmación es la que corresponde enseñar en «Fibras musculares tipo I vs. tipo II»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tipo I vs II es fisiología; la EMG describe reclutamiento.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Fibras musculares tipo I vs. tipo II», ¿cuál afirmación es la correcta?\nVarios sitios antes de concluir miopatía.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Varios sitios antes de concluir miopatía.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Varios sitios antes de concluir miopatía.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fibras musculares tipo I vs. tipo II», ¿cuál afirmación es la correcta?\nHenneman primero: las pequeñas disparan antes.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Henneman primero: las pequeñas disparan antes.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Henneman primero: las pequeñas disparan antes.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fibras musculares tipo I vs. tipo II», ¿cuál afirmación es la correcta?\nLa histología no vive en un canal de 200 µV/div.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La histología no vive en un canal de 200 µV/div.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La histología no vive en un canal de 200 µV/div.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "fundamentals",
+      "topic_id": "muscle-fiber-types",
+      "topic_name": "Fibras musculares tipo I vs. tipo II",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Fibras musculares tipo I vs. tipo II». Tipo I vs II es fisiología; la EMG describe reclutamiento. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Tipo I vs II es fisiología; la EMG describe reclutamiento.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Henneman primero: las pequeñas disparan antes.",
+      "source_reference": "Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "tags": [
+        "fundamentals",
+        "muscle-fiber-types"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

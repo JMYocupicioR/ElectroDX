@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { allModules } from '../content/modules';
-import { applyLessonExpansions, findTopicInTree } from './contentMerge';
+import { applyLessonExpansions, findTopicInTree, getAllFlatTopics } from './contentMerge';
 import { stripLegacyPdfMarkdown } from '../utils/topicPrintables';
 import { ALL_CASE_TEMPLATES } from '../../ejercicios/src/data/CaseTemplates';
 import type { Topic } from '../types/content';
@@ -20,6 +20,16 @@ import type {
 } from '../types/database';
 
 export const PLATFORM_BASELINE_AUTHOR = 'PLATFORM_BASELINE';
+
+/** El texto vigente de los temas se acredita a esta cuenta salvo el tramo que otro autor ya reescribió. */
+export const COURSE_PROSE_AUTHOR_EMAIL = 'jmyocupicior@gmail.com';
+
+export async function resolveCourseProseAuthorId(): Promise<string | null> {
+  if (!isSupabaseConfigured) return null;
+  const { data, error } = await supabase.rpc('course_prose_author_id');
+  if (error || !data) return null;
+  return String(data);
+}
 
 const STATIC_CASE_IDS = new Set(ALL_CASE_TEMPLATES.map((t) => t.patternId));
 
@@ -461,8 +471,11 @@ export function computeSingleTopicAttribution(params: {
   topicId: string;
   publishedTopic?: PublishedTopic | null;
   approvedRevisions: ContentRevision[];
+  /** Si viene, el texto estático del tema es de esta cuenta. Un diff posterior puede reasignar solo lo reescrito. */
+  staticAuthorId?: string | null;
 }): TopicAttributionSummary {
-  const { editionLabel, moduleId, topicId, publishedTopic, approvedRevisions } = params;
+  const { editionLabel, moduleId, topicId, publishedTopic, approvedRevisions, staticAuthorId } = params;
+  const baselineOwner = staticAuthorId || PLATFORM_BASELINE_AUTHOR;
   const staticTopic = findStaticBaselineTopic(moduleId, topicId);
 
   let tokens: WordToken[] = [];
@@ -479,7 +492,7 @@ export function computeSingleTopicAttribution(params: {
     tokens = baselineRawWords.map((w) => ({
       raw: w.raw,
       skeleton: w.skeleton,
-      ownerAuthorId: PLATFORM_BASELINE_AUTHOR,
+      ownerAuthorId: baselineOwner,
       revisionId: null,
     }));
   }
@@ -1018,10 +1031,20 @@ export async function buildPlatformParticipationReport(options?: {
     topicRevisionsMap.set(tId, list);
   }
 
+  const courseAuthorId = await resolveCourseProseAuthorId();
+
   const allTargetTopicIds = new Set<string>([
     ...Array.from(publishedTopicMap.keys()),
     ...Array.from(topicRevisionsMap.keys()),
   ]);
+
+  for (const mod of allModules) {
+    for (const { topic } of getAllFlatTopics(mod.topics)) {
+      if (!topic.content?.trim() && !(topic.clinicalPearls?.length || topic.keyPoints?.length)) continue;
+      if (!topicModuleMap.has(topic.id)) topicModuleMap.set(topic.id, mod.id);
+      allTargetTopicIds.add(topic.id);
+    }
+  }
 
   const topicSummaries: TopicAttributionSummary[] = [];
   const syntheticAuditEvents: RevisionAttributionDiagnostic[] = [];
@@ -1035,6 +1058,7 @@ export async function buildPlatformParticipationReport(options?: {
       topicId,
       publishedTopic: publishedTopicMap.get(topicId) ?? null,
       approvedRevisions: topicRevisionsMap.get(topicId) ?? [],
+      staticAuthorId: courseAuthorId,
     });
     topicSummaries.push(summary);
     syntheticAuditEvents.push(...summary.revisionDiagnostics);

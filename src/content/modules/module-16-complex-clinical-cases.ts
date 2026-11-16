@@ -19,7 +19,7 @@ export const module16: Module = {
 
 La trampa es etiquetar “ELA” porque hay fasciculaciones y unidades grandes en una mano. Hace falta diseminación regional y la integración con clínica y, cuando proceda, criterios Awaji o Gold Coast. En MMN los bloqueos pueden ser técnicos si no se controla la co-estimulación; confirme con inching y comparación de áreas.
 
-Este caso se trabaja mejor junto al módulo de criterios diagnósticos y al de estudios especiales. **Pendiente de validación clínica institucional.**`,
+Este caso se trabaja mejor junto al módulo de criterios diagnósticos y al de estudios especiales.`,
       clinicalPearls: [
         'SNAPs bajos en un cuadro “de motoneurona” reabren plexo, polineuropatía y radiculoplexopatía.',
         'Un solo bloqueo en codo no es MMN.',
@@ -36,7 +36,7 @@ Este caso se trabaja mejor junto al módulo de criterios diagnósticos y al de e
 
 El caso complejo aparece cuando hay criterios “parciales”: un nervio muy desmielinizante y el resto axonal, o un paciente diabético con lentificación moderada. Aquí el informe debe decir qué criterios EFNS/PNS o EAN/PNS se cumplen y cuáles faltan, no forzar el diagnóstico. La ecografía y la respuesta a inmunoterapia se discuten en actualizaciones (módulo 17).
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'Liste criterios cumplidos; no “CIDP probable” sin datos.',
         'La cronicidad y la simetría histórica separan CMT de CIDP.',
@@ -50,7 +50,7 @@ El caso complejo aparece cuando hay criterios “parciales”: un nervio muy des
 
 Estrategia: NCS rutinario, RNS a 3 Hz en músculo proximal y distal, EMG de cinturas buscando unidades miopáticas versus inestabilidad de MUAP, y, si está indicado, SFEMG de jitter (módulo de estudios especiales). Una RNS negativa no excluye miastenia ocular; un EMG miopático no excluye síndrome miasténico si hay decremento claro.
 
-Correlacione con anticuerpos (AChR, MuSK, HMGCR) y con la pregunta de biopsia. El informe debe jerarquizar: primero el hallazgo más específico (decremento, jitter, o patrón miopático florido). **Pendiente de validación clínica institucional.**`,
+Correlacione con anticuerpos (AChR, MuSK, HMGCR) y con la pregunta de biopsia. El informe debe jerarquizar: primero el hallazgo más específico (decremento, jitter, o patrón miopático florido).`,
       clinicalPearls: [
         'MuSK y miopatía necrotizante inmunomediada pueden coexistir en el diagnóstico diferencial de debilidad proximal con CK alta.',
       ],
@@ -66,7 +66,7 @@ Correlacione con anticuerpos (AChR, MuSK, HMGCR) y con la pregunta de biopsia. E
 
 SNAPs: si están bajos, la lesión está en o distal al ganglio (plexo o nervio); si están conservados con EMG de denervación, piense raíz o motoneurona. Compare con el lado sano. Documente fecha de la cirugía y dé un pronóstico cauteloso basado en amplitud residual del CMAP, no en una sola aguja.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'El calendario post-lesión cambia la interpretación.',
         'SNAP vs EMG paraespinal separa plexo de raíz.',

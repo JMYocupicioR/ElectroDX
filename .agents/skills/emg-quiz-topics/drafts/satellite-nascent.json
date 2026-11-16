@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Potenciales satélites y nacientes",
+  "revisionType": "quiz",
+  "quizTopicId": "satellite-nascent",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Satélite: componente tardío vinculado al PUM → reinervación en progreso. ¿Esta afirmación es la que corresponde enseñar en «Potenciales satélites y nacientes»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Satélite: componente tardío vinculado al PUM → reinervación en progreso.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Potenciales satélites y nacientes», ¿cuál afirmación es la correcta?\nNaciente: PUM muy pequeño, polifasético, inestable → reinervación axonal precoz.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Naciente: PUM muy pequeño, polifasético, inestable → reinervación axonal precoz.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Naciente: PUM muy pequeño, polifasético, inestable → reinervación axonal precoz.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Potenciales satélites y nacientes», ¿cuál afirmación es la correcta?\nCLAVE: naciente = morfología miopática + reclutamiento neurogénico (reducido).",
+      "options": [
+        {
+          "id": "a",
+          "text": "CLAVE: naciente = morfología miopática + reclutamiento neurogénico (reducido).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CLAVE: naciente = morfología miopática + reclutamiento neurogénico (reducido).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Potenciales satélites y nacientes», ¿cuál afirmación es la correcta?\nAmbos = señales pronósticas positivas de recuperación nerviosa.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ambos = señales pronósticas positivas de recuperación nerviosa.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ambos = señales pronósticas positivas de recuperación nerviosa.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "satellite-nascent",
+      "topic_name": "Potenciales satélites y nacientes",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Potenciales satélites y nacientes». Satélite: componente tardío vinculado al PUM → reinervación en progreso. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Satélite: componente tardío vinculado al PUM → reinervación en progreso.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Los potenciales nacientes son la \"luz al final del túnal\": indican que el nervio está volviendo a conectar con el músculo. Son una señal pronóstica POSITIVA de recuperación.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "satellite-nascent"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

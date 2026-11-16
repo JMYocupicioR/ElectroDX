@@ -1,17 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Save, Send, Plus, Trash2 } from 'lucide-react';
 import { allModules, getModuleById } from '../../content/modules';
 import { useAuth } from '../../contexts/AuthProvider';
-import { getRevisionById, saveRevision, submitRevision, getPublishedTopic } from '../../services/editorialService';
-import { findTopicInTree, findTopicPathInTree, topicToRevisionPayload, getAllFlatTopics } from '../../services/contentMerge';
+import { getRevisionById, saveRevision, submitRevision } from '../../services/editorialService';
+import { findTopicInTree, findTopicPathInTree, topicAsShownToStudents, topicToRevisionPayload, getAllFlatTopics } from '../../services/contentMerge';
 import { getReferencesForTopic, normalizeReferences } from '../../content/topicReferences';
 import { useAllModules } from '../../hooks/useAllModules';
 import { useMergedModule } from '../../hooks/useMergedModule';
 import { useGoBack } from '../../hooks/useGoBack';
 import { BackButton } from '../common/BackButton';
 import { slugify } from '../../utils/slugify';
-import type { Topic } from '../../types/content';
 import type { RevisionAction, RevisionPayload } from '../../types/database';
 import {
   extractVideosFromContent,
@@ -54,7 +53,9 @@ export default function RevisionEditorPage() {
   const queryParentId = searchParams.get('parentId');
 
   const [moduleId, setModuleId] = useState(queryModuleId ?? allModules[0]?.id ?? '');
-  const { module: mergedModule } = useMergedModule(moduleId);
+  const { module: mergedModule, staticModule, published: publishedTopics, loading: mergedLoading } = useMergedModule(moduleId);
+  const sourceHydrated = useRef(false);
+  const [sourceReady, setSourceReady] = useState(() => Boolean(revisionId) || !queryTopicId);
   const [targetTopicId, setTargetTopicId] = useState<string | null>(queryTopicId);
   const [parentId, setParentId] = useState<string | null>(queryParentId);
   const [action, setAction] = useState<RevisionAction>(queryAction === 'update' ? 'update' : 'create');
@@ -67,85 +68,64 @@ export default function RevisionEditorPage() {
 
   useEffect(() => {
     if (revisionId || !queryTopicId || !queryModuleId) return;
+    if (mergedLoading || sourceHydrated.current) return;
 
-    let cancelled = false;
-
-    async function loadSourceTopic() {
-      const mod = getModuleById(queryModuleId!);
-      const staticTopic = mod ? findTopicInTree(mod.topics, queryTopicId!) : null;
-
-      const published = await getPublishedTopic(queryTopicId!);
-      let payloadFromSource: RevisionPayload;
-
-      const ancestorIds = (() => {
-        const path = mod ? findTopicPathInTree(mod.topics, queryTopicId!) : null;
-        return path ? path.slice(0, -1) : [];
-      })();
-      const inheritedReferences = getReferencesForTopic(queryModuleId!, queryTopicId!, ancestorIds);
-
-      if (published) {
-        payloadFromSource = {
-          id: published.id,
-          title: published.title,
-          titleEn: published.title_en ?? undefined,
-          description: published.description ?? undefined,
-          content: published.content ?? undefined,
-          videoUrls: published.media?.videoUrls ?? [],
-          youtubeUrls: published.media?.youtubeUrls ?? [],
-          vimeoUrls: published.media?.vimeoUrls ?? [],
-          embedUrls: published.media?.embedUrls ?? [],
-          imageUrls: published.media?.imageUrls ?? [],
-          clinicalPearls: published.clinical_pearls ?? [],
-          keyPoints: published.key_points ?? [],
-          references: published.media?.references?.length ? published.media.references : inheritedReferences,
-        };
-      } else if (staticTopic) {
-        payloadFromSource = topicToRevisionPayload(staticTopic);
-        if (!payloadFromSource.references?.length) {
-          payloadFromSource = { ...payloadFromSource, references: inheritedReferences };
-        }
-      } else {
-        return;
-      }
-
-      if (cancelled) return;
-
-      const topicRef = staticTopic as Topic | null;
-      const hasChildren = Boolean(topicRef?.children?.length);
-      const hasContent = Boolean(payloadFromSource.content?.trim());
-      const hasDescription = Boolean(payloadFromSource.description?.trim());
-
-      if (!hasContent && hasDescription && !hasChildren) {
-        payloadFromSource = {
-          ...payloadFromSource,
-          content: payloadFromSource.description,
-        };
-      }
-
-      if (hasChildren && !hasContent) {
-        setSourceHint(
-          'Este tema es una sección contenedora: no tiene texto propio, solo subtemas. ' +
-            'Para editar el contenido clínico, abre la subsección específica (ej. Historia, Rol clínico) ' +
-            'y usa «Proponer edición» allí. Aquí puedes editar título y descripción de la sección.'
-        );
-      } else if (!hasContent && !hasDescription) {
-        setSourceHint('Este tema no tiene contenido de texto todavía. Puedes agregarlo aquí.');
-      } else {
-        setSourceHint(null);
-      }
-
-      setPayload(withExternalVideos(payloadFromSource));
-      setTargetTopicId(queryTopicId);
-      setAction('update');
-      if (queryModuleId) setModuleId(queryModuleId);
-      if (queryParentId) setParentId(queryParentId);
+    const raw = getModuleById(queryModuleId);
+    const baseMod = staticModule ?? raw;
+    const visible = mergedModule ? findTopicInTree(mergedModule.topics, queryTopicId) : null;
+    const staticTopic = baseMod ? findTopicInTree(baseMod.topics, queryTopicId) : null;
+    const publishedRow = publishedTopics.find((pt) => pt.id === queryTopicId) ?? null;
+    const topic = visible ?? topicAsShownToStudents(staticTopic, publishedRow);
+    if (!topic) {
+      sourceHydrated.current = true;
+      setSourceReady(true);
+      setSourceHint('No se encontró este tema en el temario publicado.');
+      return;
     }
 
-    loadSourceTopic().catch(console.error);
-    return () => {
-      cancelled = true;
-    };
-  }, [revisionId, queryTopicId, queryModuleId, queryParentId]);
+    sourceHydrated.current = true;
+
+    const ancestorIds = (() => {
+      const path = baseMod ? findTopicPathInTree(baseMod.topics, queryTopicId) : null;
+      return path ? path.slice(0, -1) : [];
+    })();
+    const inheritedReferences = getReferencesForTopic(queryModuleId, queryTopicId, ancestorIds);
+
+    let payloadFromSource = topicToRevisionPayload(topic);
+    if (!payloadFromSource.references?.length) {
+      payloadFromSource = { ...payloadFromSource, references: inheritedReferences };
+    }
+
+    const hasChildren = Boolean(topic.children?.length);
+    const hasContent = Boolean(payloadFromSource.content?.trim());
+    const hasDescription = Boolean(payloadFromSource.description?.trim());
+
+    if (!hasContent && hasDescription && !hasChildren) {
+      payloadFromSource = {
+        ...payloadFromSource,
+        content: payloadFromSource.description,
+      };
+    }
+
+    if (hasChildren && !hasContent) {
+      setSourceHint(
+        'Este tema es una sección contenedora: no tiene texto propio, solo subtemas. ' +
+          'Para editar el contenido clínico, abre la subsección específica (ej. Historia, Rol clínico) ' +
+          'y usa «Proponer edición» allí. Aquí puedes editar título y descripción de la sección.'
+      );
+    } else if (!hasContent && !hasDescription) {
+      setSourceHint('Este tema no tiene contenido de texto todavía. Puedes agregarlo aquí.');
+    } else {
+      setSourceHint(null);
+    }
+
+    setPayload(withExternalVideos(payloadFromSource));
+    setTargetTopicId(queryTopicId);
+    setAction('update');
+    if (queryModuleId) setModuleId(queryModuleId);
+    if (queryParentId) setParentId(queryParentId);
+    setSourceReady(true);
+  }, [revisionId, queryTopicId, queryModuleId, queryParentId, mergedLoading, mergedModule, staticModule, publishedTopics]);
 
   useEffect(() => {
     if (!revisionId || !user) return;
@@ -288,6 +268,9 @@ export default function RevisionEditorPage() {
         </div>
       )}
 
+      {!sourceReady ? (
+        <p className="text-sm text-slate-500">Cargando el texto que ve el alumno…</p>
+      ) : (
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
@@ -449,6 +432,7 @@ export default function RevisionEditorPage() {
           </button>
         </div>
       </div>
+      )}
     </div>
   );
 }

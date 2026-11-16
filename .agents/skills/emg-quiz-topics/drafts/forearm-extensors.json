@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Extensores del antebrazo",
+  "revisionType": "quiz",
+  "quizTopicId": "forearm-extensors",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "La caída de muñeca es un protocolo, no un músculo. ¿Esta afirmación es la que corresponde enseñar en «Extensores del antebrazo»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La caída de muñeca es un protocolo, no un músculo.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Extensores del antebrazo», ¿cuál afirmación es la correcta?\nC7 incluye flexores radiales; el PIN no.",
+      "options": [
+        {
+          "id": "a",
+          "text": "C7 incluye flexores radiales; el PIN no.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "C7 incluye flexores radiales; el PIN no.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Extensores del antebrazo», ¿cuál afirmación es la correcta?\nInervados por nervio radial (rama interósea posterior).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Inervados por nervio radial (rama interósea posterior).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inervados por nervio radial (rama interósea posterior).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Extensores del antebrazo», ¿cuál afirmación es la correcta?\nEvalúa radiculopatía C7 y síndrome del interóseo posterior.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Evalúa radiculopatía C7 y síndrome del interóseo posterior.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Evalúa radiculopatía C7 y síndrome del interóseo posterior.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "forearm-extensors",
+      "topic_name": "Extensores del antebrazo",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Extensores del antebrazo». La caída de muñeca es un protocolo, no un músculo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "La caída de muñeca es un protocolo, no un músculo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La caída de muñeca es un protocolo, no un músculo.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "forearm-extensors"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

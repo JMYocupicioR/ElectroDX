@@ -1,42 +1,162 @@
 {
+  "title": "Evaluación: Electrodos de registro: activo, referencia, tierra",
   "revisionType": "quiz",
-  "title": "Evaluación: Electrodos de registro",
   "quizTopicId": "electrodes",
+  "moduleId": "nerve-conduction",
   "passScore": 70,
-  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "type": "single",
-      "stem": "En un estudio de neuroconducción motora, ¿dónde se debe ubicar idealmente el electrodo activo (G1)?",
-      "options": [
-        { "id": "el1-opt1", "text": "Sobre el tendón distal del músculo a estudiar.", "isCorrect": false },
-        { "id": "el1-opt2", "text": "Sobre el vientre muscular en el punto motor de máxima amplitud.", "isCorrect": true },
-        { "id": "el1-opt3", "text": "En el trayecto del nervio proximal a la articulación.", "isCorrect": false },
-        { "id": "el1-opt4", "text": "Junto al electrodo de tierra para reducir el ruido eléctrico.", "isCorrect": false }
-      ],
-      "explanation": "El electrodo G1 se coloca sobre el punto motor, que corresponde al sitio donde se obtiene la máxima negatividad inicial (amplitud máxima del CMAP)."
-    },
-    {
-      "type": "single",
-      "stem": "Si al registrar un CMAP motor observas una deflexión inicial positiva (hacia abajo), ¿cuál es la causa más probable?",
-      "options": [
-        { "id": "el2-opt1", "text": "El estimulador tiene la polaridad invertida.", "isCorrect": false },
-        { "id": "el2-opt2", "text": "El electrodo de tierra está colocado incorrectamente.", "isCorrect": false },
-        { "id": "el2-opt3", "text": "El electrodo activo (G1) no está exactamente sobre el punto motor.", "isCorrect": true },
-        { "id": "el2-opt4", "text": "La estimulación fue submáxima.", "isCorrect": false }
-      ],
-      "explanation": "Una deflexión inicial positiva del CMAP indica que la despolarización viaja hacia el electrodo en lugar de originarse debajo de él. Esto requiere reposicionar G1 sobre el verdadero punto motor."
-    },
-    {
+      "id": "q1",
       "type": "true_false",
-      "stem": "El electrodo de tierra siempre debe posicionarse entre el sitio de estimulación y los electrodos de registro.",
+      "difficulty": "basic",
+      "stem": "G1 (activo): punto motor del músculo (motor) o sobre el nervio (sensitivo). ¿Esta afirmación es la que corresponde enseñar en «Electrodos de registro: activo, referencia, tierra»?",
       "options": [
-        { "id": "el3-opt1", "text": "Verdadero", "isCorrect": true },
-        { "id": "el3-opt2", "text": "Falso", "isCorrect": false }
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
       ],
-      "explanation": "Verdadero. La tierra debe ir entre el estímulo y el registro para drenar las corrientes de fuga y evitar un gran artefacto de estímulo que contamine la respuesta."
+      "explanation": "G1 (activo): punto motor del músculo (motor) o sobre el nervio (sensitivo).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Electrodos de registro: activo, referencia, tierra», ¿cuál afirmación es la correcta?\nG2 (referencia): tendón distal (motor) o 3-4 cm distal en dedo (sensitivo).",
+      "options": [
+        {
+          "id": "a",
+          "text": "G2 (referencia): tendón distal (motor) o 3-4 cm distal en dedo (sensitivo).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "G2 (referencia): tendón distal (motor) o 3-4 cm distal en dedo (sensitivo).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Electrodos de registro: activo, referencia, tierra», ¿cuál afirmación es la correcta?\nGround: SIEMPRE entre estimulador y registro.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ground: SIEMPRE entre estimulador y registro.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ground: SIEMPRE entre estimulador y registro.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Electrodos de registro: activo, referencia, tierra», ¿cuál afirmación es la correcta?\nDeflexión inicial positiva = G1 mal posicionado → reposicionar antes de continuar.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deflexión inicial positiva = G1 mal posicionado → reposicionar antes de continuar.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Deflexión inicial positiva = G1 mal posicionado → reposicionar antes de continuar.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "electrodes",
+      "topic_name": "Electrodos de registro: activo, referencia, tierra",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Electrodos de registro: activo, referencia, tierra». G1 (activo): punto motor del músculo (motor) o sobre el nervio (sensitivo). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "G1 (activo): punto motor del músculo (motor) o sobre el nervio (sensitivo).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La regla de oro: si ves deflexión inicial positiva en el CMAP, MUEVE el G1. No continúes el estudio con un electrodo mal posicionado porque todas las mediciones serán inexactas.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "electrodes"
+      ],
+      "status": "DRAFT"
     }
   ]
 }

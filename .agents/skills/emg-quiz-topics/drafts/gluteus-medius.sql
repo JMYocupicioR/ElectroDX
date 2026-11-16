@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: gluteus-medius (Module: emg-needle)
+-- Generated at: 2026-11-15T23:31:11.697Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'gluteus-medius',
+  'emg-needle',
+  'update',
+  $payload${"title":"Evaluación: Glúteo medio","revisionType":"quiz","quizTopicId":"gluteus-medius","moduleId":"emg-needle","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Obligatorio en pie caído no trivial. ¿Esta afirmación es la que corresponde enseñar en «Glúteo medio»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Obligatorio en pie caído no trivial.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Glúteo medio», ¿cuál afirmación es la correcta?\nEl glúteo medio es el L5 que camina en la cadera.","options":[{"id":"a","text":"El glúteo medio es el L5 que camina en la cadera.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El glúteo medio es el L5 que camina en la cadera.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Glúteo medio», ¿cuál afirmación es la correcta?\nEl peroneo no abduce la cadera.","options":[{"id":"a","text":"El peroneo no abduce la cadera.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El peroneo no abduce la cadera.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Glúteo medio», ¿cuál afirmación es la correcta?\nInervado por nervio glúteo superior (L4-S1).","options":[{"id":"a","text":"Inervado por nervio glúteo superior (L4-S1).","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Inervado por nervio glúteo superior (L4-S1).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]}],"examQuestions":[{"module_id":"emg-needle","topic_id":"gluteus-medius","topic_name":"Glúteo medio","island_name":"EMG","stem":"Caso breve ligado a «Glúteo medio». Obligatorio en pie caído no trivial. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Obligatorio en pie caído no trivial.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"El glúteo medio es el L5 que camina en la cadera.","source_reference":"Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","tags":["emg-needle","gluteus-medius"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'gluteus-medius'
+    AND r.module_id = 'emg-needle'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

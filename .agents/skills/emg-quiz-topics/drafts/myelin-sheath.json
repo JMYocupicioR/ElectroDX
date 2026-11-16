@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Vaina de mielina y células de Schwann",
+  "revisionType": "quiz",
+  "quizTopicId": "myelin-sheath",
+  "moduleId": "fundamentals",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Desmielinización: latencia, velocidad, dispersión o bloqueo, no fibrilaciones inmediatas. ¿Esta afirmación es la que corresponde enseñar en «Vaina de mielina y células de Schwann»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Desmielinización: latencia, velocidad, dispersión o bloqueo, no fibrilaciones inmediatas.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Vaina de mielina y células de Schwann», ¿cuál afirmación es la correcta?\nLa mielina cambia tiempo (latencia/velocidad); el axón cambia cantidad (amplitud).",
+      "options": [
+        {
+          "id": "a",
+          "text": "La mielina cambia tiempo (latencia/velocidad); el axón cambia cantidad (amplitud).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La mielina cambia tiempo (latencia/velocidad); el axón cambia cantidad (amplitud).\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Vaina de mielina y células de Schwann», ¿cuál afirmación es la correcta?\nUn CMAP distal normal con proximal pequeño pide bloqueo, no “neuropatía axonal”.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un CMAP distal normal con proximal pequeño pide bloqueo, no “neuropatía axonal”.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un CMAP distal normal con proximal pequeño pide bloqueo, no “neuropatía axonal”.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Vaina de mielina y células de Schwann», ¿cuál afirmación es la correcta?\nLas células de Schwann envuelven el axón periférico formando la vaina de mielina, un aislante eléctrico que permite la conducción saltatoria.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Las células de Schwann envuelven el axón periférico formando la vaina de mielina, un aislante eléctrico que permite la conducción saltatoria.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Las células de Schwann envuelven el axón periférico formando la vaina de mielina, un aislante eléctrico que permite la conducción saltatoria.\n\n📚 Referencia: Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "fundamentals",
+      "topic_id": "myelin-sheath",
+      "topic_name": "Vaina de mielina y células de Schwann",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Vaina de mielina y células de Schwann». Desmielinización: latencia, velocidad, dispersión o bloqueo, no fibrilaciones inmediatas. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Desmielinización: latencia, velocidad, dispersión o bloqueo, no fibrilaciones inmediatas.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La mielina cambia tiempo (latencia/velocidad); el axón cambia cantidad (amplitud).",
+      "source_reference": "Kimura J. Electrodiagnosis in Diseases of Nerve and Muscle: Principles and Practice. Oxford University Press (2013). https://global.oup.com/academic/product/electrodiagnosis-in-diseases-of-nerve-and-muscle-9780199738687",
+      "tags": [
+        "fundamentals",
+        "myelin-sheath"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

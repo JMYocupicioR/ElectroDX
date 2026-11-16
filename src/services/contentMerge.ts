@@ -186,30 +186,87 @@ function appendChildToTree(topics: Topic[], parentId: string, child: Topic): Top
   });
 }
 
-function overlayExpansion(topic: Topic): Topic {
-  const expansion = getLessonExpansion(topic.id, topic.title);
+function expansionAlreadyApplied(current: string, addition: string): boolean {
+  const extra = addition.trim();
+  if (!extra) return true;
+  if (current.includes(extra)) return true;
+  const firstSection = extra.split(/\n\n/)[0]?.trim() ?? '';
+  return firstSection.length >= 24 && current.includes(firstSection);
+}
+
+function appendMarkdown(base: string | undefined, extra: string | undefined): string | undefined {
+  if (!extra) return base;
+  if (!base) return extra;
+  if (expansionAlreadyApplied(base, extra)) return base;
+  return `${base}\n\n${extra}`;
+}
+
+function mergeTextList(base: string[] | undefined, extra: string[] | undefined): string[] | undefined {
+  if (!extra?.length) return base;
+  const seen = new Set((base ?? []).map((item) => item.trim()));
+  const merged = [...(base ?? [])];
+  let added = false;
+  for (const item of extra) {
+    const key = item.trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+    added = true;
+  }
+  return added ? merged : base;
+}
+
+function mergeImages(base: Topic['imageUrls'], extra: Topic['imageUrls']): Topic['imageUrls'] {
+  if (!extra?.length) return base;
+  const seen = new Set((base ?? []).map((img) => img.src));
+  const merged = [...(base ?? [])];
+  let added = false;
+  for (const img of extra) {
+    if (!img.src || seen.has(img.src)) continue;
+    seen.add(img.src);
+    merged.push(img);
+    added = true;
+  }
+  return added ? merged : base;
+}
+
+function overlayExpansion(topic: Topic, moduleId?: string): Topic {
+  const expansion = getLessonExpansion(topic.id, topic.title, moduleId);
+  const overlayChild = (child: Topic) => overlayExpansion(child, moduleId);
   if (!expansion) {
     return {
       ...topic,
-      children: topic.children?.map(overlayExpansion),
+      children: topic.children?.map(overlayChild),
     };
   }
   return {
     ...topic,
-    content: [topic.content, expansion.content].filter(Boolean).join('\n\n'),
-    contentEn: [topic.contentEn, expansion.contentEn].filter(Boolean).join('\n\n') || topic.contentEn,
-    clinicalPearls: [...(topic.clinicalPearls ?? []), ...(expansion.clinicalPearls ?? [])],
-    clinicalPearlsEn: [...(topic.clinicalPearlsEn ?? []), ...(expansion.clinicalPearlsEn ?? [])],
-    keyPoints: [...(topic.keyPoints ?? []), ...(expansion.keyPoints ?? [])],
-    keyPointsEn: [...(topic.keyPointsEn ?? []), ...(expansion.keyPointsEn ?? [])],
-    imageUrls: [...(topic.imageUrls ?? []), ...(expansion.imageUrls ?? [])],
+    content: appendMarkdown(topic.content, expansion.content),
+    contentEn: appendMarkdown(topic.contentEn, expansion.contentEn),
+    clinicalPearls: mergeTextList(topic.clinicalPearls, expansion.clinicalPearls),
+    clinicalPearlsEn: mergeTextList(topic.clinicalPearlsEn, expansion.clinicalPearlsEn),
+    keyPoints: mergeTextList(topic.keyPoints, expansion.keyPoints),
+    keyPointsEn: mergeTextList(topic.keyPointsEn, expansion.keyPointsEn),
+    imageUrls: mergeImages(topic.imageUrls, expansion.imageUrls),
     pdfUrls: topic.pdfUrls,
-    children: topic.children?.map(overlayExpansion),
+    children: topic.children?.map(overlayChild),
   };
 }
 
+export function topicAsShownToStudents(
+  staticTopic: Topic | null,
+  published: PublishedTopic | null,
+  moduleId?: string,
+): Topic | null {
+  if (!staticTopic && !published) return null;
+  const resolvedModuleId = moduleId ?? published?.module_id ?? undefined;
+  if (!staticTopic) return overlayExpansion(publishedTopicToTopic(published!), resolvedModuleId);
+  if (!published) return overlayExpansion(staticTopic, resolvedModuleId);
+  return overlayExpansion(overlayTopic(staticTopic, publishedTopicToTopic(published)), resolvedModuleId);
+}
+
 export function applyLessonExpansions(mod: Module): Module {
-  return { ...mod, topics: mod.topics.map(overlayExpansion) };
+  return { ...mod, topics: mod.topics.map((topic) => overlayExpansion(topic, mod.id)) };
 }
 
 export function mergeModuleTopics(mod: Module, publishedList: PublishedTopic[]): Module {

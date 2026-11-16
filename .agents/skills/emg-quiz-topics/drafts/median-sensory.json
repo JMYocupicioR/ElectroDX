@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Mediano sensitivo (dedo 2 y 3)",
+  "revisionType": "quiz",
+  "quizTopicId": "median-sensory",
+  "moduleId": "nerve-conduction",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Registro: anillo en dedo 2 o 3. Distancia estándar: 14 cm. ¿Esta afirmación es la que corresponde enseñar en «Nervio Mediano sensitivo (dedo 2 y 3)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Registro: anillo en dedo 2 o 3. Distancia estándar: 14 cm.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Mediano sensitivo (dedo 2 y 3)», ¿cuál afirmación es la correcta?\nFiltros: 20 Hz - 2 kHz. Ganancia: 10-20 µV/div.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Filtros: 20 Hz - 2 kHz. Ganancia: 10-20 µV/div.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Filtros: 20 Hz - 2 kHz. Ganancia: 10-20 µV/div.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Mediano sensitivo (dedo 2 y 3)», ¿cuál afirmación es la correcta?\nLatencia pico normal: 2.8-3.4 ms. Amplitud: ≥15 µV.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Latencia pico normal: 2.8-3.4 ms. Amplitud: ≥15 µV.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Latencia pico normal: 2.8-3.4 ms. Amplitud: ≥15 µV.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Mediano sensitivo (dedo 2 y 3)», ¿cuál afirmación es la correcta?\nDedo 4 comparativo: diferencia >0.4 ms = STC.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dedo 4 comparativo: diferencia >0.4 ms = STC.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Dedo 4 comparativo: diferencia >0.4 ms = STC.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "nerve-conduction",
+      "topic_id": "median-sensory",
+      "topic_name": "Nervio Mediano sensitivo (dedo 2 y 3)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Mediano sensitivo (dedo 2 y 3)». Registro: anillo en dedo 2 o 3. Distancia estándar: 14 cm. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Registro: anillo en dedo 2 o 3. Distancia estándar: 14 cm.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La amplitud del SNAP mediano cae significativamente con el frío; calentar las manos a ≥32°C es OBLIGATORIO para evitar falsos positivos de STC.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "nerve-conduction",
+        "median-sensory"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ export const module15: Module = {
 
 La planificación también decide qué se hará si el paciente no tolera el estudio completo: cuáles nervios son imprescindibles y cuáles pueden diferirse. En un paciente con DAI, se coordina con cardiología. En un niño, se prioriza el mínimo de agujas que responda la pregunta.
 
-Documente lateralidad, fecha de inicio, síntomas sensitivos versus motores y estudios de imagen previos. Un protocolo escrito de 4-6 líneas evita estudios incompletos y repeticiones. **Pendiente de validación clínica institucional.**`,
+Documente lateralidad, fecha de inicio, síntomas sensitivos versus motores y estudios de imagen previos. Un protocolo escrito de 4-6 líneas evita estudios incompletos y repeticiones.`,
       clinicalPearls: [
         'Si el paciente está anticoagulado, evite músculos profundos incompresibles; no cancele de forma automática todo el EMG.',
         'La pregunta “¿hay radiculopatía lumbar?” no se responde con un mediano y un cubital.',
@@ -37,7 +37,7 @@ Documente lateralidad, fecha de inicio, síntomas sensitivos versus motores y es
 
 La EMG se elige por miotoma y por nervio: un músculo distal, uno intermedio y uno proximal cuando se busca radiculopatía. No se explora “todo el miotoma” si tres músculos bien elegidos ya contestan. Si hay sospecha de miopatía, se privilegian cinturas y se evita concluir con un solo músculo distal.
 
-Registre distancias, temperaturas y si el estímulo fue realmente supramáximo. Sin esos datos, el informe no es defendible. **Pendiente de validación clínica institucional.**`,
+Registre distancias, temperaturas y si el estímulo fue realmente supramáximo. Sin esos datos, el informe no es defendible.`,
       keyPoints: [
         'Sintomático + control + músculos divisorios.',
         'La temperatura y el estímulo supramáximo son datos, no adornos.',
@@ -51,7 +51,7 @@ Registre distancias, temperaturas y si el estímulo fue realmente supramáximo. 
 
 Evite copiar tablas sin frase de impresión. Evite impresiones que el estudio no sostiene (“descarta ELA”). Prefiera: “no hay evidencia electrodiagnóstica de… en los territorios explorados”. Mencione limitaciones (estudio incompleto, temperatura baja, aguja no tolerada).
 
-El clínico que solicita el estudio debe poder actuar: operar, inmunoterapia, observación o ampliar imagen. Si la impresión no cambia conducta, reescriba. **Pendiente de validación clínica institucional.**`,
+El clínico que solicita el estudio debe poder actuar: operar, inmunoterapia, observación o ampliar imagen. Si la impresión no cambia conducta, reescriba.`,
       clinicalPearls: [
         'Separe “hallazgo” de “impresión”. El hallazgo es medible; la impresión es el juicio.',
         'Nunca use “dentro de límites normales” si faltó el nervio que respondía la pregunta.',
@@ -69,7 +69,7 @@ El clínico que solicita el estudio debe poder actuar: operar, inmunoterapia, ob
 
 Si hay criterios publicados (CIDP, ALS, MG), cite si se cumplen o no y por qué faltan datos. No convierta un estudio incompleto en un criterio “casi cumplido”. Cuando recomiende seguimiento, ponga plazo y qué se espera que cambie (p. ej. “repetir EMG en 3-4 semanas si se busca denervación en evolución”).
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'Prohibido el “EMG positivo” sin objeto.',
         'Si usa criterios, declare si se cumplen con los datos actuales.',

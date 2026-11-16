@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: turns-amplitude (Module: emg-needle)
+-- Generated at: 2026-11-15T23:31:09.473Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'turns-amplitude',
+  'emg-needle',
+  'update',
+  $payload${"title":"Evaluación: Análisis cuantitativo turns/amplitud","revisionType":"quiz","quizTopicId":"turns-amplitude","moduleId":"emg-needle","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Willison en la lección de PI. ¿Esta afirmación es la que corresponde enseñar en «Análisis cuantitativo turns/amplitud»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Willison en la lección de PI.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Análisis cuantitativo turns/amplitud», ¿cuál afirmación es la correcta?\nEl oído primero; T/A confirma.","options":[{"id":"a","text":"El oído primero; T/A confirma.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El oído primero; T/A confirma.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Análisis cuantitativo turns/amplitud», ¿cuál afirmación es la correcta?\nMétodo objetivo de evaluación del patrón de interferencia (Willison analysis).","options":[{"id":"a","text":"Método objetivo de evaluación del patrón de interferencia (Willison analysis).","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Método objetivo de evaluación del patrón de interferencia (Willison analysis).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Análisis cuantitativo turns/amplitud», ¿cuál afirmación es la correcta?\nRelaciona la frecuencia de cambios de dirección (giros) vs.","options":[{"id":"a","text":"Relaciona la frecuencia de cambios de dirección (giros) vs.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Relaciona la frecuencia de cambios de dirección (giros) vs.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]}],"examQuestions":[{"module_id":"emg-needle","topic_id":"turns-amplitude","topic_name":"Análisis cuantitativo turns/amplitud","island_name":"EMG","stem":"Caso breve ligado a «Análisis cuantitativo turns/amplitud». Willison en la lección de PI. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Willison en la lección de PI.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"El oído primero; T/A confirma.","source_reference":"Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","tags":["emg-needle","turns-amplitude"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'turns-amplitude'
+    AND r.module_id = 'emg-needle'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

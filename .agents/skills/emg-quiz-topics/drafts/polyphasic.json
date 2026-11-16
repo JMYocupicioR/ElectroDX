@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Potenciales polifaséticos",
+  "revisionType": "quiz",
+  "quizTopicId": "polyphasic",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Normal: hasta 5-15% del músculo puede ser polifasético. ¿Esta afirmación es la que corresponde enseñar en «Potenciales polifaséticos»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Normal: hasta 5-15% del músculo puede ser polifasético.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Potenciales polifaséticos», ¿cuál afirmación es la correcta?\nNeurogénico: polifasético + duración LARGA + amplitud alta.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Neurogénico: polifasético + duración LARGA + amplitud alta.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Neurogénico: polifasético + duración LARGA + amplitud alta.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Potenciales polifaséticos», ¿cuál afirmación es la correcta?\nMiopático: polifasético + duración CORTA + amplitud baja.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Miopático: polifasético + duración CORTA + amplitud baja.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Miopático: polifasético + duración CORTA + amplitud baja.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Potenciales polifaséticos», ¿cuál afirmación es la correcta?\nPolifasia no es específica: puede verse en denervación/reinervación, miopatías, e incluso como variante normal. SIEMPRE correlaciona con duración y patrón de reclutamiento antes de concluir.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Polifasia no es específica: puede verse en denervación/reinervación, miopatías, e incluso como variante normal. SIEMPRE correlaciona con duración y patrón de reclutamiento antes de concluir.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Polifasia no es específica: puede verse en denervación/reinervación, miopatías, e incluso como variante normal. SIEMPRE correlaciona con duración y patrón de reclutamiento antes de concluir.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "polyphasic",
+      "topic_name": "Potenciales polifaséticos",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Potenciales polifaséticos». Normal: hasta 5-15% del músculo puede ser polifasético. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Normal: hasta 5-15% del músculo puede ser polifasético.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Polifasia no es específica: puede verse en denervación/reinervación, miopatías, e incluso como variante normal. SIEMPRE correlaciona con duración y patrón de reclutamiento antes de concluir.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "polyphasic"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

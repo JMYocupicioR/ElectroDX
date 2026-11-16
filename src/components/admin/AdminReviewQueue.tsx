@@ -12,7 +12,7 @@ import {
   reviewRevision,
   getProfilesByIds,
 } from '../../services/editorialService';
-import { findTopicInTree, findTopicPathInTree, topicToRevisionPayload } from '../../services/contentMerge';
+import { findTopicInTree, findTopicPathInTree, topicAsShownToStudents, topicToRevisionPayload } from '../../services/contentMerge';
 import { getReferencesForTopic } from '../../content/topicReferences';
 import type { ContentRevision, RevisionPayload, RevisionStatus } from '../../types/database';
 import { MediaPreview } from '../editorial/MediaPreview';
@@ -65,27 +65,10 @@ async function resolveCurrentPayload(rev: ContentRevision): Promise<RevisionPayl
   const inheritedReferences = getReferencesForTopic(rev.module_id, topicId, path ? path.slice(0, -1) : []);
 
   const published = await getPublishedTopic(topicId);
-  if (published) {
-    return {
-      id: published.id,
-      title: published.title,
-      titleEn: published.title_en ?? undefined,
-      description: published.description ?? undefined,
-      content: published.content ?? undefined,
-      videoUrls: published.media?.videoUrls ?? [],
-      youtubeUrls: published.media?.youtubeUrls ?? [],
-      vimeoUrls: published.media?.vimeoUrls ?? [],
-      embedUrls: published.media?.embedUrls ?? [],
-      imageUrls: published.media?.imageUrls ?? [],
-      clinicalPearls: published.clinical_pearls ?? [],
-      keyPoints: published.key_points ?? [],
-      references: published.media?.references?.length ? published.media.references : inheritedReferences,
-    };
-  }
-
   const staticTopic = mod ? findTopicInTree(mod.topics, topicId) : null;
-  if (!staticTopic) return null;
-  const payload = topicToRevisionPayload(staticTopic);
+  const shown = topicAsShownToStudents(staticTopic, published);
+  if (!shown) return null;
+  const payload = topicToRevisionPayload(shown);
   if (!payload.references?.length) payload.references = inheritedReferences;
   return payload;
 }

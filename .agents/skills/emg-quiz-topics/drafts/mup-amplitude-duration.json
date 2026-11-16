@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Amplitud, duración, fases, giros",
+  "revisionType": "quiz",
+  "quizTopicId": "mup-amplitude-duration",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Amplitud: refleja fibras más próximas (<500 µm). Normal 100µV-2mV. ¿Esta afirmación es la que corresponde enseñar en «Amplitud, duración, fases, giros»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Amplitud: refleja fibras más próximas (<500 µm). Normal 100µV-2mV.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Amplitud, duración, fases, giros», ¿cuál afirmación es la correcta?\nDuración: refleja fibras totales y dispersión temporal. Normal 5-15 ms.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Duración: refleja fibras totales y dispersión temporal. Normal 5-15 ms.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Duración: refleja fibras totales y dispersión temporal. Normal 5-15 ms.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Amplitud, duración, fases, giros», ¿cuál afirmación es la correcta?\nFases >4 = polifasético (normal hasta 5-15% del músculo).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Fases >4 = polifasético (normal hasta 5-15% del músculo).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fases >4 = polifasético (normal hasta 5-15% del músculo).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Amplitud, duración, fases, giros», ¿cuál afirmación es la correcta?\nGiros = cambios de dirección sin cruzar la línea base.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Giros = cambios de dirección sin cruzar la línea base.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Giros = cambios de dirección sin cruzar la línea base.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "mup-amplitude-duration",
+      "topic_name": "Amplitud, duración, fases, giros",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Amplitud, duración, fases, giros». Amplitud: refleja fibras más próximas (<500 µm). Normal 100µV-2mV. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Amplitud: refleja fibras más próximas (<500 µm). Normal 100µV-2mV.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La duración es el parámetro más útil para determinar si el proceso es neurogénico (larga) o miopático (corta). La amplitud sola es menos confiable.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "mup-amplitude-duration"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

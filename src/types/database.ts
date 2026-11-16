@@ -1238,6 +1238,7 @@ interface RawDatabase {
     };
     Functions: {
       is_admin: { Args: { check_user_id?: string }; Returns: boolean };
+      course_prose_author_id: { Args: Record<string, never>; Returns: string };
       is_editor: { Args: { check_user_id?: string }; Returns: boolean };
       is_student: { Args: { check_user_id?: string }; Returns: boolean };
       has_role: { Args: { required_role: AppRole; check_user_id?: string }; Returns: boolean };

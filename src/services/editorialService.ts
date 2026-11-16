@@ -18,6 +18,7 @@ import type {
 import {
   computeSingleTopicAttribution,
   recordParticipationAuditLog,
+  resolveCourseProseAuthorId,
 } from './participationAuditService';
 
 export async function getPublicProfiles(): Promise<Profile[]> {
@@ -495,12 +496,14 @@ export async function reviewRevision(
               (r.target_topic_id ?? r.payload?.id ?? r.payload?.slug) === topicId
           );
 
+          const courseAuthorId = await resolveCourseProseAuthorId();
           const summary = computeSingleTopicAttribution({
             editionLabel: '1.0',
             moduleId: rev.module_id,
             topicId,
             publishedTopic,
             approvedRevisions: approvedForTopic,
+            staticAuthorId: courseAuthorId,
           });
 
           if (summary.attributions.length > 0) {

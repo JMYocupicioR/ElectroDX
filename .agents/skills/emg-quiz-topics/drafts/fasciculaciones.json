@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Fasciculaciones: benignas vs. malignas",
+  "revisionType": "quiz",
+  "quizTopicId": "fasciculaciones",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Fasciculaciones: descarga espontánea de una UM COMPLETA (no fibra individual). ¿Esta afirmación es la que corresponde enseñar en «Fasciculaciones: benignas vs. malignas»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fasciculaciones: descarga espontánea de una UM COMPLETA (no fibra individual).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Fasciculaciones: benignas vs. malignas», ¿cuál afirmación es la correcta?\nBenignas: PUM normal + sin fibs/PSW + reclutamiento normal = excelente pronóstico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Benignas: PUM normal + sin fibs/PSW + reclutamiento normal = excelente pronóstico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Benignas: PUM normal + sin fibs/PSW + reclutamiento normal = excelente pronóstico.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fasciculaciones: benignas vs. malignas», ¿cuál afirmación es la correcta?\nMalignas: PUM complejo + fibs/PSW + reclutamiento reducido = investigar ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Malignas: PUM complejo + fibs/PSW + reclutamiento reducido = investigar ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Malignas: PUM complejo + fibs/PSW + reclutamiento reducido = investigar ELA.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fasciculaciones: benignas vs. malignas», ¿cuál afirmación es la correcta?\nGold Coast 2019: fasciculaciones = mismo valor diagnóstico que fibrilaciones en contexto ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Gold Coast 2019: fasciculaciones = mismo valor diagnóstico que fibrilaciones en contexto ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Gold Coast 2019: fasciculaciones = mismo valor diagnóstico que fibrilaciones en contexto ELA.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "fasciculaciones",
+      "topic_name": "Fasciculaciones: benignas vs. malignas",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Fasciculaciones: benignas vs. malignas». Fasciculaciones: descarga espontánea de una UM COMPLETA (no fibra individual). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Fasciculaciones: descarga espontánea de una UM COMPLETA (no fibra individual).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La pregunta más frecuente del paciente ansioso: \"Doctor, ¿mis fasciculaciones son ELA?\" La respuesta EMG es clara: si NO hay fibrilaciones, PSW, ni PUM neurogénicos → es BENIGNO. Tranquilizar con datos.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "fasciculaciones"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

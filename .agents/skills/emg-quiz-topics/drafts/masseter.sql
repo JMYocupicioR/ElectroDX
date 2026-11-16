@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: masseter (Module: emg-needle)
+-- Generated at: 2026-11-15T23:31:12.143Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'masseter',
+  'emg-needle',
+  'update',
+  $payload${"title":"Evaluación: Masetero","revisionType":"quiz","quizTopicId":"masseter","moduleId":"emg-needle","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Inervación: ramo maseterino del n. mandibular (V par). ¿Esta afirmación es la que corresponde enseñar en «Masetero»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Inervación: ramo maseterino del n. mandibular (V par).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Masetero», ¿cuál afirmación es la correcta?\nIndicado en: neuropatía trigeminal, ELA bulbar, EM.","options":[{"id":"a","text":"Indicado en: neuropatía trigeminal, ELA bulbar, EM.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Indicado en: neuropatía trigeminal, ELA bulbar, EM.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Masetero», ¿cuál afirmación es la correcta?\nPUM más largos que músculos distales: duración normal 8-12 ms.","options":[{"id":"a","text":"PUM más largos que músculos distales: duración normal 8-12 ms.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"PUM más largos que músculos distales: duración normal 8-12 ms.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Masetero», ¿cuál afirmación es la correcta?\nTécnica: inserción 1 cm bajo arco cigomático, cuidado con arteria facial.","options":[{"id":"a","text":"Técnica: inserción 1 cm bajo arco cigomático, cuidado con arteria facial.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Técnica: inserción 1 cm bajo arco cigomático, cuidado con arteria facial.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]}],"examQuestions":[{"module_id":"emg-needle","topic_id":"masseter","topic_name":"Masetero","island_name":"EMG","stem":"Caso breve ligado a «Masetero». Inervación: ramo maseterino del n. mandibular (V par). ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Inervación: ramo maseterino del n. mandibular (V par).","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"Inervación: ramo maseterino del n. mandibular (V par).","source_reference":"Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","tags":["emg-needle","masseter"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'masseter'
+    AND r.module_id = 'emg-needle'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

@@ -19,7 +19,7 @@ export const module17: Module = {
 
 La novedad práctica es no forzar CIDP en neuropatías con IgM-MAG, POEMS o CMT. El electrodiagnóstico aporta el patrón; el diagnóstico final integra proteína, cadenas ligeras, VEGF y genética cuando corresponde. Este tema complementa el módulo de criterios del curso intermedio con literatura posterior.
 
-**Pendiente de validación clínica institucional. Contrastar con la guía EAN/PNS vigente al momento de enseñar.**`,
+Contrastar con la guía EAN/PNS vigente al momento de enseñar.`,
       keyPoints: [
         'Separe CIDP típica de variantes y de imitadores con biomarcadores.',
         'El EDX solo no sustituye el resto del expediente.',
@@ -33,7 +33,7 @@ La novedad práctica es no forzar CIDP en neuropatías con IgM-MAG, POEMS o CMT.
 
 La actualización para el laboratorio: fasciculaciones como signo de inestabilidad de unidad motora cuando se combinan con unidades grandes y reclutamiento reducido; no fasciculaciones aisladas. El estudio debe planearse por regiones, no por “un músculo por extremidad”.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       clinicalPearls: [
         'Un EMG de una mano no diagnostica ni descarta ELA.',
       ],
@@ -50,7 +50,7 @@ La actualización para el laboratorio: fasciculaciones como signo de inestabilid
 
 En el síndrome miasténico de Lambert-Eaton el hallazgo clásico es CMAP bajo que facilita con estímulo de alta frecuencia o ejercicio breve. No todo decremento a 3 Hz es miastenia: la miopatía y la inestabilidad neurogénica pueden imitarlo si la técnica es pobre.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'Ocular: no cierre con RNS negativa.',
         'Facilitación y CMAP bajo orientan a LEMS, no a MG típica.',
@@ -64,7 +64,7 @@ En el síndrome miasténico de Lambert-Eaton el hallazgo clásico es CMAP bajo q
 
 La neuropatía de fibras finas tiene NCS rutinario normal; el EDX “normal” es un resultado esperado, no un error. El informe debe decir que no se evaluaron fibras finas y orientar a biopsia de piel o pruebas autonómicas cuando la clínica lo pide.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'EDX normal no descarta fibras finas.',
         'El CSA complementa; no reemplaza latencias y amplitudes.',
@@ -78,7 +78,7 @@ La neuropatía de fibras finas tiene NCS rutinario normal; el EDX “normal” e
 
 Práctica recomendada: una vez al año revisar guías AANEM y EAN/PNS de las enfermedades que más ve el laboratorio (CIDP, STC, radiculopatía, MG, ELA). Anote en el informe la fecha de los criterios usados si el caso es de referencia o de controversia.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       keyPoints: [
         'Actualice umbrales y criterios; no abandone la localización.',
         'Cite la guía cuando el caso lo requiera.',

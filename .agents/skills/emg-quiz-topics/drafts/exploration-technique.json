@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Técnica de exploración: cuadrantes y profundidad",
+  "revisionType": "quiz",
+  "quizTopicId": "exploration-technique",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "NCS siempre primero: sus resultados guían la selección de músculos. ¿Esta afirmación es la que corresponde enseñar en «Técnica de exploración: cuadrantes y profundidad»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "NCS siempre primero: sus resultados guían la selección de músculos.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Técnica de exploración: cuadrantes y profundidad», ¿cuál afirmación es la correcta?\nInsertar en músculo completamente relajado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Insertar en músculo completamente relajado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Insertar en músculo completamente relajado.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnica de exploración: cuadrantes y profundidad», ¿cuál afirmación es la correcta?\n2-3 inserciones cutáneas × 4 cuadrantes × 3 profundidades = cobertura completa.",
+      "options": [
+        {
+          "id": "a",
+          "text": "2-3 inserciones cutáneas × 4 cuadrantes × 3 profundidades = cobertura completa.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "2-3 inserciones cutáneas × 4 cuadrantes × 3 profundidades = cobertura completa.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnica de exploración: cuadrantes y profundidad», ¿cuál afirmación es la correcta?\nTiempo de ascenso del PUM <500 µs = señal de calidad aceptable.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tiempo de ascenso del PUM <500 µs = señal de calidad aceptable.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tiempo de ascenso del PUM <500 µs = señal de calidad aceptable.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "exploration-technique",
+      "topic_name": "Técnica de exploración: cuadrantes y profundidad",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Técnica de exploración: cuadrantes y profundidad». NCS siempre primero: sus resultados guían la selección de músculos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "NCS siempre primero: sus resultados guían la selección de músculos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Nunca evalúes el reclutamiento durante contracción máxima dolorosa: el paciente puede inhibir voluntariamente, simulando un falso patrón reducido. Pide esfuerzo submáximo controlado.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "exploration-technique"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

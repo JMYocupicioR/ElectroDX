@@ -135,8 +135,6 @@ function expansionFor(item) {
 ## Explicación clínica
 ${focus}
 
-Este contenido amplía la hoja original (menos de 60 palabras) para uso docente. Pendiente de validación clínica institucional antes de usarse como material acreditable exclusivo.
-
 ## Técnica
 1. Verifique temperatura cutánea (32–34 °C en mano/pie) y consentimiento.
 2. Optimice impedancia (<5 kΩ) y orientación cátodo/ánodo.
@@ -173,8 +171,6 @@ Integre latencia, amplitud, duración, velocidad, ondas tardías y EMG de aguja.
 
 ## Clinical explanation
 ${focus}
-
-Expanded from a short stub (<60 words). Pending institutional clinical validation before exclusive accredited use.
 
 ## Technique
 Warm the limb, check impedance, obtain reproducible supramaximal responses, and compare side-to-side.

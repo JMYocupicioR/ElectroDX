@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Bíceps braquial",
+  "revisionType": "quiz",
+  "quizTopicId": "biceps",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Abordaje estrictamente ANTERIOR. ¿Esta afirmación es la que corresponde enseñar en «Bíceps braquial»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Abordaje estrictamente ANTERIOR.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Bíceps braquial», ¿cuál afirmación es la correcta?\nPeligro de abordaje medial: paquete neurovascular braquial.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Peligro de abordaje medial: paquete neurovascular braquial.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Peligro de abordaje medial: paquete neurovascular braquial.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bíceps braquial», ¿cuál afirmación es la correcta?\nUsar contracción isométrica para reducir dolor.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Usar contracción isométrica para reducir dolor.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Usar contracción isométrica para reducir dolor.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bíceps braquial», ¿cuál afirmación es la correcta?\n¡SEGURIDAD CRÍTICA! La aguja debe insertarse estrictamente desde un abordaje ANTERIOR. El abordaje medial está absolutamente contraindicado por el altísimo riesgo de pinchar la arteria braquial o el nervio mediano.",
+      "options": [
+        {
+          "id": "a",
+          "text": "¡SEGURIDAD CRÍTICA! La aguja debe insertarse estrictamente desde un abordaje ANTERIOR. El abordaje medial está absolutamente contraindicado por el altísimo riesgo de pinchar la arteria braquial o el nervio mediano.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "¡SEGURIDAD CRÍTICA! La aguja debe insertarse estrictamente desde un abordaje ANTERIOR. El abordaje medial está absolutamente contraindicado por el altísimo riesgo de pinchar la arteria braquial o el nervio mediano.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "biceps",
+      "topic_name": "Bíceps braquial",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Bíceps braquial». Abordaje estrictamente ANTERIOR. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Abordaje estrictamente ANTERIOR.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "¡SEGURIDAD CRÍTICA! La aguja debe insertarse estrictamente desde un abordaje ANTERIOR. El abordaje medial está absolutamente contraindicado por el altísimo riesgo de pinchar la arteria braquial o el nervio mediano.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "biceps"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

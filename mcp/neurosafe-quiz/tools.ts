@@ -749,115 +749,41 @@ function buildStagingSql(
   payload: RevisionPayload,
   examQuestions: Partial<ExamQuestion>[]
 ): string {
-  const quizQuestionsJson = (payload.questions ?? []).map((q, idx) => ({
-    id: q.id ?? crypto.randomUUID(),
-    sort_order: q.sortOrder ?? idx,
-    type: q.type,
-    stem: q.stem,
-    stem_en: q.stemEn ?? null,
-    image_url: q.imageUrl ?? null,
-    image_alt: q.imageAlt ?? null,
-    options: q.options,
-    explanation: q.explanation ?? null,
-    explanation_en: q.explanationEn ?? null,
-    difficulty: q.difficulty ?? 'intermediate',
-  }));
-
   const lines: string[] = [
     `-- ============================================================================`,
-    `-- NeuroSAFE Staging Draft for Topic: ${topicId} (Module: ${moduleId})`,
+    `-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)`,
+    `-- Topic: ${topicId} (Module: ${moduleId})`,
     `-- Generated at: ${new Date().toISOString()}`,
-    `-- SAFETY GATE: Sets clinical_validation_status = 'pending_review' and exam status = 'DRAFT'`,
+    `-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.`,
     `-- ============================================================================`,
-    `DO $stage$`,
-    `DECLARE`,
-    `  v_quiz_id uuid;`,
-    `  v_q jsonb;`,
-    `  v_questions jsonb := $qjson$${JSON.stringify(quizQuestionsJson)}$qjson$::jsonb;`,
-    `BEGIN`,
-    `  INSERT INTO public.published_quizzes (`,
-    `    topic_id, module_id, title, pass_score, max_attempts,`,
-    `    shuffle_questions, shuffle_options, question_count, version,`,
-    `    source_revision_id, clinical_validation_status, validation_notes`,
-    `  ) VALUES (`,
-    `    ${sqlLiteral(topicId)},`,
-    `    ${sqlLiteral(moduleId)},`,
-    `    ${sqlLiteral(payload.title || `Evaluación: ${topicId}`)},`,
-    `    ${Number(payload.passScore ?? 70)},`,
-    `    ${payload.maxAttempts == null ? 'NULL' : Number(payload.maxAttempts)},`,
-    `    ${payload.shuffleQuestions !== false},`,
-    `    ${payload.shuffleOptions !== false},`,
-    `    jsonb_array_length(v_questions),`,
-    `    1,`,
-    `    NULL,`,
-    `    'pending_review',`,
-    `    'Borrador enriquecido con IA pendiente de validación clínica humana'`,
-    `  )`,
-    `  ON CONFLICT (topic_id) DO UPDATE SET`,
-    `    module_id = EXCLUDED.module_id,`,
-    `    title = EXCLUDED.title,`,
-    `    pass_score = EXCLUDED.pass_score,`,
-    `    question_count = EXCLUDED.question_count,`,
-    `    version = public.published_quizzes.version + 1,`,
-    `    source_revision_id = NULL,`,
-    `    clinical_validation_status = 'pending_review',`,
-    `    validation_notes = 'Actualización en cola de validación clínica humana',`,
-    `    published_at = now()`,
-    `  RETURNING id INTO v_quiz_id;`,
-    ``,
-    `  DELETE FROM public.quiz_questions WHERE quiz_id = v_quiz_id;`,
-    ``,
-    `  FOR v_q IN SELECT value FROM jsonb_array_elements(v_questions)`,
-    `  LOOP`,
-    `    INSERT INTO public.quiz_questions (`,
-    `      quiz_id, sort_order, type, stem, stem_en, image_url, image_alt,`,
-    `      options, explanation, explanation_en, difficulty`,
-    `    ) VALUES (`,
-    `      v_quiz_id,`,
-    `      COALESCE((v_q->>'sort_order')::int, 0),`,
-    `      COALESCE(v_q->>'type', 'single'),`,
-    `      COALESCE(v_q->>'stem', ''),`,
-    `      v_q->>'stem_en',`,
-    `      NULLIF(v_q->>'image_url', ''),`,
-    `      NULLIF(v_q->>'image_alt', ''),`,
-    `      COALESCE(v_q->'options', '[]'::jsonb),`,
-    `      v_q->>'explanation',`,
-    `      v_q->>'explanation_en',`,
-    `      NULLIF(v_q->>'difficulty', '')`,
-    `    );`,
-    `  END LOOP;`,
-    `END`,
-    `$stage$;`,
+    `INSERT INTO public.content_revisions (`,
+    `  target_topic_id, module_id, action, payload, status, author_id`,
+    `)`,
+    `SELECT`,
+    `  ${sqlLiteral(topicId)},`,
+    `  ${sqlLiteral(moduleId)},`,
+    `  'update',`,
+    `  $payload$${JSON.stringify({
+      ...payload,
+      revisionType: 'quiz',
+      quizTopicId: topicId,
+      moduleId,
+      examQuestions,
+    }).replace(/\$payload\$/g, '$ payload $')}$payload$::jsonb,`,
+    `  'draft',`,
+    `  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)`,
+    `WHERE EXISTS (`,
+    `  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'`,
+    `)`,
+    `AND NOT EXISTS (`,
+    `  SELECT 1 FROM public.content_revisions r`,
+    `  WHERE r.target_topic_id = ${sqlLiteral(topicId)}`,
+    `    AND r.module_id = ${sqlLiteral(moduleId)}`,
+    `    AND r.status = 'draft'`,
+    `    AND r.payload->>'revisionType' = 'quiz'`,
+    `    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)`,
+    `);`,
   ];
-
-  if (examQuestions.length > 0) {
-    lines.push('', `-- ─── Banco Maestro del Simulador (exam_questions en estado DRAFT) ───`);
-    for (const eq of examQuestions) {
-      lines.push(
-        `INSERT INTO public.exam_questions (`,
-        `  island_name, module_id, topic_name, topic_id, stem, findings,`,
-        `  image_url, image_alt, options, difficulty, is_critical, pearl,`,
-        `  source_reference, tags, status`,
-        `) VALUES (`,
-        `  ${sqlLiteral(eq.island_name || 'EMG')},`,
-        `  ${sqlLiteral(eq.module_id || moduleId)},`,
-        `  ${sqlLiteral(eq.topic_name || topicId)},`,
-        `  ${sqlLiteral(eq.topic_id || topicId)},`,
-        `  ${sqlLiteral(eq.stem || '')},`,
-        `  $fjson$${JSON.stringify(eq.findings ?? [])}$fjson$::jsonb,`,
-        `  ${eq.image_url ? sqlLiteral(eq.image_url) : 'NULL'},`,
-        `  ${eq.image_alt ? sqlLiteral(eq.image_alt) : 'NULL'},`,
-        `  $ojson$${JSON.stringify(eq.options ?? [])}$ojson$::jsonb,`,
-        `  ${Number(eq.difficulty ?? 2)},`,
-        `  ${Boolean(eq.is_critical)},`,
-        `  ${eq.pearl ? sqlLiteral(eq.pearl) : 'NULL'},`,
-        `  ${eq.source_reference ? sqlLiteral(eq.source_reference) : 'NULL'},`,
-        `  ARRAY[${(eq.tags ?? []).map((t) => sqlLiteral(t)).join(', ')}]::text[],`,
-        `  'DRAFT'`,
-        `);`
-      );
-    }
-  }
 
   return lines.join('\n') + '\n';
 }
@@ -930,72 +856,10 @@ export async function submitQuizDraft(args: {
   };
 
   if (args.stageToSupabase) {
-    const { client, mode } = getSupabaseClient();
-    if (client && mode === 'service_role') {
-      const rpcPayload = {
-        quizzes: [
-          {
-            topic_id: args.topicId,
-            module_id: args.moduleId,
-            title: normalizedPayload.title,
-            pass_score: normalizedPayload.passScore ?? 70,
-            max_attempts: normalizedPayload.maxAttempts ?? null,
-            shuffle_questions: normalizedPayload.shuffleQuestions ?? true,
-            shuffle_options: normalizedPayload.shuffleOptions ?? true,
-            clinical_validation_status: 'pending_review',
-            questions: (normalizedPayload.questions ?? []).map((q, idx) => ({
-              id: q.id ?? crypto.randomUUID(),
-              sort_order: q.sortOrder ?? idx,
-              type: q.type,
-              stem: q.stem,
-              stem_en: q.stemEn ?? null,
-              image_url: q.imageUrl ?? null,
-              image_alt: q.imageAlt ?? null,
-              options: q.options,
-              explanation: q.explanation ?? null,
-              explanation_en: q.explanationEn ?? null,
-              difficulty: q.difficulty ?? 'intermediate',
-            })),
-          },
-        ],
-      };
-
-      const { data: importRes, error: importErr } = await client.rpc('admin_import_pending_quizzes', {
-        p_payload: rpcPayload,
-      });
-
-      let examInserted = 0;
-      if ((normalizedPayload.examQuestions ?? []).length > 0) {
-        const rows = (normalizedPayload.examQuestions ?? []).map((eq) => ({
-          island_name: eq.island_name || 'EMG',
-          module_id: eq.module_id || args.moduleId,
-          topic_name: eq.topic_name || args.topicId,
-          topic_id: eq.topic_id || args.topicId,
-          stem: eq.stem || '',
-          findings: eq.findings ?? [],
-          image_url: eq.image_url ?? null,
-          image_alt: eq.image_alt ?? null,
-          options: eq.options ?? [],
-          difficulty: eq.difficulty ?? 2,
-          is_critical: Boolean(eq.is_critical),
-          pearl: eq.pearl ?? null,
-          source_reference: eq.source_reference ?? null,
-          tags: eq.tags ?? [],
-          status: 'DRAFT',
-        }));
-        const { data: eqData, error: eqErr } = await client
-          .from('exam_questions')
-          .insert(rows)
-          .select('id');
-        if (!eqErr && Array.isArray(eqData)) examInserted = eqData.length;
-      }
-
-      supabaseStagingResult = {
-        executed: !importErr,
-        quizImportResponse: importRes ?? importErr?.message,
-        examQuestionsDraftsInserted: examInserted,
-      };
-    }
+    supabaseStagingResult = {
+      executed: false,
+      note: 'No se publica en vivo. El .sql inserta content_revisions en draft, a nombre de jmyocupicior@gmail.com, sin borrar quiz_questions ni quiz_attempts.',
+    };
   }
 
   return {

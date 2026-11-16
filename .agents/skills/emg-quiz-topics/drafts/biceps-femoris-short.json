@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Bíceps femoral (Cabeza corta)",
+  "revisionType": "quiz",
+  "quizTopicId": "biceps-femoris-short",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Ciático (división peroneal), L5-S1. ¿Esta afirmación es la que corresponde enseñar en «Bíceps femoral (Cabeza corta)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ciático (división peroneal), L5-S1.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Bíceps femoral (Cabeza corta)», ¿cuál afirmación es la correcta?\nNormal en neuropatía del peroneo común.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Normal en neuropatía del peroneo común.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Normal en neuropatía del peroneo común.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bíceps femoral (Cabeza corta)», ¿cuál afirmación es la correcta?\nAnormal en lesión ciática o radiculopatía L5-S1.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Anormal en lesión ciática o radiculopatía L5-S1.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Anormal en lesión ciática o radiculopatía L5-S1.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bíceps femoral (Cabeza corta)», ¿cuál afirmación es la correcta?\nRiesgo de lesionar nervio ciático si se inserta muy profundo/medial.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Riesgo de lesionar nervio ciático si se inserta muy profundo/medial.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Riesgo de lesionar nervio ciático si se inserta muy profundo/medial.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "biceps-femoris-short",
+      "topic_name": "Bíceps femoral (Cabeza corta)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Bíceps femoral (Cabeza corta)». Ciático (división peroneal), L5-S1. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Ciático (división peroneal), L5-S1.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "¡DIFERENCIAL CLAVE!: Es el ÚNICO músculo inervado por la división peroneal por ENCIMA de la cabeza del peroné. En una neuropatía del peroneo común en rodilla estará NORMAL. En una lesión del ciático (que suele simular pie caído) estará ANORMAL.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "biceps-femoris-short"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

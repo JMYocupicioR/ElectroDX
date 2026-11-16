@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Principios y electrodos",
+  "revisionType": "quiz",
+  "quizTopicId": "sfemg-principles",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Electrodo: superficie 25 µm → radio de captación ~300 µm. ¿Esta afirmación es la que corresponde enseñar en «Principios y electrodos»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Electrodo: superficie 25 µm → radio de captación ~300 µm.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Principios y electrodos», ¿cuál afirmación es la correcta?\nFiltros: pasa-altos 500 Hz (vs. 10-20 Hz EMG convencional).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Filtros: pasa-altos 500 Hz (vs. 10-20 Hz EMG convencional).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Filtros: pasa-altos 500 Hz (vs. 10-20 Hz EMG convencional).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Principios y electrodos», ¿cuál afirmación es la correcta?\nBarrido: 1 ms/div → máxima resolución temporal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Barrido: 1 ms/div → máxima resolución temporal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Barrido: 1 ms/div → máxima resolución temporal.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Principios y electrodos», ¿cuál afirmación es la correcta?\nAlternativa: concéntrica con filtros 500 Hz (Concentric-SFEMG).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Alternativa: concéntrica con filtros 500 Hz (Concentric-SFEMG).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Alternativa: concéntrica con filtros 500 Hz (Concentric-SFEMG).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "sfemg-principles",
+      "topic_name": "Principios y electrodos",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Principios y electrodos». Electrodo: superficie 25 µm → radio de captación ~300 µm. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Electrodo: superficie 25 µm → radio de captación ~300 µm.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si el laboratorio no tiene el electrodo oficial de fibra única, la concéntrica con filtros 500 Hz es una alternativa válida. Usa las tablas normativas correspondientes a ese electrodo.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "sfemg-principles"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

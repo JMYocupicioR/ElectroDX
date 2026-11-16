@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Ondas agudas positivas (PSW)",
+  "revisionType": "quiz",
+  "quizTopicId": "positive-sharp-waves",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PSW: mismo significado que fibrilaciones (denervación activa). ¿Esta afirmación es la que corresponde enseñar en «Ondas agudas positivas (PSW)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PSW: mismo significado que fibrilaciones (denervación activa).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Ondas agudas positivas (PSW)», ¿cuál afirmación es la correcta?\nMorfología: deflexión positiva inicial abrupta + retorno lento negativo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Morfología: deflexión positiva inicial abrupta + retorno lento negativo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Morfología: deflexión positiva inicial abrupta + retorno lento negativo.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ondas agudas positivas (PSW)», ¿cuál afirmación es la correcta?\nAparecen ligeramente ANTES que las fibrilaciones y persisten MÁS TIEMPO.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Aparecen ligeramente ANTES que las fibrilaciones y persisten MÁS TIEMPO.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Aparecen ligeramente ANTES que las fibrilaciones y persisten MÁS TIEMPO.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ondas agudas positivas (PSW)», ¿cuál afirmación es la correcta?\nSonido: \"golpe sordo\" o \"toc-toc\" (más grave que fibrilaciones).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sonido: \"golpe sordo\" o \"toc-toc\" (más grave que fibrilaciones).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sonido: \"golpe sordo\" o \"toc-toc\" (más grave que fibrilaciones).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "positive-sharp-waves",
+      "topic_name": "Ondas agudas positivas (PSW)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Ondas agudas positivas (PSW)». PSW: mismo significado que fibrilaciones (denervación activa). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PSW: mismo significado que fibrilaciones (denervación activa).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Las PSW a menudo aparecen ANTES que las fibrilaciones y PERSISTEN más tiempo después de la reinervación. Si encuentras PSW sin fibrilaciones, puede indicar: denervación muy reciente (aún no han aparecido las fibs) o reinervación en progreso (las fibs ya desaparecieron pero las PSW persisten).",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "positive-sharp-waves"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

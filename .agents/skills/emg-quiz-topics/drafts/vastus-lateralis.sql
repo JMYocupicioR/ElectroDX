@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: vastus-lateralis (Module: emg-needle)
+-- Generated at: 2026-11-15T23:31:11.592Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'vastus-lateralis',
+  'emg-needle',
+  'update',
+  $payload${"title":"Evaluación: Vasto lateral","revisionType":"quiz","quizTopicId":"vastus-lateralis","moduleId":"emg-needle","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Siempre un aductor en el protocolo. ¿Esta afirmación es la que corresponde enseñar en «Vasto lateral»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Siempre un aductor en el protocolo.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Vasto lateral», ¿cuál afirmación es la correcta?\nEl obturador es el testigo que el femoral no lleva.","options":[{"id":"a","text":"El obturador es el testigo que el femoral no lleva.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El obturador es el testigo que el femoral no lleva.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Vasto lateral», ¿cuál afirmación es la correcta?\nRodilla que no extiende pide más que un vasto.","options":[{"id":"a","text":"Rodilla que no extiende pide más que un vasto.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Rodilla que no extiende pide más que un vasto.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Vasto lateral», ¿cuál afirmación es la correcta?\nMúsculo proxi para evaluar L3-L4 y neuropatía femoral.","options":[{"id":"a","text":"Músculo proxi para evaluar L3-L4 y neuropatía femoral.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Músculo proxi para evaluar L3-L4 y neuropatía femoral.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","citations":[]}],"examQuestions":[{"module_id":"emg-needle","topic_id":"vastus-lateralis","topic_name":"Vasto lateral","island_name":"EMG","stem":"Caso breve ligado a «Vasto lateral». Siempre un aductor en el protocolo. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Siempre un aductor en el protocolo.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"El obturador es el testigo que el femoral no lleva.","source_reference":"Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180","tags":["emg-needle","vastus-lateralis"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'vastus-lateralis'
+    AND r.module_id = 'emg-needle'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

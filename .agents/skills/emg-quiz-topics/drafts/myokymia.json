@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Mioquimias",
+  "revisionType": "quiz",
+  "quizTopicId": "myokymia",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Mioquimias: descargas AGRUPADAS de PUM con patrón burst-pausa-burst semirrítmico. ¿Esta afirmación es la que corresponde enseñar en «Mioquimias»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Mioquimias: descargas AGRUPADAS de PUM con patrón burst-pausa-burst semirrítmico.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Mioquimias», ¿cuál afirmación es la correcta?\nSonido: \"soldados marchando\" (rítmico, agrupado).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sonido: \"soldados marchando\" (rítmico, agrupado).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sonido: \"soldados marchando\" (rítmico, agrupado).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mioquimias», ¿cuál afirmación es la correcta?\nCausa clásica: radioterapia previa (plexopatía por radiación).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Causa clásica: radioterapia previa (plexopatía por radiación).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Causa clásica: radioterapia previa (plexopatía por radiación).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mioquimias», ¿cuál afirmación es la correcta?\nMioquimia facial unilateral persistente es casi patognomónica de EM.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Mioquimia facial unilateral persistente es casi patognomónica de EM.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Mioquimia facial unilateral persistente es casi patognomónica de EM.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "myokymia",
+      "topic_name": "Mioquimias",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Mioquimias». Mioquimias: descargas AGRUPADAS de PUM con patrón burst-pausa-burst semirrítmico. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Mioquimias: descargas AGRUPADAS de PUM con patrón burst-pausa-burst semirrítmico.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si un paciente con antecedente de radioterapia para cáncer de mama presenta dolor, debilidad y rigidez del brazo ipsilateral + mioquimias en EMG → plexopatía braquial por radiación. Las mioquimias son el sello EMG de esta condición y la diferencian de la recurrencia tumoral (que NO produce mioquimias).",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "myokymia"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Fibrilaciones: fisiopatología y significado",
+  "revisionType": "quiz",
+  "quizTopicId": "fibrillations",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Fibrilaciones: potencial de fibra individual denervada, bifásico con deflexión positiva inicial. ¿Esta afirmación es la que corresponde enseñar en «Fibrilaciones: fisiopatología y significado»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fibrilaciones: potencial de fibra individual denervada, bifásico con deflexión positiva inicial.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Fibrilaciones: fisiopatología y significado», ¿cuál afirmación es la correcta?\nAparecen 2-3 semanas post-denervación (proximales antes que distales).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Aparecen 2-3 semanas post-denervación (proximales antes que distales).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Aparecen 2-3 semanas post-denervación (proximales antes que distales).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fibrilaciones: fisiopatología y significado», ¿cuál afirmación es la correcta?\nGradación: 1+ (leve/focal) a 4+ (masiva/difusa).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Gradación: 1+ (leve/focal) a 4+ (masiva/difusa).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Gradación: 1+ (leve/focal) a 4+ (masiva/difusa).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Fibrilaciones: fisiopatología y significado», ¿cuál afirmación es la correcta?\nSonido: \"lluvia en el techo\" — regular, rítmico, 0.5-10 Hz.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sonido: \"lluvia en el techo\" — regular, rítmico, 0.5-10 Hz.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sonido: \"lluvia en el techo\" — regular, rítmico, 0.5-10 Hz.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "fibrillations",
+      "topic_name": "Fibrilaciones: fisiopatología y significado",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Fibrilaciones: fisiopatología y significado». Fibrilaciones: potencial de fibra individual denervada, bifásico con deflexión positiva inicial. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Fibrilaciones: potencial de fibra individual denervada, bifásico con deflexión positiva inicial.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La deflexión POSITIVA inicial es la firma de las fibrilaciones. Si ves potenciales pequeños con deflexión NEGATIVA inicial → probablemente estás en la zona de placa (espículas de placa), no fibrilaciones patológicas.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "fibrillations"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

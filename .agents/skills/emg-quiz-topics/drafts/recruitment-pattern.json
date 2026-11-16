@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Patrón de reclutamiento",
+  "revisionType": "quiz",
+  "quizTopicId": "recruitment-pattern",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Ratio normal de reclutamiento: ~5:1 (Hz de la primera UM / número de UM activas). ¿Esta afirmación es la que corresponde enseñar en «Patrón de reclutamiento»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ratio normal de reclutamiento: ~5:1 (Hz de la primera UM / número de UM activas).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Patrón de reclutamiento», ¿cuál afirmación es la correcta?\nReducido (neurogénico): pocas UM, frecuencia de disparo alta (>15-20 Hz).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Reducido (neurogénico): pocas UM, frecuencia de disparo alta (>15-20 Hz).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Reducido (neurogénico): pocas UM, frecuencia de disparo alta (>15-20 Hz).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Patrón de reclutamiento», ¿cuál afirmación es la correcta?\nPrecoz (miopático): muchas UM, frecuencia normal, esfuerzo mínimo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Precoz (miopático): muchas UM, frecuencia normal, esfuerzo mínimo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Precoz (miopático): muchas UM, frecuencia normal, esfuerzo mínimo.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Patrón de reclutamiento», ¿cuál afirmación es la correcta?\nPrincipio de Henneman: UM pequeñas se reclutan primero.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Principio de Henneman: UM pequeñas se reclutan primero.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Principio de Henneman: UM pequeñas se reclutan primero.\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "recruitment-pattern",
+      "topic_name": "Patrón de reclutamiento",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Patrón de reclutamiento». Ratio normal de reclutamiento: ~5:1 (Hz de la primera UM / número de UM activas). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Ratio normal de reclutamiento: ~5:1 (Hz de la primera UM / número de UM activas).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El dato más confiable de reclutamiento reducido: una sola UM disparando a >20 Hz en un músculo que no puede generar más fuerza. Es el equivalente eléctrico de la paresia.",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "recruitment-pattern"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

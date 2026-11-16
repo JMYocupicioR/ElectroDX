@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Descargas repetitivas complejas (CRD)",
+  "revisionType": "quiz",
+  "quizTopicId": "crd",
+  "moduleId": "emg-needle",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "CRD: circuito efáptico cerrado entre fibras adyacentes (transmisión directa, no sináptica). ¿Esta afirmación es la que corresponde enseñar en «Descargas repetitivas complejas (CRD)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CRD: circuito efáptico cerrado entre fibras adyacentes (transmisión directa, no sináptica).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Descargas repetitivas complejas (CRD)», ¿cuál afirmación es la correcta?\nFrecuencia y amplitud CONSTANTES (sin waxing/waning).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Frecuencia y amplitud CONSTANTES (sin waxing/waning).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Frecuencia y amplitud CONSTANTES (sin waxing/waning).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Descargas repetitivas complejas (CRD)», ¿cuál afirmación es la correcta?\nInicio y fin ABRUPTOS (como encender/apagar un motor).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Inicio y fin ABRUPTOS (como encender/apagar un motor).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inicio y fin ABRUPTOS (como encender/apagar un motor).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Descargas repetitivas complejas (CRD)», ¿cuál afirmación es la correcta?\nSignificado: CRONICIDAD (no específico de enfermedad).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Significado: CRONICIDAD (no específico de enfermedad).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Significado: CRONICIDAD (no específico de enfermedad).\n\n📚 Referencia: Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-needle",
+      "topic_id": "crd",
+      "topic_name": "Descargas repetitivas complejas (CRD)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Descargas repetitivas complejas (CRD)». CRD: circuito efáptico cerrado entre fibras adyacentes (transmisión directa, no sináptica). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "CRD: circuito efáptico cerrado entre fibras adyacentes (transmisión directa, no sináptica).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Las CRD NO son específicas de ninguna enfermedad — solo indican que el proceso es CRÓNICO. Si encuentras CRD + fibrilaciones en el mismo músculo, significa: proceso crónico con denervación activa superpuesta (ej: ELA progresiva, radiculopatía crónica con nuevo compromiso).",
+      "source_reference": "Daube JR, Rubin DI. Needle electromyography. Muscle & Nerve (2009). https://doi.org/10.1002/mus.21180",
+      "tags": [
+        "emg-needle",
+        "crd"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

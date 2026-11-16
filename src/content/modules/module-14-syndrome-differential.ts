@@ -22,7 +22,7 @@ El protocolo mínimo incluye: SNAP y CMAP de mediano y cubital bilaterales, comp
 
 La clave fisiológica es la distribución: el síndrome del túnel del carpo respeta el dorso de la mano y suele empeorar de noche; la radiculopatía sigue un dermatoma y se acompaña de cambios agudos o crónicos en EMG de músculos proximales; la plexopatía inferior afecta medianos y cubitales con SNAPs bajos y EMG de músculos no dependientes de un solo nervio.
 
-**Pendiente de validación clínica institucional.** Este tema traduce el módulo de patologías a la mesa de trabajo del laboratorio.`,
+Este tema traduce el módulo de patologías a la mesa de trabajo del laboratorio.`,
       clinicalPearls: [
         'Un SNAP de mediano ausente con cubital y radial sensitivos normales apunta a mediano distal, no a C6 aislada (el SNAP suele preservarse en radiculopatía).',
         'Si el paciente describe el 5.º dedo, el estudio de cubital en codo es obligatorio aunque el mediano sea anormal.',
@@ -43,7 +43,7 @@ Protocolo práctico: CMAP de peroneo al extensor corto de los dedos y al tibial 
 
 Si el SNAP peroneo superficial está ausente y el sural está conservado, el foco es peroneo (o plexo/ciático de fascículos peroneos). Si ambos SNAPs están conservados y hay denervación paraespinal y en tibial posterior, el foco es radicular L5. La enfermedad de motoneurona suele respetar sensitivos y mostrar reclutamiento reducido amplio, fasciculaciones y distribución que no cabe en un nervio.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       clinicalPearls: [
         'El bíceps femoral cabeza corta es el músculo decisivo para no confundir peroneo común con ciático.',
         'Un pie caído bilateral agudo obliga a pensar en radiculoplexopatía, polirradiculopatía o motoneurona, no en dos compresiones de peroné.',
@@ -64,7 +64,7 @@ NCS: CMAP y SNAP de al menos un nervio motor y uno sensitivo por extremidad; si 
 
 Patrón miopático: SNAPs y CMAPs distales conservados (salvo miopatía distal), EMG con unidades breves y polifásicas, reclutamiento precoz. Patrón neurogénico proximal: CMAPs pueden caer, SNAPs bajos si hay plexo, denervación en distribución de plexo o raíces. La miositis puede coexistir con potenciales de fibrilación abundantes; no interpretar fibrilaciones como “siempre neuropáticas”.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       clinicalPearls: [
         'Fibrilaciones en un músculo proximal no equivalen a radiculopatía: las miopatías inflamatorias las producen con frecuencia.',
         'Si hay fatigabilidad, la RNS y el SFEMG (curso avanzado) cambian el algoritmo.',
@@ -83,7 +83,7 @@ Patrón miopático: SNAPs y CMAPs distales conservados (salvo miopatía distal),
 
 El abordaje: documentar cada nervio con SNAP y CMAP, buscar bloqueo o caída de amplitud en sitios no entrapment (sugiere desmielinización adquirida o HNPP), y completar EMG de músculos fuera de los túneles sospechados. Un “STC + cubital en codo + peroneo” en un paciente joven con historia familiar obliga a pensar en HNPP; el mismo patrón en un adulto con pérdida de peso y VSG alta obliga a vasculitis.
 
-**Pendiente de validación clínica institucional.**`,
+`,
       clinicalPearls: [
         'Tres atrapamientos en sitios clásicos en un paciente joven: pida PMP22 antes de operar el tercer túnel.',
         'Dolor neuropático paso a paso con SNAPs focalmente ausentes: no cierre como polineuropatía simétrica.',
@@ -102,7 +102,7 @@ El abordaje: documentar cada nervio con SNAP y CMAP, buscar bloqueo o caída de 
 
 Regla práctica: estudie primero el territorio que puede cambiar la conducta (cirugía, inmunoterapia, seguridad). Documente temperatura, distancias y estímulo supramáximo. Si a mitad del estudio la localización ya es clara, no añada nervios “por protocolo” que no responden la pregunta; si la localización no cierra, amplíe de forma dirigida (p. ej. radial superficial cuando el mediano y el cubital no bastan).
 
-Este tema conecta el curso principiante (técnica) con la práctica real del laboratorio. **Pendiente de validación clínica institucional.**`,
+Este tema conecta el curso principiante (técnica) con la práctica real del laboratorio.`,
       clinicalPearls: [
         'Si no puede escribir la pregunta clínica en una frase, no encienda el equipo.',
         'Un estudio corto y bien dirigido supera a un estudio largo y no interpretado.',
