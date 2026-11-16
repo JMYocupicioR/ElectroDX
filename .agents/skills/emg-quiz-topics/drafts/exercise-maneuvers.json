@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Maniobras de Ejercicio",
+  "revisionType": "quiz",
+  "quizTopicId": "exercise-maneuvers",
+  "moduleId": "repetitive-stimulation",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Facilitación: Mejora inmediata del decremento tras ejercicio breve (10-30 segundos). ¿Esta afirmación es la que corresponde enseñar en «Maniobras de Ejercicio»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Facilitación: Mejora inmediata del decremento tras ejercicio breve (10-30 segundos).\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Maniobras de Ejercicio», ¿cuál afirmación es la correcta?\nAgotamiento: Empeoramiento máximo del decremento a los 2-4 minutos post-ejercicio.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Agotamiento: Empeoramiento máximo del decremento a los 2-4 minutos post-ejercicio.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Agotamiento: Empeoramiento máximo del decremento a los 2-4 minutos post-ejercicio.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Maniobras de Ejercicio», ¿cuál afirmación es la correcta?\nSiempre obtener una línea base ANTES del ejercicio.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Siempre obtener una línea base ANTES del ejercicio.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Siempre obtener una línea base ANTES del ejercicio.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Maniobras de Ejercicio», ¿cuál afirmación es la correcta?\nLa facilitación breve post-ejercicio puede normalizar un decremento que era claramente patológico en reposo. Por eso NUNCA debes hacer el estudio solamente después de ejercicio; siempre haz una línea base primero.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La facilitación breve post-ejercicio puede normalizar un decremento que era claramente patológico en reposo. Por eso NUNCA debes hacer el estudio solamente después de ejercicio; siempre haz una línea base primero.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La facilitación breve post-ejercicio puede normalizar un decremento que era claramente patológico en reposo. Por eso NUNCA debes hacer el estudio solamente después de ejercicio; siempre haz una línea base primero.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "repetitive-stimulation",
+      "topic_id": "exercise-maneuvers",
+      "topic_name": "Maniobras de Ejercicio",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Maniobras de Ejercicio». Facilitación: Mejora inmediata del decremento tras ejercicio breve (10-30 segundos). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Facilitación: Mejora inmediata del decremento tras ejercicio breve (10-30 segundos).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La facilitación breve post-ejercicio puede normalizar un decremento que era claramente patológico en reposo. Por eso NUNCA debes hacer el estudio solamente después de ejercicio; siempre haz una línea base primero.",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "repetitive-stimulation",
+        "exercise-maneuvers"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

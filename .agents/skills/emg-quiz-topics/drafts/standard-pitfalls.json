@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Errores comunes y cómo evitarlos",
+  "revisionType": "quiz",
+  "quizTopicId": "standard-pitfalls",
+  "moduleId": "repetitive-stimulation",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Inmovilización estricta es el factor más crítico para evitar falsos positivos. ¿Esta afirmación es la que corresponde enseñar en «Errores comunes y cómo evitarlos»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Inmovilización estricta es el factor más crítico para evitar falsos positivos.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Errores comunes y cómo evitarlos», ¿cuál afirmación es la correcta?\nTemperatura cutánea mayor de 32°C en todo estudio de ENR.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Temperatura cutánea mayor de 32°C en todo estudio de ENR.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Temperatura cutánea mayor de 32°C en todo estudio de ENR.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Errores comunes y cómo evitarlos», ¿cuál afirmación es la correcta?\nIntensidad de estimulación: 20-30% supra-máxima.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Intensidad de estimulación: 20-30% supra-máxima.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Intensidad de estimulación: 20-30% supra-máxima.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Errores comunes y cómo evitarlos», ¿cuál afirmación es la correcta?\nSuspender Piridostigmina 12-24h antes si es clínicamente seguro.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Suspender Piridostigmina 12-24h antes si es clínicamente seguro.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Suspender Piridostigmina 12-24h antes si es clínicamente seguro.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "repetitive-stimulation",
+      "topic_id": "standard-pitfalls",
+      "topic_name": "Errores comunes y cómo evitarlos",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Errores comunes y cómo evitarlos». Inmovilización estricta es el factor más crítico para evitar falsos positivos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Inmovilización estricta es el factor más crítico para evitar falsos positivos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "**Regla de oro:** Si el CMAP cambia de forma entre pulsos, sospecha movimiento del electrodo. En un decremento real por MG, la forma es idéntica; solo cambia la amplitud.",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "repetitive-stimulation",
+        "standard-pitfalls"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

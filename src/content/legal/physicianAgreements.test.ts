@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   documentsFromPhysicianEdition,
+  applyGenerationTerms,
+  DEFAULT_GENERATION_TERMS,
   emptyPhysicianParty,
   fillPhysicianSignerFields,
   isPhysicianPartyComplete,
@@ -126,6 +128,22 @@ describe('physician edition publish', () => {
   it('bumps 1.0 to 1.1', () => {
     expect(nextBundleVersion(null)).toBe('1.0');
     expect(nextBundleVersion('1.0')).toBe('1.1');
+  });
+
+  it('fills the generation brackets with the proposal rates', () => {
+    const filled = applyGenerationTerms(anexo, DEFAULT_GENERATION_TERMS);
+    expect(filled).not.toContain('[TASA DOCENCIA]');
+    expect(filled).toContain('Diplomado ElectroDX');
+    expect(filled).toContain('15');
+    expect(
+      validatePhysicianEditionForPublish({
+        party: completeParty,
+        contrato: sample,
+        anexo: filled,
+        reglamento: sample,
+        aviso: '# Aviso\n\n## Datos\n\nContacto [CORREO DE LIQUIDACIONES].',
+      })
+    ).toBeNull();
   });
 
   it('refuses to publish an anexo that still has generation rates in brackets', () => {

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Neuropatía del Nervio Peroneo Común",
+  "revisionType": "quiz",
+  "quizTopicId": "peroneal-neuropathy",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "CLAVE: el tibial posterior (L5, nervio tibial) es el músculo diferencial. Si está débil → NO es peroneo, es L5 o ciático. Si está normal → peroneo. ¿Esta afirmación es la que corresponde enseñar en «Neuropatía del Nervio Peroneo Común»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CLAVE: el tibial posterior (L5, nervio tibial) es el músculo diferencial. Si está débil → NO es peroneo, es L5 o ciático. Si está normal → peroneo.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Neuropatía del Nervio Peroneo Común», ¿cuál afirmación es la correcta?\nNeuropraxia (SNAP peroneo superficial normal + bloqueo puro) tiene excelente pronóstico — recuperación en 2-3 meses. Axonopatía (SNAP reducido + denervación) recupera en 6-12 meses.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Neuropraxia (SNAP peroneo superficial normal + bloqueo puro) tiene excelente pronóstico — recuperación en 2-3 meses. Axonopatía (SNAP reducido + denervación) recupera en 6-12 meses.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Neuropraxia (SNAP peroneo superficial normal + bloqueo puro) tiene excelente pronóstico — recuperación en 2-3 meses. Axonopatía (SNAP reducido + denervación) recupera en 6-12 meses.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía del Nervio Peroneo Común», ¿cuál afirmación es la correcta?\nCausa más frecuente de pie caído unilateral agudo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Causa más frecuente de pie caído unilateral agudo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Causa más frecuente de pie caído unilateral agudo.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía del Nervio Peroneo Común», ¿cuál afirmación es la correcta?\nHallazgos NCS: • CMAP peroneo (EDB): reducido o ausente con estimulación distal (tobillo).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hallazgos NCS: • CMAP peroneo (EDB): reducido o ausente con estimulación distal (tobillo).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Hallazgos NCS: • CMAP peroneo (EDB): reducido o ausente con estimulación distal (tobillo).\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "peroneal-neuropathy",
+      "topic_name": "Neuropatía del Nervio Peroneo Común",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Neuropatía del Nervio Peroneo Común». CLAVE: el tibial posterior (L5, nervio tibial) es el músculo diferencial. Si está débil → NO es peroneo, es L5 o ciático. Si está normal → peroneo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "CLAVE: el tibial posterior (L5, nervio tibial) es el músculo diferencial. Si está débil → NO es peroneo, es L5 o ciático. Si está normal → peroneo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "CLAVE: el tibial posterior (L5, nervio tibial) es el músculo diferencial. Si está débil → NO es peroneo, es L5 o ciático. Si está normal → peroneo.",
+      "source_reference": "AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "tags": [
+        "pathologies",
+        "peroneal-neuropathy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

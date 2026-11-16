@@ -10,6 +10,7 @@ describe('TopicsMissingQuizQueue', () => {
         <TopicsMissingQuizQueue
           total={8}
           onAddQuiz={vi.fn()}
+          onOmit={vi.fn()}
           topics={[
             {
               topicId: 'gap',
@@ -31,6 +32,7 @@ describe('TopicsMissingQuizQueue', () => {
     expect(html).toContain('Módulo 1: Fundamentos');
     expect(html).toContain('8 temas siguen sin cuestionario');
     expect(html).toContain('Agregar cuestionario');
+    expect(html).toContain('Omitir');
     expect(html).toContain('/admin/quizzes?estado=no_quiz&amp;tab=topics');
   });
 

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Distrofias Musculares",
+  "revisionType": "quiz",
+  "quizTopicId": "muscular-dystrophies",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Descargas miotónicas en EMG (\"bombardero en picada\") = miotonía eléctrica. Se ve en DM1, DM2, miotonía congénita, paramiotonía. Si NO hay descargas miotónicas pero hay miotonía clínica (dificultad para soltar la mano), considerar miotonía de canales de sodio (las descargas pueden ser sutiles). ¿Esta afirmación es la que corresponde enseñar en «Distrofias Musculares»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Descargas miotónicas en EMG (\"bombardero en picada\") = miotonía eléctrica. Se ve en DM1, DM2, miotonía congénita, paramiotonía. Si NO hay descargas miotónicas pero hay miotonía clínica (dificultad para soltar la mano), considerar miotonía de canales de sodio (las descargas pueden ser sutiles).\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Distrofias Musculares», ¿cuál afirmación es la correcta?\nDM1 vs DM2: DM1 es DISTAL (manos, pies) + facial. DM2 es PROXIMAL (caderas, muslos). Si la debilidad es proximal con miotonía, piensa en DM2.",
+      "options": [
+        {
+          "id": "a",
+          "text": "DM1 vs DM2: DM1 es DISTAL (manos, pies) + facial. DM2 es PROXIMAL (caderas, muslos). Si la debilidad es proximal con miotonía, piensa en DM2.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "DM1 vs DM2: DM1 es DISTAL (manos, pies) + facial. DM2 es PROXIMAL (caderas, muslos). Si la debilidad es proximal con miotonía, piensa en DM2.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Distrofias Musculares», ¿cuál afirmación es la correcta?\nDuchenne/Becker (distrofinopatías): • Duchenne: ausencia de distrofina.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Duchenne/Becker (distrofinopatías): • Duchenne: ausencia de distrofina.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Duchenne/Becker (distrofinopatías): • Duchenne: ausencia de distrofina.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Distrofias Musculares», ¿cuál afirmación es la correcta?\nEMG: patrón miopático con fibrilaciones (necrosis temprana).",
+      "options": [
+        {
+          "id": "a",
+          "text": "EMG: patrón miopático con fibrilaciones (necrosis temprana).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "EMG: patrón miopático con fibrilaciones (necrosis temprana).\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "muscular-dystrophies",
+      "topic_name": "Distrofias Musculares",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Distrofias Musculares». Descargas miotónicas en EMG (\"bombardero en picada\") = miotonía eléctrica. Se ve en DM1, DM2, miotonía congénita, paramiotonía. Si NO hay descargas miotónicas pero hay miotonía clínica (dificultad para soltar la mano), considerar miotonía de canales de sodio (las descargas pueden ser sutiles). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Descargas miotónicas en EMG (\"bombardero en picada\") = miotonía eléctrica. Se ve en DM1, DM2, miotonía congénita, paramiotonía. Si NO hay descargas miotónicas pero hay miotonía clínica (dificultad para soltar la mano), considerar miotonía de canales de sodio (las descargas pueden ser sutiles).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Descargas miotónicas en EMG (\"bombardero en picada\") = miotonía eléctrica. Se ve en DM1, DM2, miotonía congénita, paramiotonía. Si NO hay descargas miotónicas pero hay miotonía clínica (dificultad para soltar la mano), considerar miotonía de canales de sodio (las descargas pueden ser sutiles).",
+      "source_reference": "Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "tags": [
+        "pathologies",
+        "muscular-dystrophies"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

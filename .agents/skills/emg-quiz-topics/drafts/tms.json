@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Estimulación Magnética Transcraneal (EMT)",
+  "revisionType": "quiz",
+  "quizTopicId": "tms",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "La EMT genera un campo magnético que induce corriente eléctrica en el cerebro. ¿Esta afirmación es la que corresponde enseñar en «Estimulación Magnética Transcraneal (EMT)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La EMT genera un campo magnético que induce corriente eléctrica en el cerebro.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Estimulación Magnética Transcraneal (EMT)», ¿cuál afirmación es la correcta?\nRegistro en APB (miembro superior) o Tibial Anterior (miembro inferior).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Registro en APB (miembro superior) o Tibial Anterior (miembro inferior).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Registro en APB (miembro superior) o Tibial Anterior (miembro inferior).\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación Magnética Transcraneal (EMT)», ¿cuál afirmación es la correcta?\nContraindicado: implantes metálicos intracraneales, marcapasos, epilepsia no controlada.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Contraindicado: implantes metálicos intracraneales, marcapasos, epilepsia no controlada.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Contraindicado: implantes metálicos intracraneales, marcapasos, epilepsia no controlada.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación Magnética Transcraneal (EMT)», ¿cuál afirmación es la correcta?\nFacilitación voluntaria reduce el umbral y mejora la reproducibilidad.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Facilitación voluntaria reduce el umbral y mejora la reproducibilidad.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Facilitación voluntaria reduce el umbral y mejora la reproducibilidad.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "tms",
+      "topic_name": "Estimulación Magnética Transcraneal (EMT)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Estimulación Magnética Transcraneal (EMT)». La EMT genera un campo magnético que induce corriente eléctrica en el cerebro. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "La EMT genera un campo magnético que induce corriente eléctrica en el cerebro.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La facilitación voluntaria (el paciente contrae levemente el músculo) es ESENCIAL para obtener MEPs reproducibles en miembros inferiores. Sin facilitación, los MEPs de pierna pueden ser irreproducibles y falsamente anormales.",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "tms"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

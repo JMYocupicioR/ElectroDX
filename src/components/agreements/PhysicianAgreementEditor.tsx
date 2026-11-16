@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react';
-import { FileText, Save, Sparkles } from 'lucide-react';
+import { Eye, FileText, Save, Sparkles } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { isCeoEmail } from '../../content/legal/ceo';
 import {
-  PHYSICIAN_AGREEMENT_TYPES,
+  applyGenerationTerms,
+  DEFAULT_GENERATION_TERMS,
+  fillPhysicianPartyPlaceholders,
   validatePhysicianEditionForPublish,
   type PhysicianAgreementType,
+  type PhysicianGenerationTerms,
   type PhysicianParty,
 } from '../../content/legal/physicianAgreements';
+import { AgreementMarkdown } from './AgreementMarkdown';
 import { PARTY_PLACEHOLDERS } from '../../content/legal/party';
 import {
   fetchPhysicianAgreementEditor,
@@ -38,7 +42,7 @@ const PARTY_FIELDS: { key: keyof PhysicianParty; label: string; placeholder: str
 const fieldClass =
   'mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white';
 
-export function PhysicianAgreementEditor() {
+export function PhysicianAgreementEditor({ onPublished }: { onPublished?: (version: string) => void } = {}) {
   const { user } = useAuth();
   const [model, setModel] = useState<PhysicianAgreementEditorModel | null>(null);
   const [doc, setDoc] = useState<DocKey>('contrato');
@@ -48,6 +52,8 @@ export function PhysicianAgreementEditor() {
   const [confirmPublish, setConfirmPublish] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [terms, setTerms] = useState<PhysicianGenerationTerms>(DEFAULT_GENERATION_TERMS);
+  const [showSource, setShowSource] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,14 +82,19 @@ export function PhysicianAgreementEditor() {
     );
   }
 
-  const publishProblem = validatePhysicianEditionForPublish(model);
+  const anexoListo = applyGenerationTerms(model.anexo, terms);
+  const publishProblem = validatePhysicianEditionForPublish({ ...model, anexo: anexoListo });
   const payload = {
     party: model.party,
     contrato: model.contrato,
-    anexo: model.anexo,
+    anexo: anexoListo,
     reglamento: model.reglamento,
     aviso: model.aviso,
   };
+  const readingSource = fillPhysicianPartyPlaceholders(
+    doc === 'anexo' ? anexoListo : model[doc],
+    model.party,
+  );
 
   const save = async () => {
     if (!user) return;
@@ -117,6 +128,7 @@ export function PhysicianAgreementEditor() {
       setNotice(
         `Versión ${version} publicada. Quien no la haya firmado tendrá que aceptarla antes de entrar al área docente.`
       );
+      onPublished?.(version);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo publicar.');
     } finally {
@@ -163,8 +175,8 @@ export function PhysicianAgreementEditor() {
       {confirmPublish && (
         <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-100">
           <p>
-            Colaboradores, editores y administradores que no tengan esta versión firmada verán la pantalla de acuerdos
-            antes del área docente. Tu cuenta no entra a esa pantalla.
+            Colaboradores, editores y administradores que no tengan esta versión firmada la verán antes del área
+            docente. Desde Auditoría también se puede firmar esta versión.
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -189,8 +201,7 @@ export function PhysicianAgreementEditor() {
       <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
         <h2 className="text-sm font-bold text-slate-900 dark:text-white">Datos del prestador</h2>
         <p className="mt-1 text-xs text-slate-500">
-          Sustituyen los corchetes del texto. En el anexo, las tasas de la generación se escriben en el markdown; el
-          médico solo llena RFC, CLABE, banco y papel al firmar.
+          Sustituyen los corchetes de la razón social. El médico llena su RFC, CLABE, banco y papel al firmar.
         </p>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {PARTY_FIELDS.map((field) => (
@@ -202,6 +213,33 @@ export function PhysicianAgreementEditor() {
                 onChange={(event) =>
                   setModel({ ...model, party: { ...model.party, [field.key]: event.target.value } })
                 }
+                className={fieldClass}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-sm font-bold text-slate-900 dark:text-white">Generación y tasas</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          Sustituyen los corchetes del anexo. Con estas cifras el botón Publicar deja de esperar ese texto.
+        </p>
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {(
+            [
+              ['cohortName', 'Generación'],
+              ['editionId', 'Edición'],
+              ['docenciaRate', 'Docencia %'],
+              ['obraRate', 'Obra %'],
+              ['editorialRate', 'Editorial %'],
+            ] as const
+          ).map(([key, label]) => (
+            <label key={key} className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+              {label}
+              <input
+                value={terms[key]}
+                onChange={(event) => setTerms({ ...terms, [key]: event.target.value })}
                 className={fieldClass}
               />
             </label>
@@ -227,23 +265,39 @@ export function PhysicianAgreementEditor() {
         ))}
       </div>
 
-      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
-        <span className="mb-1 inline-flex items-center gap-1">
-          <FileText className="h-3.5 w-3.5" />
-          Texto en markdown
-        </span>
-        <textarea
-          value={model[doc]}
-          onChange={(event) => setModel({ ...model, [doc]: event.target.value })}
-          spellCheck
-          className={`${fieldClass} min-h-[28rem] font-mono text-[13px] leading-relaxed`}
-        />
-      </label>
-      {PHYSICIAN_AGREEMENT_TYPES.includes(doc as PhysicianAgreementType) && (
-        <p className="text-xs text-slate-500">
-          Conserva el título con #, las secciones con ## y el bloque “Texto de la casilla de aceptación”.
-        </p>
-      )}
+      <section className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white">
+            {DOC_TABS.find((tab) => tab.id === doc)?.label}
+          </h2>
+          <button
+            type="button"
+            onClick={() => setShowSource((open) => !open)}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200"
+          >
+            {showSource ? <Eye className="h-3.5 w-3.5" /> : <FileText className="h-3.5 w-3.5" />}
+            {showSource ? 'Ver lectura' : 'Ver markdown'}
+          </button>
+        </div>
+        {showSource ? (
+          <label className="block p-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
+            Markdown
+            <textarea
+              value={doc === 'anexo' ? anexoListo : model[doc]}
+              onChange={(event) => setModel({ ...model, [doc]: event.target.value })}
+              spellCheck
+              className={`${fieldClass} min-h-[28rem] font-mono text-[13px] leading-relaxed`}
+            />
+            <span className="mt-2 block font-normal text-slate-500">
+              Conserva el título con #, las secciones con ## y el bloque “Texto de la casilla de aceptación”.
+            </span>
+          </label>
+        ) : (
+          <div className="max-h-[36rem] overflow-y-auto px-5 py-4">
+            <AgreementMarkdown source={readingSource} />
+          </div>
+        )}
+      </section>
     </div>
   );
 }

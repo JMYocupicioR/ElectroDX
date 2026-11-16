@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)",
+  "revisionType": "quiz",
+  "quizTopicId": "kennedy",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Varón con debilidad proximal + fasciculaciones + ginecomastia + SNAPs REDUCIDOS = Kennedy, no ELA. Solicitar expansión CAG del receptor de andrógenos (>36 repeticiones es diagnóstico). ¿Esta afirmación es la que corresponde enseñar en «Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Varón con debilidad proximal + fasciculaciones + ginecomastia + SNAPs REDUCIDOS = Kennedy, no ELA. Solicitar expansión CAG del receptor de andrógenos (>36 repeticiones es diagnóstico).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)», ¿cuál afirmación es la correcta?\nKennedy progresa MUY lentamente comparado con ELA. Si un paciente ha tenido debilidad muscular progresiva por >4-5 años con SNAPs reducidos y sigue ambulatorio, Kennedy es mucho más probable que ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Kennedy progresa MUY lentamente comparado con ELA. Si un paciente ha tenido debilidad muscular progresiva por >4-5 años con SNAPs reducidos y sigue ambulatorio, Kennedy es mucho más probable que ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Kennedy progresa MUY lentamente comparado con ELA. Si un paciente ha tenido debilidad muscular progresiva por >4-5 años con SNAPs reducidos y sigue ambulatorio, Kennedy es mucho más probable que ELA.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)», ¿cuál afirmación es la correcta?\nEnfermedad de motoneurona X-linked recesiva por expansión de repeticiones CAG en el gen del receptor de andrógenos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Enfermedad de motoneurona X-linked recesiva por expansión de repeticiones CAG en el gen del receptor de andrógenos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Enfermedad de motoneurona X-linked recesiva por expansión de repeticiones CAG en el gen del receptor de andrógenos.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)», ¿cuál afirmación es la correcta?\nTríada clínica: Debilidad proximal + atrofia muscular + ginecomastia + fasciculaciones periorales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tríada clínica: Debilidad proximal + atrofia muscular + ginecomastia + fasciculaciones periorales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tríada clínica: Debilidad proximal + atrofia muscular + ginecomastia + fasciculaciones periorales.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "kennedy",
+      "topic_name": "Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Enfermedad de Kennedy (Atrofia Muscular Bulboespinal)». Varón con debilidad proximal + fasciculaciones + ginecomastia + SNAPs REDUCIDOS = Kennedy, no ELA. Solicitar expansión CAG del receptor de andrógenos (>36 repeticiones es diagnóstico). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Varón con debilidad proximal + fasciculaciones + ginecomastia + SNAPs REDUCIDOS = Kennedy, no ELA. Solicitar expansión CAG del receptor de andrógenos (>36 repeticiones es diagnóstico).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Varón con debilidad proximal + fasciculaciones + ginecomastia + SNAPs REDUCIDOS = Kennedy, no ELA. Solicitar expansión CAG del receptor de andrógenos (>36 repeticiones es diagnóstico).",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathologies",
+        "kennedy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

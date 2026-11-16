@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: wavelet (Module: special-studies)
+-- Generated at: 2026-11-16T04:54:10.366Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'wavelet',
+  'special-studies',
+  'update',
+  $payload${"title":"Evaluación: Transformada Wavelet","revisionType":"quiz","quizTopicId":"wavelet","moduleId":"special-studies","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Wavelet: Mantiene tiempo + frecuencia (superior a FFT para señales variables). ¿Esta afirmación es la que corresponde enseñar en «Transformada Wavelet»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Wavelet: Mantiene tiempo + frecuencia (superior a FFT para señales variables).\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Transformada Wavelet», ¿cuál afirmación es la correcta?\nSustracción de artefactos ECG en EMG torácico.","options":[{"id":"a","text":"Sustracción de artefactos ECG en EMG torácico.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Sustracción de artefactos ECG en EMG torácico.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Transformada Wavelet», ¿cuál afirmación es la correcta?\nLa wavelet no pincha el músculo.","options":[{"id":"a","text":"La wavelet no pincha el músculo.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"La wavelet no pincha el músculo.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Transformada Wavelet», ¿cuál afirmación es la correcta?\nTiempo-frecuencia es investigación; el PUM es clínica.","options":[{"id":"a","text":"Tiempo-frecuencia es investigación; el PUM es clínica.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Tiempo-frecuencia es investigación; el PUM es clínica.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]}],"examQuestions":[{"module_id":"special-studies","topic_id":"wavelet","topic_name":"Transformada Wavelet","island_name":"EMG","stem":"Caso breve ligado a «Transformada Wavelet». Wavelet: Mantiene tiempo + frecuencia (superior a FFT para señales variables). ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Wavelet: Mantiene tiempo + frecuencia (superior a FFT para señales variables).","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"La wavelet no pincha el músculo.","source_reference":"Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","tags":["special-studies","wavelet"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'wavelet'
+    AND r.module_id = 'special-studies'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

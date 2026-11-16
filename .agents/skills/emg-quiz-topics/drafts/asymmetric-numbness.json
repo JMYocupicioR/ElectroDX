@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Parestesias asimétricas y “múltiples túneles”",
+  "revisionType": "quiz",
+  "quizTopicId": "asymmetric-numbness",
+  "moduleId": "syndrome-differential",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Mapear nervios, no “túneles”. ¿Esta afirmación es la que corresponde enseñar en «Parestesias asimétricas y “múltiples túneles”»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Mapear nervios, no “túneles”.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Parestesias asimétricas y “múltiples túneles”», ¿cuál afirmación es la correcta?\nLa asimetría y el paso temporal separan vasculitis, HNPP y radiculopatía.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La asimetría y el paso temporal separan vasculitis, HNPP y radiculopatía.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La asimetría y el paso temporal separan vasculitis, HNPP y radiculopatía.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Parestesias asimétricas y “múltiples túneles”», ¿cuál afirmación es la correcta?\nTres atrapamientos en sitios clásicos en un paciente joven: pida PMP22 antes de operar el tercer túnel.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tres atrapamientos en sitios clásicos en un paciente joven: pida PMP22 antes de operar el tercer túnel.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tres atrapamientos en sitios clásicos en un paciente joven: pida PMP22 antes de operar el tercer túnel.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Parestesias asimétricas y “múltiples túneles”», ¿cuál afirmación es la correcta?\nDolor neuropático paso a paso con SNAPs focalmente ausentes: no cierre como polineuropatía simétrica.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Dolor neuropático paso a paso con SNAPs focalmente ausentes: no cierre como polineuropatía simétrica.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Dolor neuropático paso a paso con SNAPs focalmente ausentes: no cierre como polineuropatía simétrica.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "syndrome-differential",
+      "topic_id": "asymmetric-numbness",
+      "topic_name": "Parestesias asimétricas y “múltiples túneles”",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Parestesias asimétricas y “múltiples túneles”». Mapear nervios, no “túneles”. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Mapear nervios, no “túneles”.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Tres atrapamientos en sitios clásicos en un paciente joven: pida PMP22 antes de operar el tercer túnel.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "syndrome-differential",
+        "asymmetric-numbness"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Síndrome Post-Polio",
+  "revisionType": "quiz",
+  "quizTopicId": "post-polio",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PUM gigantes (10-20 mV, 30+ ms de duración) con fibrilaciones nuevas en paciente con antecedente de polio = síndrome post-polio. Los PUMs son los más grandes que verás en electromiografía. ¿Esta afirmación es la que corresponde enseñar en «Síndrome Post-Polio»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PUM gigantes (10-20 mV, 30+ ms de duración) con fibrilaciones nuevas en paciente con antecedente de polio = síndrome post-polio. Los PUMs son los más grandes que verás en electromiografía.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Síndrome Post-Polio», ¿cuál afirmación es la correcta?\nNueva debilidad, fatiga y atrofia que aparece 15-40 años después de poliomielitis aguda en músculos previamente afectados y/o contiguos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nueva debilidad, fatiga y atrofia que aparece 15-40 años después de poliomielitis aguda en músculos previamente afectados y/o contiguos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Nueva debilidad, fatiga y atrofia que aparece 15-40 años después de poliomielitis aguda en músculos previamente afectados y/o contiguos.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome Post-Polio», ¿cuál afirmación es la correcta?\nHallazgos EDX: • SNAPs: normales (la polio afecta solo motoneuronas del asta anterior).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hallazgos EDX: • SNAPs: normales (la polio afecta solo motoneuronas del asta anterior).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Hallazgos EDX: • SNAPs: normales (la polio afecta solo motoneuronas del asta anterior).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome Post-Polio», ¿cuál afirmación es la correcta?\n• CMAPs: reducidos en músculos afectados.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• CMAPs: reducidos en músculos afectados.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• CMAPs: reducidos en músculos afectados.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "post-polio",
+      "topic_name": "Síndrome Post-Polio",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Síndrome Post-Polio». PUM gigantes (10-20 mV, 30+ ms de duración) con fibrilaciones nuevas en paciente con antecedente de polio = síndrome post-polio. Los PUMs son los más grandes que verás en electromiografía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PUM gigantes (10-20 mV, 30+ ms de duración) con fibrilaciones nuevas en paciente con antecedente de polio = síndrome post-polio. Los PUMs son los más grandes que verás en electromiografía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "PUM gigantes (10-20 mV, 30+ ms de duración) con fibrilaciones nuevas en paciente con antecedente de polio = síndrome post-polio. Los PUMs son los más grandes que verás en electromiografía.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathologies",
+        "post-polio"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

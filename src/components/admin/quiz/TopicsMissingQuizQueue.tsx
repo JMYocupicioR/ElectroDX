@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertCircle, ExternalLink, Pencil } from 'lucide-react';
+import { AlertCircle, ExternalLink, Pencil, RotateCcw, SkipForward } from 'lucide-react';
 import { buildQuizCatalogPath } from '../../../utils/quizCatalogNavigation';
 import { getTopicPublicUrl } from '../../../utils/adminUtils';
 import type { TopicMissingQuiz } from '../../../utils/topicsMissingQuiz';
@@ -8,26 +8,34 @@ export function TopicsMissingQuizQueue({
   topics,
   total,
   onAddQuiz,
+  onOmit,
+  omitted = [],
+  onRestore,
 }: {
   topics: TopicMissingQuiz[];
   total: number;
   onAddQuiz: (topic: TopicMissingQuiz) => void;
+  onOmit?: (topic: TopicMissingQuiz) => void;
+  omitted?: TopicMissingQuiz[];
+  onRestore?: (topic: TopicMissingQuiz) => void;
 }) {
-  if (topics.length === 0) return null;
+  if (topics.length === 0 && omitted.length === 0) return null;
 
   const catalogPath = buildQuizCatalogPath({ estado: 'no_quiz', tab: 'topics' });
 
   return (
     <div className="rounded-2xl border border-amber-200/80 dark:border-amber-900/50 bg-white dark:bg-slate-900 overflow-hidden shadow-2xs">
+      {topics.length > 0 && (
       <div className="px-4 py-3 border-b border-amber-100 dark:border-amber-900/40 bg-amber-50/70 dark:bg-amber-950/20">
         <p className="text-xs font-bold text-slate-900 dark:text-white">
           Siguientes {topics.length} sin cuestionario
         </p>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-          Orden del temario, desde el tema 1.
+          Orden del temario, desde el tema 1. Omitir un tema lo saca de la cola y sube el siguiente.
           {total > topics.length ? ` ${total} temas siguen sin cuestionario.` : ''}
         </p>
       </div>
+      )}
       <ul className="divide-y divide-slate-100 dark:divide-slate-800">
         {topics.map((topic) => {
           const lessonUrl = getTopicPublicUrl(topic.moduleId, topic.topicId);
@@ -72,6 +80,17 @@ export function TopicsMissingQuizQueue({
                     <span>Ver tema</span>
                   </Link>
                 )}
+                {onOmit && (
+                  <button
+                    type="button"
+                    onClick={() => onOmit(topic)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300 transition text-[11px] cursor-pointer"
+                    title="Este tema no llevará cuestionario. El siguiente sube en la lista."
+                  >
+                    <SkipForward className="w-3 h-3" />
+                    <span>Omitir</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => onAddQuiz(topic)}
@@ -85,6 +104,30 @@ export function TopicsMissingQuizQueue({
           );
         })}
       </ul>
+      {omitted.length > 0 && onRestore && (
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/30">
+          <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            {omitted.length} {omitted.length === 1 ? 'tema omitido' : 'temas omitidos'} — no llevan cuestionario
+          </p>
+          <ul className="mt-2 flex flex-col gap-1.5">
+            {omitted.map((topic) => (
+              <li key={`${topic.moduleId}:${topic.topicId}`} className="flex items-center justify-between gap-2 text-[11px]">
+                <span className="text-slate-600 dark:text-slate-300 truncate">
+                  {topic.curriculumIndex}. {topic.title}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRestore(topic)}
+                  className="inline-flex items-center gap-1 shrink-0 font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  Restaurar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {total > topics.length && (
         <div className="p-3 bg-slate-50/70 dark:bg-slate-800/40 text-center">
           <Link

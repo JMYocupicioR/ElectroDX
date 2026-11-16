@@ -1,0 +1,220 @@
+{
+  "moduleId": "safety-qc",
+  "revisionType": "quiz",
+  "title": "Evaluación: Impacto Clínico del Frío",
+  "quizTopicId": "clinical-impact",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "cold-q1",
+      "sortOrder": 0,
+      "type": "single",
+      "difficulty": "basic",
+      "stem": "Una mano a 28 °C muestra velocidad motora del mediano de 46 m/s. Según el efecto del frío descrito en la lección, ¿qué cambio de conducción se espera por cada grado por debajo de 32 °C?",
+      "options": [
+        {
+          "id": "cold-q1-a",
+          "text": "La velocidad cae unos 1.5–2 m/s por cada grado bajo 32 °C, porque el frío retrasa el cierre de los canales de sodio.",
+          "isCorrect": true
+        },
+        {
+          "id": "cold-q1-b",
+          "text": "La velocidad sube 5 m/s por grado, porque el frío acorta el potencial de acción.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q1-c",
+          "text": "La velocidad no cambia; el frío solo reduce la amplitud del CMAP.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q1-d",
+          "text": "La latencia distal se acorta y la velocidad aumenta, simulando un nervio normal.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El frío retrasa el cierre de los canales de sodio. La lección cuantifica una caída de 1.5–2 m/s de velocidad por cada grado de temperatura cutánea por debajo de 32 °C, junto con latencias más largas.\n\n📚 Referencia: London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "citations": [
+        {
+          "authors": "London ZN",
+          "title": "Safety and pain in electrodiagnostic studies",
+          "journal": "Muscle & Nerve",
+          "year": 2017,
+          "url": "https://doi.org/10.1002/mus.25421"
+        }
+      ]
+    },
+    {
+      "id": "cold-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En una extremidad fría, el potencial motor se ve más alto y más largo, con velocidad lenta. ¿Qué error diagnóstico favorece ese patrón?",
+      "options": [
+        {
+          "id": "cold-q2-a",
+          "text": "Informar una neuropatía desmielinizante, o pasar por alto un bloqueo real que el aumento de amplitud enmascara.",
+          "isCorrect": true
+        },
+        {
+          "id": "cold-q2-b",
+          "text": "Informar una axonotmesis aguda, porque el frío borra la amplitud distal.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q2-c",
+          "text": "Informar un trastorno de unión neuromuscular, porque el frío produce decremento a 3 Hz.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q2-d",
+          "text": "Informar una radiculopatía, porque el frío abole el SNAP y conserva el CMAP.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El frío prolonga latencias, baja la velocidad y aumenta de forma espuria amplitud y duración. Ese conjunto imita desmielinización y puede ocultar un bloqueo de conducción.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
+    },
+    {
+      "id": "cold-q3",
+      "sortOrder": 2,
+      "type": "multiple",
+      "difficulty": "advanced",
+      "stem": "Un antebrazo a 27 °C se estudia sin calentar. ¿Qué efectos del frío deben constar en la interpretación? Seleccione las dos consecuencias que enseña la lección.",
+      "options": [
+        {
+          "id": "cold-q3-a",
+          "text": "Latencias más largas y velocidad más lenta.",
+          "isCorrect": true
+        },
+        {
+          "id": "cold-q3-b",
+          "text": "Amplitud y duración del potencial aumentadas de manera espuria.",
+          "isCorrect": true
+        },
+        {
+          "id": "cold-q3-c",
+          "text": "Amplitud motora colapsada por debajo de 1 mV como efecto directo del frío leve.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q3-d",
+          "text": "Bloqueo de conducción que solo aparece al enfriar y desaparece al calentar a 32 °C.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "A 5 °C por debajo de 32 °C la velocidad puede caer 7.5–10 m/s. La amplitud no se colapsa: sube, y por eso un bloqueo verdadero puede dejar de verse.\n\n📚 Referencia: London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "citations": [
+        {
+          "authors": "London ZN",
+          "title": "Safety and pain in electrodiagnostic studies",
+          "journal": "Muscle & Nerve",
+          "year": 2017,
+          "url": "https://doi.org/10.1002/mus.25421"
+        }
+      ]
+    },
+    {
+      "id": "cold-q4",
+      "sortOrder": 3,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "El mediano sensitivo de un STC límite se registró a 29 °C y la latencia pico salió en 3.7 ms. ¿Cuál es la conducta técnica antes de etiquetar desmielinización distal?",
+      "options": [
+        {
+          "id": "cold-q4-a",
+          "text": "Calentar la mano por encima de 32 °C y repetir el estudio; el frío por sí solo prolonga la latencia.",
+          "isCorrect": true
+        },
+        {
+          "id": "cold-q4-b",
+          "text": "Aceptar 3.7 ms como STC porque la temperatura no modifica la latencia sensitiva.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q4-c",
+          "text": "Bajar la ganancia a 5 mV/div para “corregir” la latencia sin recalentar.",
+          "isCorrect": false
+        },
+        {
+          "id": "cold-q4-d",
+          "text": "Diagnosticar polineuropatía porque una sola latencia larga a 29 °C basta.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La lección de temperatura exige calentar antes de interpretar un STC límite. Una latencia de 3.7 ms a 29 °C no se puede separar del efecto del frío.\n\n📚 Referencia: Dillingham T, Chen S, Andary M, et al.. Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force). Muscle & Nerve (2016). https://doi.org/10.1002/mus.25204",
+      "citations": [
+        {
+          "authors": "Dillingham T, Chen S, Andary M, et al.",
+          "title": "Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force)",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25204"
+        }
+      ]
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "safety-qc",
+      "topic_id": "clinical-impact",
+      "topic_name": "Impacto Clínico del Frío",
+      "island_name": "EMG",
+      "stem": "Mujer de 54 años con parestesias en la mano derecha. El ulnar motor en antebrazo conduce a 41 m/s, la amplitud distal es 12 mV y la duración está aumentada. La piel del antebrazo marca 27 °C. No se calentó la extremidad.",
+      "difficulty": 2,
+      "is_critical": true,
+      "findings": [
+        {
+          "type": "VCN",
+          "label": "Velocidad ulnar en antebrazo",
+          "value": "41 m/s, piel a 27 °C"
+        },
+        {
+          "type": "AMPL",
+          "label": "CMAP ulnar distal",
+          "value": "12 mV, duración aumentada"
+        }
+      ],
+      "options": [
+        {
+          "text": "Calentar por encima de 32 °C y repetir antes de informar desmielinización.",
+          "is_correct": true,
+          "feedback": "Cinco grados bajo 32 °C explican unos 7.5–10 m/s de enlentecimiento, y el frío además infla amplitud y duración."
+        },
+        {
+          "text": "Informar neuropatía desmielinizante ulnar definitiva.",
+          "is_correct": false,
+          "feedback": "La velocidad lenta con amplitud alta y duración larga a 27 °C es el patrón del frío, no un diagnóstico cerrado."
+        },
+        {
+          "text": "Informar pérdida axonal porque la duración aumentó.",
+          "is_correct": false,
+          "feedback": "La pérdida axonal reduce la amplitud. Aquí la amplitud está alta."
+        },
+        {
+          "text": "Suspender el estudio por contraindicación del frío.",
+          "is_correct": false,
+          "feedback": "El frío no contraindica el estudio; obliga a recalentar y repetir."
+        }
+      ],
+      "pearl": "Antes de llamar desmielinización, la piel del miembro superior tiene que estar por encima de 32 °C. El frío lentifica y, a la vez, agranda el potencial.",
+      "source_reference": "London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "tags": [
+        "safety-qc",
+        "clinical-impact"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

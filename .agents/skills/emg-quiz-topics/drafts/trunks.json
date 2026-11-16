@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Troncos: Superior, Medio e Inferior",
+  "revisionType": "quiz",
+  "quizTopicId": "trunks",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Tronco superior (C5-C6): Erb-Duchenne — \"postura del camarero\". ¿Esta afirmación es la que corresponde enseñar en «Troncos: Superior, Medio e Inferior»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tronco superior (C5-C6): Erb-Duchenne — \"postura del camarero\".\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Troncos: Superior, Medio e Inferior», ¿cuál afirmación es la correcta?\nTronco inferior (C8-T1): Klumpke — mano en garra ± Horner.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tronco inferior (C8-T1): Klumpke — mano en garra ± Horner.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tronco inferior (C8-T1): Klumpke — mano en garra ± Horner.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Troncos: Superior, Medio e Inferior», ¿cuál afirmación es la correcta?\nHorner + tronco inferior en adulto = descartar Pancoast urgente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Horner + tronco inferior en adulto = descartar Pancoast urgente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Horner + tronco inferior en adulto = descartar Pancoast urgente.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Troncos: Superior, Medio e Inferior», ¿cuál afirmación es la correcta?\nATENCIÓN CLÍNICA: tronco inferior + Horner en adulto = descartar tumor de Pancoast (cáncer de ápex pulmonar) con radiografía/TAC de tórax URGENTE. Es una emergencia oncológica.",
+      "options": [
+        {
+          "id": "a",
+          "text": "ATENCIÓN CLÍNICA: tronco inferior + Horner en adulto = descartar tumor de Pancoast (cáncer de ápex pulmonar) con radiografía/TAC de tórax URGENTE. Es una emergencia oncológica.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "ATENCIÓN CLÍNICA: tronco inferior + Horner en adulto = descartar tumor de Pancoast (cáncer de ápex pulmonar) con radiografía/TAC de tórax URGENTE. Es una emergencia oncológica.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "trunks",
+      "topic_name": "Troncos: Superior, Medio e Inferior",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Troncos: Superior, Medio e Inferior». Tronco superior (C5-C6): Erb-Duchenne — \"postura del camarero\". ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Tronco superior (C5-C6): Erb-Duchenne — \"postura del camarero\".",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "ATENCIÓN CLÍNICA: tronco inferior + Horner en adulto = descartar tumor de Pancoast (cáncer de ápex pulmonar) con radiografía/TAC de tórax URGENTE. Es una emergencia oncológica.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "trunks"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

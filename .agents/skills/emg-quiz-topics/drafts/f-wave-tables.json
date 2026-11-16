@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Latencias de Onda F y Criterios",
+  "revisionType": "quiz",
+  "quizTopicId": "f-wave-tables",
+  "moduleId": "quick-reference",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "La tabla entra con la talla o no entra. ¿Esta afirmación es la que corresponde enseñar en «Latencias de Onda F y Criterios»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La tabla entra con la talla o no entra.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Latencias de Onda F y Criterios», ¿cuál afirmación es la correcta?\nPeroneo es el nervio más tramposo de la F.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Peroneo es el nervio más tramposo de la F.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Peroneo es el nervio más tramposo de la F.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Latencias de Onda F y Criterios», ¿cuál afirmación es la correcta?\nLatencia mínima (depende de la estatura: <170cm vs >170cm).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Latencia mínima (depende de la estatura: <170cm vs >170cm).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Latencia mínima (depende de la estatura: <170cm vs >170cm).\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Latencias de Onda F y Criterios», ¿cuál afirmación es la correcta?\nCriterios anormalidad radicular temprana: Ausencia absoluta unilateral, Persistencia <50% en brazo o <30% en pierna, asimetría de latencia >2ms, o Cronodispersión masiva >10 ms.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Criterios anormalidad radicular temprana: Ausencia absoluta unilateral, Persistencia <50% en brazo o <30% en pierna, asimetría de latencia >2ms, o Cronodispersión masiva >10 ms.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Criterios anormalidad radicular temprana: Ausencia absoluta unilateral, Persistencia <50% en brazo o <30% en pierna, asimetría de latencia >2ms, o Cronodispersión masiva >10 ms.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "quick-reference",
+      "topic_id": "f-wave-tables",
+      "topic_name": "Latencias de Onda F y Criterios",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Latencias de Onda F y Criterios». La tabla entra con la talla o no entra. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "La tabla entra con la talla o no entra.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La tabla entra con la talla o no entra.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "tags": [
+        "quick-reference",
+        "f-wave-tables"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

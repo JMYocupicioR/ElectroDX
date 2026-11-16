@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Selección de nervios y músculos",
+  "revisionType": "quiz",
+  "quizTopicId": "protocol-selection",
+  "moduleId": "emg-report-planning",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Sintomático + control + músculos divisorios. ¿Esta afirmación es la que corresponde enseñar en «Selección de nervios y músculos»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sintomático + control + músculos divisorios.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Selección de nervios y músculos», ¿cuál afirmación es la correcta?\nLa temperatura y el estímulo supramáximo son datos, no adornos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La temperatura y el estímulo supramáximo son datos, no adornos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La temperatura y el estímulo supramáximo son datos, no adornos.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Selección de nervios y músculos», ¿cuál afirmación es la correcta?\nUn protocolo eficiente empieza por el territorio sintomático y un nervio de control.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un protocolo eficiente empieza por el territorio sintomático y un nervio de control.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un protocolo eficiente empieza por el territorio sintomático y un nervio de control.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Selección de nervios y músculos», ¿cuál afirmación es la correcta?\nPara un síndrome de túnel del carpo se añaden comparaciones y el cubital.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para un síndrome de túnel del carpo se añaden comparaciones y el cubital.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para un síndrome de túnel del carpo se añaden comparaciones y el cubital.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "emg-report-planning",
+      "topic_id": "protocol-selection",
+      "topic_name": "Selección de nervios y músculos",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Selección de nervios y músculos». Sintomático + control + músculos divisorios. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Sintomático + control + músculos divisorios.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Sintomático + control + músculos divisorios.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "emg-report-planning",
+        "protocol-selection"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

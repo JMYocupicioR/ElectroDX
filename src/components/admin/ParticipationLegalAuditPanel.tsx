@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   AlertTriangle,
   Award,
@@ -9,15 +10,19 @@ import {
   FileCheck2,
   Filter,
   Lock,
+  PenLine,
   Plus,
   RefreshCw,
   Scale,
   ShieldCheck,
   Sparkles,
-  Unlock,
   Video,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
+import {
+  PHYSICIAN_AGREEMENT_META,
+  PHYSICIAN_AGREEMENT_TYPES,
+} from '../../content/legal/physicianAgreements';
 import {
   buildPlatformParticipationReport,
   closeEditorialConfigTaskByDirection,
@@ -27,6 +32,8 @@ import {
   saveOrFreezeEditionCreditAct,
   type PlatformParticipationReport,
 } from '../../services/participationAuditService';
+import { formatClassDuration } from '../../services/participationActivity';
+import { ProfessorParticipationBoard } from './ProfessorParticipationBoard';
 import type {
   EditorialConfigTaskRow,
   ParticipationAuditLogRow,
@@ -34,25 +41,6 @@ import type {
 } from '../../types/database';
 
 type SubView = 'medicos' | 'temas' | 'bitacora' | 'encargos';
-
-const ROLE_LABELS: Record<string, { label: string; cls: string }> = {
-  profesor: {
-    label: 'Profesor (Solo Docencia)',
-    cls: 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-200 dark:border-sky-800',
-  },
-  editor: {
-    label: 'Editor (Obra + Editorial)',
-    cls: 'bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-200 dark:border-purple-800',
-  },
-  ambos: {
-    label: 'Profesor y Editor (3 Bolsas)',
-    cls: 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800',
-  },
-  sin_convenio: {
-    label: 'Sin Anexo Firmado',
-    cls: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800',
-  },
-};
 
 const BAG_BADGES: Record<ParticipationBagCategory, { label: string; cls: string }> = {
   docencia: {
@@ -77,14 +65,6 @@ const BAG_BADGES: Record<ParticipationBagCategory, { label: string; cls: string 
   },
 };
 
-function formatCurrency(mxn: number): string {
-  return new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    maximumFractionDigits: 2,
-  }).format(mxn || 0);
-}
-
 function formatDurationMinutes(seconds: number | null | undefined): string {
   if (!seconds || seconds <= 0) return '0 min';
   const mins = Math.round(seconds / 60);
@@ -98,9 +78,9 @@ export function ParticipationLegalAuditPanel() {
   const { user, isAdmin } = useAuth();
   const [subView, setSubView] = useState<SubView>('medicos');
   const [editionLabel, setEditionLabel] = useState('1.0');
-  const [docenciaPoolMxn, setDocenciaPoolMxn] = useState<number>(50000);
-  const [obraPoolMxn, setObraPoolMxn] = useState<number>(50000);
-  const [editorialPoolMxn, setEditorialPoolMxn] = useState<number>(30000);
+  const [docenciaPoolMxn, setDocenciaPoolMxn] = useState<number>(0);
+  const [obraPoolMxn, setObraPoolMxn] = useState<number>(0);
+  const [editorialPoolMxn, setEditorialPoolMxn] = useState<number>(0);
 
   const [report, setReport] = useState<PlatformParticipationReport | null>(null);
   const [logs, setLogs] = useState<ParticipationAuditLogRow[]>([]);
@@ -215,7 +195,22 @@ export function ParticipationLegalAuditPanel() {
       'Pago_Labor_Editorial_MXN',
       'Videos_Subidos',
       'Duracion_Videos_Min',
-      'Total_Pagar_MXN',
+      'Clases_Contadas',
+      'Minutos_Clase',
+      'Temas_Modificados',
+      'Letras_Modificadas',
+      'Palabras_Nuevas_Diff',
+      'Parrafos_Modificados',
+      'Quizzes_Agregados',
+      'Quizzes_Modificados',
+      'Reactivos_Agregados',
+      'Reactivos_Modificados',
+      'Unidades_Actividad',
+      'Reparto_Docencia_MXN',
+      'Reparto_Obra_MXN',
+      'Reparto_Editorial_MXN',
+      'Reparto_Actividad_MXN',
+      'Liquidable_Anexo_MXN',
     ];
     const rows = report.physicians.map((p) => [
       `"${p.displayName.replace(/"/g, '""')}"`,
@@ -240,6 +235,21 @@ export function ParticipationLegalAuditPanel() {
       p.editorialPayoutMxn,
       p.uploadedVideosCount,
       Math.round(p.uploadedVideosDurationSeconds / 60),
+      p.activity.classVideoCount,
+      Math.round(p.activity.classVideoSeconds / 60),
+      p.activity.topicsModified,
+      p.activity.lettersChanged,
+      p.activity.wordsChanged,
+      p.activity.paragraphsChanged,
+      p.activity.quizzesAdded,
+      p.activity.quizzesModified,
+      p.activity.questionsAdded,
+      p.activity.questionsModified,
+      p.activity.activityEditorialUnits,
+      p.activity.docenciaActivityMxn,
+      p.activity.obraActivityMxn,
+      p.activity.editorialActivityMxn,
+      p.activity.activityPayoutMxn,
       p.totalPayoutMxn,
     ]);
     const csvContent =
@@ -390,14 +400,23 @@ export function ParticipationLegalAuditPanel() {
               </h2>
             </div>
             <p className="text-xs text-slate-500 mt-1 max-w-3xl">
-              Audita en tiempo real las 3 bolsas del Contrato (Cláusulas 2, 6, 7, 8 y 10) y el Reglamento Editorial
-              (Art. 5–14): excluye el temario base estático, filtra correcciones ortográficas/puntuación (0 palabras,
-              Art. 6), evita duplicar pasajes en coautoría (Art. 7), identifica al Autor Principal (&gt;50%, Art. 8) y
-              separa videos/clases bajo el principio <em>Hora ≠ Palabra</em> (Art. 13).
+              Lista a profesores y editores y reparte las tres bolsas por lo que cada quien hizo: minutos de clase,
+              palabras del texto, quizzes agregados o editados y el resto de la labor editorial. El acta liquidable
+              sigue el anexo firmado y el sello de Dirección.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {PHYSICIAN_AGREEMENT_TYPES.map((type) => (
+              <Link
+                key={type}
+                to={`/acuerdos-medico?documento=${type}&volver=/admin/auditoria`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100 hover:bg-amber-100 dark:hover:bg-amber-950/70"
+              >
+                <PenLine className="w-3.5 h-3.5" />
+                Firmar {PHYSICIAN_AGREEMENT_META[type].stepLabel.toLowerCase()}
+              </Link>
+            ))}
             <button
               type="button"
               disabled={syncing}
@@ -440,8 +459,12 @@ export function ParticipationLegalAuditPanel() {
           </div>
         </div>
 
-        {/* Configuración de bolsas económicas de la edición */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+        {/* El ingreso se escribe solo cuando ya hay dinero cobrado. En cero, el tablero muestra porcentajes. */}
+        <p className="text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
+          Mientras estas bolsas estén en 0 no hay dinero que repartir. El tablero muestra la parte de cada quien.
+          El monto se llena después, con el ingreso ya cobrado.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Edición / Cohorte
@@ -455,7 +478,7 @@ export function ParticipationLegalAuditPanel() {
           </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-              Bolsa Docencia (MXN · Cl. 6)
+              Ingreso docencia (MXN)
             </span>
             <input
               type="number"
@@ -468,7 +491,7 @@ export function ParticipationLegalAuditPanel() {
           </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-              Bolsa Obra / Palabras (MXN · Cl. 7)
+              Ingreso obra (MXN)
             </span>
             <input
               type="number"
@@ -481,7 +504,7 @@ export function ParticipationLegalAuditPanel() {
           </label>
           <label className="block">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-              Bolsa Labor Editorial (MXN · Cl. 8)
+              Ingreso editorial (MXN)
             </span>
             <input
               type="number"
@@ -499,37 +522,44 @@ export function ParticipationLegalAuditPanel() {
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 pt-2">
             <div className="p-3 rounded-xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/50">
               <span className="text-[11px] font-bold uppercase text-sky-700 dark:text-sky-300">
-                Sesiones Computables (Cl. 6)
+                Tiempo de clase
               </span>
               <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                {report.totals.totalComputableSessions.toFixed(2)}
+                {formatClassDuration(
+                  report.physicians.reduce((sum, person) => sum + person.activity.classVideoSeconds, 0),
+                )}
               </p>
               <span className="text-[11px] text-slate-500">
-                Validadas por Dirección Académica
+                Base del porcentaje de docencia. Selladas: {report.totals.totalComputableSessions.toFixed(2)}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50">
               <span className="text-[11px] font-bold uppercase text-indigo-700 dark:text-indigo-300">
-                Palabras Netas de Obra (Cl. 7)
+                Palabras vivas
               </span>
               <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                {report.totals.totalPublishedAuthoredWords.toLocaleString('es-MX')}
+                {report.physicians
+                  .reduce((sum, person) => sum + person.rawSurvivingWords, 0)
+                  .toLocaleString('es-MX')}
               </p>
               <span className="text-[11px] text-slate-500">
-                Excluye {report.totals.totalPlatformBaselineWords.toLocaleString('es-MX')} palabras base
+                Base del porcentaje de obra. Pagables con anexo: {report.totals.totalPublishedAuthoredWords.toLocaleString('es-MX')}
               </span>
             </div>
 
             <div className="p-3 rounded-xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-800/50">
               <span className="text-[11px] font-bold uppercase text-purple-700 dark:text-purple-300">
-                Unidades Editoriales (Art. 10)
+                Labor editorial
               </span>
               <p className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                {report.totals.totalComputableEditorialUnits.toFixed(1)} u.
+                {report.physicians
+                  .reduce((sum, person) => sum + person.activity.activityEditorialUnits, 0)
+                  .toFixed(1)}{' '}
+                u.
               </p>
               <span className="text-[11px] text-slate-500">
-                Reactivo=1u · Caso=2u · Config=1u
+                Base del porcentaje editorial. Pagables con anexo: {report.totals.totalComputableEditorialUnits.toFixed(1)} u.
               </span>
             </div>
 
@@ -579,7 +609,7 @@ export function ParticipationLegalAuditPanel() {
           [
             {
               id: 'medicos',
-              label: '1. Liquidación por Médico y Candados (Cl. 2, 6, 7, 8)',
+              label: '1. Participación y reparto',
               icon: Award,
             },
             {
@@ -615,166 +645,8 @@ export function ParticipationLegalAuditPanel() {
         ))}
       </div>
 
-      {/* SUB-VISTA 1: TABLA POR MÉDICO */}
       {subView === 'medicos' && report && (
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 dark:bg-slate-800/80 text-[11px] uppercase text-slate-500 border-b border-slate-200 dark:border-slate-700">
-              <tr>
-                <th className="px-4 py-3">Médico / Papel Anexo (Cl. 2)</th>
-                <th className="px-4 py-3">Bolsa 1: Docencia (Cl. 6)</th>
-                <th className="px-4 py-3">Bolsa 2: Obra / Palabras (Cl. 7 · Art. 5–8)</th>
-                <th className="px-4 py-3">Bolsa 3: Labor Editorial (Cl. 8 · Art. 10)</th>
-                <th className="px-4 py-3">Multimedia (Art. 13: Hora ≠ Palabra)</th>
-                <th className="px-4 py-3 text-right">Total Liquidación</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {report.physicians.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-slate-500">
-                    No se encontraron médicos con convenios ni aportaciones registradas.
-                  </td>
-                </tr>
-              ) : (
-                report.physicians.map((p) => {
-                  const roleBadge = ROLE_LABELS[p.markedRole] ?? ROLE_LABELS.sin_convenio;
-                  return (
-                    <tr key={p.physicianId} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 align-top">
-                      {/* Médico y Rol */}
-                      <td className="px-4 py-3.5 min-w-[210px]">
-                        <p className="font-bold text-slate-900 dark:text-white text-sm">
-                          {p.displayName}
-                        </p>
-                        {p.credentials && (
-                          <p className="text-[11px] text-slate-500">{p.credentials}</p>
-                        )}
-                        <span
-                          className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border ${roleBadge.cls}`}
-                        >
-                          {p.markedRole === 'sin_convenio' ? (
-                            <Lock className="w-3 h-3" />
-                          ) : (
-                            <Unlock className="w-3 h-3" />
-                          )}
-                          {roleBadge.label}
-                        </span>
-                        {p.agreementFolio && (
-                          <p className="text-[10px] font-mono text-slate-400 mt-1">
-                            Folio: {p.agreementFolio}
-                          </p>
-                        )}
-                        {p.excludedContributionsWarnings.map((w, i) => (
-                          <p
-                            key={i}
-                            className="mt-1.5 p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-[10px] text-amber-800 dark:text-amber-200"
-                          >
-                            ⚠️ {w}
-                          </p>
-                        ))}
-                      </td>
-
-                      {/* Bolsa 1: Docencia */}
-                      <td className="px-4 py-3.5 min-w-[175px]">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900 dark:text-white">
-                            {p.computableSessions.toFixed(2)} sesiones
-                          </span>
-                          <span className="text-[11px] font-semibold text-sky-600 dark:text-sky-400">
-                            {p.docenciaSharePct.toFixed(2)}%
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
-                          Impartidas: {p.rawCompletedSessions.toFixed(1)} · Validadas Dir.:{' '}
-                          {p.validatedSessions.toFixed(1)}
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                          Tiempo en aula: {p.totalTeachingMinutes} min
-                        </p>
-                        <p className="mt-1 font-bold text-sky-700 dark:text-sky-300">
-                          {formatCurrency(p.docenciaPayoutMxn)}
-                        </p>
-                      </td>
-
-                      {/* Bolsa 2: Obra */}
-                      <td className="px-4 py-3.5 min-w-[230px]">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900 dark:text-white">
-                            {p.computableWords.toLocaleString('es-MX')} palabras
-                          </span>
-                          <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
-                            {p.obraSharePct.toFixed(2)}%
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
-                          Vivas brutas: {p.rawSurvivingWords.toLocaleString('es-MX')} · Ortografía filtrada (Art. 6):{' '}
-                          {p.orthographicEditsFiltered}
-                        </p>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {p.principalAuthorTopics.length > 0 && (
-                            <span className="px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold">
-                              ★ Autor Principal (&gt;50%): {p.principalAuthorTopics.length} tema(s)
-                            </span>
-                          )}
-                          {p.coauthorTopics.length > 0 && (
-                            <span className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px]">
-                              Coautor: {p.coauthorTopics.length} tema(s)
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1 font-bold text-indigo-700 dark:text-indigo-300">
-                          {formatCurrency(p.obraPayoutMxn)}
-                        </p>
-                      </td>
-
-                      {/* Bolsa 3: Labor Editorial */}
-                      <td className="px-4 py-3.5 min-w-[200px]">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-slate-900 dark:text-white">
-                            {p.computableEditorialUnits.toFixed(1)} unidades
-                          </span>
-                          <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400">
-                            {p.editorialSharePct.toFixed(2)}%
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5">
-                          • Reactivos (1u): {p.publishedQuizQuestions + p.publishedExamQuestions}
-                          <br />• Casos EMG (2u): {p.publishedClinicalCases} ({p.publishedClinicalCases * 2}u)
-                          <br />• Config. cerrada Dir. (1u): {p.closedConfigTasks}
-                        </p>
-                        <p className="mt-1 font-bold text-purple-700 dark:text-purple-300">
-                          {formatCurrency(p.editorialPayoutMxn)}
-                        </p>
-                      </td>
-
-                      {/* Multimedia (Hora != Palabra) */}
-                      <td className="px-4 py-3.5 min-w-[180px] text-[11px] text-slate-600 dark:text-slate-300">
-                        <p>
-                          🎬 Videos en temas: <strong>{p.uploadedVideosCount}</strong> (
-                          {formatDurationMinutes(p.uploadedVideosDurationSeconds)})
-                        </p>
-                        <p>
-                          🖼️ Figuras/Imágenes: <strong>{p.uploadedImagesCount}</strong>
-                        </p>
-                        <p>
-                          📄 Guías PDF: <strong>{p.uploadedPdfsCount}</strong>
-                        </p>
-                        <span className="inline-block mt-1 text-[10px] text-slate-400">
-                          Art. 13: no inflan palabras de Obra
-                        </span>
-                      </td>
-
-                      {/* Total */}
-                      <td className="px-4 py-3.5 text-right font-black text-sm text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
-                        {formatCurrency(p.totalPayoutMxn)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+        <ProfessorParticipationBoard physicians={report.physicians} pools={report.pools} />
       )}
 
       {/* SUB-VISTA 2: AUDITORÍA GRANULAR POR TEMA Y UMBRAL >50% */}

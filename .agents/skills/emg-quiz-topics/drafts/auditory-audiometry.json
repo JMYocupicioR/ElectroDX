@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Audiometría de Potenciales Evocados",
+  "revisionType": "quiz",
+  "quizTopicId": "auditory-audiometry",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El umbral electrofisiológico se correlaciona con el audiométrico ±5-10 dB. ¿Esta afirmación es la que corresponde enseñar en «Audiometría de Potenciales Evocados»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El umbral electrofisiológico se correlaciona con el audiométrico ±5-10 dB.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Audiometría de Potenciales Evocados», ¿cuál afirmación es la correcta?\nEvalúa principalmente frecuencias altas (2-4 kHz).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Evalúa principalmente frecuencias altas (2-4 kHz).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Evalúa principalmente frecuencias altas (2-4 kHz).\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Audiometría de Potenciales Evocados», ¿cuál afirmación es la correcta?\nASSR (Auditory Steady-State Response) complementa para frecuencias bajas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "ASSR (Auditory Steady-State Response) complementa para frecuencias bajas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "ASSR (Auditory Steady-State Response) complementa para frecuencias bajas.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Audiometría de Potenciales Evocados», ¿cuál afirmación es la correcta?\nLos PEATC pueden usarse para estimar el umbral auditivo de forma objetiva, sin requerir la colaboración del paciente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los PEATC pueden usarse para estimar el umbral auditivo de forma objetiva, sin requerir la colaboración del paciente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los PEATC pueden usarse para estimar el umbral auditivo de forma objetiva, sin requerir la colaboración del paciente.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "auditory-audiometry",
+      "topic_name": "Audiometría de Potenciales Evocados",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Audiometría de Potenciales Evocados». El umbral electrofisiológico se correlaciona con el audiométrico ±5-10 dB. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El umbral electrofisiológico se correlaciona con el audiométrico ±5-10 dB.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El umbral electrofisiológico se correlaciona con el audiométrico ±5-10 dB.",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "auditory-audiometry"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

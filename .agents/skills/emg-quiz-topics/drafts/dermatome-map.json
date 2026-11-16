@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Mapa de Dermatomas Clínicos Críticos",
+  "revisionType": "quiz",
+  "quizTopicId": "dermatome-map",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PERLA: el reflejo aquíleo AUSENTE unilateralmente es el signo más sensible y específico de radiculopatía S1. Si un paciente tiene ciatalgia + reflejo aquíleo ausente ipsilateral → hernia L5-S1 con compresión S1 con alta probabilidad. ¿Esta afirmación es la que corresponde enseñar en «Mapa de Dermatomas Clínicos Críticos»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PERLA: el reflejo aquíleo AUSENTE unilateralmente es el signo más sensible y específico de radiculopatía S1. Si un paciente tiene ciatalgia + reflejo aquíleo ausente ipsilateral → hernia L5-S1 con compresión S1 con alta probabilidad.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Mapa de Dermatomas Clínicos Críticos», ¿cuál afirmación es la correcta?\nLos dermatomas tienen AMPLIA superposición. Un paciente con compresión de C6 puede tener adormecimiento SOLO en el pulgar o hasta el pulgar + índice + antebrazo lateral. No descartes la raíz solo porque la distribución sensitiva no es \"perfecta\".",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los dermatomas tienen AMPLIA superposición. Un paciente con compresión de C6 puede tener adormecimiento SOLO en el pulgar o hasta el pulgar + índice + antebrazo lateral. No descartes la raíz solo porque la distribución sensitiva no es \"perfecta\".",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los dermatomas tienen AMPLIA superposición. Un paciente con compresión de C6 puede tener adormecimiento SOLO en el pulgar o hasta el pulgar + índice + antebrazo lateral. No descartes la raíz solo porque la distribución sensitiva no es \"perfecta\".\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mapa de Dermatomas Clínicos Críticos», ¿cuál afirmación es la correcta?\nLos dermatomas son la distribución sensitiva cutánea de una raíz espinal individual.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los dermatomas son la distribución sensitiva cutánea de una raíz espinal individual.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los dermatomas son la distribución sensitiva cutánea de una raíz espinal individual.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mapa de Dermatomas Clínicos Críticos», ¿cuál afirmación es la correcta?\nTienen amplia superposición entre raíces adyacentes, por lo que la pérdida de una sola raíz produce hipoestesia (reducción) más que anestesia (pérdida completa).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tienen amplia superposición entre raíces adyacentes, por lo que la pérdida de una sola raíz produce hipoestesia (reducción) más que anestesia (pérdida completa).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tienen amplia superposición entre raíces adyacentes, por lo que la pérdida de una sola raíz produce hipoestesia (reducción) más que anestesia (pérdida completa).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "dermatome-map",
+      "topic_name": "Mapa de Dermatomas Clínicos Críticos",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Mapa de Dermatomas Clínicos Críticos». PERLA: el reflejo aquíleo AUSENTE unilateralmente es el signo más sensible y específico de radiculopatía S1. Si un paciente tiene ciatalgia + reflejo aquíleo ausente ipsilateral → hernia L5-S1 con compresión S1 con alta probabilidad. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PERLA: el reflejo aquíleo AUSENTE unilateralmente es el signo más sensible y específico de radiculopatía S1. Si un paciente tiene ciatalgia + reflejo aquíleo ausente ipsilateral → hernia L5-S1 con compresión S1 con alta probabilidad.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "PERLA: el reflejo aquíleo AUSENTE unilateralmente es el signo más sensible y específico de radiculopatía S1. Si un paciente tiene ciatalgia + reflejo aquíleo ausente ipsilateral → hernia L5-S1 con compresión S1 con alta probabilidad.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "dermatome-map"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

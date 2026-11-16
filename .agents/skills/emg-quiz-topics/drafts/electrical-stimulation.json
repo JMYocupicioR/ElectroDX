@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Estimulación Eléctrica Transcraneal (EET)",
+  "revisionType": "quiz",
+  "quizTopicId": "electrical-stimulation",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Usada principalmente en monitorización intraoperatoria (bajo anestesia). ¿Esta afirmación es la que corresponde enseñar en «Estimulación Eléctrica Transcraneal (EET)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Usada principalmente en monitorización intraoperatoria (bajo anestesia).\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Estimulación Eléctrica Transcraneal (EET)», ¿cuál afirmación es la correcta?\nOndas D (directas) + Ondas I (indirectas) = Activación corticoespinal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ondas D (directas) + Ondas I (indirectas) = Activación corticoespinal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ondas D (directas) + Ondas I (indirectas) = Activación corticoespinal.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación Eléctrica Transcraneal (EET)», ¿cuál afirmación es la correcta?\nMás dolorosa que la EMT pero funciona sin colaboración del paciente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Más dolorosa que la EMT pero funciona sin colaboración del paciente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Más dolorosa que la EMT pero funciona sin colaboración del paciente.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estimulación Eléctrica Transcraneal (EET)», ¿cuál afirmación es la correcta?\nLa estimulación eléctrica transcraneal es la alternativa a la EMT, utilizada principalmente en monitorización intraoperatoria.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La estimulación eléctrica transcraneal es la alternativa a la EMT, utilizada principalmente en monitorización intraoperatoria.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La estimulación eléctrica transcraneal es la alternativa a la EMT, utilizada principalmente en monitorización intraoperatoria.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "electrical-stimulation",
+      "topic_name": "Estimulación Eléctrica Transcraneal (EET)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Estimulación Eléctrica Transcraneal (EET)». Usada principalmente en monitorización intraoperatoria (bajo anestesia). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Usada principalmente en monitorización intraoperatoria (bajo anestesia).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Usada principalmente en monitorización intraoperatoria (bajo anestesia).",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "electrical-stimulation"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Utilidad Clínica",
+  "revisionType": "quiz",
+  "quizTopicId": "f-wave-utility",
+  "moduleId": "late-responses",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Marcador muy sensible para SGB y CIDP temprano. ¿Esta afirmación es la que corresponde enseñar en «Utilidad Clínica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Marcador muy sensible para SGB y CIDP temprano.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Utilidad Clínica», ¿cuál afirmación es la correcta?\nEvalúa segmentos proximales inaccesibles rutinariamente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Evalúa segmentos proximales inaccesibles rutinariamente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Evalúa segmentos proximales inaccesibles rutinariamente.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Utilidad Clínica», ¿cuál afirmación es la correcta?\nMarcador proximal sensible, no patognomónico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Marcador proximal sensible, no patognomónico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Marcador proximal sensible, no patognomónico.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Utilidad Clínica», ¿cuál afirmación es la correcta?\nAusencia aislada no diagnostica.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ausencia aislada no diagnostica.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ausencia aislada no diagnostica.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "late-responses",
+      "topic_id": "f-wave-utility",
+      "topic_name": "Utilidad Clínica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Utilidad Clínica». Marcador muy sensible para SGB y CIDP temprano. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Marcador muy sensible para SGB y CIDP temprano.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La F ve el camino entero; no nombra el kilómetro lesionado.",
+      "source_reference": "Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "tags": [
+        "late-responses",
+        "f-wave-utility"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

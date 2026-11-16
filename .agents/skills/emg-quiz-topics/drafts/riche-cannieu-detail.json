@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Anastomosis de Riche-Cannieu",
+  "revisionType": "quiz",
+  "quizTopicId": "riche-cannieu-detail",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Si un paciente con STC severo (ausencia de SNAP mediano) tiene APB con fuerza residual normal, NO asumas que \"no es tan severo\". Puede ser Riche-Cannieu manteniendo el APB vivo a través del ulnar. La cirugía sigue siendo necesaria para el componente sensitivo. ¿Esta afirmación es la que corresponde enseñar en «Anastomosis de Riche-Cannieu»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si un paciente con STC severo (ausencia de SNAP mediano) tiene APB con fuerza residual normal, NO asumas que \"no es tan severo\". Puede ser Riche-Cannieu manteniendo el APB vivo a través del ulnar. La cirugía sigue siendo necesaria para el componente sensitivo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Anastomosis de Riche-Cannieu», ¿cuál afirmación es la correcta?\nComunicación motora en la palma entre la rama motora recurrente del mediano y la rama profunda del ulnar.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Comunicación motora en la palma entre la rama motora recurrente del mediano y la rama profunda del ulnar.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Comunicación motora en la palma entre la rama motora recurrente del mediano y la rama profunda del ulnar.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anastomosis de Riche-Cannieu», ¿cuál afirmación es la correcta?\nPrevalencia estimada: 50-80% (mucho más común de lo que se piensa).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Prevalencia estimada: 50-80% (mucho más común de lo que se piensa).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Prevalencia estimada: 50-80% (mucho más común de lo que se piensa).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anastomosis de Riche-Cannieu», ¿cuál afirmación es la correcta?\nImplicaciones clínicas: • En lesión completa del mediano en muñeca/STC severo, puede haber actividad residual en APB (abductor corto del pulgar) por inervación dual desde el ulnar a través de la anastomosis.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Implicaciones clínicas: • En lesión completa del mediano en muñeca/STC severo, puede haber actividad residual en APB (abductor corto del pulgar) por inervación dual desde el ulnar a través de la anastomosis.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Implicaciones clínicas: • En lesión completa del mediano en muñeca/STC severo, puede haber actividad residual en APB (abductor corto del pulgar) por inervación dual desde el ulnar a través de la anastomosis.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "riche-cannieu-detail",
+      "topic_name": "Anastomosis de Riche-Cannieu",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Anastomosis de Riche-Cannieu». Si un paciente con STC severo (ausencia de SNAP mediano) tiene APB con fuerza residual normal, NO asumas que \"no es tan severo\". Puede ser Riche-Cannieu manteniendo el APB vivo a través del ulnar. La cirugía sigue siendo necesaria para el componente sensitivo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Si un paciente con STC severo (ausencia de SNAP mediano) tiene APB con fuerza residual normal, NO asumas que \"no es tan severo\". Puede ser Riche-Cannieu manteniendo el APB vivo a través del ulnar. La cirugía sigue siendo necesaria para el componente sensitivo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si un paciente con STC severo (ausencia de SNAP mediano) tiene APB con fuerza residual normal, NO asumas que \"no es tan severo\". Puede ser Riche-Cannieu manteniendo el APB vivo a través del ulnar. La cirugía sigue siendo necesaria para el componente sensitivo.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "riche-cannieu-detail"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Patrón Miopático y Variantes",
+  "revisionType": "quiz",
+  "quizTopicId": "myopathic-pattern",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Fibrilaciones en músculo + NCS normales + CK alta: la combinación apunta a miopatía inflamatoria activa. La CK sola puede ser normal en IBM y miopatías crónicas — la EMG es más sensible que la CK para detectar actividad de enfermedad. ¿Esta afirmación es la que corresponde enseñar en «Patrón Miopático y Variantes»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fibrilaciones en músculo + NCS normales + CK alta: la combinación apunta a miopatía inflamatoria activa. La CK sola puede ser normal en IBM y miopatías crónicas — la EMG es más sensible que la CK para detectar actividad de enfermedad.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Patrón Miopático y Variantes», ¿cuál afirmación es la correcta?\nDescargas miotónicas clínicas (dificultad para soltar objetos, rigidez al frío) + descargas miotónicas en EMG = buscar distrofia miotónica tipo 1 (DM1) con genética de expansión CTG en DMPK. La DM1 es MULTISISTÉMICA (cataratas, arritmias, diabetes, hipogonadismo).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Descargas miotónicas clínicas (dificultad para soltar objetos, rigidez al frío) + descargas miotónicas en EMG = buscar distrofia miotónica tipo 1 (DM1) con genética de expansión CTG en DMPK. La DM1 es MULTISISTÉMICA (cataratas, arritmias, diabetes, hipogonadismo).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Descargas miotónicas clínicas (dificultad para soltar objetos, rigidez al frío) + descargas miotónicas en EMG = buscar distrofia miotónica tipo 1 (DM1) con genética de expansión CTG en DMPK. La DM1 es MULTISISTÉMICA (cataratas, arritmias, diabetes, hipogonadismo).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Patrón Miopático y Variantes», ¿cuál afirmación es la correcta?\nMiopático clásico: • Actividad espontánea: generalmente ausente en miopatías crónicas no inflamatorias.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Miopático clásico: • Actividad espontánea: generalmente ausente en miopatías crónicas no inflamatorias.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Miopático clásico: • Actividad espontánea: generalmente ausente en miopatías crónicas no inflamatorias.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Patrón Miopático y Variantes», ¿cuál afirmación es la correcta?\nPRESENTE (fibrilaciones/PSW) en miopatías inflamatorias (PM/DM), miopatías necrotizantes, y distrofia miotónica.",
+      "options": [
+        {
+          "id": "a",
+          "text": "PRESENTE (fibrilaciones/PSW) en miopatías inflamatorias (PM/DM), miopatías necrotizantes, y distrofia miotónica.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PRESENTE (fibrilaciones/PSW) en miopatías inflamatorias (PM/DM), miopatías necrotizantes, y distrofia miotónica.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "myopathic-pattern",
+      "topic_name": "Patrón Miopático y Variantes",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Patrón Miopático y Variantes». Fibrilaciones en músculo + NCS normales + CK alta: la combinación apunta a miopatía inflamatoria activa. La CK sola puede ser normal en IBM y miopatías crónicas — la EMG es más sensible que la CK para detectar actividad de enfermedad. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Fibrilaciones en músculo + NCS normales + CK alta: la combinación apunta a miopatía inflamatoria activa. La CK sola puede ser normal en IBM y miopatías crónicas — la EMG es más sensible que la CK para detectar actividad de enfermedad.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Fibrilaciones en músculo + NCS normales + CK alta: la combinación apunta a miopatía inflamatoria activa. La CK sola puede ser normal en IBM y miopatías crónicas — la EMG es más sensible que la CK para detectar actividad de enfermedad.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "myopathic-pattern"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

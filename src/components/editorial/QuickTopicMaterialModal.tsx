@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -11,17 +11,24 @@ import {
   UploadCloud,
   Sparkles,
   Activity,
+  Library,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import type { Topic } from '../../types/content';
 import { topicToRevisionPayload } from '../../services/contentMerge';
 import { saveRevision, submitRevision, reviewRevision } from '../../services/editorialService';
 import { registerTopicMediaAsset } from '../../services/participationAuditService';
-import { parseVideoUrl, isAllowedImageUrl } from '../../utils/mediaValidation';
+import { getWorkshopById } from '../../services/courseService';
+import { listLibraryVideoPicks } from '../../services/libraryVideoCatalog';
+import { linkRecordedWorkshopToTopic } from '../../services/linkRecordedClassService';
+import { getVideoDedupKey, parseVideoUrl, resolveAllTopicVideos, isAllowedImageUrl } from '../../utils/mediaValidation';
+import type { LibraryVideoPick } from '../../utils/libraryVideoCatalog';
 import { uploadTeachingFile } from '../../services/teachingStorage';
 import { CLINICAL_PRESETS } from '../simulator/traceEngine/defaultPresets';
+import { LibraryVideoPicker } from './LibraryVideoPicker';
 
 type SourceMode = 'file' | 'link';
+type VideoSourceMode = 'link' | 'library';
 
 type MaterialType = 'video' | 'pdf' | 'image' | 'pearl' | 'trace';
 
@@ -87,9 +94,15 @@ export function QuickTopicMaterialModal({
 
   // Form states
   // Video
+  const [videoSource, setVideoSource] = useState<VideoSourceMode>('library');
   const [videoTitle, setVideoTitle] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [videoDurationMinutes, setVideoDurationMinutes] = useState('30');
+  const [libraryVideos, setLibraryVideos] = useState<LibraryVideoPick[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+  const [libraryError, setLibraryError] = useState<string | null>(null);
+  const [libraryQuery, setLibraryQuery] = useState('');
+  const [selectedLibraryId, setSelectedLibraryId] = useState<string | null>(null);
 
   // PDF
   const [pdfTitle, setPdfTitle] = useState('');
@@ -122,13 +135,68 @@ export function QuickTopicMaterialModal({
     return foundChild ?? topic;
   }, [topic, selectedTargetId]);
 
+  const topicVideoKeys = useMemo(() => {
+    const keys = new Set<string>();
+    for (const video of resolveAllTopicVideos(targetTopic)) {
+      const key = getVideoDedupKey(video.url);
+      if (key) keys.add(key);
+    }
+    return keys;
+  }, [targetTopic]);
+
+  const filteredLibraryVideos = useMemo(() => {
+    const q = libraryQuery.trim().toLowerCase();
+    if (!q) return libraryVideos;
+    return libraryVideos.filter((video) =>
+      `${video.title} ${video.topicTitle ?? ''} ${video.moduleTitle ?? ''} ${video.sourceLabel}`
+        .toLowerCase()
+        .includes(q),
+    );
+  }, [libraryVideos, libraryQuery]);
+
+  const selectedLibraryVideo = useMemo(
+    () => libraryVideos.find((video) => video.id === selectedLibraryId) ?? null,
+    [libraryVideos, selectedLibraryId],
+  );
+
+  const linkingWorkshop =
+    activeTab === 'video' && videoSource === 'library' && selectedLibraryVideo?.kind === 'workshop';
+  const libraryCountRef = useRef(0);
+  libraryCountRef.current = libraryVideos.length;
+
   useEffect(() => {
     if (!isOpen) return;
     setActiveTab(initialTab);
     setSelectedTargetId(topic.id);
+    setVideoSource('library');
+    setLibraryQuery('');
+    setSelectedLibraryId(null);
     setError(null);
     setSuccessMsg(null);
   }, [isOpen, initialTab, topic.id]);
+
+  useEffect(() => {
+    if (!isOpen || activeTab !== 'video' || videoSource !== 'library') return;
+    let cancelled = false;
+    if (libraryCountRef.current === 0) setLibraryLoading(true);
+    setLibraryError(null);
+    void listLibraryVideoPicks()
+      .then((rows) => {
+        if (!cancelled) setLibraryVideos(rows);
+      })
+      .catch((err) => {
+        console.error('[QuickTopicMaterialModal] biblioteca', err);
+        if (!cancelled) {
+          setLibraryError(err instanceof Error ? err.message : 'No se pudo cargar la biblioteca.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLibraryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, activeTab, videoSource]);
 
   if (!isOpen) return null;
 
@@ -147,45 +215,87 @@ export function QuickTopicMaterialModal({
       const authorName = profile?.display_name || 'Especialista Docente';
 
       if (activeTab === 'video') {
-        if (!videoTitle.trim() || !videoUrl.trim()) {
+        let title = videoTitle.trim();
+        let url = videoUrl.trim();
+        let mins = Math.max(1, parseInt(videoDurationMinutes, 10) || 30);
+        let authorId: string | undefined = user.id;
+        let registerAsset = true;
+
+        if (videoSource === 'library') {
+          const pick = libraryVideos.find((item) => item.id === selectedLibraryId);
+          if (!pick) throw new Error('Selecciona un video de la biblioteca.');
+          if (topicVideoKeys.has(pick.dedupKey)) {
+            throw new Error('Ese video ya está en este tema.');
+          }
+
+          if (pick.kind === 'workshop') {
+            if (!pick.workshopId) throw new Error('No se encontró la clase grabada.');
+            const workshop = await getWorkshopById(pick.workshopId);
+            if (!workshop?.recording_url?.trim()) {
+              throw new Error('Esa clase ya no tiene grabación en la biblioteca.');
+            }
+            await linkRecordedWorkshopToTopic({
+              workshop,
+              topicId: targetTopic.id,
+              moduleId,
+              userId: user.id,
+            });
+            setSuccessMsg('La clase quedó vinculada a este tema y se reproduce desde la biblioteca.');
+            setTimeout(() => {
+              onSuccess?.();
+              onClose();
+            }, 1200);
+            return;
+          }
+
+          title = pick.title.trim();
+          url = pick.url.trim();
+          mins = Math.max(1, parseInt(videoDurationMinutes, 10) || pick.durationMinutes || 30);
+          authorId = pick.authorId;
+          registerAsset = false;
+        }
+
+        if (!title || !url) {
           throw new Error('Por favor ingresa el título y la URL del video.');
         }
-        const parsed = parseVideoUrl(videoUrl.trim());
+        const parsed = parseVideoUrl(url);
         if (!parsed) {
           throw new Error(
             'URL de video no válida. Soporta YouTube, Vimeo, Google Drive, Loom o enlaces de embed.'
           );
         }
 
-        const mins = Math.max(1, parseInt(videoDurationMinutes, 10) || 30);
         const durationSeconds = mins * 60;
+        const credit = authorId ? { authorId } : {};
 
         switch (parsed.kind) {
           case 'drive':
-            payload.videoUrls = [...(payload.videoUrls ?? []), { title: videoTitle.trim(), driveId: parsed.driveId, durationSeconds, authorId: user.id }];
+            payload.videoUrls = [...(payload.videoUrls ?? []), { title, driveId: parsed.driveId, durationSeconds, ...credit }];
             break;
           case 'youtube':
             payload.youtubeUrls = [
               ...(payload.youtubeUrls ?? []),
-              { title: videoTitle.trim(), videoId: parsed.videoId, startTime: parsed.startTime, durationSeconds, authorId: user.id },
+              { title, videoId: parsed.videoId, startTime: parsed.startTime, durationSeconds, ...credit },
             ];
             break;
           case 'vimeo':
-            payload.vimeoUrls = [...(payload.vimeoUrls ?? []), { title: videoTitle.trim(), videoId: parsed.videoId, durationSeconds, authorId: user.id }];
+            payload.vimeoUrls = [...(payload.vimeoUrls ?? []), { title, videoId: parsed.videoId, durationSeconds, ...credit }];
             break;
           case 'embed':
-            payload.embedUrls = [...(payload.embedUrls ?? []), { title: videoTitle.trim(), embedUrl: parsed.embedUrl, durationSeconds, authorId: user.id }];
+            payload.embedUrls = [...(payload.embedUrls ?? []), { title, embedUrl: parsed.embedUrl, durationSeconds, ...credit }];
             break;
         }
-        await registerTopicMediaAsset({
-          topicId: targetTopic.id,
-          moduleId,
-          assetType: 'video',
-          url: videoUrl.trim(),
-          title: videoTitle.trim(),
-          durationSeconds,
-          uploadedBy: user.id,
-        });
+        if (registerAsset) {
+          await registerTopicMediaAsset({
+            topicId: targetTopic.id,
+            moduleId,
+            assetType: 'video',
+            url,
+            title,
+            durationSeconds,
+            uploadedBy: user.id,
+          });
+        }
       } else if (activeTab === 'pdf') {
         if (!pdfTitle.trim()) {
           throw new Error('Por favor ingresa el nombre del documento.');
@@ -460,54 +570,127 @@ export function QuickTopicMaterialModal({
             {/* Tab: Video */}
             {activeTab === 'video' && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Título de la grabación o video explicativo *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej. Análisis de trazado en túnel del carpo con Dr. Martínez"
-                    value={videoTitle}
-                    onChange={(e) => setVideoTitle(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                  />
+                <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setVideoSource('library')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                      videoSource === 'library'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    <Library className="w-3.5 h-3.5" />
+                    Biblioteca
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setVideoSource('link')}
+                    className={`px-3 py-1.5 rounded-lg transition-colors ${
+                      videoSource === 'link'
+                        ? 'bg-blue-600 text-white'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                  >
+                    Enlace nuevo
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Enlace del Video (YouTube, Google Drive, Vimeo, Loom) *
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    placeholder="https://youtu.be/... o https://drive.google.com/file/d/.../view"
-                    value={videoUrl}
-                    onChange={(e) => setVideoUrl(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Los videos no se guardan en la plataforma: el plan gratuito solo tiene 1 GB y se llenaría con pocas clases. Usa YouTube, Drive, Vimeo o Loom. Los alumnos lo reproducen dentro de la lección.
-                  </p>
-                </div>
+                {videoSource === 'library' ? (
+                  <div className="space-y-3">
+                    <p className="text-[11px] text-slate-500">
+                      Elige un video que ya está en la biblioteca. Las clases grabadas se vinculan al tema y siguen siendo el mismo material.
+                    </p>
+                    <LibraryVideoPicker
+                      videos={filteredLibraryVideos}
+                      loading={libraryLoading}
+                      error={libraryError}
+                      query={libraryQuery}
+                      onQueryChange={setLibraryQuery}
+                      selectedId={selectedLibraryId}
+                      unavailableKeys={topicVideoKeys}
+                      onSelect={(video) => {
+                        setSelectedLibraryId(video.id);
+                        if (video.durationMinutes) setVideoDurationMinutes(String(video.durationMinutes));
+                      }}
+                    />
+                    {selectedLibraryVideo?.kind === 'workshop' && (
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/30 px-3 py-2">
+                        «{selectedLibraryVideo.title}» se reproducirá en este tema desde la clase original de la biblioteca.
+                      </p>
+                    )}
+                    {selectedLibraryVideo?.kind === 'lesson' && (
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                          Duración real del video (en minutos) *
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={600}
+                          required
+                          value={videoDurationMinutes}
+                          onChange={(e) => setVideoDurationMinutes(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Se reutiliza el enlace de «{selectedLibraryVideo.topicTitle || selectedLibraryVideo.title}». La duración queda en la bitácora de este tema.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Título de la grabación o video explicativo *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ej. Análisis de trazado en túnel del carpo con Dr. Martínez"
+                        value={videoTitle}
+                        onChange={(e) => setVideoTitle(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Duración real del video (en minutos, ej. 10 min o 90 min) *
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={600}
-                    required
-                    value={videoDurationMinutes}
-                    onChange={(e) => setVideoDurationMinutes(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Se registra en la bitácora legal con su duración exacta. Conforme al Reglamento Editorial Art. 13 (Hora ≠ Palabra), los videos no suman palabras en Obra.
-                  </p>
-                </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Enlace del Video (YouTube, Google Drive, Vimeo, Loom) *
+                      </label>
+                      <input
+                        type="url"
+                        required
+                        placeholder="https://youtu.be/... o https://drive.google.com/file/d/.../view"
+                        value={videoUrl}
+                        onChange={(e) => setVideoUrl(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Los videos no se guardan en la plataforma: el plan gratuito solo tiene 1 GB y se llenaría con pocas clases. Usa YouTube, Drive, Vimeo o Loom. Los alumnos lo reproducen dentro de la lección.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                        Duración real del video (en minutos, ej. 10 min o 90 min) *
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={600}
+                        required
+                        value={videoDurationMinutes}
+                        onChange={(e) => setVideoDurationMinutes(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-white"
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        Se registra en la bitácora legal con su duración exacta. Conforme al Reglamento Editorial Art. 13 (Hora ≠ Palabra), los videos no suman palabras en Obra.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 
@@ -768,7 +951,7 @@ export function QuickTopicMaterialModal({
 
 
             {/* Admin Publishing Mode Selection */}
-            {(isAdmin || isEditor) && (
+            {(isAdmin || isEditor) && !linkingWorkshop && (
               <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -835,7 +1018,12 @@ export function QuickTopicMaterialModal({
               </button>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={
+                  loading ||
+                  (activeTab === 'video' &&
+                    videoSource === 'library' &&
+                    (!selectedLibraryVideo || topicVideoKeys.has(selectedLibraryVideo.dedupKey)))
+                }
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
               >
                 {loading ? (
@@ -845,12 +1033,14 @@ export function QuickTopicMaterialModal({
                   </>
                 ) : (
                   <>
-                    <UploadCloud className="w-4 h-4" />
-                    {isAdmin || isEditor
-                      ? adminPublishMode === 'instant'
-                        ? 'Guardar y Publicar en el Tema'
-                        : 'Enviar a Revisión de Administradores'
-                      : 'Proponer Material Docente'}
+                    {linkingWorkshop ? <Video className="w-4 h-4" /> : <UploadCloud className="w-4 h-4" />}
+                    {linkingWorkshop
+                      ? 'Vincular al tema'
+                      : isAdmin || isEditor
+                        ? adminPublishMode === 'instant'
+                          ? 'Guardar y Publicar en el Tema'
+                          : 'Enviar a Revisión de Administradores'
+                        : 'Proponer Material Docente'}
                   </>
                 )}
               </button>

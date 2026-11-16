@@ -1,0 +1,220 @@
+{
+  "moduleId": "safety-qc",
+  "revisionType": "quiz",
+  "title": "Evaluación: Marcapasos y Desfibriladores (DAI)",
+  "quizTopicId": "pacemakers-icd",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "pm-q1",
+      "sortOrder": 0,
+      "type": "single",
+      "difficulty": "basic",
+      "stem": "Un paciente con marcapasos moderno necesita el mediano motor en la muñeca, del mismo lado del generador. ¿Qué permite la lección?",
+      "options": [
+        {
+          "id": "pm-q1-a",
+          "text": "El estudio distal es seguro, siempre que no se estimule junto al generador, la clavícula, el hombro, el cuello ni el plexo ipsilateral.",
+          "isCorrect": true
+        },
+        {
+          "id": "pm-q1-b",
+          "text": "Cualquier neuroconducción está prohibida de por vida, incluida la muñeca.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q1-c",
+          "text": "Hay que estimular primero en Erb para “comprobar” que el marcapasos no se inhibe.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q1-d",
+          "text": "Solo se puede estudiar el lado contralateral; la muñeca ipsilateral está prohibida.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La lección considera segura la neuroconducción distal en marcapasos modernos y prohíbe el estímulo cerca del generador o sobre clavícula, hombro, cuello y plexo ipsilateral.\n\n📚 Referencia: Schoeck AP, Mellion ML, Gilchrist JM, et al.. Safety of nerve conduction studies in patients with implanted cardiac devices. Muscle & Nerve (2007). https://doi.org/10.1002/mus.20690",
+      "citations": [
+        {
+          "authors": "Schoeck AP, Mellion ML, Gilchrist JM, et al.",
+          "title": "Safety of nerve conduction studies in patients with implanted cardiac devices",
+          "journal": "Muscle & Nerve",
+          "year": 2007,
+          "url": "https://doi.org/10.1002/mus.20690"
+        }
+      ]
+    },
+    {
+      "id": "pm-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "El paciente tiene un desfibrilador implantable, no solo un marcapasos, y se planea un estudio motor. ¿Qué condición pone la lección antes de estimular?",
+      "options": [
+        {
+          "id": "pm-q2-a",
+          "text": "Cardiología debe suspender de forma temporal las terapias de choque, con imán, antes del estudio motor.",
+          "isCorrect": true
+        },
+        {
+          "id": "pm-q2-b",
+          "text": "Basta con evitar la muñeca; el DAI no dispara con estímulos de nervio periférico en el plexo.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q2-c",
+          "text": "Se desactiva el DAI apagando el electromiógrafo.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q2-d",
+          "text": "No hay diferencia entre marcapasos y DAI: ambos permiten estimular en Erb ipsilateral.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "En el DAI la lección exige que cardiología desactive las terapias de choque con imán antes del estudio motor, para no inducir una descarga espuria. No es el mismo margen que un marcapasos moderno en un estudio distal.\n\n📚 Referencia: Schoeck AP, Mellion ML, Gilchrist JM, et al.. Safety of nerve conduction studies in patients with implanted cardiac devices. Muscle & Nerve (2007). https://doi.org/10.1002/mus.20690",
+      "citations": [
+        {
+          "authors": "Schoeck AP, Mellion ML, Gilchrist JM, et al.",
+          "title": "Safety of nerve conduction studies in patients with implanted cardiac devices",
+          "journal": "Muscle & Nerve",
+          "year": 2007,
+          "url": "https://doi.org/10.1002/mus.20690"
+        }
+      ]
+    },
+    {
+      "id": "pm-q3",
+      "sortOrder": 2,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Marcapasos izquierdo. ¿Cuál de estos estímulos ipsilaterales está fuera de lo que la lección considera seguro?",
+      "options": [
+        {
+          "id": "pm-q3-a",
+          "text": "Punto de Erb y plexo braquial izquierdos.",
+          "isCorrect": true
+        },
+        {
+          "id": "pm-q3-b",
+          "text": "Mediano sensitivo en la muñeca izquierda, lejos del generador.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q3-c",
+          "text": "Ulnar motor en la muñeca izquierda.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q3-d",
+          "text": "Sural derecho, en el miembro contralateral.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Muñeca y miembro contralateral quedan lejos del generador. Hombro, cuello, clavícula y plexo ipsilateral no.\n\n📚 Referencia: Schoeck AP, Mellion ML, Gilchrist JM, et al.. Safety of nerve conduction studies in patients with implanted cardiac devices. Muscle & Nerve (2007). https://doi.org/10.1002/mus.20690",
+      "citations": [
+        {
+          "authors": "Schoeck AP, Mellion ML, Gilchrist JM, et al.",
+          "title": "Safety of nerve conduction studies in patients with implanted cardiac devices",
+          "journal": "Muscle & Nerve",
+          "year": 2007,
+          "url": "https://doi.org/10.1002/mus.20690"
+        }
+      ]
+    },
+    {
+      "id": "pm-q4",
+      "sortOrder": 3,
+      "type": "multiple",
+      "difficulty": "advanced",
+      "stem": "Seleccione las dos conductas que la lección sostiene en dispositivos cardiacos.",
+      "options": [
+        {
+          "id": "pm-q4-a",
+          "text": "La neuroconducción distal puede hacerse en un marcapasos moderno.",
+          "isCorrect": true
+        },
+        {
+          "id": "pm-q4-b",
+          "text": "Con un DAI, cardiología suspende los choques con imán antes del estudio motor.",
+          "isCorrect": true
+        },
+        {
+          "id": "pm-q4-c",
+          "text": "El imán del DAI lo coloca el técnico de EMG sin avisar a cardiología.",
+          "isCorrect": false
+        },
+        {
+          "id": "pm-q4-d",
+          "text": "Estimular sobre el generador es la forma de documentar que el dispositivo funciona.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El imán y la suspensión de terapias corresponden a cardiología. Estimular sobre el generador es precisamente lo que se evita.\n\n📚 Referencia: Al-Shekhlee A, Shapiro BE, Preston DC. Iatrogenic complications and risks of nerve conduction studies and needle electromyography. Muscle & Nerve (2003). https://pubmed.ncbi.nlm.nih.gov/12707972/",
+      "citations": [
+        {
+          "authors": "Al-Shekhlee A, Shapiro BE, Preston DC",
+          "title": "Iatrogenic complications and risks of nerve conduction studies and needle electromyography",
+          "journal": "Muscle & Nerve",
+          "year": 2003,
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12707972/"
+        }
+      ]
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "safety-qc",
+      "topic_id": "pacemakers-icd",
+      "topic_name": "Marcapasos y Desfibriladores (DAI)",
+      "island_name": "EMG",
+      "stem": "Hombre de 71 años con DAI izquierdo. Se solicita plexo braquial, punto de Erb ipsilateral y medianos en muñeca. Nadie ha revisado el dispositivo hoy.",
+      "difficulty": 3,
+      "is_critical": true,
+      "findings": [
+        {
+          "type": "SIGN",
+          "label": "Dispositivo",
+          "value": "DAI izquierdo, terapias de choque activas"
+        },
+        {
+          "type": "SIGN",
+          "label": "Estímulos pedidos",
+          "value": "Erb ipsilateral, plexo y mediano en muñeca"
+        }
+      ],
+      "options": [
+        {
+          "text": "No estimular plexo ni Erb. Cardiología debe suspender los choques del DAI antes de cualquier estudio motor.",
+          "is_correct": true,
+          "feedback": "El DAI exige suspender terapias con imán, y Erb o plexo ipsilateral están junto al generador."
+        },
+        {
+          "text": "Hacer Erb ipsilateral primero: si no hay descarga, el resto es seguro.",
+          "is_correct": false,
+          "feedback": "Probar sobre el plexo es la exposición que la lección prohíbe."
+        },
+        {
+          "text": "Tratarlo como marcapasos moderno y estimular Erb sin imán.",
+          "is_correct": false,
+          "feedback": "La lección separa el marcapasos distal del DAI, que requiere desactivar choques."
+        },
+        {
+          "text": "Cancelar también toda neuroconducción en la muñeca contralateral de por vida.",
+          "is_correct": false,
+          "feedback": "Lo que se restringe es la zona del generador y, en el DAI, el estudio motor sin suspender terapias. No es una prohibición vitalicia de la muñeca contralateral."
+        }
+      ],
+      "pearl": "Distal y lejos del generador no es lo mismo que Erb ipsilateral. Con DAI, primero cardiología y el imán.",
+      "source_reference": "Schoeck AP, Mellion ML, Gilchrist JM, et al.. Safety of nerve conduction studies in patients with implanted cardiac devices. Muscle & Nerve (2007). https://doi.org/10.1002/mus.20690",
+      "tags": [
+        "safety-qc",
+        "pacemakers-icd"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

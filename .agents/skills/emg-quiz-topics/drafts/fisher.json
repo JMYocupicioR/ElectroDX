@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Síndrome de Miller Fisher (MFS)",
+  "revisionType": "quiz",
+  "quizTopicId": "fisher",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Tríada: Oftalmoplejía + Ataxia + Arreflexia. ¿Esta afirmación es la que corresponde enseñar en «Síndrome de Miller Fisher (MFS)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tríada: Oftalmoplejía + Ataxia + Arreflexia.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nBiomarcador: IgG Anti-GQ1b (100% específico).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Biomarcador: IgG Anti-GQ1b (100% específico).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Biomarcador: IgG Anti-GQ1b (100% específico).\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nEDX Cardinal: Ausencia temprana del reflejo H con conducción motora y ondas F normales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "EDX Cardinal: Ausencia temprana del reflejo H con conducción motora y ondas F normales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "EDX Cardinal: Ausencia temprana del reflejo H con conducción motora y ondas F normales.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nAnti-GQ1b es el biomarcador absoluto de MFS. Su diana fisiológica explica perfectamente por qué el paciente tiene arreflexia pero fuerza normal: ataca selectivamente a los husos neuromusculares y fibras aferentes Ia, no a las motoneuronas eferentes.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Anti-GQ1b es el biomarcador absoluto de MFS. Su diana fisiológica explica perfectamente por qué el paciente tiene arreflexia pero fuerza normal: ataca selectivamente a los husos neuromusculares y fibras aferentes Ia, no a las motoneuronas eferentes.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Anti-GQ1b es el biomarcador absoluto de MFS. Su diana fisiológica explica perfectamente por qué el paciente tiene arreflexia pero fuerza normal: ataca selectivamente a los husos neuromusculares y fibras aferentes Ia, no a las motoneuronas eferentes.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "fisher",
+      "topic_name": "Síndrome de Miller Fisher (MFS)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Síndrome de Miller Fisher (MFS)». Tríada: Oftalmoplejía + Ataxia + Arreflexia. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Tríada: Oftalmoplejía + Ataxia + Arreflexia.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Anti-GQ1b es el biomarcador absoluto de MFS. Su diana fisiológica explica perfectamente por qué el paciente tiene arreflexia pero fuerza normal: ataca selectivamente a los husos neuromusculares y fibras aferentes Ia, no a las motoneuronas eferentes.",
+      "source_reference": "Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "tags": [
+        "pathologies",
+        "fisher"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

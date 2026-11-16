@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Anti-GM1 y Diferencial con ELA",
+  "revisionType": "quiz",
+  "quizTopicId": "anti-gm1",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal. ¿Esta afirmación es la que corresponde enseñar en «Anti-GM1 y Diferencial con ELA»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Anti-GM1 y Diferencial con ELA», ¿cuál afirmación es la correcta?\nCualquier \"ELA\" que no tenga signos de motoneurona superior (NMS), que sea asimétrica de extremidades superiores y que progrese muy lento, OBLIGA a descartar NMM exhaustivamente buscando bloqueos de conducción proximales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Cualquier \"ELA\" que no tenga signos de motoneurona superior (NMS), que sea asimétrica de extremidades superiores y que progrese muy lento, OBLIGA a descartar NMM exhaustivamente buscando bloqueos de conducción proximales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Cualquier \"ELA\" que no tenga signos de motoneurona superior (NMS), que sea asimétrica de extremidades superiores y que progrese muy lento, OBLIGA a descartar NMM exhaustivamente buscando bloqueos de conducción proximales.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anti-GM1 y Diferencial con ELA», ¿cuál afirmación es la correcta?\nAnticuerpos Anti-GM1 IgM: Presentes en 20-85% (promedio 50%) de pacientes con NMM.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Anticuerpos Anti-GM1 IgM: Presentes en 20-85% (promedio 50%) de pacientes con NMM.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Anticuerpos Anti-GM1 IgM: Presentes en 20-85% (promedio 50%) de pacientes con NMM.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anti-GM1 y Diferencial con ELA», ¿cuál afirmación es la correcta?\n• Mecanismo: El GM1 se concentra masivamente en los nodos de Ranvier de terminales motoras.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• Mecanismo: El GM1 se concentra masivamente en los nodos de Ranvier de terminales motoras.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• Mecanismo: El GM1 se concentra masivamente en los nodos de Ranvier de terminales motoras.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "anti-gm1",
+      "topic_name": "Anti-GM1 y Diferencial con ELA",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Anti-GM1 y Diferencial con ELA». El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El error más devastador en neurofisiología clínica es diagnosticar ELA en un paciente que realmente tiene NMM. La NMM se trata con éxito; la ELA es una sentencia letal.",
+      "source_reference": "Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "tags": [
+        "pathologies",
+        "anti-gm1"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -38,6 +38,7 @@
     -webkit-tap-highlight-color: transparent;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* Viewport only. contain on body/#root swallows the mouse wheel. */
     overscroll-behavior-y: contain;
   }
 
@@ -46,14 +47,13 @@
            dark:text-gray-200 dark:bg-gray-900;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-    overscroll-behavior-y: contain;
+    /* clip does not create a scrollport. hidden forces overflow-y: auto and traps the wheel. */
+    overflow-x: clip;
   }
 
   #root {
     width: 100%;
-    overflow-x: hidden;
-    overscroll-behavior-y: contain;
+    overflow-x: clip;
   }
 
   .theme-transition {

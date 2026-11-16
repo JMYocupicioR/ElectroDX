@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Bloqueo Quirúrgico vs Dispersión Temporal",
+  "revisionType": "quiz",
+  "quizTopicId": "block-vs-dispersion",
+  "moduleId": "quick-reference",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Bloqueo: amplitud/área ↓, duración ~estable. ¿Esta afirmación es la que corresponde enseñar en «Bloqueo Quirúrgico vs Dispersión Temporal»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Bloqueo: amplitud/área ↓, duración ~estable.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Bloqueo Quirúrgico vs Dispersión Temporal», ¿cuál afirmación es la correcta?\nÁrea y duración salvan a la amplitud de mentir.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Área y duración salvan a la amplitud de mentir.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Área y duración salvan a la amplitud de mentir.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bloqueo Quirúrgico vs Dispersión Temporal», ¿cuál afirmación es la correcta?\nAANEM pide los tres números, no un adjetivo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "AANEM pide los tres números, no un adjetivo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "AANEM pide los tres números, no un adjetivo.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Bloqueo Quirúrgico vs Dispersión Temporal», ¿cuál afirmación es la correcta?\nCRITERIO ESTRICTO EMG: \"Bloqueo de Conducción Verdadero\" = Caída de amplitud y área proximal/distal >50% CON un incremento de duración proximal estricto <30%.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CRITERIO ESTRICTO EMG: \"Bloqueo de Conducción Verdadero\" = Caída de amplitud y área proximal/distal >50% CON un incremento de duración proximal estricto <30%.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CRITERIO ESTRICTO EMG: \"Bloqueo de Conducción Verdadero\" = Caída de amplitud y área proximal/distal >50% CON un incremento de duración proximal estricto <30%.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "quick-reference",
+      "topic_id": "block-vs-dispersion",
+      "topic_name": "Bloqueo Quirúrgico vs Dispersión Temporal",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Bloqueo Quirúrgico vs Dispersión Temporal». Bloqueo: amplitud/área ↓, duración ~estable. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Bloqueo: amplitud/área ↓, duración ~estable.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Área y duración salvan a la amplitud de mentir.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "tags": [
+        "quick-reference",
+        "block-vs-dispersion"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

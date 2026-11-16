@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Flujograma: Fatigabilidad",
+  "revisionType": "quiz",
+  "quizTopicId": "fatigability",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Cascada de anticuerpos en MG: Anti-AChR (80%) → Anti-MuSK (5-8%) → Anti-LRP4 (2-5%) → Seronegativa (<10%). La MG anti-MuSK tiene fenotipo distinto: atrofia facial/bulbar prominente, crisis respiratorias frecuentes, respuesta pobre a anticolinesterásicos. ¿Esta afirmación es la que corresponde enseñar en «Flujograma: Fatigabilidad»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Cascada de anticuerpos en MG: Anti-AChR (80%) → Anti-MuSK (5-8%) → Anti-LRP4 (2-5%) → Seronegativa (<10%). La MG anti-MuSK tiene fenotipo distinto: atrofia facial/bulbar prominente, crisis respiratorias frecuentes, respuesta pobre a anticolinesterásicos.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Flujograma: Fatigabilidad», ¿cuál afirmación es la correcta?\nCMAPs difusamente bajos SIN desmielinización y SIN polineuropatía = siempre haz ejercicio 10s. Un LEMS puede \"esconderse\" como polineuropatía axonal motora si no buscas la facilitación.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CMAPs difusamente bajos SIN desmielinización y SIN polineuropatía = siempre haz ejercicio 10s. Un LEMS puede \"esconderse\" como polineuropatía axonal motora si no buscas la facilitación.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CMAPs difusamente bajos SIN desmielinización y SIN polineuropatía = siempre haz ejercicio 10s. Un LEMS puede \"esconderse\" como polineuropatía axonal motora si no buscas la facilitación.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Flujograma: Fatigabilidad», ¿cuál afirmación es la correcta?\nDebilidad fluctuante/fatigabilidad → Sospecha de trastorno de UNM Paso 1: ENR a 2-3 Hz en músculo proximal/facial • Decremento >10% → Paso 2 • Decremento <10% → Paso 3 Paso 2: ¿MG o LEMS?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Debilidad fluctuante/fatigabilidad → Sospecha de trastorno de UNM Paso 1: ENR a 2-3 Hz en músculo proximal/facial • Decremento >10% → Paso 2 • Decremento <10% → Paso 3 Paso 2: ¿MG o LEMS?",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Debilidad fluctuante/fatigabilidad → Sospecha de trastorno de UNM Paso 1: ENR a 2-3 Hz en músculo proximal/facial • Decremento >10% → Paso 2 • Decremento <10% → Paso 3 Paso 2: ¿MG o LEMS?\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Flujograma: Fatigabilidad», ¿cuál afirmación es la correcta?\nFlujograma: Fatigabilidad: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Flujograma: Fatigabilidad: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Flujograma: Fatigabilidad: el hallazgo se interpreta junto con el resto del protocolo, no aislado.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "fatigability",
+      "topic_name": "Flujograma: Fatigabilidad",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Flujograma: Fatigabilidad». Cascada de anticuerpos en MG: Anti-AChR (80%) → Anti-MuSK (5-8%) → Anti-LRP4 (2-5%) → Seronegativa (<10%). La MG anti-MuSK tiene fenotipo distinto: atrofia facial/bulbar prominente, crisis respiratorias frecuentes, respuesta pobre a anticolinesterásicos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Cascada de anticuerpos en MG: Anti-AChR (80%) → Anti-MuSK (5-8%) → Anti-LRP4 (2-5%) → Seronegativa (<10%). La MG anti-MuSK tiene fenotipo distinto: atrofia facial/bulbar prominente, crisis respiratorias frecuentes, respuesta pobre a anticolinesterásicos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Cascada de anticuerpos en MG: Anti-AChR (80%) → Anti-MuSK (5-8%) → Anti-LRP4 (2-5%) → Seronegativa (<10%). La MG anti-MuSK tiene fenotipo distinto: atrofia facial/bulbar prominente, crisis respiratorias frecuentes, respuesta pobre a anticolinesterásicos.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "fatigability"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

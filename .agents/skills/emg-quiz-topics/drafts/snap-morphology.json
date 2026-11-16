@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: El PANS (SNAP): morfología y medición",
-  "revisionType": "quiz",
-  "quizTopicId": "snap-morphology",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: El PANS (SNAP): morfología y medición",
+  "quizTopicId": "snap-morphology",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "snapm-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Misma medición que la tabla de normas. ¿Esta afirmación es la que corresponde enseñar en «El PANS (SNAP): morfología y medición»?",
+      "stem": "¿En qué se distingue el SNAP del CMAP, según la lección de morfología sensitiva?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "snapm-q1-a",
+          "text": "El SNAP es mucho más pequeño: se mide en µV, no en mV, y es bifásico o trifásico.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "snapm-q1-b",
+          "text": "El SNAP es mayor que el CMAP porque suma todas las fibras motoras.",
+          "isCorrect": false
+        },
+        {
+          "id": "snapm-q1-c",
+          "text": "El SNAP siempre es monofásico positivo y se mide en mV.",
+          "isCorrect": false
+        },
+        {
+          "id": "snapm-q1-d",
+          "text": "El SNAP no tiene latencia; solo se informa la amplitud motora.",
           "isCorrect": false
         }
       ],
-      "explanation": "Misma medición que la tabla de normas.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La lección contrasta µV contra mV y describe el SNAP como bifásico o trifásico. De él se miden amplitud base-pico o pico-pico, latencia de inicio o de pico, y la velocidad sensitiva.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "snapm-q2",
+      "sortOrder": 1,
+      "type": "multiple",
+      "difficulty": "intermediate",
+      "stem": "Sobre un SNAP ya identificado, ¿qué dos pares de medidas acepta la lección?",
+      "options": [
+        {
+          "id": "snapm-q2-a",
+          "text": "Amplitud de base a pico, o de pico a pico.",
+          "isCorrect": true
+        },
+        {
+          "id": "snapm-q2-b",
+          "text": "Latencia de inicio o latencia de pico, más la velocidad sensitiva.",
+          "isCorrect": true
+        },
+        {
+          "id": "snapm-q2-c",
+          "text": "Solo la latencia F mínima, porque el SNAP no tiene inicio.",
+          "isCorrect": false
+        },
+        {
+          "id": "snapm-q2-d",
+          "text": "El área motora en mV·ms, con la misma ganancia de 5 mV/div.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Esas son las medidas que enumera la lección. La onda F y la escala en milivoltios pertenecen a otros estudios.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ]
+    },
+    {
+      "id": "snapm-q3",
+      "sortOrder": 2,
+      "type": "image_choice",
+      "difficulty": "advanced",
+      "stem": "El trazo está a 1 ms/div y 10 µV/div. El potencial, bifásico, empieza cerca de 2.5 ms y mide unos 20 µV. ¿Qué potencial es, y en qué unidad se informa la amplitud?",
+      "options": [
+        {
+          "id": "snapm-q3-a",
+          "text": "Es un SNAP: la amplitud se informa en µV, no como un CMAP en mV.",
+          "isCorrect": true
+        },
+        {
+          "id": "snapm-q3-b",
+          "text": "Es un CMAP de 20 mV, porque toda respuesta evocada se mide en milivoltios.",
+          "isCorrect": false
+        },
+        {
+          "id": "snapm-q3-c",
+          "text": "Es una onda F, porque aparece después de 2 ms.",
+          "isCorrect": false
+        },
+        {
+          "id": "snapm-q3-d",
+          "text": "Es fibrilación de aguja, porque el potencial es breve.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La escala en µV y la forma bifásica de decenas de microvoltios corresponden al SNAP. Un CMAP de 20 mV no cabe en 10 µV/div.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ],
+      "imageUrl": "/quiz-traces/snap-morphology-snapm-q3.svg",
+      "imageAlt": "Trazo sensitivo a 1 ms/div y 10 µV/div, potencial bifásico de unos 20 µV con inicio cerca de 2.5 ms, sin diagnóstico escrito en el encabezado."
+    },
+    {
+      "id": "snapm-q4",
+      "sortOrder": 3,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nEl SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
+      "stem": "Dos laboratorios miden el mismo mediano sensitivo, uno de base a pico y otro de pico a pico, y comparan el número con la norma del otro. ¿Qué exige la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
+          "id": "snapm-q4-a",
+          "text": "Ser consistente: cada amplitud se compara con la norma obtenida con el mismo método.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "snapm-q4-b",
+          "text": "Pico a pico y base a pico son intercambiables sin cambiar el valor normal.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "snapm-q4-c",
+          "text": "Solo es válida la latencia; la forma de medir la amplitud no importa.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "snapm-q4-d",
+          "text": "Hay que promediar ambos métodos y usar la media como norma AANEM.",
           "isCorrect": false
         }
       ],
-      "explanation": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
-    },
-    {
-      "id": "q3",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nUna convención por laboratorio, siempre.",
-      "options": [
+      "explanation": "La lección admite las dos formas de medir, pero el número solo significa algo frente a la referencia del mismo método. Chen y el grupo NDTF insisten en normas obtenidas con técnica homogénea.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
         {
-          "id": "a",
-          "text": "Una convención por laboratorio, siempre.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
         }
-      ],
-      "explanation": "Una convención por laboratorio, siempre.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
-    },
-    {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «El PANS (SNAP): morfología y medición», ¿cuál afirmación es la correcta?\nEl Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.",
-      "options": [
-        {
-          "id": "a",
-          "text": "El Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "El Potencial de Acción del Nervio Sensitivo es una señal de mucho menor amplitud que el CMAP (µV vs.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      ]
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "snap-morphology",
       "topic_name": "El PANS (SNAP): morfología y medición",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «El PANS (SNAP): morfología y medición». Misma medición que la tabla de normas. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
+      "stem": "Un informe llama “CMAP sensitivo” a un potencial de 22 µV, bifásico, registrado con anillos en el dedo 2. La ganancia del equipo era 20 µV/div.",
+      "difficulty": 1,
+      "is_critical": false,
+      "findings": [
         {
-          "text": "Misma medición que la tabla de normas.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
+          "type": "AMPL",
+          "label": "Potencial en dedo 2",
+          "value": "22 µV, bifásico"
         },
         {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
+          "type": "SIGN",
+          "label": "Ganancia",
+          "value": "20 µV/div"
         }
       ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "El SNAP es un susurro; el CMAP es un grito. No use la misma ganancia.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "options": [
+        {
+          "text": "Es un SNAP. La amplitud se informa en µV y no se etiqueta como CMAP.",
+          "is_correct": true,
+          "feedback": "El CMAP es de milivoltios. 22 µV en anillo digital es un potencial sensitivo."
+        },
+        {
+          "text": "Corregir la unidad a 22 mV y dejar el nombre de CMAP.",
+          "is_correct": false,
+          "feedback": "Eso multiplica la amplitud por mil y cambia el estudio."
+        },
+        {
+          "text": "Descartarlo: un potencial bifásico no puede ser sensitivo.",
+          "is_correct": false,
+          "feedback": "La lección describe el SNAP como bifásico o trifásico."
+        },
+        {
+          "text": "Llamarlo onda F porque supera 2 ms.",
+          "is_correct": false,
+          "feedback": "La onda F es una respuesta motora tardía, no un potencial de anillo en µV."
+        }
+      ],
+      "pearl": "SNAP en µV, CMAP en mV. La forma bifásica o trifásica no convierte uno en el otro.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "snap-morphology"

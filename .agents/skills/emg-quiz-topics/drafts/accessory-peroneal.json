@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Peroneo Accesorio",
+  "revisionType": "quiz",
+  "quizTopicId": "accessory-peroneal",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Truco diagnóstico rápido: si el CMAP del peroneo registrando EDB es inexplicablemente mayor con estimulación proximal que distal Y no hay otros hallazgos de neuropatía → estimula detrás del maléolo lateral. Si obtienes un CMAP = peroneo accesorio, misterio resuelto. ¿Esta afirmación es la que corresponde enseñar en «Nervio Peroneo Accesorio»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Truco diagnóstico rápido: si el CMAP del peroneo registrando EDB es inexplicablemente mayor con estimulación proximal que distal Y no hay otros hallazgos de neuropatía → estimula detrás del maléolo lateral. Si obtienes un CMAP = peroneo accesorio, misterio resuelto.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Peroneo Accesorio», ¿cuál afirmación es la correcta?\nEl peroneo accesorio puede coexistir con neuropatía peronea verdadera. En ese caso, el CMAP \"preservado\" detrás del maléolo lateral puede enmascarar la severidad real de la neuropatía en la cabeza de peroné.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El peroneo accesorio puede coexistir con neuropatía peronea verdadera. En ese caso, el CMAP \"preservado\" detrás del maléolo lateral puede enmascarar la severidad real de la neuropatía en la cabeza de peroné.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El peroneo accesorio puede coexistir con neuropatía peronea verdadera. En ese caso, el CMAP \"preservado\" detrás del maléolo lateral puede enmascarar la severidad real de la neuropatía en la cabeza de peroné.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Peroneo Accesorio», ¿cuál afirmación es la correcta?\nRama anómala del nervio peroneo superficial que inerva el músculo extensor digitorum brevis (EDB) por su cara LATERAL en vez de por el nervio peroneo profundo por la cara ANTERIOR.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Rama anómala del nervio peroneo superficial que inerva el músculo extensor digitorum brevis (EDB) por su cara LATERAL en vez de por el nervio peroneo profundo por la cara ANTERIOR.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Rama anómala del nervio peroneo superficial que inerva el músculo extensor digitorum brevis (EDB) por su cara LATERAL en vez de por el nervio peroneo profundo por la cara ANTERIOR.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Peroneo Accesorio», ¿cuál afirmación es la correcta?\nHallazgo NCS característico: CMAP del peroneo registrando EDB es MAYOR con estimulación en la cabeza de peroné/rodilla que en el tobillo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hallazgo NCS característico: CMAP del peroneo registrando EDB es MAYOR con estimulación en la cabeza de peroné/rodilla que en el tobillo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Hallazgo NCS característico: CMAP del peroneo registrando EDB es MAYOR con estimulación en la cabeza de peroné/rodilla que en el tobillo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "accessory-peroneal",
+      "topic_name": "Nervio Peroneo Accesorio",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Peroneo Accesorio». Truco diagnóstico rápido: si el CMAP del peroneo registrando EDB es inexplicablemente mayor con estimulación proximal que distal Y no hay otros hallazgos de neuropatía → estimula detrás del maléolo lateral. Si obtienes un CMAP = peroneo accesorio, misterio resuelto. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Truco diagnóstico rápido: si el CMAP del peroneo registrando EDB es inexplicablemente mayor con estimulación proximal que distal Y no hay otros hallazgos de neuropatía → estimula detrás del maléolo lateral. Si obtienes un CMAP = peroneo accesorio, misterio resuelto.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Truco diagnóstico rápido: si el CMAP del peroneo registrando EDB es inexplicablemente mayor con estimulación proximal que distal Y no hay otros hallazgos de neuropatía → estimula detrás del maléolo lateral. Si obtienes un CMAP = peroneo accesorio, misterio resuelto.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "accessory-peroneal"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

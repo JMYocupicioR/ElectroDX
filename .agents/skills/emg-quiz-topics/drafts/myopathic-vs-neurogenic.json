@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Resumen: PUM Miopático vs Neurogénico",
+  "revisionType": "quiz",
+  "quizTopicId": "myopathic-vs-neurogenic",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Miopático: PUM corto, bajo, polifásico + reclutamiento temprano. ¿Esta afirmación es la que corresponde enseñar en «Resumen: PUM Miopático vs Neurogénico»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Miopático: PUM corto, bajo, polifásico + reclutamiento temprano.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Resumen: PUM Miopático vs Neurogénico», ¿cuál afirmación es la correcta?\nNeurogénico: PUM largo, alto, polifásico + reclutamiento reducido con rapid firing.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Neurogénico: PUM largo, alto, polifásico + reclutamiento reducido con rapid firing.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Neurogénico: PUM largo, alto, polifásico + reclutamiento reducido con rapid firing.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Resumen: PUM Miopático vs Neurogénico», ¿cuál afirmación es la correcta?\nIBM: patrón MIXTO (miopático + neurogénico) — el gran confusor.",
+      "options": [
+        {
+          "id": "a",
+          "text": "IBM: patrón MIXTO (miopático + neurogénico) — el gran confusor.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "IBM: patrón MIXTO (miopático + neurogénico) — el gran confusor.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Resumen: PUM Miopático vs Neurogénico», ¿cuál afirmación es la correcta?\nCIM (miopatía del enfermo crítico): PUMs miopáticos + fibrilaciones + CMAPs bajos con SNAPs normales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CIM (miopatía del enfermo crítico): PUMs miopáticos + fibrilaciones + CMAPs bajos con SNAPs normales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CIM (miopatía del enfermo crítico): PUMs miopáticos + fibrilaciones + CMAPs bajos con SNAPs normales.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "myopathic-vs-neurogenic",
+      "topic_name": "Resumen: PUM Miopático vs Neurogénico",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Resumen: PUM Miopático vs Neurogénico». Miopático: PUM corto, bajo, polifásico + reclutamiento temprano. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Miopático: PUM corto, bajo, polifásico + reclutamiento temprano.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Miopático: PUM corto, bajo, polifásico + reclutamiento temprano.",
+      "source_reference": "Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "tags": [
+        "pathologies",
+        "myopathic-vs-neurogenic"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

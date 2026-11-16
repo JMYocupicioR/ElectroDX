@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Protocolo EDX: Facilitación Post-Ejercicio",
+  "revisionType": "quiz",
+  "quizTopicId": "lems-rns",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "CMAPs difusamente BAJOS en todos los nervios + facilitación post-ejercicio >100% = LEMS. Es la combinación diagnóstica patognomónica. ¿Esta afirmación es la que corresponde enseñar en «Protocolo EDX: Facilitación Post-Ejercicio»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CMAPs difusamente BAJOS en todos los nervios + facilitación post-ejercicio >100% = LEMS. Es la combinación diagnóstica patognomónica.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Protocolo EDX: Facilitación Post-Ejercicio», ¿cuál afirmación es la correcta?\nLEMS + cáncer: SIEMPRE buscar carcinoma pulmonar de células pequeñas (TC tórax, PET-CT). El 60% de LEMS es paraneoplásico. El diagnóstico de LEMS puede PRECEDER al diagnóstico del cáncer por meses.",
+      "options": [
+        {
+          "id": "a",
+          "text": "LEMS + cáncer: SIEMPRE buscar carcinoma pulmonar de células pequeñas (TC tórax, PET-CT). El 60% de LEMS es paraneoplásico. El diagnóstico de LEMS puede PRECEDER al diagnóstico del cáncer por meses.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "LEMS + cáncer: SIEMPRE buscar carcinoma pulmonar de células pequeñas (TC tórax, PET-CT). El 60% de LEMS es paraneoplásico. El diagnóstico de LEMS puede PRECEDER al diagnóstico del cáncer por meses.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Protocolo EDX: Facilitación Post-Ejercicio», ¿cuál afirmación es la correcta?\nAnticuerpos anti-VGCC (P/Q tipo): positivos en >95% de LEMS paraneoplásico y ~85% de LEMS autoinmune.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Anticuerpos anti-VGCC (P/Q tipo): positivos en >95% de LEMS paraneoplásico y ~85% de LEMS autoinmune.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Anticuerpos anti-VGCC (P/Q tipo): positivos en >95% de LEMS paraneoplásico y ~85% de LEMS autoinmune.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Protocolo EDX: Facilitación Post-Ejercicio», ¿cuál afirmación es la correcta?\nHallazgos NCS basales: • CMAPs con amplitudes BASE muy reducidas en TODOS los nervios (típicamente <50% LIN difusamente).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Hallazgos NCS basales: • CMAPs con amplitudes BASE muy reducidas en TODOS los nervios (típicamente <50% LIN difusamente).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Hallazgos NCS basales: • CMAPs con amplitudes BASE muy reducidas en TODOS los nervios (típicamente <50% LIN difusamente).\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "lems-rns",
+      "topic_name": "Protocolo EDX: Facilitación Post-Ejercicio",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Protocolo EDX: Facilitación Post-Ejercicio». CMAPs difusamente BAJOS en todos los nervios + facilitación post-ejercicio >100% = LEMS. Es la combinación diagnóstica patognomónica. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "CMAPs difusamente BAJOS en todos los nervios + facilitación post-ejercicio >100% = LEMS. Es la combinación diagnóstica patognomónica.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "CMAPs difusamente BAJOS en todos los nervios + facilitación post-ejercicio >100% = LEMS. Es la combinación diagnóstica patognomónica.",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "pathologies",
+        "lems-rns"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

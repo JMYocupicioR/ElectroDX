@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Detección Ecográfica de Fasciculaciones",
+  "revisionType": "quiz",
+  "quizTopicId": "fasciculation-detection",
+  "moduleId": "special-studies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Fasciculaciones visibles como contracciones focales en tiempo real. ¿Esta afirmación es la que corresponde enseñar en «Detección Ecográfica de Fasciculaciones»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fasciculaciones visibles como contracciones focales en tiempo real.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Detección Ecográfica de Fasciculaciones», ¿cuál afirmación es la correcta?\nNo invasiva, evalúa músculos profundos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "No invasiva, evalúa músculos profundos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "No invasiva, evalúa músculos profundos.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Detección Ecográfica de Fasciculaciones», ¿cuál afirmación es la correcta?\nComplementa la EMG de aguja en el diagnóstico de ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Complementa la EMG de aguja en el diagnóstico de ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Complementa la EMG de aguja en el diagnóstico de ELA.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Detección Ecográfica de Fasciculaciones», ¿cuál afirmación es la correcta?\nLa ecografía puede visualizar fasciculaciones como contracciones focales breves del músculo en tiempo real.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La ecografía puede visualizar fasciculaciones como contracciones focales breves del músculo en tiempo real.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La ecografía puede visualizar fasciculaciones como contracciones focales breves del músculo en tiempo real.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "special-studies",
+      "topic_id": "fasciculation-detection",
+      "topic_name": "Detección Ecográfica de Fasciculaciones",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Detección Ecográfica de Fasciculaciones». Fasciculaciones visibles como contracciones focales en tiempo real. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Fasciculaciones visibles como contracciones focales en tiempo real.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Fasciculaciones visibles como contracciones focales en tiempo real.",
+      "source_reference": "Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "tags": [
+        "special-studies",
+        "fasciculation-detection"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

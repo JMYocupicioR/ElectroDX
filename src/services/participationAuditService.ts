@@ -3,6 +3,16 @@ import { allModules } from '../content/modules';
 import { applyLessonExpansions, findTopicInTree, getAllFlatTopics } from './contentMerge';
 import { stripLegacyPdfMarkdown } from '../utils/topicPrintables';
 import { ALL_CASE_TEMPLATES } from '../../ejercicios/src/data/CaseTemplates';
+import {
+  applyActivitySplit,
+  creditClassSessions,
+  creditLessonVideos,
+  creditQuizActivity,
+  editorialActivityUnits,
+  emptyActivity,
+  measureProseEdit,
+  type PhysicianActivity,
+} from './participationActivity';
 import type { Topic } from '../types/content';
 import type {
   ContentRevision,
@@ -48,6 +58,8 @@ export interface RevisionAttributionDiagnostic {
   reviewedAt: string;
   netWordsAdded: number;
   wordsDeleted: number;
+  lettersChanged: number;
+  paragraphsChanged: number;
   orthographicTokensFixed: number;
   isOrthographicOrFormatOnly: boolean;
   isMediaOnlyChange: boolean;
@@ -69,6 +81,13 @@ export interface TopicAttributionSummary {
   requiresDirectionTieBreak: boolean;
   attributions: TopicWordAttributionRow[];
   revisionDiagnostics: RevisionAttributionDiagnostic[];
+  /** Diferencia residual entre la última revisión y el texto publicado. */
+  closingEdit: {
+    authorId: string;
+    lettersChanged: number;
+    wordsChanged: number;
+    paragraphsChanged: number;
+  } | null;
   embeddedMediaSummary: {
     videosCount: number;
     videosWithDurationCount: number;
@@ -119,7 +138,9 @@ export interface PhysicianParticipationSummary {
   uploadedPdfsCount: number;
   uploadedVideosCount: number;
   uploadedVideosDurationSeconds: number;
-  // Total
+  /** Reparto de las tres bolsas según la actividad medida, sin esperar el anexo. */
+  activity: PhysicianActivity;
+  // Total liquidable (anexo + sello). El reparto por actividad vive en `activity`.
   totalPayoutMxn: number;
   excludedContributionsWarnings: string[];
 }
@@ -507,6 +528,16 @@ export function computeSingleTopicAttribution(params: {
   const orthographicIgnoredByAuthor = new Map<string, number>();
   const revisionsByAuthor = new Map<string, string[]>();
 
+  let prevClean = staticTopic
+    ? sanitizeClinicalProse({
+        title: staticTopic.title,
+        description: staticTopic.description,
+        content: staticTopic.content,
+        clinicalPearls: staticTopic.clinicalPearls,
+        keyPoints: staticTopic.keyPoints,
+      })
+    : '';
+
   let prevMediaJson = JSON.stringify({
     videoUrls: staticTopic?.videoUrls ?? [],
     youtubeUrls: staticTopic?.youtubeUrls ?? [],
@@ -528,6 +559,8 @@ export function computeSingleTopicAttribution(params: {
     });
 
     const diff = applyRevisionWordDiff(tokens, cleanProse, rev.author_id, rev.id);
+    const proseEdit = measureProseEdit(prevClean, cleanProse);
+    prevClean = cleanProse;
     tokens = diff.nextTokens;
 
     const currentMediaJson = JSON.stringify({
@@ -591,6 +624,8 @@ export function computeSingleTopicAttribution(params: {
       reviewedAt: rev.reviewed_at ?? rev.updated_at ?? rev.created_at,
       netWordsAdded: diff.netWordsAdded,
       wordsDeleted: diff.wordsDeleted,
+      lettersChanged: proseEdit.lettersChanged,
+      paragraphsChanged: proseEdit.paragraphsChanged,
       orthographicTokensFixed: diff.orthographicTokensFixed,
       isOrthographicOrFormatOnly,
       isMediaOnlyChange,
@@ -602,6 +637,7 @@ export function computeSingleTopicAttribution(params: {
   }
 
   // Si existe un publishedTopic modificado directamente sin revisiones aprobadas asociadas
+  let closingEdit: TopicAttributionSummary['closingEdit'] = null;
   if (publishedTopic) {
     const finalClean = sanitizeClinicalProse({
       title: publishedTopic.title,
@@ -620,7 +656,19 @@ export function computeSingleTopicAttribution(params: {
       fallbackAuthor,
       publishedTopic.source_revision_id
     );
+    const finalEdit = measureProseEdit(prevClean, finalClean);
     tokens = finalDiff.nextTokens;
+    if (
+      fallbackAuthor !== PLATFORM_BASELINE_AUTHOR &&
+      (finalDiff.netWordsAdded > 0 || finalEdit.lettersChanged > 0 || finalEdit.paragraphsChanged > 0)
+    ) {
+      closingEdit = {
+        authorId: fallbackAuthor,
+        lettersChanged: finalEdit.lettersChanged,
+        wordsChanged: finalDiff.netWordsAdded,
+        paragraphsChanged: finalEdit.paragraphsChanged,
+      };
+    }
   }
 
   // Contar palabras vivas al cierre por cada autor (Reglamento Art. 7)
@@ -724,6 +772,7 @@ export function computeSingleTopicAttribution(params: {
     requiresDirectionTieBreak,
     attributions: physicianRows,
     revisionDiagnostics,
+    closingEdit,
     embeddedMediaSummary: {
       videosCount: allTopicVideos.length,
       videosWithDurationCount: videosWithDuration.length,
@@ -930,6 +979,8 @@ export async function buildPlatformParticipationReport(options?: {
     workshopInstructorsRes,
     mediaAssetsRes,
     profilesRes,
+    staffRolesRes,
+    teachingCommitmentsRes,
   ] = await Promise.all([
     supabase.from('published_topics').select('*'),
     supabase.from('content_revisions').select('*').eq('status', 'approved'),
@@ -943,6 +994,8 @@ export async function buildPlatformParticipationReport(options?: {
     supabase.from('workshop_instructors').select('*'),
     supabase.from('topic_media_assets').select('*'),
     supabase.from('profiles').select('id, display_name, credentials'),
+    supabase.from('user_roles').select('user_id, role').in('role', ['contributor', 'editor']),
+    supabase.from('topic_teaching_commitments').select('topic_id, teacher_id, status'),
   ]);
 
   const publishedTopics = (publishedTopicsRes.data ?? []) as unknown as PublishedTopic[];
@@ -952,6 +1005,7 @@ export async function buildPlatformParticipationReport(options?: {
     id: string;
     quiz_id: string;
     author_id?: string | null;
+    last_edited_by?: string | null;
     is_system_baseline?: boolean;
   }[];
   const publishedQuizzes = (publishedQuizzesRes.data ?? []) as unknown as {
@@ -959,6 +1013,7 @@ export async function buildPlatformParticipationReport(options?: {
     topic_id: string;
     published_by: string | null;
     last_edited_by: string | null;
+    version?: number | null;
   }[];
   const examQuestions = (examQuestionsRes.data ?? []) as unknown as {
     id: string;
@@ -980,6 +1035,9 @@ export async function buildPlatformParticipationReport(options?: {
     status: string;
     duration_minutes: number;
     actual_duration_seconds?: number | null;
+    recording_duration_seconds?: number | null;
+    recording_url?: string | null;
+    clinical_case_json?: Record<string, unknown> | null;
     computable_session_value?: number | null;
     validated_by_direction?: string | null;
     created_by: string;
@@ -999,6 +1057,26 @@ export async function buildPlatformParticipationReport(options?: {
   const profileMap = new Map<string, Pick<Profile, 'id' | 'display_name' | 'credentials'>>();
   for (const p of profilesList) {
     profileMap.set(p.id, p);
+  }
+
+  const staffRoles = new Map<string, string[]>();
+  for (const row of (staffRolesRes.data ?? []) as { user_id?: string; role?: string }[]) {
+    if (!row.user_id || !row.role) continue;
+    const list = staffRoles.get(row.user_id) ?? [];
+    if (!list.includes(row.role)) list.push(row.role);
+    staffRoles.set(row.user_id, list);
+  }
+
+  const teachersByTopic = new Map<string, string[]>();
+  for (const row of (teachingCommitmentsRes.data ?? []) as {
+    topic_id?: string;
+    teacher_id?: string;
+    status?: string;
+  }[]) {
+    if (!row.topic_id || !row.teacher_id || row.status === 'withdrawn') continue;
+    const list = teachersByTopic.get(row.topic_id) ?? [];
+    if (!list.includes(row.teacher_id)) list.push(row.teacher_id);
+    teachersByTopic.set(row.topic_id, list);
   }
 
   // Mapa de convenio Anexo por médico (Cláusula 2)
@@ -1077,8 +1155,9 @@ export async function buildPlatformParticipationReport(options?: {
     }
   }
 
-  // 2. Consolidar conjunto de todos los médicos con convenio o con actividad
+  // 2. Consolidar profesores, editores y quien tenga actividad
   const allPhysicianIds = new Set<string>();
+  for (const uid of staffRoles.keys()) allPhysicianIds.add(uid);
   for (const uid of agreementByUser.keys()) allPhysicianIds.add(uid);
   for (const row of allAttributionRowsToPersist) {
     if (row.author_id) allPhysicianIds.add(row.author_id);
@@ -1089,6 +1168,7 @@ export async function buildPlatformParticipationReport(options?: {
   }
   for (const qq of quizQuestions) {
     if (qq.author_id) allPhysicianIds.add(qq.author_id);
+    if (qq.last_edited_by) allPhysicianIds.add(qq.last_edited_by);
   }
   for (const eq of examQuestions) {
     if (eq.author_id) allPhysicianIds.add(eq.author_id);
@@ -1105,6 +1185,141 @@ export async function buildPlatformParticipationReport(options?: {
   }
   for (const ma of mediaAssets) {
     if (ma.uploaded_by) allPhysicianIds.add(ma.uploaded_by);
+  }
+
+  const instructorsByWorkshop = new Map<string, { id: string; share?: number }[]>();
+  for (const wi of workshopInstructors) {
+    const uid = wi.user_id ?? wi.teacher_id;
+    if (!uid) continue;
+    const list = instructorsByWorkshop.get(wi.workshop_id) ?? [];
+    list.push({ id: uid, share: wi.session_share });
+    instructorsByWorkshop.set(wi.workshop_id, list);
+  }
+  const classCredits = creditClassSessions(
+    workshops.map((ws) => ({
+      id: ws.id,
+      status: ws.status,
+      recording_url: ws.recording_url,
+      duration_minutes: ws.duration_minutes,
+      actual_duration_seconds: ws.actual_duration_seconds,
+      recording_duration_seconds: ws.recording_duration_seconds,
+      clinical_case_json: ws.clinical_case_json,
+      instructors: instructorsByWorkshop.get(ws.id) ?? [],
+    })),
+  );
+
+  const lessonVideos: {
+    key: string;
+    blockKey?: string | null;
+    seconds: number;
+    authorIds: string[];
+  }[] = [];
+  const pushLesson = (
+    topicId: string,
+    key: string,
+    seconds: number | undefined,
+    authorId: string | undefined,
+    blockKey?: string,
+  ) => {
+    const authors = authorId ? [authorId] : teachersByTopic.get(topicId) ?? [];
+    if (authors.length === 0) return;
+    lessonVideos.push({
+      key: `${topicId}:${key}`,
+      blockKey: blockKey ?? null,
+      seconds: typeof seconds === 'number' && seconds > 0 ? seconds : 0,
+      authorIds: authors,
+    });
+  };
+  for (const topic of publishedTopics) {
+    const media = topic.media;
+    if (!media) continue;
+    for (const video of media.videoUrls ?? []) {
+      pushLesson(topic.id, video.driveId || video.title, video.durationSeconds, video.authorId);
+    }
+    for (const video of media.youtubeUrls ?? []) {
+      pushLesson(
+        topic.id,
+        `yt:${video.videoId}`,
+        video.durationSeconds,
+        video.authorId,
+        video.videoId ? `https://www.youtube.com/watch?v=${video.videoId}` : undefined,
+      );
+    }
+    for (const video of media.vimeoUrls ?? []) {
+      pushLesson(topic.id, `vimeo:${video.videoId}`, video.durationSeconds, video.authorId);
+    }
+    for (const video of media.embedUrls ?? []) {
+      pushLesson(topic.id, video.embedUrl || video.title, video.durationSeconds, video.authorId, video.embedUrl);
+    }
+  }
+  for (const asset of mediaAssets) {
+    if (asset.asset_type !== 'video' || !asset.uploaded_by) continue;
+    lessonVideos.push({
+      key: `asset:${asset.id}`,
+      blockKey: asset.url,
+      seconds: asset.duration_seconds ?? 0,
+      authorIds: [asset.uploaded_by],
+    });
+  }
+  creditLessonVideos(lessonVideos, classCredits.recordingKeys, classCredits.byAuthor);
+  for (const authorId of classCredits.byAuthor.keys()) allPhysicianIds.add(authorId);
+
+  const revisionAuthorsByTopic = new Map<string, string[]>();
+  for (const rev of approvedRevisions) {
+    if ((rev.payload.revisionType ?? 'topic') !== 'quiz') continue;
+    const topicId = rev.target_topic_id ?? rev.payload.quizTopicId ?? rev.payload.id;
+    if (!topicId || !rev.author_id) continue;
+    const list = revisionAuthorsByTopic.get(topicId) ?? [];
+    if (!list.includes(rev.author_id)) list.push(rev.author_id);
+    revisionAuthorsByTopic.set(topicId, list);
+    allPhysicianIds.add(rev.author_id);
+  }
+  const quizCredits = creditQuizActivity({
+    questions: quizQuestions,
+    quizzes: publishedQuizzes,
+    revisionAuthorsByTopic,
+  });
+  for (const authorId of quizCredits.keys()) allPhysicianIds.add(authorId);
+
+  const proseByAuthor = new Map<
+    string,
+    { letters: number; words: number; paragraphs: number; topics: Set<string> }
+  >();
+  const addProse = (
+    authorId: string,
+    topicId: string,
+    letters: number,
+    words: number,
+    paragraphs: number,
+  ) => {
+    if (!authorId || authorId === PLATFORM_BASELINE_AUTHOR) return;
+    if (letters <= 0 && words <= 0 && paragraphs <= 0) return;
+    const row = proseByAuthor.get(authorId) ?? {
+      letters: 0,
+      words: 0,
+      paragraphs: 0,
+      topics: new Set<string>(),
+    };
+    row.letters += letters;
+    row.words += Math.max(0, words);
+    row.paragraphs += paragraphs;
+    row.topics.add(topicId);
+    proseByAuthor.set(authorId, row);
+    allPhysicianIds.add(authorId);
+  };
+  for (const topic of topicSummaries) {
+    for (const diag of topic.revisionDiagnostics) {
+      addProse(diag.authorId, topic.topicId, diag.lettersChanged, diag.netWordsAdded, diag.paragraphsChanged);
+    }
+    if (topic.closingEdit) {
+      addProse(
+        topic.closingEdit.authorId,
+        topic.topicId,
+        topic.closingEdit.lettersChanged,
+        topic.closingEdit.wordsChanged,
+        topic.closingEdit.paragraphsChanged,
+      );
+    }
   }
 
   // Mapa auxiliar para saber quién publicó el quiz padre cuando quiz_questions.author_id es null
@@ -1237,10 +1452,55 @@ export async function buildPlatformParticipationReport(options?: {
       (acc, v) => acc + (v.duration_seconds ?? 0),
       0
     );
+    const tracesAdded = myAssets.filter((asset) => asset.asset_type === 'emg_trace').length;
+    const classCredit = classCredits.byAuthor.get(physicianId) ?? { seconds: 0, count: 0 };
+    const prose = proseByAuthor.get(physicianId);
+    const quizCredit = quizCredits.get(physicianId) ?? {
+      quizzesAdded: 0,
+      quizzesModified: 0,
+      questionsAdded: 0,
+      questionsModified: 0,
+    };
+    const activity = emptyActivity(staffRoles.get(physicianId) ?? []);
+    activity.classVideoCount = classCredit.count;
+    activity.classVideoSeconds = classCredit.seconds;
+    activity.topicsModified = prose?.topics.size ?? 0;
+    activity.lettersChanged = prose?.letters ?? 0;
+    activity.wordsChanged = prose?.words ?? 0;
+    activity.paragraphsChanged = prose?.paragraphs ?? 0;
+    activity.quizzesAdded = quizCredit.quizzesAdded;
+    activity.quizzesModified = quizCredit.quizzesModified;
+    activity.questionsAdded = quizCredit.questionsAdded;
+    activity.questionsModified = quizCredit.questionsModified;
+    activity.casesAdded = publishedClinicalCases;
+    activity.figuresAdded = uploadedImagesCount;
+    activity.pdfsAdded = uploadedPdfsCount;
+    activity.tracesAdded = tracesAdded;
+    activity.configClosed = closedConfigTasks;
+    activity.examQuestions = myExamQuestions;
+    activity.activityEditorialUnits = editorialActivityUnits({
+      questionsAdded: quizCredit.questionsAdded,
+      questionsModified: quizCredit.questionsModified,
+      examQuestions: myExamQuestions,
+      cases: publishedClinicalCases,
+      configClosed: closedConfigTasks,
+      figures: uploadedImagesCount,
+      pdfs: uploadedPdfsCount,
+      traces: tracesAdded,
+    });
+    activity.obraWeightWords = rawSurvivingWords > 0 ? rawSurvivingWords : activity.wordsChanged;
 
     // ── ADVERTENCIAS DE CANDADOS CONTRACTUALES (Cláusula 2 y Art. 6/13) ──
     const warnings: string[] = [];
-    if (markedRole === 'sin_convenio' && (rawSurvivingWords > 0 || rawEditorialUnits > 0 || rawCompletedSessions > 0)) {
+    if (
+      markedRole === 'sin_convenio' &&
+      (rawSurvivingWords > 0 ||
+        rawEditorialUnits > 0 ||
+        rawCompletedSessions > 0 ||
+        activity.classVideoSeconds > 0 ||
+        activity.wordsChanged > 0 ||
+        activity.activityEditorialUnits > 0)
+    ) {
       warnings.push(
         'Sin Anexo firmado vigente: las aportaciones están registradas en bitácora pero requieren firma de Anexo (Cláusula 2) para computar en liquidación.'
       );
@@ -1296,6 +1556,7 @@ export async function buildPlatformParticipationReport(options?: {
       uploadedPdfsCount,
       uploadedVideosCount,
       uploadedVideosDurationSeconds,
+      activity,
       totalPayoutMxn: 0,
       excludedContributionsWarnings: warnings,
     });
@@ -1358,12 +1619,16 @@ export async function buildPlatformParticipationReport(options?: {
     );
   }
 
+  applyActivitySplit(
+    physicianSummaries.map((person) => person.activity),
+    { docencia: docenciaPoolMxn, obra: obraPoolMxn, editorial: editorialPoolMxn },
+  );
+
   physicianSummaries.sort(
     (a, b) =>
+      b.activity.activityPayoutMxn - a.activity.activityPayoutMxn ||
       b.totalPayoutMxn - a.totalPayoutMxn ||
-      b.rawSurvivingWords - a.rawSurvivingWords ||
-      b.rawEditorialUnits - a.rawEditorialUnits ||
-      b.rawCompletedSessions - a.rawCompletedSessions
+      a.displayName.localeCompare(b.displayName, 'es'),
   );
 
   const snapshotSha256 = await sha256Hex(

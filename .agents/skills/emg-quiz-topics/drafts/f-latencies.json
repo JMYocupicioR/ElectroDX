@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Valores Normales y Parámetros",
+  "revisionType": "quiz",
+  "quizTopicId": "f-latencies",
+  "moduleId": "late-responses",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Peroneo puede faltar en sanos. ¿Esta afirmación es la que corresponde enseñar en «Valores Normales y Parámetros»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Peroneo puede faltar en sanos.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Valores Normales y Parámetros», ¿cuál afirmación es la correcta?\nVariabilidad: A diferencia de otras respuestas, la Onda F varía en latencia y morfología con CADA estímulo, porque cada choque descarga una población diferente de motoneuronas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Variabilidad: A diferencia de otras respuestas, la Onda F varía en latencia y morfología con CADA estímulo, porque cada choque descarga una población diferente de motoneuronas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Variabilidad: A diferencia de otras respuestas, la Onda F varía en latencia y morfología con CADA estímulo, porque cada choque descarga una población diferente de motoneuronas.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Valores Normales y Parámetros», ¿cuál afirmación es la correcta?\nLa talla entra al informe de las F.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La talla entra al informe de las F.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La talla entra al informe de las F.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Valores Normales y Parámetros», ¿cuál afirmación es la correcta?\nMínima > persistencia > cronodispersión, en ese orden de fiabilidad.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Mínima > persistencia > cronodispersión, en ese orden de fiabilidad.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Mínima > persistencia > cronodispersión, en ese orden de fiabilidad.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "late-responses",
+      "topic_id": "f-latencies",
+      "topic_name": "Valores Normales y Parámetros",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Valores Normales y Parámetros». Peroneo puede faltar en sanos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Peroneo puede faltar en sanos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Variabilidad: A diferencia de otras respuestas, la Onda F varía en latencia y morfología con CADA estímulo, porque cada choque descarga una población diferente de motoneuronas.",
+      "source_reference": "Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "tags": [
+        "late-responses",
+        "f-latencies"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

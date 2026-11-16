@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Flujograma: Debilidad de Miembro Inferior",
+  "revisionType": "quiz",
+  "quizTopicId": "lower-limb-weakness",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Pie caído agudo: la pista para diferenciar L5 vs peroneo es el tibial posterior (inversión del pie, L5 pero nervio tibial). Si el tibial posterior está débil, la lesión es L5 (no peroneo). Si el tibial posterior está normal, la lesión es del nervio peroneo. ¿Esta afirmación es la que corresponde enseñar en «Flujograma: Debilidad de Miembro Inferior»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pie caído agudo: la pista para diferenciar L5 vs peroneo es el tibial posterior (inversión del pie, L5 pero nervio tibial). Si el tibial posterior está débil, la lesión es L5 (no peroneo). Si el tibial posterior está normal, la lesión es del nervio peroneo.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Flujograma: Debilidad de Miembro Inferior», ¿cuál afirmación es la correcta?\nAmiotrofia diabética (Bruns-Garland): NO es \"simplemente neuropatía diabética progresada\". Es una vasculitis autoinmune que puede responder a inmunoterapia. Diagnosticarla correctamente cambia el tratamiento.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Amiotrofia diabética (Bruns-Garland): NO es \"simplemente neuropatía diabética progresada\". Es una vasculitis autoinmune que puede responder a inmunoterapia. Diagnosticarla correctamente cambia el tratamiento.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Amiotrofia diabética (Bruns-Garland): NO es \"simplemente neuropatía diabética progresada\". Es una vasculitis autoinmune que puede responder a inmunoterapia. Diagnosticarla correctamente cambia el tratamiento.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Flujograma: Debilidad de Miembro Inferior», ¿cuál afirmación es la correcta?\n→ Amiotrofia diabética: • Debilidad proximal unilateral + dolor severo muslo + SNAP safeno ↓ + denervación femoral/obturador multirradicular → Radiculoplexoneuropatía lumbosacra diabética (Bruns-Garland)",
+      "options": [
+        {
+          "id": "a",
+          "text": "→ Amiotrofia diabética: • Debilidad proximal unilateral + dolor severo muslo + SNAP safeno ↓ + denervación femoral/obturador multirradicular → Radiculoplexoneuropatía lumbosacra diabética (Bruns-Garland)",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "→ Amiotrofia diabética: • Debilidad proximal unilateral + dolor severo muslo + SNAP safeno ↓ + denervación femoral/obturador multirradicular → Radiculoplexoneuropatía lumbosacra diabética (Bruns-Garland)\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Flujograma: Debilidad de Miembro Inferior», ¿cuál afirmación es la correcta?\nFlujograma: Debilidad de Miembro Inferior: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Flujograma: Debilidad de Miembro Inferior: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Flujograma: Debilidad de Miembro Inferior: el hallazgo se interpreta junto con el resto del protocolo, no aislado.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "lower-limb-weakness",
+      "topic_name": "Flujograma: Debilidad de Miembro Inferior",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Flujograma: Debilidad de Miembro Inferior». Pie caído agudo: la pista para diferenciar L5 vs peroneo es el tibial posterior (inversión del pie, L5 pero nervio tibial). Si el tibial posterior está débil, la lesión es L5 (no peroneo). Si el tibial posterior está normal, la lesión es del nervio peroneo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Pie caído agudo: la pista para diferenciar L5 vs peroneo es el tibial posterior (inversión del pie, L5 pero nervio tibial). Si el tibial posterior está débil, la lesión es L5 (no peroneo). Si el tibial posterior está normal, la lesión es del nervio peroneo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Pie caído agudo: la pista para diferenciar L5 vs peroneo es el tibial posterior (inversión del pie, L5 pero nervio tibial). Si el tibial posterior está débil, la lesión es L5 (no peroneo). Si el tibial posterior está normal, la lesión es del nervio peroneo.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "lower-limb-weakness"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

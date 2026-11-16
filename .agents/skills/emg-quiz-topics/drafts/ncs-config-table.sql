@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: ncs-config-table (Module: topographic-anatomy)
+-- Generated at: 2026-11-16T04:54:16.748Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'ncs-config-table',
+  'topographic-anatomy',
+  'update',
+  $payload${"title":"Evaluación: Resumen de Configuración del Equipo (Filtros)","revisionType":"quiz","quizTopicId":"ncs-config-table","moduleId":"topographic-anatomy","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Ganancia distinta para motor, sensitivo y F. ¿Esta afirmación es la que corresponde enseñar en «Resumen de Configuración del Equipo (Filtros)»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Ganancia distinta para motor, sensitivo y F.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Resumen de Configuración del Equipo (Filtros)», ¿cuál afirmación es la correcta?\nLos filtros se declaran si se salen de la tabla.","options":[{"id":"a","text":"Los filtros se declaran si se salen de la tabla.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Los filtros se declaran si se salen de la tabla.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Resumen de Configuración del Equipo (Filtros)», ¿cuál afirmación es la correcta?\nµV para el susurro, mV para el grito.","options":[{"id":"a","text":"µV para el susurro, mV para el grito.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"µV para el susurro, mV para el grito.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Resumen de Configuración del Equipo (Filtros)», ¿cuál afirmación es la correcta?\nEl filtro equivocado simula enfermedad.","options":[{"id":"a","text":"El filtro equivocado simula enfermedad.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"El filtro equivocado simula enfermedad.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]}],"examQuestions":[{"module_id":"topographic-anatomy","topic_id":"ncs-config-table","topic_name":"Resumen de Configuración del Equipo (Filtros)","island_name":"EMG","stem":"Caso breve ligado a «Resumen de Configuración del Equipo (Filtros)». Ganancia distinta para motor, sensitivo y F. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Ganancia distinta para motor, sensitivo y F.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"µV para el susurro, mV para el grito.","source_reference":"Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","tags":["topographic-anatomy","ncs-config-table"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'ncs-config-table'
+    AND r.module_id = 'topographic-anatomy'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

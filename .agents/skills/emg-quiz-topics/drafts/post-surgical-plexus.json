@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Plexopatía postquirúrgica y lesión iatrogénica",
+  "revisionType": "quiz",
+  "quizTopicId": "post-surgical-plexus",
+  "moduleId": "complex-clinical-cases",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El calendario post-lesión cambia la interpretación. ¿Esta afirmación es la que corresponde enseñar en «Plexopatía postquirúrgica y lesión iatrogénica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El calendario post-lesión cambia la interpretación.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Plexopatía postquirúrgica y lesión iatrogénica», ¿cuál afirmación es la correcta?\nSNAP vs EMG paraespinal separa plexo de raíz.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SNAP vs EMG paraespinal separa plexo de raíz.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SNAP vs EMG paraespinal separa plexo de raíz.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexopatía postquirúrgica y lesión iatrogénica», ¿cuál afirmación es la correcta?\nTras cirugía de mama, posicionamiento intraoperatorio, bloqueo anestésico o tracción obstétrica, el laboratorio debe localizar si la lesión es plexual, radicular o de nervio periférico, y si es axonal o hay bloqueo (neurapraxia).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tras cirugía de mama, posicionamiento intraoperatorio, bloqueo anestésico o tracción obstétrica, el laboratorio debe localizar si la lesión es plexual, radicular o de nervio periférico, y si es axonal o hay bloqueo (neurapraxia).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tras cirugía de mama, posicionamiento intraoperatorio, bloqueo anestésico o tracción obstétrica, el laboratorio debe localizar si la lesión es plexual, radicular o de nervio periférico, y si es axonal o hay bloqueo (neurapraxia).\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexopatía postquirúrgica y lesión iatrogénica», ¿cuál afirmación es la correcta?\nEl momento del estudio importa: antes de 3 semanas la denervación puede no haber aparecido; un estudio demasiado precoz solo muestra bloqueo o CMAP bajo por axonotmesis reciente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El momento del estudio importa: antes de 3 semanas la denervación puede no haber aparecido; un estudio demasiado precoz solo muestra bloqueo o CMAP bajo por axonotmesis reciente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El momento del estudio importa: antes de 3 semanas la denervación puede no haber aparecido; un estudio demasiado precoz solo muestra bloqueo o CMAP bajo por axonotmesis reciente.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "complex-clinical-cases",
+      "topic_id": "post-surgical-plexus",
+      "topic_name": "Plexopatía postquirúrgica y lesión iatrogénica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Plexopatía postquirúrgica y lesión iatrogénica». El calendario post-lesión cambia la interpretación. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El calendario post-lesión cambia la interpretación.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El calendario post-lesión cambia la interpretación.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "complex-clinical-cases",
+        "post-surgical-plexus"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

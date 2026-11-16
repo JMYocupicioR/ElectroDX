@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Desmielinización Uniforme vs. Segmentaria",
+  "revisionType": "quiz",
+  "quizTopicId": "uniform-vs-segmental",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Uniforme (CMT1): VCM igualmente lenta en todos los nervios, sin bloqueos. ¿Esta afirmación es la que corresponde enseñar en «Desmielinización Uniforme vs. Segmentaria»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Uniforme (CMT1): VCM igualmente lenta en todos los nervios, sin bloqueos.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Desmielinización Uniforme vs. Segmentaria», ¿cuál afirmación es la correcta?\nSegmentaria (CIDP/NMM): asimétrica, con bloqueos y dispersión.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Segmentaria (CIDP/NMM): asimétrica, con bloqueos y dispersión.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Segmentaria (CIDP/NMM): asimétrica, con bloqueos y dispersión.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Desmielinización Uniforme vs. Segmentaria», ¿cuál afirmación es la correcta?\nUniforme = hereditaria = NO responde a inmunoterapia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Uniforme = hereditaria = NO responde a inmunoterapia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Uniforme = hereditaria = NO responde a inmunoterapia.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Desmielinización Uniforme vs. Segmentaria», ¿cuál afirmación es la correcta?\nSegmentaria = adquirida = POTENCIALMENTE tratable.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Segmentaria = adquirida = POTENCIALMENTE tratable.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Segmentaria = adquirida = POTENCIALMENTE tratable.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "uniform-vs-segmental",
+      "topic_name": "Desmielinización Uniforme vs. Segmentaria",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Desmielinización Uniforme vs. Segmentaria». Uniforme (CMT1): VCM igualmente lenta en todos los nervios, sin bloqueos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Uniforme (CMT1): VCM igualmente lenta en todos los nervios, sin bloqueos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "REGLA PRÁCTICA: Si VCM del mediano es <25 m/s y TODOS los nervios son igualmente lentos sin bloqueos → piensa CMT1 (hereditaria). Si hay asimetría marcada con bloqueos focales → piensa CIDP (adquirida, tratable).",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "uniform-vs-segmental"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

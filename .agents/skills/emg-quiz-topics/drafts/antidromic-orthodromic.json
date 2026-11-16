@@ -1,121 +1,159 @@
 {
-  "title": "Evaluación: Técnica antidrómica vs. ortodrómica",
-  "revisionType": "quiz",
-  "quizTopicId": "antidromic-orthodromic",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Técnica antidrómica vs. ortodrómica",
+  "quizTopicId": "antidromic-orthodromic",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "adorto-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Más amplitud no es más verdad. ¿Esta afirmación es la que corresponde enseñar en «Técnica antidrómica vs. ortodrómica»?",
+      "stem": "¿Cómo define la lección la técnica antidrómica y cuál es su ventaja y su coste?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "adorto-q1-a",
+          "text": "Estímulo proximal y registro distal, contra la dirección fisiológica. Más amplitud, con riesgo de artefacto de CMAP.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "adorto-q1-b",
+          "text": "Estímulo distal y registro proximal. Más amplitud y sin contaminación motora.",
+          "isCorrect": false
+        },
+        {
+          "id": "adorto-q1-c",
+          "text": "Estímulo y registro en el mismo punto. Sirve para anular el volumen.",
+          "isCorrect": false
+        },
+        {
+          "id": "adorto-q1-d",
+          "text": "Registro en el músculo y estímulo en el dedo. Es la técnica del CMAP.",
           "isCorrect": false
         }
       ],
-      "explanation": "Más amplitud no es más verdad.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Antidrómica: proximal hacia distal, más fibras y más amplitud, a cambio de posible contaminación por CMAP. Ortodrómica es el camino fisiológico, sin ese artefacto motor, pero con menos amplitud.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "adorto-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Técnica antidrómica vs. ortodrómica», ¿cuál afirmación es la correcta?\nLa técnica se declara en el informe.",
+      "stem": "Hace falta un SNAP pequeño y limpio, sin que se cuele actividad motora. ¿Qué técnica elige la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "La técnica se declara en el informe.",
+          "id": "adorto-q2-a",
+          "text": "Ortodrómica: estímulo distal y registro proximal.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "adorto-q2-b",
+          "text": "Antidrómica, porque elimina el CMAP por definición.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "adorto-q2-c",
+          "text": "Antidrómica con el doble de intensidad, para que el CMAP se sature y desaparezca.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "adorto-q2-d",
+          "text": "Da igual: las dos tienen la misma amplitud y la misma contaminación.",
           "isCorrect": false
         }
       ],
-      "explanation": "La técnica se declara en el informe.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La ventaja ortodrómica es precisamente la ausencia de contaminación motora. Se paga con una amplitud menor.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q3",
+      "id": "adorto-q3",
+      "sortOrder": 2,
       "type": "single",
       "difficulty": "advanced",
-      "stem": "En «Técnica antidrómica vs. ortodrómica», ¿cuál afirmación es la correcta?\nAntidrómica: estimulación proximal, registro distal (contra la dirección fisiológica).",
+      "stem": "Se estimula en la muñeca y se registra con un anillo en el dedo. ¿Qué técnica es?",
       "options": [
         {
-          "id": "a",
-          "text": "Antidrómica: estimulación proximal, registro distal (contra la dirección fisiológica).",
+          "id": "adorto-q3-a",
+          "text": "Antidrómica: el impulso va de la muñeca hacia el dedo.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "adorto-q3-b",
+          "text": "Ortodrómica: el impulso va del dedo hacia la muñeca.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "adorto-q3-c",
+          "text": "Onda F.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "adorto-q3-d",
+          "text": "Reflejo H.",
           "isCorrect": false
         }
       ],
-      "explanation": "Antidrómica: estimulación proximal, registro distal (contra la dirección fisiológica).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Estímulo en la muñeca y anillo en el dedo es antidrómico. El volumen motor es su desventaja clásica.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ],
+      "imageUrl": null,
+      "imageAlt": "SNAP de anillo digital, cerca de 25 µV, inicio alrededor de 2.8 ms, barrido 1 ms/div y ganancia 20 µV/div."
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Técnica antidrómica vs. ortodrómica», ¿cuál afirmación es la correcta?\nVentaja: mayor amplitud (más fibras estimuladas).",
+      "id": "adorto-q4",
+      "sortOrder": 3,
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "No se comparan una amplitud antidrómica y una ortodrómica como si fueran la misma norma: la antidrómica es más alta.",
       "options": [
         {
-          "id": "a",
-          "text": "Ventaja: mayor amplitud (más fibras estimuladas).",
+          "id": "adorto-q4-a",
+          "text": "Verdadero. La lección asigna más amplitud a la antidrómica.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "adorto-q4-b",
+          "text": "Falso. Las dos técnicas dan la misma amplitud si la distancia es 14 cm.",
           "isCorrect": false
         }
       ],
-      "explanation": "Ventaja: mayor amplitud (más fibras estimuladas).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La diferencia de amplitud es el centro de la comparación entre técnicas. Cambiar de método obliga a cambiar de valor de referencia.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ]
     }
   ],
   "examQuestions": [
@@ -124,34 +162,45 @@
       "topic_id": "antidromic-orthodromic",
       "topic_name": "Técnica antidrómica vs. ortodrómica",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Técnica antidrómica vs. ortodrómica». Más amplitud no es más verdad. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Más amplitud no es más verdad.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
+      "stem": "Dos estudios del mediano a 14 cm. El de anillo en el dedo con estímulo en la muñeca mide 40 µV y trae un potencial motor debajo. El ortodrómico, estímulo en el dedo y registro en la muñeca, mide 15 µV y está limpio. Alguien llama al segundo “axonal” porque es más bajo.",
       "difficulty": 2,
       "is_critical": false,
-      "pearl": "Más amplitud no es más verdad.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "findings": [
+        {
+          "type": "AMPL",
+          "label": "Antidrómico",
+          "value": "40 µV, con contaminación de CMAP"
+        },
+        {
+          "type": "AMPL",
+          "label": "Ortodrómico",
+          "value": "15 µV, sin actividad motora"
+        }
+      ],
+      "options": [
+        {
+          "text": "No son comparables. La caída forma parte de la técnica ortodrómica, que a cambio no trae CMAP.",
+          "is_correct": true,
+          "feedback": "La lección da más amplitud a la antidrómica y menos, pero limpia, a la ortodrómica."
+        },
+        {
+          "text": "Informar pérdida axonal por la diferencia de 40 a 15 µV.",
+          "is_correct": false,
+          "feedback": "Esa diferencia es metodológica."
+        },
+        {
+          "text": "Descartar el de 40 µV: la antidrómica no existe en el mediano.",
+          "is_correct": false,
+          "feedback": "Es la técnica habitual de anillo digital."
+        },
+        {
+          "text": "Sumar 40 y 15 e informar 55 µV.",
+          "is_correct": false,
+          "feedback": "No se suman técnicas distintas."
+        }
+      ],
+      "pearl": "Antidrómica: más µV y posible CMAP. Ortodrómica: menos µV y sin motor. Cada una con su norma.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "antidromic-orthodromic"

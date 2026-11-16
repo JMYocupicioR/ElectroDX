@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Falsos Bloqueos de Conducción",
+  "revisionType": "quiz",
+  "quizTopicId": "false-block",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "REGLA DE 7-10 DÍAS: cualquier \"bloqueo\" encontrado <10 días post-lesión aguda debe confirmarse con seguimiento a las 2-3 semanas. Es la trampa temporal más frecuente y la más peligrosa diagnosticamente. ¿Esta afirmación es la que corresponde enseñar en «Falsos Bloqueos de Conducción»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "REGLA DE 7-10 DÍAS: cualquier \"bloqueo\" encontrado <10 días post-lesión aguda debe confirmarse con seguimiento a las 2-3 semanas. Es la trampa temporal más frecuente y la más peligrosa diagnosticamente.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Falsos Bloqueos de Conducción», ¿cuál afirmación es la correcta?\nMartin-Gruber: si el CMAP del mediano en muñeca tiene una deflexión positiva inicial → sospecha anastomosis. Confirma estimulando el ulnar y comparando área/amplitud en codo vs muñeca.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Martin-Gruber: si el CMAP del mediano en muñeca tiene una deflexión positiva inicial → sospecha anastomosis. Confirma estimulando el ulnar y comparando área/amplitud en codo vs muñeca.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Martin-Gruber: si el CMAP del mediano en muñeca tiene una deflexión positiva inicial → sospecha anastomosis. Confirma estimulando el ulnar y comparando área/amplitud en codo vs muñeca.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Falsos Bloqueos de Conducción», ¿cuál afirmación es la correcta?\nPseudobloqueo por degeneración walleriana incompleta: En los primeros 7-10 días post-axonotmesis, el segmento distal del axón aún conduce normalmente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pseudobloqueo por degeneración walleriana incompleta: En los primeros 7-10 días post-axonotmesis, el segmento distal del axón aún conduce normalmente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pseudobloqueo por degeneración walleriana incompleta: En los primeros 7-10 días post-axonotmesis, el segmento distal del axón aún conduce normalmente.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Falsos Bloqueos de Conducción», ¿cuál afirmación es la correcta?\nEl CMAP distal es normal pero el proximal (proximal al sitio de lesión) está ausente o bajo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El CMAP distal es normal pero el proximal (proximal al sitio de lesión) está ausente o bajo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El CMAP distal es normal pero el proximal (proximal al sitio de lesión) está ausente o bajo.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "false-block",
+      "topic_name": "Falsos Bloqueos de Conducción",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Falsos Bloqueos de Conducción». REGLA DE 7-10 DÍAS: cualquier \"bloqueo\" encontrado <10 días post-lesión aguda debe confirmarse con seguimiento a las 2-3 semanas. Es la trampa temporal más frecuente y la más peligrosa diagnosticamente. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "REGLA DE 7-10 DÍAS: cualquier \"bloqueo\" encontrado <10 días post-lesión aguda debe confirmarse con seguimiento a las 2-3 semanas. Es la trampa temporal más frecuente y la más peligrosa diagnosticamente.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "REGLA DE 7-10 DÍAS: cualquier \"bloqueo\" encontrado <10 días post-lesión aguda debe confirmarse con seguimiento a las 2-3 semanas. Es la trampa temporal más frecuente y la más peligrosa diagnosticamente.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "false-block"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

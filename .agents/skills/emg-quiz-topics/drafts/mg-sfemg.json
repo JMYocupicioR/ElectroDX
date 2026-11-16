@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: SFEMG — Electromiografía de Fibra Única",
+  "revisionType": "quiz",
+  "quizTopicId": "mg-sfemg",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "SFEMG es la prueba MÁS SENSIBLE para MG (>95%). Si el SFEMG es NORMAL en un músculo clínicamente débil, se puede descartar MG en ese músculo con alta confianza. ¿Esta afirmación es la que corresponde enseñar en «SFEMG — Electromiografía de Fibra Única»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SFEMG es la prueba MÁS SENSIBLE para MG (>95%). Si el SFEMG es NORMAL en un músculo clínicamente débil, se puede descartar MG en ese músculo con alta confianza.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «SFEMG — Electromiografía de Fibra Única», ¿cuál afirmación es la correcta?\nSFEMG NO es específica de MG. El jitter aumentado también ocurre en ELA, miopatía, neuropatía (por reinervación colateral). Siempre hacer NCS/EMG convencionales PRIMERO para excluir estas causas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SFEMG NO es específica de MG. El jitter aumentado también ocurre en ELA, miopatía, neuropatía (por reinervación colateral). Siempre hacer NCS/EMG convencionales PRIMERO para excluir estas causas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SFEMG NO es específica de MG. El jitter aumentado también ocurre en ELA, miopatía, neuropatía (por reinervación colateral). Siempre hacer NCS/EMG convencionales PRIMERO para excluir estas causas.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «SFEMG — Electromiografía de Fibra Única», ¿cuál afirmación es la correcta?\nPrincipio: Mide la variabilidad temporal (jitter) de la transmisión neuromuscular en pares de fibras musculares de la misma unidad motora.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Principio: Mide la variabilidad temporal (jitter) de la transmisión neuromuscular en pares de fibras musculares de la misma unidad motora.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Principio: Mide la variabilidad temporal (jitter) de la transmisión neuromuscular en pares de fibras musculares de la misma unidad motora.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «SFEMG — Electromiografía de Fibra Única», ¿cuál afirmación es la correcta?\nJitter: Variación en el intervalo interpotencial entre disparos consecutivos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Jitter: Variación en el intervalo interpotencial entre disparos consecutivos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Jitter: Variación en el intervalo interpotencial entre disparos consecutivos.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "mg-sfemg",
+      "topic_name": "SFEMG — Electromiografía de Fibra Única",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «SFEMG — Electromiografía de Fibra Única». SFEMG es la prueba MÁS SENSIBLE para MG (>95%). Si el SFEMG es NORMAL en un músculo clínicamente débil, se puede descartar MG en ese músculo con alta confianza. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "SFEMG es la prueba MÁS SENSIBLE para MG (>95%). Si el SFEMG es NORMAL en un músculo clínicamente débil, se puede descartar MG en ese músculo con alta confianza.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "SFEMG es la prueba MÁS SENSIBLE para MG (>95%). Si el SFEMG es NORMAL en un músculo clínicamente débil, se puede descartar MG en ese músculo con alta confianza.",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "pathologies",
+        "mg-sfemg"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

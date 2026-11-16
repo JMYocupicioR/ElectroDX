@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Clasificación de Severidad EDX (Escala de Bland)",
+  "revisionType": "quiz",
+  "quizTopicId": "cts-severity",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "STC grado 6 (inexcitable) NO significa que la cirugía sea inútil. Si la EMG en APB muestra PUMs voluntarios residuales, hay fibras sobrevivientes que pueden mejorar tras descompresión. La ausencia de PUMs voluntarios en APB es el verdadero indicador de daño irreversible. ¿Esta afirmación es la que corresponde enseñar en «Clasificación de Severidad EDX (Escala de Bland)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "STC grado 6 (inexcitable) NO significa que la cirugía sea inútil. Si la EMG en APB muestra PUMs voluntarios residuales, hay fibras sobrevivientes que pueden mejorar tras descompresión. La ausencia de PUMs voluntarios en APB es el verdadero indicador de daño irreversible.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Clasificación de Severidad EDX (Escala de Bland)», ¿cuál afirmación es la correcta?\n• Grado 4: buen pronóstico motor, recuperación sensitiva variable.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• Grado 4: buen pronóstico motor, recuperación sensitiva variable.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• Grado 4: buen pronóstico motor, recuperación sensitiva variable.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Clasificación de Severidad EDX (Escala de Bland)», ¿cuál afirmación es la correcta?\n• Grados 5-6: indicación quirúrgica URGENTE para prevenir daño mayor, pero la recuperación es lenta e incompleta.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• Grados 5-6: indicación quirúrgica URGENTE para prevenir daño mayor, pero la recuperación es lenta e incompleta.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• Grados 5-6: indicación quirúrgica URGENTE para prevenir daño mayor, pero la recuperación es lenta e incompleta.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Clasificación de Severidad EDX (Escala de Bland)», ¿cuál afirmación es la correcta?\nClasificación de Severidad EDX (Escala de Bland): el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Clasificación de Severidad EDX (Escala de Bland): el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Clasificación de Severidad EDX (Escala de Bland): el hallazgo se interpreta junto con el resto del protocolo, no aislado.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "cts-severity",
+      "topic_name": "Clasificación de Severidad EDX (Escala de Bland)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Clasificación de Severidad EDX (Escala de Bland)». STC grado 6 (inexcitable) NO significa que la cirugía sea inútil. Si la EMG en APB muestra PUMs voluntarios residuales, hay fibras sobrevivientes que pueden mejorar tras descompresión. La ausencia de PUMs voluntarios en APB es el verdadero indicador de daño irreversible. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "STC grado 6 (inexcitable) NO significa que la cirugía sea inútil. Si la EMG en APB muestra PUMs voluntarios residuales, hay fibras sobrevivientes que pueden mejorar tras descompresión. La ausencia de PUMs voluntarios en APB es el verdadero indicador de daño irreversible.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "STC grado 6 (inexcitable) NO significa que la cirugía sea inútil. Si la EMG en APB muestra PUMs voluntarios residuales, hay fibras sobrevivientes que pueden mejorar tras descompresión. La ausencia de PUMs voluntarios en APB es el verdadero indicador de daño irreversible.",
+      "source_reference": "AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "tags": [
+        "pathologies",
+        "cts-severity"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

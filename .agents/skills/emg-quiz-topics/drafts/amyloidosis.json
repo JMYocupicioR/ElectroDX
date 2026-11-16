@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Neuropatía Amiloidótica",
+  "revisionType": "quiz",
+  "quizTopicId": "amyloidosis",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "STC bilateral refractario a liberación quirúrgica en paciente >50 años = descartar amiloidosis AL/TTR con electroforesis sérica, cadenas ligeras libres y biopsia de grasa abdominal. ¿Esta afirmación es la que corresponde enseñar en «Neuropatía Amiloidótica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "STC bilateral refractario a liberación quirúrgica en paciente >50 años = descartar amiloidosis AL/TTR con electroforesis sérica, cadenas ligeras libres y biopsia de grasa abdominal.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Neuropatía Amiloidótica», ¿cuál afirmación es la correcta?\nLa amiloidosis TTR hereditaria ahora tiene tratamientos que MODIFICAN la enfermedad (silenciadores de ARN: patisirán, inotersén; estabilizadores: tafamidis). El diagnóstico temprano es crítico para iniciar tratamiento antes de daño irreversible.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La amiloidosis TTR hereditaria ahora tiene tratamientos que MODIFICAN la enfermedad (silenciadores de ARN: patisirán, inotersén; estabilizadores: tafamidis). El diagnóstico temprano es crítico para iniciar tratamiento antes de daño irreversible.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La amiloidosis TTR hereditaria ahora tiene tratamientos que MODIFICAN la enfermedad (silenciadores de ARN: patisirán, inotersén; estabilizadores: tafamidis). El diagnóstico temprano es crítico para iniciar tratamiento antes de daño irreversible.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Amiloidótica», ¿cuál afirmación es la correcta?\nEl depósito de amiloide en nervios periféricos causa una neuropatía progresiva con componente de fibra fina prominente y disautonomía severa.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El depósito de amiloide en nervios periféricos causa una neuropatía progresiva con componente de fibra fina prominente y disautonomía severa.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El depósito de amiloide en nervios periféricos causa una neuropatía progresiva con componente de fibra fina prominente y disautonomía severa.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Amiloidótica», ¿cuál afirmación es la correcta?\nTipos: • AL (cadenas ligeras): Asociada a mieloma/gammapatía monoclonal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tipos: • AL (cadenas ligeras): Asociada a mieloma/gammapatía monoclonal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tipos: • AL (cadenas ligeras): Asociada a mieloma/gammapatía monoclonal.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "amyloidosis",
+      "topic_name": "Neuropatía Amiloidótica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Neuropatía Amiloidótica». STC bilateral refractario a liberación quirúrgica en paciente >50 años = descartar amiloidosis AL/TTR con electroforesis sérica, cadenas ligeras libres y biopsia de grasa abdominal. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "STC bilateral refractario a liberación quirúrgica en paciente >50 años = descartar amiloidosis AL/TTR con electroforesis sérica, cadenas ligeras libres y biopsia de grasa abdominal.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "STC bilateral refractario a liberación quirúrgica en paciente >50 años = descartar amiloidosis AL/TTR con electroforesis sérica, cadenas ligeras libres y biopsia de grasa abdominal.",
+      "source_reference": "England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "tags": [
+        "pathologies",
+        "amyloidosis"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

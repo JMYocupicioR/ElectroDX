@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Técnicas \"In-Plane\" y \"Out-of-Plane\"",
+  "revisionType": "quiz",
+  "quizTopicId": "in-out-plane",
+  "moduleId": "special-studies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "In-Plane: Visualización completa del trayecto. Preferida para músculos profundos. ¿Esta afirmación es la que corresponde enseñar en «Técnicas \"In-Plane\" y \"Out-of-Plane\"»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "In-Plane: Visualización completa del trayecto. Preferida para músculos profundos.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Técnicas \"In-Plane\" y \"Out-of-Plane\"», ¿cuál afirmación es la correcta?\nOut-of-Plane: Solo se ve un punto brillante. Menor control de profundidad.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Out-of-Plane: Solo se ve un punto brillante. Menor control de profundidad.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Out-of-Plane: Solo se ve un punto brillante. Menor control de profundidad.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnicas \"In-Plane\" y \"Out-of-Plane\"», ¿cuál afirmación es la correcta?\nEl punto brillante no es la punta segura.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El punto brillante no es la punta segura.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El punto brillante no es la punta segura.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnicas \"In-Plane\" y \"Out-of-Plane\"», ¿cuál afirmación es la correcta?\nIn-plane ve el camino. Out-of-plane ve un instante.",
+      "options": [
+        {
+          "id": "a",
+          "text": "In-plane ve el camino. Out-of-plane ve un instante.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "In-plane ve el camino. Out-of-plane ve un instante.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "special-studies",
+      "topic_id": "in-out-plane",
+      "topic_name": "Técnicas \"In-Plane\" y \"Out-of-Plane\"",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Técnicas \"In-Plane\" y \"Out-of-Plane\"». In-Plane: Visualización completa del trayecto. Preferida para músculos profundos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "In-Plane: Visualización completa del trayecto. Preferida para músculos profundos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "In-plane ve el camino. Out-of-plane ve un instante.",
+      "source_reference": "Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "tags": [
+        "special-studies",
+        "in-out-plane"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

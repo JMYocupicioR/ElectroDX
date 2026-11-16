@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: La Regla Pre vs. Postganglionar: Aplicación Clínica",
+  "revisionType": "quiz",
+  "quizTopicId": "pre-post-ganglionic-rule",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "SNAP normal + déficit sensitivo clínico = lesión PREGANGLIONAR (raíz/médula). ¿Esta afirmación es la que corresponde enseñar en «La Regla Pre vs. Postganglionar: Aplicación Clínica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SNAP normal + déficit sensitivo clínico = lesión PREGANGLIONAR (raíz/médula).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «La Regla Pre vs. Postganglionar: Aplicación Clínica», ¿cuál afirmación es la correcta?\nSNAP reducido + déficit sensitivo = lesión POSTGANGLIONAR (plexo/nervio).",
+      "options": [
+        {
+          "id": "a",
+          "text": "SNAP reducido + déficit sensitivo = lesión POSTGANGLIONAR (plexo/nervio).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SNAP reducido + déficit sensitivo = lesión POSTGANGLIONAR (plexo/nervio).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «La Regla Pre vs. Postganglionar: Aplicación Clínica», ¿cuál afirmación es la correcta?\nParaespinales afectados = radiculopatía. Paraespinales normales = plexo/nervio.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Paraespinales afectados = radiculopatía. Paraespinales normales = plexo/nervio.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Paraespinales afectados = radiculopatía. Paraespinales normales = plexo/nervio.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «La Regla Pre vs. Postganglionar: Aplicación Clínica», ¿cuál afirmación es la correcta?\nAvulsión radicular: SNAP normal paradójico + denervación masiva = peor pronóstico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Avulsión radicular: SNAP normal paradójico + denervación masiva = peor pronóstico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Avulsión radicular: SNAP normal paradójico + denervación masiva = peor pronóstico.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "pre-post-ganglionic-rule",
+      "topic_name": "La Regla Pre vs. Postganglionar: Aplicación Clínica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «La Regla Pre vs. Postganglionar: Aplicación Clínica». SNAP normal + déficit sensitivo clínico = lesión PREGANGLIONAR (raíz/médula). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "SNAP normal + déficit sensitivo clínico = lesión PREGANGLIONAR (raíz/médula).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "PERLA MEDICOLEGAL: En trauma con avulsión radicular cervical, el SNAP normal con anestesia clínica completa es la prueba de que la raíz fue arrancada de la médula. Este hallazgo tiene implicaciones medicolegales y pronósticas graves: NO hay posibilidad de regeneración espontánea — solo la transferencia nerviosa (ej., Oberlin transfer) puede restaurar función.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "pre-post-ganglionic-rule"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

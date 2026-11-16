@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Nervio Plantar (medial y lateral)",
-  "revisionType": "quiz",
-  "quizTopicId": "plantar-nerves",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Nervio Plantar (medial y lateral)",
+  "quizTopicId": "plantar-nerves",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "plant-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Ramas terminales del tibial. Plantar medial (3.5 dedos) y lateral (1.5 dedos). ¿Esta afirmación es la que corresponde enseñar en «Nervio Plantar (medial y lateral)»?",
+      "stem": "¿Con qué nervios de la mano compara la lección el plantar medial y el lateral, y qué síndrome buscan?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "plant-q1-a",
+          "text": "El medial equivale al mediano (3.5 dedos) y el lateral al ulnar (1.5). Buscan el túnel tarsiano.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "plant-q1-b",
+          "text": "Los dos equivalen al radial, y buscan el Wartenberg del pie.",
+          "isCorrect": false
+        },
+        {
+          "id": "plant-q1-c",
+          "text": "Son ramas del peroneo superficial.",
+          "isCorrect": false
+        },
+        {
+          "id": "plant-q1-d",
+          "text": "Son el sural dividido en dos, y no requieren promedio.",
           "isCorrect": false
         }
       ],
-      "explanation": "Ramas terminales del tibial. Plantar medial (3.5 dedos) y lateral (1.5 dedos).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Salen del tibial, bajo el maléolo medial. Son los SNAP más difíciles: ganancia 5–10 µV/div y 50–100 promedios. El neuroma de Morton, entre el 3.er y 4.º metatarsiano, suele dejar estos potenciales proximales normales.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "plant-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Nervio Plantar (medial y lateral)», ¿cuál afirmación es la correcta?\nPotenciales MUY pequeños: promediación 50-100 trazos.",
+      "stem": "¿Qué picos y amplitudes da la tabla, y qué ausencia puede ser normal después de los 60 años?",
       "options": [
         {
-          "id": "a",
-          "text": "Potenciales MUY pequeños: promediación 50-100 trazos.",
+          "id": "plant-q2-a",
+          "text": "Medial: pico 3.0–3.6 ms y 2–8 µV. Lateral: pico 3.2–3.8 ms y 1–5 µV. El lateral puede faltar después de los 60; el medial es más fiable.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "plant-q2-b",
+          "text": "Ambos deben superar 20 µV o se informan ausentes a cualquier edad.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "plant-q2-c",
+          "text": "El medial puede faltar a los 40 años y el lateral no falta nunca.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "plant-q2-d",
+          "text": "Se miden en mV, con 10 promedios.",
           "isCorrect": false
         }
       ],
-      "explanation": "Potenciales MUY pequeños: promediación 50-100 trazos.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La lección marca la ausencia del plantar medial como anormal y admite la ausencia del lateral en mayores de 60 años. Bajar el filtro de paso bajo a 10–15 Hz puede ayudar a verlos, a costa de más artefacto de movimiento.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
     },
     {
-      "id": "q3",
+      "id": "plant-q3",
+      "sortOrder": 2,
       "type": "single",
       "difficulty": "advanced",
-      "stem": "En «Nervio Plantar (medial y lateral)», ¿cuál afirmación es la correcta?\nDiagnóstico de síndrome del túnel tarsal.",
+      "stem": "El plantar medial está ausente y el lateral conservado, con dolor bajo el maléolo medial. ¿Qué localización sugiere la comparación de la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Diagnóstico de síndrome del túnel tarsal.",
+          "id": "plant-q3-a",
+          "text": "Túnel tarsiano con rama medial más afectada. Si solo cayera el lateral, la compresión podría ser más distal.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "plant-q3-b",
+          "text": "Neuroma de Morton seguro, que apaga el plantar medial proximal.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "plant-q3-c",
+          "text": "Radiculopatía S1, que borra el plantar y conserva el sural... al revés de lo que hace.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "plant-q3-d",
+          "text": "Polineuropatía, que apaga el plantar y deja siempre el sural anormal primero, sin excepción.",
           "isCorrect": false
         }
       ],
-      "explanation": "Diagnóstico de síndrome del túnel tarsal.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Comparar medial contra lateral es la forma de la lección para ver qué rama comprime el retináculo. En una polineuropatía distal temprana los plantares pueden caer cuando el sural todavía existe, porque son el sitio más distal.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Plantar (medial y lateral)», ¿cuál afirmación es la correcta?\nComparar medial vs. lateral para localización.",
+      "id": "plant-q4",
+      "sortOrder": 3,
+      "type": "image_choice",
+      "difficulty": "intermediate",
+      "stem": "Plantar medial, 5 µV/div, tras 80 promedios. Se ve un potencial de unos 3 µV. ¿Basta para llamarlo ausente?",
       "options": [
         {
-          "id": "a",
-          "text": "Comparar medial vs. lateral para localización.",
+          "id": "plant-q4-a",
+          "text": "No está ausente: 3 µV cabe en 2–8 µV del plantar medial. Ausente sería no verlo después de 50–100 promedios.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "plant-q4-b",
+          "text": "Sí está ausente, porque todo lo que mida menos de 10 µV se descarta.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "plant-q4-c",
+          "text": "Es un CMAP tibial de 3 mV mal escalado.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "plant-q4-d",
+          "text": "Hay que parar en 10 promedios y, si se ve poco, llamarlo ausente.",
           "isCorrect": false
         }
       ],
-      "explanation": "Comparar medial vs. lateral para localización.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La tabla del medial es 2–8 µV. 80 promedios están dentro de 50–100. Llamarlo ausente con un potencial presente invierte el estudio.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ],
+      "imageUrl": "/quiz-traces/plantar-nerves-plant-q4.svg",
+      "imageAlt": "Potencial muy pequeño, cerca de 3 µV, inicio alrededor de 3.4 ms, ganancia 5 µV/div y barrido 1 ms/div."
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "plantar-nerves",
       "topic_name": "Nervio Plantar (medial y lateral)",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Nervio Plantar (medial y lateral)». Ramas terminales del tibial. Plantar medial (3.5 dedos) y lateral (1.5 dedos). ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
+      "stem": "Hombre de 63 años, quemazón plantar y dolor al percutir bajo el maléolo medial. Plantar medial ausente tras 80 promedios; plantar lateral 3 µV. Sural 14 µV. Entre el 3.er y 4.º metatarsiano no hay un punto de Tinel.",
+      "difficulty": 3,
+      "is_critical": false,
+      "findings": [
         {
-          "text": "Ramas terminales del tibial. Plantar medial (3.5 dedos) y lateral (1.5 dedos).",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
+          "type": "AMPL",
+          "label": "Plantar medial y lateral",
+          "value": "Medial ausente; lateral 3 µV"
         },
         {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
+          "type": "AMPL",
+          "label": "Sural",
+          "value": "14 µV"
         }
       ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "Los nervios plantares son los potenciales sensitivos MÁS DIFÍCILES de obtener. Requieren promediación de 50-100 trazos, impedancia baja, y excelente técnica.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "options": [
+        {
+          "text": "Túnel tarsiano, con la rama medial más afectada. El sural de 14 µV no lo contradice.",
+          "is_correct": true,
+          "feedback": "La comparación medial peor que lateral es la de la lección. 3 µV cabe en 1–5 µV del lateral. Morton, sin punto interdigital, suele dejar estos troncos proximales normales."
+        },
+        {
+          "text": "Neuroma de Morton, porque el plantar medial proximal está ausente.",
+          "is_correct": false,
+          "feedback": "La lección dice que en Morton los plantares proximales suelen estar normales."
+        },
+        {
+          "text": "Normal para los 63 años: el medial puede faltar y el lateral no.",
+          "is_correct": false,
+          "feedback": "Es al revés: el que puede faltar después de los 60 es el lateral. El medial es el marcador."
+        },
+        {
+          "text": "Polineuropatía severa, por el sural de 14 µV.",
+          "is_correct": false,
+          "feedback": "14 µV está en el rango normal de 10–25 µV. Los plantares pueden enfermar antes que el sural, pero un sural normal no es una polineuropatía severa."
+        }
+      ],
+      "pearl": "Plantar medial caído y lateral respetado: mira el túnel, rama medial. Después de los 60, el que puede faltar sin enfermedad es el lateral.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "plantar-nerves"

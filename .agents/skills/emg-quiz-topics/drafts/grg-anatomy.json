@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Anatomía Funcional del GRD",
+  "revisionType": "quiz",
+  "quizTopicId": "grg-anatomy",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Excepción a la regla: en ganglioneuropatía sensitiva (Sjögren, paraneoplásica), el propio GRD es atacado autoinmunemente. En este caso, tanto la rama periférica como la central degeneran → SNAPs AUSENTES con distribución NO longitud-dependiente (afecta manos y pies simultáneamente, a veces más en MS). Este patrón es casi patognomónico de ganglioneuropatía. ¿Esta afirmación es la que corresponde enseñar en «Anatomía Funcional del GRD»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Excepción a la regla: en ganglioneuropatía sensitiva (Sjögren, paraneoplásica), el propio GRD es atacado autoinmunemente. En este caso, tanto la rama periférica como la central degeneran → SNAPs AUSENTES con distribución NO longitud-dependiente (afecta manos y pies simultáneamente, a veces más en MS). Este patrón es casi patognomónico de ganglioneuropatía.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Anatomía Funcional del GRD», ¿cuál afirmación es la correcta?\nLa neurona sensitiva primaria es una célula pseudounipolar con un axón que se divide en T: • Rama periférica: Viaja distalmente hacia el receptor sensitivo en la piel/músculo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La neurona sensitiva primaria es una célula pseudounipolar con un axón que se divide en T: • Rama periférica: Viaja distalmente hacia el receptor sensitivo en la piel/músculo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La neurona sensitiva primaria es una célula pseudounipolar con un axón que se divide en T: • Rama periférica: Viaja distalmente hacia el receptor sensitivo en la piel/músculo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anatomía Funcional del GRD», ¿cuál afirmación es la correcta?\nEsta rama ES el nervio sensitivo que exploramos en las NCS.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Esta rama ES el nervio sensitivo que exploramos en las NCS.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Esta rama ES el nervio sensitivo que exploramos en las NCS.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Anatomía Funcional del GRD», ¿cuál afirmación es la correcta?\n• Rama central: Entra a la médula espinal a través de la raíz dorsal y hace sinapsis en el asta dorsal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• Rama central: Entra a la médula espinal a través de la raíz dorsal y hace sinapsis en el asta dorsal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• Rama central: Entra a la médula espinal a través de la raíz dorsal y hace sinapsis en el asta dorsal.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "grg-anatomy",
+      "topic_name": "Anatomía Funcional del GRD",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Anatomía Funcional del GRD». Excepción a la regla: en ganglioneuropatía sensitiva (Sjögren, paraneoplásica), el propio GRD es atacado autoinmunemente. En este caso, tanto la rama periférica como la central degeneran → SNAPs AUSENTES con distribución NO longitud-dependiente (afecta manos y pies simultáneamente, a veces más en MS). Este patrón es casi patognomónico de ganglioneuropatía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Excepción a la regla: en ganglioneuropatía sensitiva (Sjögren, paraneoplásica), el propio GRD es atacado autoinmunemente. En este caso, tanto la rama periférica como la central degeneran → SNAPs AUSENTES con distribución NO longitud-dependiente (afecta manos y pies simultáneamente, a veces más en MS). Este patrón es casi patognomónico de ganglioneuropatía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Excepción a la regla: en ganglioneuropatía sensitiva (Sjögren, paraneoplásica), el propio GRD es atacado autoinmunemente. En este caso, tanto la rama periférica como la central degeneran → SNAPs AUSENTES con distribución NO longitud-dependiente (afecta manos y pies simultáneamente, a veces más en MS). Este patrón es casi patognomónico de ganglioneuropatía.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "grg-anatomy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

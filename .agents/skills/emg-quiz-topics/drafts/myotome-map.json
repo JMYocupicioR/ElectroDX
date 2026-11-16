@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Mapa de Miotomas: Músculos Indicadores por Raíz",
+  "revisionType": "quiz",
+  "quizTopicId": "myotome-map",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PERLA L5 vs peroneo: el tibial posterior (nervio tibial, L5) es el músculo CLAVE. Si está débil → lesión de L5 (no peroneo). Si está normal con debilidad de tibial anterior + peroneos → lesión del peroneo común. ¿Esta afirmación es la que corresponde enseñar en «Mapa de Miotomas: Músculos Indicadores por Raíz»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PERLA L5 vs peroneo: el tibial posterior (nervio tibial, L5) es el músculo CLAVE. Si está débil → lesión de L5 (no peroneo). Si está normal con debilidad de tibial anterior + peroneos → lesión del peroneo común.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Mapa de Miotomas: Músculos Indicadores por Raíz», ¿cuál afirmación es la correcta?\nPara confirmar radiculopatía: necesitas denervación en ≥2 músculos de la misma raíz pero DIFERENTES nervios + paraespinales positivos. Un solo músculo anormal NO confirma radiculopatía — podría ser neuropatía focal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para confirmar radiculopatía: necesitas denervación en ≥2 músculos de la misma raíz pero DIFERENTES nervios + paraespinales positivos. Un solo músculo anormal NO confirma radiculopatía — podría ser neuropatía focal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para confirmar radiculopatía: necesitas denervación en ≥2 músculos de la misma raíz pero DIFERENTES nervios + paraespinales positivos. Un solo músculo anormal NO confirma radiculopatía — podría ser neuropatía focal.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mapa de Miotomas: Músculos Indicadores por Raíz», ¿cuál afirmación es la correcta?\nEl glúteo medio (L5, glúteo superior) y el tibial posterior (L5, tibial) son el par perfecto para confirmar L5: diferentes nervios (glúteo superior vs tibial), misma raíz (L5).",
+      "options": [
+        {
+          "id": "a",
+          "text": "El glúteo medio (L5, glúteo superior) y el tibial posterior (L5, tibial) son el par perfecto para confirmar L5: diferentes nervios (glúteo superior vs tibial), misma raíz (L5).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El glúteo medio (L5, glúteo superior) y el tibial posterior (L5, tibial) son el par perfecto para confirmar L5: diferentes nervios (glúteo superior vs tibial), misma raíz (L5).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Mapa de Miotomas: Músculos Indicadores por Raíz», ¿cuál afirmación es la correcta?\nUn miotoma es el grupo de músculos inervados por una raíz espinal, independientemente del nervio periférico que los lleve.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un miotoma es el grupo de músculos inervados por una raíz espinal, independientemente del nervio periférico que los lleve.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un miotoma es el grupo de músculos inervados por una raíz espinal, independientemente del nervio periférico que los lleve.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "myotome-map",
+      "topic_name": "Mapa de Miotomas: Músculos Indicadores por Raíz",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Mapa de Miotomas: Músculos Indicadores por Raíz». PERLA L5 vs peroneo: el tibial posterior (nervio tibial, L5) es el músculo CLAVE. Si está débil → lesión de L5 (no peroneo). Si está normal con debilidad de tibial anterior + peroneos → lesión del peroneo común. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PERLA L5 vs peroneo: el tibial posterior (nervio tibial, L5) es el músculo CLAVE. Si está débil → lesión de L5 (no peroneo). Si está normal con debilidad de tibial anterior + peroneos → lesión del peroneo común.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "PERLA L5 vs peroneo: el tibial posterior (nervio tibial, L5) es el músculo CLAVE. Si está débil → lesión de L5 (no peroneo). Si está normal con debilidad de tibial anterior + peroneos → lesión del peroneo común.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "myotome-map"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

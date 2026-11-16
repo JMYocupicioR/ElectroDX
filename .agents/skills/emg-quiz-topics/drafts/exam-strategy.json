@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Estrategia del estudio según la pregunta clínica",
+  "revisionType": "quiz",
+  "quizTopicId": "exam-strategy",
+  "moduleId": "syndrome-differential",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "La historia manda el protocolo. ¿Esta afirmación es la que corresponde enseñar en «Estrategia del estudio según la pregunta clínica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La historia manda el protocolo.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Estrategia del estudio según la pregunta clínica», ¿cuál afirmación es la correcta?\nAmpliar el estudio es una decisión, no una costumbre.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ampliar el estudio es una decisión, no una costumbre.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ampliar el estudio es una decisión, no una costumbre.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estrategia del estudio según la pregunta clínica», ¿cuál afirmación es la correcta?\nSi no puede escribir la pregunta clínica en una frase, no encienda el equipo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si no puede escribir la pregunta clínica en una frase, no encienda el equipo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si no puede escribir la pregunta clínica en una frase, no encienda el equipo.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Estrategia del estudio según la pregunta clínica», ¿cuál afirmación es la correcta?\nUn estudio corto y bien dirigido supera a un estudio largo y no interpretado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un estudio corto y bien dirigido supera a un estudio largo y no interpretado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un estudio corto y bien dirigido supera a un estudio largo y no interpretado.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "syndrome-differential",
+      "topic_id": "exam-strategy",
+      "topic_name": "Estrategia del estudio según la pregunta clínica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Estrategia del estudio según la pregunta clínica». La historia manda el protocolo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "La historia manda el protocolo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si no puede escribir la pregunta clínica en una frase, no encienda el equipo.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "syndrome-differential",
+        "exam-strategy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

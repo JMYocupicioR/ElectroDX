@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Miopatías Metabólicas",
+  "revisionType": "quiz",
+  "quizTopicId": "metabolic-myopathies",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Descargas miotónicas en paraespinales + debilidad proximal + insuficiencia respiratoria desproporcionada = POMPE tardío. Solicitar ensayo de maltasa ácida (GAA) en sangre seca (DBS). ES TRATABLE con terapia de reemplazo enzimático (alglucosidasa alfa). ¿Esta afirmación es la que corresponde enseñar en «Miopatías Metabólicas»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Descargas miotónicas en paraespinales + debilidad proximal + insuficiencia respiratoria desproporcionada = POMPE tardío. Solicitar ensayo de maltasa ácida (GAA) en sangre seca (DBS). ES TRATABLE con terapia de reemplazo enzimático (alglucosidasa alfa).\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Miopatías Metabólicas», ¿cuál afirmación es la correcta?\nContractura de McArdle = silencio eléctrico. Calambre ordinario = actividad EMG intensa. Esta distinción es diagnóstica.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Contractura de McArdle = silencio eléctrico. Calambre ordinario = actividad EMG intensa. Esta distinción es diagnóstica.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Contractura de McArdle = silencio eléctrico. Calambre ordinario = actividad EMG intensa. Esta distinción es diagnóstica.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Miopatías Metabólicas», ¿cuál afirmación es la correcta?\nEnfermedad de McArdle (glucogenosis tipo V — miofosforilasa): • Intolerancia al ejercicio + mialgias + contracturas + rabdomiólisis recurrente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Enfermedad de McArdle (glucogenosis tipo V — miofosforilasa): • Intolerancia al ejercicio + mialgias + contracturas + rabdomiólisis recurrente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Enfermedad de McArdle (glucogenosis tipo V — miofosforilasa): • Intolerancia al ejercicio + mialgias + contracturas + rabdomiólisis recurrente.\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Miopatías Metabólicas», ¿cuál afirmación es la correcta?\n• EMG en reposo: puede ser NORMAL o mostrar fibrilaciones (si hubo necrosis reciente por rabdomiólisis).",
+      "options": [
+        {
+          "id": "a",
+          "text": "• EMG en reposo: puede ser NORMAL o mostrar fibrilaciones (si hubo necrosis reciente por rabdomiólisis).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• EMG en reposo: puede ser NORMAL o mostrar fibrilaciones (si hubo necrosis reciente por rabdomiólisis).\n\n📚 Referencia: Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "metabolic-myopathies",
+      "topic_name": "Miopatías Metabólicas",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Miopatías Metabólicas». Descargas miotónicas en paraespinales + debilidad proximal + insuficiencia respiratoria desproporcionada = POMPE tardío. Solicitar ensayo de maltasa ácida (GAA) en sangre seca (DBS). ES TRATABLE con terapia de reemplazo enzimático (alglucosidasa alfa). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Descargas miotónicas en paraespinales + debilidad proximal + insuficiencia respiratoria desproporcionada = POMPE tardío. Solicitar ensayo de maltasa ácida (GAA) en sangre seca (DBS). ES TRATABLE con terapia de reemplazo enzimático (alglucosidasa alfa).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Descargas miotónicas en paraespinales + debilidad proximal + insuficiencia respiratoria desproporcionada = POMPE tardío. Solicitar ensayo de maltasa ácida (GAA) en sangre seca (DBS). ES TRATABLE con terapia de reemplazo enzimático (alglucosidasa alfa).",
+      "source_reference": "Dalakas MC. Polymyositis, dermatomyositis, and inclusion-body myositis. New England Journal of Medicine (1991). https://doi.org/10.1056/NEJM199111213252106",
+      "tags": [
+        "pathologies",
+        "metabolic-myopathies"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

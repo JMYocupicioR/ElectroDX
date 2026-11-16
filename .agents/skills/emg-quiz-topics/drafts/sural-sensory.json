@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Nervio Sural",
-  "revisionType": "quiz",
-  "quizTopicId": "sural-sensory",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Nervio Sural",
+  "quizTopicId": "sural-sensory",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "sural-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "El nervio sensitivo de referencia para polineuropatías. ¿Esta afirmación es la que corresponde enseñar en «Nervio Sural»?",
+      "stem": "SNAP sural antidrómico a 14 cm, detrás del maléolo lateral. ¿Qué amplitud, pico y temperatura exige la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "sural-q1-a",
+          "text": "Amplitud normal 10–25 µV, anormal por debajo de 5 µV; pico 3.4–4.1 ms; piel de al menos 30 °C.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "sural-q1-b",
+          "text": "Amplitud en mV, pico menor de 2 ms y piel de 36 °C.",
+          "isCorrect": false
+        },
+        {
+          "id": "sural-q1-c",
+          "text": "El mismo límite que el radial: 30–60 µV a 10 cm.",
+          "isCorrect": false
+        },
+        {
+          "id": "sural-q1-d",
+          "text": "No se promedia: el sural siempre es mayor de 50 µV.",
           "isCorrect": false
         }
       ],
-      "explanation": "El nervio sensitivo de referencia para polineuropatías.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "G1 entre maléolo lateral y Aquiles, estímulo en la línea media de la pantorrilla a 14 cm, 10–20 promedios. Pico anormal >4.4 ms, velocidad normal 42–55 m/s y anormal <40 m/s. Una diferencia lateral de amplitud mayor del 50 % es significativa.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "sural-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nRegistro: posterior al maléolo lateral. Distancia: 14 cm.",
+      "stem": "Dolor y hipoestesia en la planta, fuerza conservada, y el sural está en 18 µV de los dos lados. ¿Qué localización privilegia la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Registro: posterior al maléolo lateral. Distancia: 14 cm.",
+          "id": "sural-q2-a",
+          "text": "Radiculopatía S1: el SNAP sural se conserva en la lesión preganglionar.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "sural-q2-b",
+          "text": "Polineuropatía longitud-dependiente, que deja el sural normal y borra primero los nervios de la mano.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "sural-q2-c",
+          "text": "Neuropatía del peroneo en la cabeza del peroné.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "sural-q2-d",
+          "text": "Meralgia parestésica.",
           "isCorrect": false
         }
       ],
-      "explanation": "Registro: posterior al maléolo lateral. Distancia: 14 cm.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Sural normal con síntomas sensitivos en el pie es una de las claves de S1. En la polineuropatía longitud-dependiente el sural es de los primeros en caer, no el que se respeta.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q3",
-      "type": "single",
+      "id": "sural-q3",
+      "sortOrder": 2,
+      "type": "multiple",
       "difficulty": "advanced",
-      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nAmplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.",
+      "stem": "¿Qué dos lecturas del sural enseña la lección, además de la polineuropatía axonal simétrica?",
       "options": [
         {
-          "id": "a",
-          "text": "Amplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.",
+          "id": "sural-q3-a",
+          "text": "Sural respetado con SNAP de los brazos muy afectados: el patrón de sural sparing orienta a desmielinizante adquirida, GBS o CIDP.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "sural-q3-b",
+          "text": "Un cociente sural/radial menor de 0.40, y la lección también cita 0.21, apoya polineuropatía axonal temprana.",
+          "isCorrect": true
+        },
+        {
+          "id": "sural-q3-c",
+          "text": "Sural ausente de un solo lado después de una biopsia prueba una radiculopatía S1.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "sural-q3-d",
+          "text": "Sural normal descarta la neuropatía de fibra pequeña.",
           "isCorrect": false
         }
       ],
-      "explanation": "Amplitud normal: ≥5 µV. Latencia pico: 3.4-4.1 ms.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Sural sparing y el cociente sural/radial están en las perlas. La fibra pequeña puede cursar con sural normal, porque este potencial solo ve fibras gruesas. La ausencia bilateral por encima de los 75 años no es, por sí sola, patológica, y entre los 60 y después 5–8 µV pueden ser normales.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Sural», ¿cuál afirmación es la correcta?\nSural normal + síntomas sensitivos = radiculopatía S1.",
+      "id": "sural-q4",
+      "sortOrder": 3,
+      "type": "image_choice",
+      "difficulty": "intermediate",
+      "stem": "Sural a 14 cm, 1 ms/div y 10 µV/div, piel a 31 °C. El potencial reproducible mide unos 4 µV, inicio cerca de 3.6 ms. ¿Qué límite de amplitud cruza?",
       "options": [
         {
-          "id": "a",
-          "text": "Sural normal + síntomas sensitivos = radiculopatía S1.",
+          "id": "sural-q4-a",
+          "text": "4 µV está por debajo de 5 µV. Antes de cerrar una polineuropatía hay que mirar edad, el otro lado y la fibra gruesa que este estudio sí ve.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "sural-q4-b",
+          "text": "4 µV es normal: el límite es 1 µV.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "sural-q4-c",
+          "text": "Hay que informarlo en mV y llamarlo CMAP sural.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "sural-q4-d",
+          "text": "Un inicio de 3.6 ms ya es una velocidad de 20 m/s.",
           "isCorrect": false
         }
       ],
-      "explanation": "Sural normal + síntomas sensitivos = radiculopatía S1.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "140 mm / 3.6 ms ≈ 39 m/s, justo bajo el umbral de 40 m/s, y 4 µV cruza el límite de 5 µV. La edad y el lado contralateral siguen siendo obligatorios: después de los 60, 5–8 µV pueden ser normales.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ],
+      "imageUrl": "/quiz-traces/sural-sensory-sural-q4.svg",
+      "imageAlt": "SNAP sural de unos 4 µV, inicio cerca de 3.6 ms, barrido 1 ms/div y ganancia 10 µV/div."
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "sural-sensory",
       "topic_name": "Nervio Sural",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Nervio Sural». El nervio sensitivo de referencia para polineuropatías. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
+      "stem": "Hombre de 58 años, parestesias en ambos pies. Surales de 16 y 18 µV, pico 3.8 ms, piel a 31 °C. Medianos y ulnares sensitivos de 6 y 7 µV. Alguien descarta neuropatía porque “el sural está bien”.",
+      "difficulty": 3,
+      "is_critical": true,
+      "findings": [
         {
-          "text": "El nervio sensitivo de referencia para polineuropatías.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
+          "type": "AMPL",
+          "label": "Surales",
+          "value": "16 y 18 µV, pico 3.8 ms"
         },
         {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
+          "type": "AMPL",
+          "label": "SNAP medianos y ulnares",
+          "value": "6–7 µV"
         }
       ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "Un SNAP sural NORMAL en presencia de síntomas sensitivos en el pie = radiculopatía S1 (lesión preganglionar). Este es uno de los principios más importantes del electrodiagnóstico.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "options": [
+        {
+          "text": "No cerrar el caso como normal. Sural respetado con SNAP de brazos muy bajos es el patrón de sural sparing.",
+          "is_correct": true,
+          "feedback": "En una axonal longitud-dependiente el sural cae primero. Este patrón empuja hacia desmielinizante adquirida, GBS o CIDP, no hacia “no hay neuropatía”."
+        },
+        {
+          "text": "Polineuropatía diabética típica, porque el sural es el más alto.",
+          "is_correct": false,
+          "feedback": "En la diabética longitud-dependiente el sural es el primero en caer, no el que se conserva."
+        },
+        {
+          "text": "Radiculopatía S1 bilateral, por los surales normales.",
+          "is_correct": false,
+          "feedback": "S1 explica un sural normal con síntomas en el pie, no unos SNAP de las manos en 6 µV."
+        },
+        {
+          "text": "Estudio imposible: 16 µV supera el máximo normal de 10 µV.",
+          "is_correct": false,
+          "feedback": "10–25 µV es el rango normal de la lección, no un techo de 10."
+        }
+      ],
+      "pearl": "Sural normal y pie dormido: piensa en S1. Sural vivo y manos apagadas: piensa en sural sparing. Sural bajo y simétrico: piensa en axonal longitud-dependiente.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "sural-sensory"

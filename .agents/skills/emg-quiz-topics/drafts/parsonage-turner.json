@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)",
+  "revisionType": "quiz",
+  "quizTopicId": "parsonage-turner",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El NIA (nervio interóseo anterior) es frecuentemente afectado en Parsonage-Turner. Si un paciente joven presenta inicio súbito de incapacidad de flexión del pulgar y del índice (no puede hacer pinza \"OK\") precedido por dolor, considera Parsonage-Turner — no solo \"compresión del NIA\". ¿Esta afirmación es la que corresponde enseñar en «Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El NIA (nervio interóseo anterior) es frecuentemente afectado en Parsonage-Turner. Si un paciente joven presenta inicio súbito de incapacidad de flexión del pulgar y del índice (no puede hacer pinza \"OK\") precedido por dolor, considera Parsonage-Turner — no solo \"compresión del NIA\".\n\n📚 Referencia: Van Eijk JJ, Groothuis JT, Van Alfen N. Neuralgic amyotrophy: an update on diagnosis, pathophysiology, and treatment. Muscle & Nerve (2016). https://pubmed.ncbi.nlm.nih.gov/26662794/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)», ¿cuál afirmación es la correcta?\nParálisis diafragmática bilateral (nervio frénico bilateral): complicación rara pero potencialmente fatal. Si hay disnea en un paciente con Parsonage-Turner, solicitar fluoroscopía diafragmática o sniff test.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Parálisis diafragmática bilateral (nervio frénico bilateral): complicación rara pero potencialmente fatal. Si hay disnea en un paciente con Parsonage-Turner, solicitar fluoroscopía diafragmática o sniff test.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Parálisis diafragmática bilateral (nervio frénico bilateral): complicación rara pero potencialmente fatal. Si hay disnea en un paciente con Parsonage-Turner, solicitar fluoroscopía diafragmática o sniff test.\n\n📚 Referencia: Van Eijk JJ, Groothuis JT, Van Alfen N. Neuralgic amyotrophy: an update on diagnosis, pathophysiology, and treatment. Muscle & Nerve (2016). https://pubmed.ncbi.nlm.nih.gov/26662794/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)», ¿cuál afirmación es la correcta?\nLa distribución parcheada INTRANERVIOSA (algunos fascículos afectados, otros no) es característica y distingue Parsonage-Turner de compresión o tracción del plexo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La distribución parcheada INTRANERVIOSA (algunos fascículos afectados, otros no) es característica y distingue Parsonage-Turner de compresión o tracción del plexo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La distribución parcheada INTRANERVIOSA (algunos fascículos afectados, otros no) es característica y distingue Parsonage-Turner de compresión o tracción del plexo.\n\n📚 Referencia: Van Eijk JJ, Groothuis JT, Van Alfen N. Neuralgic amyotrophy: an update on diagnosis, pathophysiology, and treatment. Muscle & Nerve (2016). https://pubmed.ncbi.nlm.nih.gov/26662794/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)», ¿cuál afirmación es la correcta?\nPlexopatía braquial inflamatoria idiopática.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Plexopatía braquial inflamatoria idiopática.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Plexopatía braquial inflamatoria idiopática.\n\n📚 Referencia: Van Eijk JJ, Groothuis JT, Van Alfen N. Neuralgic amyotrophy: an update on diagnosis, pathophysiology, and treatment. Muscle & Nerve (2016). https://pubmed.ncbi.nlm.nih.gov/26662794/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "parsonage-turner",
+      "topic_name": "Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Síndrome de Parsonage-Turner (Neuralgia Amiotrófica)». El NIA (nervio interóseo anterior) es frecuentemente afectado en Parsonage-Turner. Si un paciente joven presenta inicio súbito de incapacidad de flexión del pulgar y del índice (no puede hacer pinza \"OK\") precedido por dolor, considera Parsonage-Turner — no solo \"compresión del NIA\". ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El NIA (nervio interóseo anterior) es frecuentemente afectado en Parsonage-Turner. Si un paciente joven presenta inicio súbito de incapacidad de flexión del pulgar y del índice (no puede hacer pinza \"OK\") precedido por dolor, considera Parsonage-Turner — no solo \"compresión del NIA\".",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El NIA (nervio interóseo anterior) es frecuentemente afectado en Parsonage-Turner. Si un paciente joven presenta inicio súbito de incapacidad de flexión del pulgar y del índice (no puede hacer pinza \"OK\") precedido por dolor, considera Parsonage-Turner — no solo \"compresión del NIA\".",
+      "source_reference": "Van Eijk JJ, Groothuis JT, Van Alfen N. Neuralgic amyotrophy: an update on diagnosis, pathophysiology, and treatment. Muscle & Nerve (2016). https://pubmed.ncbi.nlm.nih.gov/26662794/",
+      "tags": [
+        "pathologies",
+        "parsonage-turner"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

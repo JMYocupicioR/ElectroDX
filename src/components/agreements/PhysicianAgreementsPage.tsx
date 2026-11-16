@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowRight,
   CheckCircle2,
@@ -29,6 +29,7 @@ import {
 import { startBrowserDownload } from '../../services/studentAgreementService';
 import { LoadingSpinner } from '../LoadingSpinner';
 import { AgreementMarkdown } from './AgreementMarkdown';
+import { PhysicianAgreementEditor } from './PhysicianAgreementEditor';
 import { SignaturePad } from './SignaturePad';
 
 export default function PhysicianAgreementsPage() {
@@ -43,11 +44,22 @@ export default function PhysicianAgreementsPage() {
     refreshProfile,
   } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isCollaborator = isAdmin || isEditor || roles.includes('contributor');
-  const afterSignPath = isAdmin || isEditor ? '/admin' : '/colaborador';
+  const requestedDocument = PHYSICIAN_AGREEMENT_TYPES.find(
+    (type) => type === searchParams.get('documento'),
+  );
+  const volver = searchParams.get('volver');
+  const returnTo =
+    volver && volver.startsWith('/admin')
+      ? volver
+      : isAdmin || isEditor
+        ? '/admin'
+        : '/colaborador';
 
   const [edition, setEdition] = useState<PhysicianEditionTexts | null>(null);
   const [editionLoaded, setEditionLoaded] = useState(false);
+  const [editionTick, setEditionTick] = useState(0);
   const partyComplete = editionLoaded && edition != null;
 
   const [signedTypes, setSignedTypes] = useState<PhysicianAgreementType[]>([]);
@@ -90,7 +102,7 @@ export default function PhysicianAgreementsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [editionTick]);
 
   useEffect(() => {
     if (!editionLoaded) return;
@@ -107,7 +119,11 @@ export default function PhysicianAgreementsPage() {
           .map((row) => row.document_type);
         setSignedTypes(types);
         const next = PHYSICIAN_AGREEMENT_TYPES.find((type) => !types.includes(type));
-        if (next) setStep(next);
+        if (requestedDocument && (types.includes(requestedDocument) || requestedDocument === next)) {
+          setStep(requestedDocument);
+        } else if (next) {
+          setStep(next);
+        }
         const annex = rows.find((row) => row.document_type === 'anexo');
         if (annex) {
           if (annex.rfc) setRfc(annex.rfc);
@@ -123,7 +139,7 @@ export default function PhysicianAgreementsPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, edition, editionLoaded]);
+  }, [user, edition, editionLoaded, requestedDocument]);
 
   useEffect(() => {
     setHasScrolled(false);
@@ -153,7 +169,6 @@ export default function PhysicianAgreementsPage() {
     );
   }
 
-  if (isCeoEmail(user?.email)) return <Navigate to="/admin" replace />;
   if (!isCollaborator) {
     return (
       <div className="mx-auto max-w-lg px-4 pb-24 pt-24 text-center">
@@ -167,7 +182,9 @@ export default function PhysicianAgreementsPage() {
       </div>
     );
   }
-  if (hasSignedCurrentPhysicianAgreements && allDone) return <Navigate to={afterSignPath} replace />;
+  if (hasSignedCurrentPhysicianAgreements && allDone && !volver) {
+    return <Navigate to={returnTo} replace />;
+  }
 
   const handleDownload = async (type: PhysicianAgreementType) => {
     setDownloading(type);
@@ -213,7 +230,7 @@ export default function PhysicianAgreementsPage() {
         setStep(next);
       } else {
         await refreshProfile();
-        navigate(afterSignPath, { replace: true });
+        navigate(returnTo, { replace: true });
       }
     } finally {
       setSubmitting(false);
@@ -221,7 +238,10 @@ export default function PhysicianAgreementsPage() {
   };
 
   return (
-    <div id="contenido-principal" className="mx-auto max-w-3xl px-4 pb-24 pt-24">
+    <div
+      id="contenido-principal"
+      className={`mx-auto px-4 pb-24 pt-24 ${partyComplete ? 'max-w-3xl' : 'max-w-5xl'}`}
+    >
       <div className="mb-6 space-y-2 text-center">
         <p className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300">
           <ShieldCheck className="h-3.5 w-3.5" />
@@ -236,11 +256,27 @@ export default function PhysicianAgreementsPage() {
         </p>
       </div>
 
-      {!partyComplete && (
+      {!partyComplete && isCeoEmail(user?.email) && (
+        <div className="space-y-4 text-left">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            Todavía no hay una versión publicada. Completa los datos del prestador y las tasas del anexo, publica, y
+            enseguida se abre la firma del contrato.
+          </div>
+          <PhysicianAgreementEditor
+            onPublished={() => {
+              setEditionLoaded(false);
+              setLoadingStatus(true);
+              setEditionTick((tick) => tick + 1);
+            }}
+          />
+        </div>
+      )}
+
+      {!partyComplete && !isCeoEmail(user?.email) && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           La Dirección aún no publicó los acuerdos de médicos. El acceso al área docente no se bloquea hasta que el
           texto esté publicado.
-          <Link to={afterSignPath} className="mt-3 inline-flex font-semibold text-indigo-700 hover:underline">
+          <Link to={returnTo} className="mt-3 inline-flex font-semibold text-indigo-700 hover:underline">
             Continuar
           </Link>
         </div>
@@ -300,7 +336,7 @@ export default function PhysicianAgreementsPage() {
                 ))}
               </div>
               <Link
-                to={afterSignPath}
+                to={returnTo}
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white"
               >
                 Entrar

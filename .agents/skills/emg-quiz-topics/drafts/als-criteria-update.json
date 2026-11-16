@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: ELA: de Awaji a Gold Coast y el papel del EDX",
+  "revisionType": "quiz",
+  "quizTopicId": "als-criteria-update",
+  "moduleId": "pathology-updates",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Piense en regiones, no en músculos sueltos. ¿Esta afirmación es la que corresponde enseñar en «ELA: de Awaji a Gold Coast y el papel del EDX»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Piense en regiones, no en músculos sueltos.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «ELA: de Awaji a Gold Coast y el papel del EDX», ¿cuál afirmación es la correcta?\nExcluir imitadores es parte del informe.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Excluir imitadores es parte del informe.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Excluir imitadores es parte del informe.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «ELA: de Awaji a Gold Coast y el papel del EDX», ¿cuál afirmación es la correcta?\nUn EMG de una mano no diagnostica ni descarta ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un EMG de una mano no diagnostica ni descarta ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un EMG de una mano no diagnostica ni descarta ELA.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «ELA: de Awaji a Gold Coast y el papel del EDX», ¿cuál afirmación es la correcta?\nLos criterios de Gold Coast simplifican el diagnóstico de ELA: disfunción de motoneurona superior e inferior en una región, o inferior en dos regiones, con exclusión de imitadores.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los criterios de Gold Coast simplifican el diagnóstico de ELA: disfunción de motoneurona superior e inferior en una región, o inferior en dos regiones, con exclusión de imitadores.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los criterios de Gold Coast simplifican el diagnóstico de ELA: disfunción de motoneurona superior e inferior en una región, o inferior en dos regiones, con exclusión de imitadores.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathology-updates",
+      "topic_id": "als-criteria-update",
+      "topic_name": "ELA: de Awaji a Gold Coast y el papel del EDX",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «ELA: de Awaji a Gold Coast y el papel del EDX». Piense en regiones, no en músculos sueltos. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Piense en regiones, no en músculos sueltos.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Un EMG de una mano no diagnostica ni descarta ELA.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathology-updates",
+        "als-criteria-update"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

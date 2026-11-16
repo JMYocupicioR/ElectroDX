@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Debilidad progresiva: ELA versus MMN versus radiculopatía",
+  "revisionType": "quiz",
+  "quizTopicId": "als-versus-mmn",
+  "moduleId": "complex-clinical-cases",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Diseminación, sensitivos y bloqueos reales separan ELA, MMN y raíz. ¿Esta afirmación es la que corresponde enseñar en «Debilidad progresiva: ELA versus MMN versus radiculopatía»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Diseminación, sensitivos y bloqueos reales separan ELA, MMN y raíz.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Debilidad progresiva: ELA versus MMN versus radiculopatía», ¿cuál afirmación es la correcta?\nSNAPs bajos en un cuadro “de motoneurona” reabren plexo, polineuropatía y radiculoplexopatía.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SNAPs bajos en un cuadro “de motoneurona” reabren plexo, polineuropatía y radiculoplexopatía.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SNAPs bajos en un cuadro “de motoneurona” reabren plexo, polineuropatía y radiculoplexopatía.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Debilidad progresiva: ELA versus MMN versus radiculopatía», ¿cuál afirmación es la correcta?\nUn solo bloqueo en codo no es MMN.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un solo bloqueo en codo no es MMN.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un solo bloqueo en codo no es MMN.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Debilidad progresiva: ELA versus MMN versus radiculopatía», ¿cuál afirmación es la correcta?\nUn adulto con debilidad asimétrica de manos puede ser enfermedad de motoneurona, neuropatía motora multifocal o radiculopatía cervical múltiple.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Un adulto con debilidad asimétrica de manos puede ser enfermedad de motoneurona, neuropatía motora multifocal o radiculopatía cervical múltiple.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Un adulto con debilidad asimétrica de manos puede ser enfermedad de motoneurona, neuropatía motora multifocal o radiculopatía cervical múltiple.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "complex-clinical-cases",
+      "topic_id": "als-versus-mmn",
+      "topic_name": "Debilidad progresiva: ELA versus MMN versus radiculopatía",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Debilidad progresiva: ELA versus MMN versus radiculopatía». Diseminación, sensitivos y bloqueos reales separan ELA, MMN y raíz. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Diseminación, sensitivos y bloqueos reales separan ELA, MMN y raíz.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "SNAPs bajos en un cuadro “de motoneurona” reabren plexo, polineuropatía y radiculoplexopatía.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "complex-clinical-cases",
+        "als-versus-mmn"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

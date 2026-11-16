@@ -41,7 +41,8 @@ import {
 } from '../../services/quizValidationService';
 import { getAllQuizFlags } from '../../services/quizService';
 import { useAllModules } from '../../hooks/useAllModules';
-import { topTopicsMissingQuiz } from '../../utils/topicsMissingQuiz';
+import { listOmittedQuizTopics, topTopicsMissingQuiz } from '../../utils/topicsMissingQuiz';
+import { useOmittedQuizTopics } from '../../hooks/useOmittedQuizTopics';
 import { TopicsMissingQuizQueue } from './quiz/TopicsMissingQuizQueue';
 import { findDuplicateStems } from '../../utils/quizDuplicates';
 import { allModules } from '../../content/modules';
@@ -535,10 +536,20 @@ export default function AdminDashboard() {
     return showAllQuizzes ? sortedPendingQuizzes : sortedPendingQuizzes.slice(0, 6);
   }, [sortedPendingQuizzes, showAllQuizzes]);
 
+  const { ids: omittedQuizTopicIds, omit: omitQuizTopicId, restore: restoreQuizTopicId } = useOmittedQuizTopics();
+
   const topicsMissingQuiz = useMemo(() => {
-    if (!quizTopicIdsWithQuestions) return { topics: [], total: 0 };
-    return topTopicsMissingQuiz(syllabusModules, quizTopicIdsWithQuestions);
-  }, [quizTopicIdsWithQuestions, syllabusModules]);
+    if (!quizTopicIdsWithQuestions) return { topics: [], total: 0, omitted: [] };
+    return {
+      ...topTopicsMissingQuiz(
+        syllabusModules,
+        quizTopicIdsWithQuestions,
+        undefined,
+        omittedQuizTopicIds,
+      ),
+      omitted: listOmittedQuizTopics(syllabusModules, omittedQuizTopicIds, quizTopicIdsWithQuestions),
+    };
+  }, [quizTopicIdsWithQuestions, syllabusModules, omittedQuizTopicIds]);
 
   const missingQuizPreview = topicsMissingQuiz.topics
     .map((topic) => `Tema ${topic.curriculumIndex}: ${topic.title}`)
@@ -1296,6 +1307,9 @@ export default function AdminDashboard() {
           <TopicsMissingQuizQueue
             topics={topicsMissingQuiz.topics}
             total={topicsMissingQuiz.total}
+            omitted={topicsMissingQuiz.omitted}
+            onOmit={(topic) => omitQuizTopicId(topic.topicId)}
+            onRestore={(topic) => restoreQuizTopicId(topic.topicId)}
             onAddQuiz={(topic) =>
               setQuizEditorModal({
                 isOpen: true,

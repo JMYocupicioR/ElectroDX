@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Errores de Reconocimiento de Patrones",
+  "revisionType": "quiz",
+  "quizTopicId": "pattern-pitfalls",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PERLA TRANQUILIZADORA: las fasciculaciones benignas son la causa más frecuente de consulta \"aterrorizada\" al EMG. Si las NCS son normales, no hay debilidad objetiva, no hay atrofia, y la EMG no muestra fibrilaciones → tranquilizar al paciente enfáticamente. ¿Esta afirmación es la que corresponde enseñar en «Errores de Reconocimiento de Patrones»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PERLA TRANQUILIZADORA: las fasciculaciones benignas son la causa más frecuente de consulta \"aterrorizada\" al EMG. Si las NCS son normales, no hay debilidad objetiva, no hay atrofia, y la EMG no muestra fibrilaciones → tranquilizar al paciente enfáticamente.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Errores de Reconocimiento de Patrones», ¿cuál afirmación es la correcta?\nAnte la duda entre axonopatía severa vs desmielinización leve: busca BLOQUEOS DE CONDUCCIÓN. Los bloqueos son exclusivos de la desmielinización. La axonopatía pura NUNCA produce bloqueos verdaderos (excepto el pseudobloqueo walleriano de los primeros 10 días).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ante la duda entre axonopatía severa vs desmielinización leve: busca BLOQUEOS DE CONDUCCIÓN. Los bloqueos son exclusivos de la desmielinización. La axonopatía pura NUNCA produce bloqueos verdaderos (excepto el pseudobloqueo walleriano de los primeros 10 días).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ante la duda entre axonopatía severa vs desmielinización leve: busca BLOQUEOS DE CONDUCCIÓN. Los bloqueos son exclusivos de la desmielinización. La axonopatía pura NUNCA produce bloqueos verdaderos (excepto el pseudobloqueo walleriano de los primeros 10 días).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Errores de Reconocimiento de Patrones», ¿cuál afirmación es la correcta?\n\"No todo lo lento es desmielinización\": La pérdida selectiva de fibras nerviosas rápidas (gruesas) en axonopatía severa puede enlentecer la VCM hasta 70-80% del LIN.",
+      "options": [
+        {
+          "id": "a",
+          "text": "\"No todo lo lento es desmielinización\": La pérdida selectiva de fibras nerviosas rápidas (gruesas) en axonopatía severa puede enlentecer la VCM hasta 70-80% del LIN.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "\"No todo lo lento es desmielinización\": La pérdida selectiva de fibras nerviosas rápidas (gruesas) en axonopatía severa puede enlentecer la VCM hasta 70-80% del LIN.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Errores de Reconocimiento de Patrones», ¿cuál afirmación es la correcta?\nEsto NO es desmielinización primaria — es pérdida axonal selectiva.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Esto NO es desmielinización primaria — es pérdida axonal selectiva.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Esto NO es desmielinización primaria — es pérdida axonal selectiva.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "pattern-pitfalls",
+      "topic_name": "Errores de Reconocimiento de Patrones",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Errores de Reconocimiento de Patrones». PERLA TRANQUILIZADORA: las fasciculaciones benignas son la causa más frecuente de consulta \"aterrorizada\" al EMG. Si las NCS son normales, no hay debilidad objetiva, no hay atrofia, y la EMG no muestra fibrilaciones → tranquilizar al paciente enfáticamente. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PERLA TRANQUILIZADORA: las fasciculaciones benignas son la causa más frecuente de consulta \"aterrorizada\" al EMG. Si las NCS son normales, no hay debilidad objetiva, no hay atrofia, y la EMG no muestra fibrilaciones → tranquilizar al paciente enfáticamente.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "PERLA TRANQUILIZADORA: las fasciculaciones benignas son la causa más frecuente de consulta \"aterrorizada\" al EMG. Si las NCS son normales, no hay debilidad objetiva, no hay atrofia, y la EMG no muestra fibrilaciones → tranquilizar al paciente enfáticamente.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "pattern-pitfalls"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

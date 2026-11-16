@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: jitter-blocking (Module: special-studies)
+-- Generated at: 2026-11-16T04:54:07.828Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'jitter-blocking',
+  'special-studies',
+  'update',
+  $payload${"title":"Evaluación: Jitter y Bloqueo","revisionType":"quiz","quizTopicId":"jitter-blocking","moduleId":"special-studies","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Jitter = Variabilidad temporal de la transmisión NM (MCD). ¿Esta afirmación es la que corresponde enseñar en «Jitter y Bloqueo»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Jitter = Variabilidad temporal de la transmisión NM (MCD).\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Jitter y Bloqueo», ¿cuál afirmación es la correcta?\nMCD normal: ~20-23 µs según el músculo.","options":[{"id":"a","text":"MCD normal: ~20-23 µs según el músculo.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"MCD normal: ~20-23 µs según el músculo.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Jitter y Bloqueo», ¿cuál afirmación es la correcta?\nBloqueo = Fallo intermitente de la fibra. Correlato de debilidad.","options":[{"id":"a","text":"Bloqueo = Fallo intermitente de la fibra. Correlato de debilidad.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Bloqueo = Fallo intermitente de la fibra. Correlato de debilidad.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Jitter y Bloqueo», ¿cuál afirmación es la correcta?\nJitter sin bloqueo = Fatiga. Con bloqueo = Debilidad.","options":[{"id":"a","text":"Jitter sin bloqueo = Fatiga. Con bloqueo = Debilidad.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Jitter sin bloqueo = Fatiga. Con bloqueo = Debilidad.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]}],"examQuestions":[{"module_id":"special-studies","topic_id":"jitter-blocking","topic_name":"Jitter y Bloqueo","island_name":"EMG","stem":"Caso breve ligado a «Jitter y Bloqueo». Jitter = Variabilidad temporal de la transmisión NM (MCD). ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Jitter = Variabilidad temporal de la transmisión NM (MCD).","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"Un jitter anormal NO es específico de Miastenia Gravis. También ocurre en LEMS, botulismo, ELA, polimiositis y neuropatías. Siempre interpreta en contexto clínico.","source_reference":"Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","tags":["special-studies","jitter-blocking"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'jitter-blocking'
+    AND r.module_id = 'special-studies'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

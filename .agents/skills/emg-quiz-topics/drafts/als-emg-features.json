@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Hallazgos EMG Característicos en ELA",
+  "revisionType": "quiz",
+  "quizTopicId": "als-emg-features",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Tríada EMG: fibrilaciones/PSW + fasciculaciones complejas + PUM gigantes con reclutamiento reducido. ¿Esta afirmación es la que corresponde enseñar en «Hallazgos EMG Característicos en ELA»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tríada EMG: fibrilaciones/PSW + fasciculaciones complejas + PUM gigantes con reclutamiento reducido.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Hallazgos EMG Característicos en ELA», ¿cuál afirmación es la correcta?\nSplit Hand: APB+FDI atrofiados > ADM → patrón cortical = ELA.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Split Hand: APB+FDI atrofiados > ADM → patrón cortical = ELA.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Split Hand: APB+FDI atrofiados > ADM → patrón cortical = ELA.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Hallazgos EMG Característicos en ELA», ¿cuál afirmación es la correcta?\nFasciculaciones complejas = equivalente a fibrilaciones (Gold Coast/Awaji).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Fasciculaciones complejas = equivalente a fibrilaciones (Gold Coast/Awaji).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fasciculaciones complejas = equivalente a fibrilaciones (Gold Coast/Awaji).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Hallazgos EMG Característicos en ELA», ¿cuál afirmación es la correcta?\nNCS motoras y sensitivas DEBEN ser normales en ELA (sin desmielinización, SNAP normal).",
+      "options": [
+        {
+          "id": "a",
+          "text": "NCS motoras y sensitivas DEBEN ser normales en ELA (sin desmielinización, SNAP normal).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "NCS motoras y sensitivas DEBEN ser normales en ELA (sin desmielinización, SNAP normal).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "als-emg-features",
+      "topic_name": "Hallazgos EMG Característicos en ELA",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Hallazgos EMG Característicos en ELA». Tríada EMG: fibrilaciones/PSW + fasciculaciones complejas + PUM gigantes con reclutamiento reducido. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Tríada EMG: fibrilaciones/PSW + fasciculaciones complejas + PUM gigantes con reclutamiento reducido.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "SPLIT HAND: Si un paciente tiene atrofia de APB+FDI >> ADM, piensa ELA antes que neuropatía ulnar. En neuropatía ulnar, el FDI y ADM se afectan juntos (ambos son ulnares). En ELA, el APB (mediano) y FDI (ulnar) se afectan juntos por patrón cortical.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "diagnostic-criteria",
+        "als-emg-features"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

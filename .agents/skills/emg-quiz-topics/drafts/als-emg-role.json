@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Tríada EMG Diagnóstica y Split Hand",
+  "revisionType": "quiz",
+  "quizTopicId": "als-emg-role",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Split Hand: APB atrofiado + FDI atrofiado con ADM preservado = patrón sugestivo de ELA. En neuropatía ulnar pura, el ADM estaría afectado junto con FDI. ¿Esta afirmación es la que corresponde enseñar en «Tríada EMG Diagnóstica y Split Hand»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Split Hand: APB atrofiado + FDI atrofiado con ADM preservado = patrón sugestivo de ELA. En neuropatía ulnar pura, el ADM estaría afectado junto con FDI.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Tríada EMG Diagnóstica y Split Hand», ¿cuál afirmación es la correcta?\nLa LENGUA es un músculo clave para confirmar afectación bulbar. Las fibrilaciones en lengua son difíciles de evaluar por los artefactos de movimiento, pero las fasciculaciones son fácilmente visibles (además del ultrasonido lingual que las puede cuantificar).",
+      "options": [
+        {
+          "id": "a",
+          "text": "La LENGUA es un músculo clave para confirmar afectación bulbar. Las fibrilaciones en lengua son difíciles de evaluar por los artefactos de movimiento, pero las fasciculaciones son fácilmente visibles (además del ultrasonido lingual que las puede cuantificar).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La LENGUA es un músculo clave para confirmar afectación bulbar. Las fibrilaciones en lengua son difíciles de evaluar por los artefactos de movimiento, pero las fasciculaciones son fácilmente visibles (además del ultrasonido lingual que las puede cuantificar).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Tríada EMG Diagnóstica y Split Hand», ¿cuál afirmación es la correcta?\nDenervación activa: Fibrilaciones, PSW, fasciculaciones complejas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Denervación activa: Fibrilaciones, PSW, fasciculaciones complejas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Denervación activa: Fibrilaciones, PSW, fasciculaciones complejas.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Tríada EMG Diagnóstica y Split Hand», ¿cuál afirmación es la correcta?\nPUMs neurogénicos crónicos: Amplitud aumentada (>5-8 mV), duración prolongada (>15-20 ms), polifásicos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "PUMs neurogénicos crónicos: Amplitud aumentada (>5-8 mV), duración prolongada (>15-20 ms), polifásicos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PUMs neurogénicos crónicos: Amplitud aumentada (>5-8 mV), duración prolongada (>15-20 ms), polifásicos.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "als-emg-role",
+      "topic_name": "Tríada EMG Diagnóstica y Split Hand",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Tríada EMG Diagnóstica y Split Hand». Split Hand: APB atrofiado + FDI atrofiado con ADM preservado = patrón sugestivo de ELA. En neuropatía ulnar pura, el ADM estaría afectado junto con FDI. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Split Hand: APB atrofiado + FDI atrofiado con ADM preservado = patrón sugestivo de ELA. En neuropatía ulnar pura, el ADM estaría afectado junto con FDI.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Split Hand: APB atrofiado + FDI atrofiado con ADM preservado = patrón sugestivo de ELA. En neuropatía ulnar pura, el ADM estaría afectado junto con FDI.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathologies",
+        "als-emg-role"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

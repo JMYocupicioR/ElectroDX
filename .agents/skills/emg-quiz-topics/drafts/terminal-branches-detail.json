@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Ramas Terminales: Los 5 Nervios Principales",
+  "revisionType": "quiz",
+  "quizTopicId": "terminal-branches-detail",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Para distinguir lesión de nervio mediano alto (codo) vs bajo (STC): evaluar pronador teres y FCR. Si están débiles → lesión alta. Si solo hay debilidad de APB/oponente → STC (solo rama motora recurrente). ¿Esta afirmación es la que corresponde enseñar en «Ramas Terminales: Los 5 Nervios Principales»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para distinguir lesión de nervio mediano alto (codo) vs bajo (STC): evaluar pronador teres y FCR. Si están débiles → lesión alta. Si solo hay debilidad de APB/oponente → STC (solo rama motora recurrente).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Ramas Terminales: Los 5 Nervios Principales», ¿cuál afirmación es la correcta?\nSaturday Night Palsy (parálisis radial por compresión en canal espiral): el tríceps usualmente se PRESERVA (su rama sale ANTES del canal espiral). Si el tríceps está débil, la lesión es más proximal (axilar o fascículo posterior).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Saturday Night Palsy (parálisis radial por compresión en canal espiral): el tríceps usualmente se PRESERVA (su rama sale ANTES del canal espiral). Si el tríceps está débil, la lesión es más proximal (axilar o fascículo posterior).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Saturday Night Palsy (parálisis radial por compresión en canal espiral): el tríceps usualmente se PRESERVA (su rama sale ANTES del canal espiral). Si el tríceps está débil, la lesión es más proximal (axilar o fascículo posterior).\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ramas Terminales: Los 5 Nervios Principales», ¿cuál afirmación es la correcta?\nEl nervio ulnar tiene DOBLE sitio de atrapamiento: codo (90% de los casos) y muñeca (canal de Guyon, 10%). La rama sensitiva dorsal del ulnar sale ANTES del canal de Guyon — si el SNAP dorsal está normal pero hay debilidad de intrínsecos, la lesión está en Guyon, no en codo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El nervio ulnar tiene DOBLE sitio de atrapamiento: codo (90% de los casos) y muñeca (canal de Guyon, 10%). La rama sensitiva dorsal del ulnar sale ANTES del canal de Guyon — si el SNAP dorsal está normal pero hay debilidad de intrínsecos, la lesión está en Guyon, no en codo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El nervio ulnar tiene DOBLE sitio de atrapamiento: codo (90% de los casos) y muñeca (canal de Guyon, 10%). La rama sensitiva dorsal del ulnar sale ANTES del canal de Guyon — si el SNAP dorsal está normal pero hay debilidad de intrínsecos, la lesión está en Guyon, no en codo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ramas Terminales: Los 5 Nervios Principales», ¿cuál afirmación es la correcta?\nLas cinco ramas terminales del plexo braquial son los nervios que más frecuentemente se evalúan en NCS/EMG del miembro superior.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Las cinco ramas terminales del plexo braquial son los nervios que más frecuentemente se evalúan en NCS/EMG del miembro superior.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Las cinco ramas terminales del plexo braquial son los nervios que más frecuentemente se evalúan en NCS/EMG del miembro superior.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "terminal-branches-detail",
+      "topic_name": "Ramas Terminales: Los 5 Nervios Principales",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Ramas Terminales: Los 5 Nervios Principales». Para distinguir lesión de nervio mediano alto (codo) vs bajo (STC): evaluar pronador teres y FCR. Si están débiles → lesión alta. Si solo hay debilidad de APB/oponente → STC (solo rama motora recurrente). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Para distinguir lesión de nervio mediano alto (codo) vs bajo (STC): evaluar pronador teres y FCR. Si están débiles → lesión alta. Si solo hay debilidad de APB/oponente → STC (solo rama motora recurrente).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Para distinguir lesión de nervio mediano alto (codo) vs bajo (STC): evaluar pronador teres y FCR. Si están débiles → lesión alta. Si solo hay debilidad de APB/oponente → STC (solo rama motora recurrente).",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "terminal-branches-detail"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

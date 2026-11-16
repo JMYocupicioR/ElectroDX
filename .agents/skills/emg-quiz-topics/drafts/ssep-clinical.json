@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Aplicaciones Clínicas de los PESS",
+  "revisionType": "quiz",
+  "quizTopicId": "ssep-clinical",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "PESS = columnas posteriores (tacto fino, vibración, propiocepción). ¿Esta afirmación es la que corresponde enseñar en «Aplicaciones Clínicas de los PESS»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PESS = columnas posteriores (tacto fino, vibración, propiocepción).\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Aplicaciones Clínicas de los PESS», ¿cuál afirmación es la correcta?\nMonitorización intraoperatoria: Caída de 50% amplitud o aumento de 10% latencia = alerta.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Monitorización intraoperatoria: Caída de 50% amplitud o aumento de 10% latencia = alerta.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Monitorización intraoperatoria: Caída de 50% amplitud o aumento de 10% latencia = alerta.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones Clínicas de los PESS», ¿cuál afirmación es la correcta?\nComa post-paro: Ausencia bilateral de N20 = mal pronóstico (VPP ~100%).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Coma post-paro: Ausencia bilateral de N20 = mal pronóstico (VPP ~100%).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Coma post-paro: Ausencia bilateral de N20 = mal pronóstico (VPP ~100%).\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones Clínicas de los PESS», ¿cuál afirmación es la correcta?\nEM: Sensibilidad 50-70%. Evidencia de diseminación en espacio.",
+      "options": [
+        {
+          "id": "a",
+          "text": "EM: Sensibilidad 50-70%. Evidencia de diseminación en espacio.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "EM: Sensibilidad 50-70%. Evidencia de diseminación en espacio.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "ssep-clinical",
+      "topic_name": "Aplicaciones Clínicas de los PESS",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Aplicaciones Clínicas de los PESS». PESS = columnas posteriores (tacto fino, vibración, propiocepción). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "PESS = columnas posteriores (tacto fino, vibración, propiocepción).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La ausencia bilateral de N20 en coma post-hipóxico es el predictor INDIVIDUAL más confiable de mal pronóstico. Ningún otro test aislado tiene un valor predictivo positivo tan alto.",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "ssep-clinical"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

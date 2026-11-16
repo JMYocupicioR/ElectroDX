@@ -25,6 +25,7 @@ export const TOP_TOPICS_MISSING_QUIZ = 5;
 export function listTopicsMissingQuiz(
   modules: Module[],
   quizTopicIds: ReadonlySet<string>,
+  omittedTopicIds: ReadonlySet<string> = new Set(),
 ): TopicMissingQuiz[] {
   const ordered = [...modules].sort((a, b) => a.number - b.number);
   const missing: TopicMissingQuiz[] = [];
@@ -34,7 +35,7 @@ export function listTopicsMissingQuiz(
     for (const { topic } of getAllFlatTopics(mod.topics)) {
       if (!isQuizEligibleLeaf(topic)) continue;
       curriculumIndex += 1;
-      if (quizTopicIds.has(topic.id)) continue;
+      if (quizTopicIds.has(topic.id) || omittedTopicIds.has(topic.id)) continue;
       missing.push({
         topicId: topic.id,
         title: topic.title,
@@ -49,11 +50,42 @@ export function listTopicsMissingQuiz(
   return missing;
 }
 
+/** Eligible lessons marked as not needing a quiz, in syllabus order. */
+export function listOmittedQuizTopics(
+  modules: Module[],
+  omittedTopicIds: ReadonlySet<string>,
+  quizTopicIds: ReadonlySet<string> = new Set(),
+): TopicMissingQuiz[] {
+  if (omittedTopicIds.size === 0) return [];
+  const ordered = [...modules].sort((a, b) => a.number - b.number);
+  const omitted: TopicMissingQuiz[] = [];
+  let curriculumIndex = 0;
+
+  for (const mod of ordered) {
+    for (const { topic } of getAllFlatTopics(mod.topics)) {
+      if (!isQuizEligibleLeaf(topic)) continue;
+      curriculumIndex += 1;
+      if (!omittedTopicIds.has(topic.id) || quizTopicIds.has(topic.id)) continue;
+      omitted.push({
+        topicId: topic.id,
+        title: topic.title,
+        moduleId: mod.id,
+        moduleNumber: mod.number,
+        moduleTitle: mod.title,
+        curriculumIndex,
+      });
+    }
+  }
+
+  return omitted;
+}
+
 export function topTopicsMissingQuiz(
   modules: Module[],
   quizTopicIds: ReadonlySet<string>,
   limit = TOP_TOPICS_MISSING_QUIZ,
+  omittedTopicIds: ReadonlySet<string> = new Set(),
 ): { topics: TopicMissingQuiz[]; total: number } {
-  const all = listTopicsMissingQuiz(modules, quizTopicIds);
+  const all = listTopicsMissingQuiz(modules, quizTopicIds, omittedTopicIds);
   return { topics: all.slice(0, limit), total: all.length };
 }

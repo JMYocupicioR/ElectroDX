@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Triple Diferencial: NMM vs CIDP vs ELA",
+  "revisionType": "quiz",
+  "quizTopicId": "mmn-vs-cidp-vs-als",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Los corticoides EMPEORAN la NMM. Si un paciente con \"CIDP motora pura\" empeora con corticoides, reconsidera NMM y cambia a IVIg exclusivo. ¿Esta afirmación es la que corresponde enseñar en «Triple Diferencial: NMM vs CIDP vs ELA»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los corticoides EMPEORAN la NMM. Si un paciente con \"CIDP motora pura\" empeora con corticoides, reconsidera NMM y cambia a IVIg exclusivo.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Triple Diferencial: NMM vs CIDP vs ELA», ¿cuál afirmación es la correcta?\nEn la práctica: SNAP anormal → NO es NMM (probablemente CIDP/Lewis-Sumner). SNAP normal + bloqueo → NMM. SNAP normal + sin bloqueo → ELA o Kennedy.",
+      "options": [
+        {
+          "id": "a",
+          "text": "En la práctica: SNAP anormal → NO es NMM (probablemente CIDP/Lewis-Sumner). SNAP normal + bloqueo → NMM. SNAP normal + sin bloqueo → ELA o Kennedy.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "En la práctica: SNAP anormal → NO es NMM (probablemente CIDP/Lewis-Sumner). SNAP normal + bloqueo → NMM. SNAP normal + sin bloqueo → ELA o Kennedy.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Triple Diferencial: NMM vs CIDP vs ELA», ¿cuál afirmación es la correcta?\nTriple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Triple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Triple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Triple Diferencial: NMM vs CIDP vs ELA», ¿cuál afirmación es la correcta?\nTriple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Triple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Triple Diferencial: NMM vs CIDP vs ELA: el hallazgo se interpreta junto con el resto del protocolo, no aislado.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "mmn-vs-cidp-vs-als",
+      "topic_name": "Triple Diferencial: NMM vs CIDP vs ELA",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Triple Diferencial: NMM vs CIDP vs ELA». Los corticoides EMPEORAN la NMM. Si un paciente con \"CIDP motora pura\" empeora con corticoides, reconsidera NMM y cambia a IVIg exclusivo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Los corticoides EMPEORAN la NMM. Si un paciente con \"CIDP motora pura\" empeora con corticoides, reconsidera NMM y cambia a IVIg exclusivo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Los corticoides EMPEORAN la NMM. Si un paciente con \"CIDP motora pura\" empeora con corticoides, reconsidera NMM y cambia a IVIg exclusivo.",
+      "source_reference": "Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "tags": [
+        "diagnostic-criteria",
+        "mmn-vs-cidp-vs-als"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

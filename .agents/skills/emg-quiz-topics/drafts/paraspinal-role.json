@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: El Examen de Paraespinales: Técnica y Significado",
+  "revisionType": "quiz",
+  "quizTopicId": "paraspinal-role",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Post-cirugía espinal: NO interpretar fibrilaciones en paraespinales como radiculopatía activa. El propio procedimiento quirúrgico denerva los paraespinales. Base el diagnóstico en músculos de extremidades. ¿Esta afirmación es la que corresponde enseñar en «El Examen de Paraespinales: Técnica y Significado»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Post-cirugía espinal: NO interpretar fibrilaciones en paraespinales como radiculopatía activa. El propio procedimiento quirúrgico denerva los paraespinales. Base el diagnóstico en músculos de extremidades.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «El Examen de Paraespinales: Técnica y Significado», ¿cuál afirmación es la correcta?\nTécnica: los multífidos (profundos, mediales) son más específicos para radiculopatía que los erectores espinales (superficiales, polisegmentarios). Insertar la aguja con angulación medial para alcanzarlos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Técnica: los multífidos (profundos, mediales) son más específicos para radiculopatía que los erectores espinales (superficiales, polisegmentarios). Insertar la aguja con angulación medial para alcanzarlos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Técnica: los multífidos (profundos, mediales) son más específicos para radiculopatía que los erectores espinales (superficiales, polisegmentarios). Insertar la aguja con angulación medial para alcanzarlos.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «El Examen de Paraespinales: Técnica y Significado», ¿cuál afirmación es la correcta?\nLos músculos paraespinales son fundamentales para localización topográfica porque están inervados por las ramas dorsales ANTES de la formación del plexo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los músculos paraespinales son fundamentales para localización topográfica porque están inervados por las ramas dorsales ANTES de la formación del plexo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los músculos paraespinales son fundamentales para localización topográfica porque están inervados por las ramas dorsales ANTES de la formación del plexo.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «El Examen de Paraespinales: Técnica y Significado», ¿cuál afirmación es la correcta?\nTécnica: • Aguja insertada 2-3 cm lateral a las apófisis espinosas del nivel correspondiente, con angulación hacia medial.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Técnica: • Aguja insertada 2-3 cm lateral a las apófisis espinosas del nivel correspondiente, con angulación hacia medial.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Técnica: • Aguja insertada 2-3 cm lateral a las apófisis espinosas del nivel correspondiente, con angulación hacia medial.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "paraspinal-role",
+      "topic_name": "El Examen de Paraespinales: Técnica y Significado",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «El Examen de Paraespinales: Técnica y Significado». Post-cirugía espinal: NO interpretar fibrilaciones en paraespinales como radiculopatía activa. El propio procedimiento quirúrgico denerva los paraespinales. Base el diagnóstico en músculos de extremidades. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Post-cirugía espinal: NO interpretar fibrilaciones en paraespinales como radiculopatía activa. El propio procedimiento quirúrgico denerva los paraespinales. Base el diagnóstico en músculos de extremidades.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Post-cirugía espinal: NO interpretar fibrilaciones en paraespinales como radiculopatía activa. El propio procedimiento quirúrgico denerva los paraespinales. Base el diagnóstico en músculos de extremidades.",
+      "source_reference": "Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "tags": [
+        "pathologies",
+        "paraspinal-role"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

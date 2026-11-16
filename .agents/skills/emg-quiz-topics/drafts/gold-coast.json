@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Criterios Gold Coast 2019",
+  "revisionType": "quiz",
+  "quizTopicId": "gold-coast",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Gold Coast 2019: simplifica a UMN+LMN en ≥1 región O LMN en ≥2 regiones. ¿Esta afirmación es la que corresponde enseñar en «Criterios Gold Coast 2019»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Gold Coast 2019: simplifica a UMN+LMN en ≥1 región O LMN en ≥2 regiones.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Criterios Gold Coast 2019», ¿cuál afirmación es la correcta?\nFasciculaciones complejas = equivalentes a fibrilaciones.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Fasciculaciones complejas = equivalentes a fibrilaciones.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fasciculaciones complejas = equivalentes a fibrilaciones.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Criterios Gold Coast 2019», ¿cuál afirmación es la correcta?\nLas NCS sensitivas DEBEN ser normales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Las NCS sensitivas DEBEN ser normales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Las NCS sensitivas DEBEN ser normales.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Criterios Gold Coast 2019», ¿cuál afirmación es la correcta?\nCAMBIO CLAVE de Gold Coast: ya no se requiere demostrar UMN + LMN simultáneamente. LMN en 2+ regiones es suficiente si los diagnósticos alternativos están excluidos. Esto permite diagnóstico más temprano.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CAMBIO CLAVE de Gold Coast: ya no se requiere demostrar UMN + LMN simultáneamente. LMN en 2+ regiones es suficiente si los diagnósticos alternativos están excluidos. Esto permite diagnóstico más temprano.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CAMBIO CLAVE de Gold Coast: ya no se requiere demostrar UMN + LMN simultáneamente. LMN en 2+ regiones es suficiente si los diagnósticos alternativos están excluidos. Esto permite diagnóstico más temprano.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "gold-coast",
+      "topic_name": "Criterios Gold Coast 2019",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Criterios Gold Coast 2019». Gold Coast 2019: simplifica a UMN+LMN en ≥1 región O LMN en ≥2 regiones. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Gold Coast 2019: simplifica a UMN+LMN en ≥1 región O LMN en ≥2 regiones.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "CAMBIO CLAVE de Gold Coast: ya no se requiere demostrar UMN + LMN simultáneamente. LMN en 2+ regiones es suficiente si los diagnósticos alternativos están excluidos. Esto permite diagnóstico más temprano.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathologies",
+        "gold-coast"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Neuropatía Radial: Canal Espiral y PIN",
+  "revisionType": "quiz",
+  "quizTopicId": "radial-neuropathy",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Si el tríceps está DÉBIL con muñeca caída → la lesión es PROXIMAL al canal espiral (axilar, fascículo posterior, o C7). Saturday Night Palsy NO afecta tríceps. ¿Esta afirmación es la que corresponde enseñar en «Neuropatía Radial: Canal Espiral y PIN»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si el tríceps está DÉBIL con muñeca caída → la lesión es PROXIMAL al canal espiral (axilar, fascículo posterior, o C7). Saturday Night Palsy NO afecta tríceps.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Neuropatía Radial: Canal Espiral y PIN», ¿cuál afirmación es la correcta?\nPIN vs canal espiral: ¿puede hacer extensión de MUÑECA? Sí → PIN (ECRL preservado). No → canal espiral.",
+      "options": [
+        {
+          "id": "a",
+          "text": "PIN vs canal espiral: ¿puede hacer extensión de MUÑECA? Sí → PIN (ECRL preservado). No → canal espiral.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "PIN vs canal espiral: ¿puede hacer extensión de MUÑECA? Sí → PIN (ECRL preservado). No → canal espiral.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Radial: Canal Espiral y PIN», ¿cuál afirmación es la correcta?\nCanal Espiral (Saturday Night Palsy): • Muñeca caída (wrist drop) + extensión dedos débil.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Canal Espiral (Saturday Night Palsy): • Muñeca caída (wrist drop) + extensión dedos débil.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Canal Espiral (Saturday Night Palsy): • Muñeca caída (wrist drop) + extensión dedos débil.\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Radial: Canal Espiral y PIN», ¿cuál afirmación es la correcta?\n• Tríceps PRESERVADO (su rama sale ANTES del canal espiral).",
+      "options": [
+        {
+          "id": "a",
+          "text": "• Tríceps PRESERVADO (su rama sale ANTES del canal espiral).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• Tríceps PRESERVADO (su rama sale ANTES del canal espiral).\n\n📚 Referencia: AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "radial-neuropathy",
+      "topic_name": "Neuropatía Radial: Canal Espiral y PIN",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Neuropatía Radial: Canal Espiral y PIN». Si el tríceps está DÉBIL con muñeca caída → la lesión es PROXIMAL al canal espiral (axilar, fascículo posterior, o C7). Saturday Night Palsy NO afecta tríceps. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Si el tríceps está DÉBIL con muñeca caída → la lesión es PROXIMAL al canal espiral (axilar, fascículo posterior, o C7). Saturday Night Palsy NO afecta tríceps.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si el tríceps está DÉBIL con muñeca caída → la lesión es PROXIMAL al canal espiral (axilar, fascículo posterior, o C7). Saturday Night Palsy NO afecta tríceps.",
+      "source_reference": "AANEM, AAN, AAPM&R. Practice parameter for electrodiagnostic studies in carpal tunnel syndrome: summary statement. Muscle & Nerve (2002). https://doi.org/10.1002/mus.10185",
+      "tags": [
+        "pathologies",
+        "radial-neuropathy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

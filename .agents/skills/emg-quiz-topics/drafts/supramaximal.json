@@ -1,159 +1,205 @@
 {
-  "title": "Evaluación: Estimulación supramáxima",
+  "moduleId": "safety-qc",
   "revisionType": "quiz",
+  "title": "Evaluación: Estímulo Supramáximo Riguroso",
   "quizTopicId": "supramaximal",
-  "moduleId": "nerve-conduction",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "supra-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Supramáxima = 20-25% por encima de la intensidad máxima. ¿Esta afirmación es la que corresponde enseñar en «Estimulación supramáxima»?",
+      "stem": "La amplitud del CMAP dejó de crecer a 30 mA. ¿Cuánto más pide la lección subir la intensidad antes de dar el estímulo por supramáximo?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "supra-q1-a",
+          "text": "Un 20–30 % por encima de la intensidad en la que la amplitud se estancó.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "supra-q1-b",
+          "text": "Exactamente 1 mA más, para no molestar.",
+          "isCorrect": false
+        },
+        {
+          "id": "supra-q1-c",
+          "text": "El doble, 60 mA, aunque cambie la forma del potencial.",
+          "isCorrect": false
+        },
+        {
+          "id": "supra-q1-d",
+          "text": "Nada: el primer potencial visible ya es supramáximo.",
           "isCorrect": false
         }
       ],
-      "explanation": "Supramáxima = 20-25% por encima de la intensidad máxima.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Supramáximo, en esta lección, es seguir hasta un 20–30 % por encima de la meseta de amplitud, para despolarizar todos los axones. El primer potencial visible casi nunca lo es.\n\n📚 Referencia: McClellan C, McLaughlin M. Quality in Electrodiagnostic Studies: A Guide for Referring Physicians. Missouri Medicine (2019).",
+      "citations": [
+        {
+          "authors": "McClellan C, McLaughlin M",
+          "title": "Quality in Electrodiagnostic Studies: A Guide for Referring Physicians",
+          "journal": "Missouri Medicine",
+          "year": 2019
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "supra-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Estimulación supramáxima», ¿cuál afirmación es la correcta?\nIncrementar gradualmente hasta que la amplitud deje de aumentar.",
+      "stem": "A 20 mA el CMAP mide 3 mV y a 28 mA mide 6 mV, todavía en ascenso. El técnico marca latencia y amplitud en el trazo de 20 mA. ¿Qué error introduce?",
       "options": [
         {
-          "id": "a",
-          "text": "Incrementar gradualmente hasta que la amplitud deje de aumentar.",
+          "id": "supra-q2-a",
+          "text": "Infraestimulación: la amplitud baja imita pérdida axonal o un bloqueo que no existe.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "supra-q2-b",
+          "text": "Ninguno: 20 mA es supramáximo por definición en el mediano.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "supra-q2-c",
+          "text": "Coestimulación, porque la amplitud subió al subir la corriente dentro del mismo nervio.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "supra-q2-d",
+          "text": "Error de distancia, porque la intensidad cambia los milímetros.",
           "isCorrect": false
         }
       ],
-      "explanation": "Incrementar gradualmente hasta que la amplitud deje de aumentar.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Si la amplitud sigue creciendo, faltan axones por reclutar. Medir antes de la meseta subestima el CMAP. La coestimulación se sospecha cuando, después de la meseta, la forma cambia por un nervio vecino.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q3",
+      "id": "supra-q3",
+      "sortOrder": 2,
       "type": "single",
       "difficulty": "advanced",
-      "stem": "En «Estimulación supramáxima», ¿cuál afirmación es la correcta?\nEstimulación submáxima = falsa disminución de amplitud = error diagnóstico.",
+      "stem": "La meseta del SNAP aparece a 12 mA. ¿Qué intensidad cumple el criterio del 20–30 % de la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Estimulación submáxima = falsa disminución de amplitud = error diagnóstico.",
+          "id": "supra-q3-a",
+          "text": "Entre 14.4 y 15.6 mA, si la forma no revela un segundo nervio.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "supra-q3-b",
+          "text": "12 mA exactos, en el primer trazo de la meseta, sin margen.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "supra-q3-c",
+          "text": "36 mA, el triple, para garantizar el promedio.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "supra-q3-d",
+          "text": "6 mA, la mitad, porque el sensitivo duele más.",
           "isCorrect": false
         }
       ],
-      "explanation": "Estimulación submáxima = falsa disminución de amplitud = error diagnóstico.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "El 20 % de 12 mA es 2.4 y el 30 % es 3.6. El margen queda en 14.4–15.6 mA. Triplicar la corriente es la zona donde aparece la coestimulación.\n\n📚 Referencia: McClellan C, McLaughlin M. Quality in Electrodiagnostic Studies: A Guide for Referring Physicians. Missouri Medicine (2019).",
+      "citations": [
+        {
+          "authors": "McClellan C, McLaughlin M",
+          "title": "Quality in Electrodiagnostic Studies: A Guide for Referring Physicians",
+          "journal": "Missouri Medicine",
+          "year": 2019
+        }
+      ]
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Estimulación supramáxima», ¿cuál afirmación es la correcta?\nUsar la misma intensidad supramáxima en TODOS los puntos de estimulación.",
+      "id": "supra-q4",
+      "sortOrder": 3,
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Tanto el CMAP como el SNAP exigen estímulo supramáximo: hay que seguir subiendo hasta un 20–30 % por encima de la meseta de amplitud.",
       "options": [
         {
-          "id": "a",
-          "text": "Usar la misma intensidad supramáxima en TODOS los puntos de estimulación.",
+          "id": "supra-q4-a",
+          "text": "Verdadero. La lección lo exige para los dos potenciales, no solo para el motor.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "supra-q4-b",
+          "text": "Falso. El SNAP se acepta con el primer promedio visible, sin buscar meseta.",
           "isCorrect": false
         }
       ],
-      "explanation": "Usar la misma intensidad supramáxima en TODOS los puntos de estimulación.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "El texto dice que todo estudio de CMAP o SNAP requiere ese margen del 20–30 % sobre la meseta.\n\n📚 Referencia: Dillingham T, Chen S, Andary M, et al.. Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force). Muscle & Nerve (2016). https://doi.org/10.1002/mus.25204",
+      "citations": [
+        {
+          "authors": "Dillingham T, Chen S, Andary M, et al.",
+          "title": "Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force)",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25204"
+        }
+      ]
     }
   ],
   "examQuestions": [
     {
-      "module_id": "nerve-conduction",
+      "module_id": "safety-qc",
       "topic_id": "supramaximal",
-      "topic_name": "Estimulación supramáxima",
+      "topic_name": "Estímulo Supramáximo Riguroso",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Estimulación supramáxima». Supramáxima = 20-25% por encima de la intensidad máxima. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
+      "stem": "Mediano motor en muñeca. A 25 mA el CMAP es 4.1 mV; a 35 mA es 7.8 mV; a 42 mA y a 48 mA sigue en 7.8 mV y la forma no cambia. El informe usó el trazo de 25 mA.",
+      "difficulty": 2,
+      "is_critical": true,
+      "findings": [
         {
-          "text": "Supramáxima = 20-25% por encima de la intensidad máxima.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
+          "type": "AMPL",
+          "label": "CMAP a 25 mA",
+          "value": "4.1 mV"
         },
         {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
+          "type": "AMPL",
+          "label": "CMAP desde 42 mA",
+          "value": "7.8 mV, estable también a 48 mA"
         }
       ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "NUNCA compares amplitudes entre sitios de estimulación si no usas estimulación supramáxima en TODOS los puntos. La estimulación submáxima proximal puede simular un falso bloqueo de conducción.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "options": [
+        {
+          "text": "Repetir la medida en la meseta, con un margen del 20–30 % (alrededor de 50–55 mA si la meseta quedó en 42 mA).",
+          "is_correct": true,
+          "feedback": "42 mA es el inicio de la meseta. Un 20–30 % más son unos 50–55 mA. El trazo de 25 mA está submáximo."
+        },
+        {
+          "text": "Dejar 4.1 mV: es el potencial “más limpio”.",
+          "is_correct": false,
+          "feedback": "Esa amplitud no reclutó todos los axones y simula pérdida axonal."
+        },
+        {
+          "text": "Informar bloqueo en la muñeca por la diferencia entre 4.1 y 7.8 mV.",
+          "is_correct": false,
+          "feedback": "No son dos sitios del nervio; son dos intensidades del mismo sitio."
+        },
+        {
+          "text": "Subir a 100 mA para cumplir el porcentaje.",
+          "is_correct": false,
+          "feedback": "El margen se calcula sobre la meseta, no se duplica la corriente hasta coestimular."
+        }
+      ],
+      "pearl": "Supramáximo = meseta más 20–30 %, con la misma forma. Medir antes de eso fabrica una amplitud baja.",
+      "source_reference": "McClellan C, McLaughlin M. Quality in Electrodiagnostic Studies: A Guide for Referring Physicians. Missouri Medicine (2019).",
       "tags": [
-        "nerve-conduction",
+        "safety-qc",
         "supramaximal"
       ],
       "status": "DRAFT"

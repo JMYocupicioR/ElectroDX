@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Neuropatía Urémica",
+  "revisionType": "quiz",
+  "quizTopicId": "uremic-neuropathy",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Trasplante > diálisis para el nervio. ¿Esta afirmación es la que corresponde enseñar en «Neuropatía Urémica»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Trasplante > diálisis para el nervio.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Neuropatía Urémica», ¿cuál afirmación es la correcta?\nEn paciente en hemodiálisis: polineuropatía de fondo (urémica) + STC (amiloidosis β2M) + neuropatía isquémica por robo de fístula AV = tres patologías simultáneas. Evaluar cada una independientemente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "En paciente en hemodiálisis: polineuropatía de fondo (urémica) + STC (amiloidosis β2M) + neuropatía isquémica por robo de fístula AV = tres patologías simultáneas. Evaluar cada una independientemente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "En paciente en hemodiálisis: polineuropatía de fondo (urémica) + STC (amiloidosis β2M) + neuropatía isquémica por robo de fístula AV = tres patologías simultáneas. Evaluar cada una independientemente.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Urémica», ¿cuál afirmación es la correcta?\nSNAP primero, CMAP después, bloqueo casi nunca.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SNAP primero, CMAP después, bloqueo casi nunca.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SNAP primero, CMAP después, bloqueo casi nunca.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Neuropatía Urémica», ¿cuál afirmación es la correcta?\nEl trasplante es la terapéutica neurofisiológica, no un mA más.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El trasplante es la terapéutica neurofisiológica, no un mA más.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El trasplante es la terapéutica neurofisiológica, no un mA más.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "uremic-neuropathy",
+      "topic_name": "Neuropatía Urémica",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Neuropatía Urémica». Trasplante > diálisis para el nervio. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Trasplante > diálisis para el nervio.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "En paciente en hemodiálisis: polineuropatía de fondo (urémica) + STC (amiloidosis β2M) + neuropatía isquémica por robo de fístula AV = tres patologías simultáneas. Evaluar cada una independientemente.",
+      "source_reference": "England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "tags": [
+        "pathologies",
+        "uremic-neuropathy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

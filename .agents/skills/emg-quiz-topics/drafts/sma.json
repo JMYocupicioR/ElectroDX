@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Atrofia Muscular Espinal (AME)",
+  "revisionType": "quiz",
+  "quizTopicId": "sma",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Con la era de las terapias génicas (Zolgensma) y antisentido (Spinraza), el diagnóstico temprano de AME por screening neonatal ha cambiado el pronóstico radicalmente. Los bebés tratados antes de los síntomas pueden alcanzar hitos motores normales. ¿Esta afirmación es la que corresponde enseñar en «Atrofia Muscular Espinal (AME)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Con la era de las terapias génicas (Zolgensma) y antisentido (Spinraza), el diagnóstico temprano de AME por screening neonatal ha cambiado el pronóstico radicalmente. Los bebés tratados antes de los síntomas pueden alcanzar hitos motores normales.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Atrofia Muscular Espinal (AME)», ¿cuál afirmación es la correcta?\nAME tipo IV (adulto): puede simular una miopatía proximal leve. La EMG con PUMs gigantes neurogénicos la diferencia de miopatías.",
+      "options": [
+        {
+          "id": "a",
+          "text": "AME tipo IV (adulto): puede simular una miopatía proximal leve. La EMG con PUMs gigantes neurogénicos la diferencia de miopatías.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "AME tipo IV (adulto): puede simular una miopatía proximal leve. La EMG con PUMs gigantes neurogénicos la diferencia de miopatías.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Atrofia Muscular Espinal (AME)», ¿cuál afirmación es la correcta?\nDegeneración selectiva de motoneuronas del asta anterior por deleción homocigota del gen SMN1 (autosómica recesiva).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Degeneración selectiva de motoneuronas del asta anterior por deleción homocigota del gen SMN1 (autosómica recesiva).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Degeneración selectiva de motoneuronas del asta anterior por deleción homocigota del gen SMN1 (autosómica recesiva).\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Atrofia Muscular Espinal (AME)», ¿cuál afirmación es la correcta?\nAhora TRATABLE con nusinersén (Spinraza), onasemnogene (Zolgensma) y risdiplam.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Ahora TRATABLE con nusinersén (Spinraza), onasemnogene (Zolgensma) y risdiplam.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ahora TRATABLE con nusinersén (Spinraza), onasemnogene (Zolgensma) y risdiplam.\n\n📚 Referencia: Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "sma",
+      "topic_name": "Atrofia Muscular Espinal (AME)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Atrofia Muscular Espinal (AME)». Con la era de las terapias génicas (Zolgensma) y antisentido (Spinraza), el diagnóstico temprano de AME por screening neonatal ha cambiado el pronóstico radicalmente. Los bebés tratados antes de los síntomas pueden alcanzar hitos motores normales. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Con la era de las terapias génicas (Zolgensma) y antisentido (Spinraza), el diagnóstico temprano de AME por screening neonatal ha cambiado el pronóstico radicalmente. Los bebés tratados antes de los síntomas pueden alcanzar hitos motores normales.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Con la era de las terapias génicas (Zolgensma) y antisentido (Spinraza), el diagnóstico temprano de AME por screening neonatal ha cambiado el pronóstico radicalmente. Los bebés tratados antes de los síntomas pueden alcanzar hitos motores normales.",
+      "source_reference": "Shefner JM, Al-Chalabi A, Baker MR, et al.. A proposal for new diagnostic criteria for ALS (Gold Coast criteria). Clinical Neurophysiology (2020). https://pubmed.ncbi.nlm.nih.gov/32387049/",
+      "tags": [
+        "pathologies",
+        "sma"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

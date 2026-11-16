@@ -56,6 +56,40 @@ const REQUIRED_GENERATION_PLACEHOLDERS = [
   '[TASA EDITORIAL]',
 ] as const;
 
+export interface PhysicianGenerationTerms {
+  cohortName: string;
+  editionId: string;
+  docenciaRate: string;
+  obraRate: string;
+  editorialRate: string;
+}
+
+/** Cifras de la propuesta que ya está en la columna derecha del anexo. */
+export const DEFAULT_GENERATION_TERMS: PhysicianGenerationTerms = {
+  cohortName: 'Diplomado ElectroDX',
+  editionId: '1.0',
+  docenciaRate: '15',
+  obraRate: '15',
+  editorialRate: '5',
+};
+
+function replaceToken(markdown: string, token: string, value: string): string {
+  const next = value.trim();
+  if (!next || !markdown.includes(token)) return markdown;
+  return markdown.split(token).join(next);
+}
+
+/** Sustituye los corchetes de la generación. Un campo vacío deja el corchete. */
+export function applyGenerationTerms(markdown: string, terms: PhysicianGenerationTerms): string {
+  return [
+    [REQUIRED_GENERATION_PLACEHOLDERS[0], terms.cohortName],
+    [REQUIRED_GENERATION_PLACEHOLDERS[1], terms.editionId],
+    [REQUIRED_GENERATION_PLACEHOLDERS[2], terms.docenciaRate],
+    [REQUIRED_GENERATION_PLACEHOLDERS[3], terms.obraRate],
+    [REQUIRED_GENERATION_PLACEHOLDERS[4], terms.editorialRate],
+  ].reduce((text, [token, value]) => replaceToken(text, token, value), markdown);
+}
+
 const ROLE_LINES: Record<PhysicianMarkedRole, { empty: string; marked: string; label: string }> = {
   profesor: {
     empty: '- [ ] Profesor. Abre docencia. Cierra obra y labor editorial.',

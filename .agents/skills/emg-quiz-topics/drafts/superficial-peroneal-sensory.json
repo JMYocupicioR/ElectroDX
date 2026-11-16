@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Nervio Peroneo Superficial",
-  "revisionType": "quiz",
-  "quizTopicId": "superficial-peroneal-sensory",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Nervio Peroneo Superficial",
+  "quizTopicId": "superficial-peroneal-sensory",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "sps-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Inerva dorso del pie (territorio L5). ¿Esta afirmación es la que corresponde enseñar en «Nervio Peroneo Superficial»?",
+      "stem": "¿Dónde se registra y se estimula el peroneo superficial sensitivo, y a qué distancia?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "sps-q1-a",
+          "text": "G1 en el dorso del pie, por delante del maléolo lateral; estímulo 12 cm proximal, donde el nervio se hace superficial.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "sps-q1-b",
+          "text": "G1 detrás del maléolo lateral, estímulo en la pantorrilla a 14 cm: ese es el sural.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q1-c",
+          "text": "G1 en el maléolo medial, a 14 cm: ese es el safeno.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q1-d",
+          "text": "Anillo en el primer dedo y estímulo detrás del maléolo medial: ese es el plantar.",
           "isCorrect": false
         }
       ],
-      "explanation": "Inerva dorso del pie (territorio L5).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "A 12 cm el pico normal es 2.8–3.4 ms (anormal >3.8), la amplitud 10–20 µV (anormal <6) y la velocidad 45–60 m/s (anormal <40). Piel ≥30 °C y 10–20 promedios.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "sps-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "Pie caído. SNAP peroneo superficial de 4 µV y, del otro lado, 16 µV. ¿Cómo lo usa la lección frente a una radiculopatía L5?",
+      "options": [
+        {
+          "id": "sps-q2-a",
+          "text": "Está reducido: la lesión es postganglionar, a favor de neuropatía peronea y no de una raíz L5.",
+          "isCorrect": true
+        },
+        {
+          "id": "sps-q2-b",
+          "text": "Está normal, así que es una raíz L5.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q2-c",
+          "text": "Un SNAP bajo demuestra raíz, porque L5 es preganglionar y por eso cae el potencial.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q2-d",
+          "text": "Hay que ignorarlo: el pie caído se decide solo con el sural.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "4 µV cruza el límite de 6 µV y la asimetría supera el 50 %. SNAP bajo = peroneo; SNAP normal = L5. Si solo el motor está afectado y este SNAP se conserva, la lección pide pensar en una lesión selectiva del peroneo profundo.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
+    },
+    {
+      "id": "sps-q3",
+      "sortOrder": 2,
+      "type": "image_choice",
+      "difficulty": "intermediate",
+      "stem": "Dorso del pie, 12 cm, 1 ms/div y 10 µV/div. Potencial reproducible de unos 4 µV, inicio cerca de 3.2 ms. ¿Qué parámetro está fuera de la tabla?",
+      "options": [
+        {
+          "id": "sps-q3-a",
+          "text": "La amplitud: 4 µV está por debajo de 6 µV.",
+          "isCorrect": true
+        },
+        {
+          "id": "sps-q3-b",
+          "text": "La latencia: 3.2 ms supera el pico anormal de 3.8 ms.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q3-c",
+          "text": "Ninguno: 4 µV entra en 10–20 µV.",
+          "isCorrect": false
+        },
+        {
+          "id": "sps-q3-d",
+          "text": "Los dos, porque 3.2 ms es una velocidad menor de 20 m/s.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "120 mm / 3.2 ms = 37.5 m/s, cerca del límite de 40, pero el número que ya cruzó la tabla es la amplitud. El pico anormal empieza por encima de 3.8 ms.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ],
+      "imageUrl": "/quiz-traces/superficial-peroneal-sensory-sps-q3.svg",
+      "imageAlt": "SNAP de unos 4 µV con inicio cerca de 3.2 ms, a 1 ms/div y 10 µV/div."
+    },
+    {
+      "id": "sps-q4",
+      "sortOrder": 3,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Nervio Peroneo Superficial», ¿cuál afirmación es la correcta?\nRegistro: dorso del pie anterior al maléolo lateral.",
+      "stem": "Pie caído, CMAP peroneo con bloqueo en la cabeza del peroné y SNAP peroneo superficial normal, igual al otro lado. ¿Qué matiz añade la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Registro: dorso del pie anterior al maléolo lateral.",
+          "id": "sps-q4-a",
+          "text": "Puede ser una lesión selectiva del peroneo profundo: en la cabeza del peroné lo habitual es que caigan juntos el superficial sensitivo y el profundo motor.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "sps-q4-b",
+          "text": "El SNAP normal anula el bloqueo motor: el estudio hay que repetirlo sin mirar la cabeza del peroné.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "sps-q4-c",
+          "text": "Es una L5, aunque haya bloqueo de conducción en la cabeza del peroné.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "sps-q4-d",
+          "text": "Es una meralgia, porque el peroneo superficial es el femorocutáneo.",
           "isCorrect": false
         }
       ],
-      "explanation": "Registro: dorso del pie anterior al maléolo lateral.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
-    },
-    {
-      "id": "q3",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Peroneo Superficial», ¿cuál afirmación es la correcta?\nSNAP reducido en neuropatía peronea; NORMAL en radiculopatía L5.",
-      "options": [
+      "explanation": "La perla separa el caso típico de la cabeza del peroné, donde sensitivo y motor caen juntos, del profundo selectivo, en el que el SNAP superficial se salva.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
         {
-          "id": "a",
-          "text": "SNAP reducido en neuropatía peronea; NORMAL en radiculopatía L5.",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
         }
-      ],
-      "explanation": "SNAP reducido en neuropatía peronea; NORMAL en radiculopatía L5.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
-    },
-    {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Peroneo Superficial», ¿cuál afirmación es la correcta?\nClave para DDx del pie caído (pre vs. postganglionar).",
-      "options": [
-        {
-          "id": "a",
-          "text": "Clave para DDx del pie caído (pre vs. postganglionar).",
-          "isCorrect": true
-        },
-        {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
-          "isCorrect": false
-        },
-        {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
-          "isCorrect": false
-        },
-        {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
-          "isCorrect": false
-        }
-      ],
-      "explanation": "Clave para DDx del pie caído (pre vs. postganglionar).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      ]
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "superficial-peroneal-sensory",
       "topic_name": "Nervio Peroneo Superficial",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Nervio Peroneo Superficial». Inerva dorso del pie (territorio L5). ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
+      "stem": "Mujer de 44 años, pie caído derecho de tres semanas. SNAP peroneo superficial 5 µV a la derecha y 15 µV a la izquierda. CMAP del tibial anterior con caída de amplitud en la cabeza del peroné. Sural normal.",
+      "difficulty": 3,
+      "is_critical": true,
+      "findings": [
         {
-          "text": "Inerva dorso del pie (territorio L5).",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
+          "type": "AMPL",
+          "label": "Peroneo superficial sensitivo",
+          "value": "5 µV derecho, 15 µV izquierdo"
         },
         {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
+          "type": "AMPL",
+          "label": "CMAP en la cabeza del peroné",
+          "value": "Caída de amplitud respecto del sitio distal"
         }
       ],
-      "difficulty": 2,
-      "is_critical": false,
-      "pearl": "CLAVE DIAGNÓSTICA del pie caído: Si el SNAP peroneo superficial está REDUCIDO = neuropatía peronea (postganglionar). Si está NORMAL = radiculopatía L5 (preganglionar).",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "options": [
+        {
+          "text": "Neuropatía peronea en la cabeza del peroné, postganglionar.",
+          "is_correct": true,
+          "feedback": "5 µV está bajo 6 µV y no llega a la mitad del otro lado. Eso, más el bloqueo en la cabeza, es peroneo y no L5."
+        },
+        {
+          "text": "Radiculopatía L5, porque el pie caído siempre es de raíz.",
+          "is_correct": false,
+          "feedback": "En L5 este SNAP estaría normal."
+        },
+        {
+          "text": "Polineuropatía, por el sural normal.",
+          "is_correct": false,
+          "feedback": "Un sural normal no arma una polineuropatía, y la asimetría es de un solo nervio."
+        },
+        {
+          "text": "Lesión aislada del peroneo profundo.",
+          "is_correct": false,
+          "feedback": "Esa dejaría el SNAP superficial conservado. Aquí está bajo."
+        }
+      ],
+      "pearl": "Pie caído con SNAP peroneo superficial bajo: nervio. El mismo SNAP normal: raíz L5.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "superficial-peroneal-sensory"

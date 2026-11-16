@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Ultrasonido neuromuscular y fibras finas: qué cambia el EDX",
+  "revisionType": "quiz",
+  "quizTopicId": "imaging-and-small-fiber",
+  "moduleId": "pathology-updates",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "EDX normal no descarta fibras finas. ¿Esta afirmación es la que corresponde enseñar en «Ultrasonido neuromuscular y fibras finas: qué cambia el EDX»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "EDX normal no descarta fibras finas.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Ultrasonido neuromuscular y fibras finas: qué cambia el EDX», ¿cuál afirmación es la correcta?\nEl CSA complementa; no reemplaza latencias y amplitudes.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El CSA complementa; no reemplaza latencias y amplitudes.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El CSA complementa; no reemplaza latencias y amplitudes.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ultrasonido neuromuscular y fibras finas: qué cambia el EDX», ¿cuál afirmación es la correcta?\nEl ultrasonido neuromuscular no sustituye a NCS/EMG: localiza agrandamiento de sección (CSA), neuromas y nervios no estimulables, y guía la aguja.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El ultrasonido neuromuscular no sustituye a NCS/EMG: localiza agrandamiento de sección (CSA), neuromas y nervios no estimulables, y guía la aguja.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El ultrasonido neuromuscular no sustituye a NCS/EMG: localiza agrandamiento de sección (CSA), neuromas y nervios no estimulables, y guía la aguja.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Ultrasonido neuromuscular y fibras finas: qué cambia el EDX», ¿cuál afirmación es la correcta?\nEn CIDP y en HNPP el CSA aumentado apoya el patrón.",
+      "options": [
+        {
+          "id": "a",
+          "text": "En CIDP y en HNPP el CSA aumentado apoya el patrón.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "En CIDP y en HNPP el CSA aumentado apoya el patrón.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathology-updates",
+      "topic_id": "imaging-and-small-fiber",
+      "topic_name": "Ultrasonido neuromuscular y fibras finas: qué cambia el EDX",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Ultrasonido neuromuscular y fibras finas: qué cambia el EDX». EDX normal no descarta fibras finas. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "EDX normal no descarta fibras finas.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "EDX normal no descarta fibras finas.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "pathology-updates",
+        "imaging-and-small-fiber"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

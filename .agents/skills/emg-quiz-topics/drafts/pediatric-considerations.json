@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Consideraciones Especiales en Niños",
+  "revisionType": "quiz",
+  "quizTopicId": "pediatric-considerations",
+  "moduleId": "special-studies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Velocidades de conducción neonatales: ~50% del adulto. ¿Esta afirmación es la que corresponde enseñar en «Consideraciones Especiales en Niños»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Velocidades de conducción neonatales: ~50% del adulto.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Consideraciones Especiales en Niños», ¿cuál afirmación es la correcta?\nValores adultos se alcanzan a los 3-5 años.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Valores adultos se alcanzan a los 3-5 años.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Valores adultos se alcanzan a los 3-5 años.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Consideraciones Especiales en Niños», ¿cuál afirmación es la correcta?\nSFEMG por Estimulación y QEMG: No requieren cooperación.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SFEMG por Estimulación y QEMG: No requieren cooperación.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SFEMG por Estimulación y QEMG: No requieren cooperación.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Consideraciones Especiales en Niños», ¿cuál afirmación es la correcta?\nSedación: Hacer conducción nerviosa ANTES de la EMG de aguja.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sedación: Hacer conducción nerviosa ANTES de la EMG de aguja.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sedación: Hacer conducción nerviosa ANTES de la EMG de aguja.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "special-studies",
+      "topic_id": "pediatric-considerations",
+      "topic_name": "Consideraciones Especiales en Niños",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Consideraciones Especiales en Niños». Velocidades de conducción neonatales: ~50% del adulto. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Velocidades de conducción neonatales: ~50% del adulto.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "En neonatos, las velocidades de conducción son ~50% de las del adulto. No interpretes un valor de 25 m/s en un recién nacido como anormal; puede ser completamente normal.",
+      "source_reference": "Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "tags": [
+        "special-studies",
+        "pediatric-considerations"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

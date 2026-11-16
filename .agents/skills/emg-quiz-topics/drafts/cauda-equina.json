@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Síndrome de Cauda Equina",
+  "revisionType": "quiz",
+  "quizTopicId": "cauda-equina",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Cauda equina es EMERGENCIA QUIRÚRGICA — derivar ANTES de completar EMG si la clínica es clara. El EMG confirma y documenta extensión pero NO debe retrasar la cirugía. ¿Esta afirmación es la que corresponde enseñar en «Síndrome de Cauda Equina»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Cauda equina es EMERGENCIA QUIRÚRGICA — derivar ANTES de completar EMG si la clínica es clara. El EMG confirma y documenta extensión pero NO debe retrasar la cirugía.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Síndrome de Cauda Equina», ¿cuál afirmación es la correcta?\nLa EMG de esfínter anal es fundamental para confirmar y documentar denervación sacra. Se usa también en evaluación de incontinencia urinaria neurogénica, prolapso, y post-prostatectomía.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La EMG de esfínter anal es fundamental para confirmar y documentar denervación sacra. Se usa también en evaluación de incontinencia urinaria neurogénica, prolapso, y post-prostatectomía.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La EMG de esfínter anal es fundamental para confirmar y documentar denervación sacra. Se usa también en evaluación de incontinencia urinaria neurogénica, prolapso, y post-prostatectomía.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Cauda Equina», ¿cuál afirmación es la correcta?\nCompresión de las raíces de la cola de caballo (L2-S5) por hernia discal masiva, tumor, fractura vertebral o estenosis central severa.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Compresión de las raíces de la cola de caballo (L2-S5) por hernia discal masiva, tumor, fractura vertebral o estenosis central severa.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Compresión de las raíces de la cola de caballo (L2-S5) por hernia discal masiva, tumor, fractura vertebral o estenosis central severa.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Cauda Equina», ¿cuál afirmación es la correcta?\nPresentación: Debilidad bilateral de MI + retención/incontinencia urinaria + anestesia en silla de montar (periné S2-S5) + arreflexia aquílea bilateral.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Presentación: Debilidad bilateral de MI + retención/incontinencia urinaria + anestesia en silla de montar (periné S2-S5) + arreflexia aquílea bilateral.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Presentación: Debilidad bilateral de MI + retención/incontinencia urinaria + anestesia en silla de montar (periné S2-S5) + arreflexia aquílea bilateral.\n\n📚 Referencia: Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "cauda-equina",
+      "topic_name": "Síndrome de Cauda Equina",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Síndrome de Cauda Equina». Cauda equina es EMERGENCIA QUIRÚRGICA — derivar ANTES de completar EMG si la clínica es clara. El EMG confirma y documenta extensión pero NO debe retrasar la cirugía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Cauda equina es EMERGENCIA QUIRÚRGICA — derivar ANTES de completar EMG si la clínica es clara. El EMG confirma y documenta extensión pero NO debe retrasar la cirugía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Cauda equina es EMERGENCIA QUIRÚRGICA — derivar ANTES de completar EMG si la clínica es clara. El EMG confirma y documenta extensión pero NO debe retrasar la cirugía.",
+      "source_reference": "Dillingham TR, Annaswamy TM, Plastaras CT. AANEM monograph: Evaluation of persons with suspected lumbosacral and cervical radiculopathy (Part 1). Muscle & Nerve (2020). https://pubmed.ncbi.nlm.nih.gov/32557709/",
+      "tags": [
+        "pathologies",
+        "cauda-equina"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

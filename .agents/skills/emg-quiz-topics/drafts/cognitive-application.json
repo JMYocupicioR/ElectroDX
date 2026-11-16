@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Aplicaciones en Deterioro Cognitivo",
+  "revisionType": "quiz",
+  "quizTopicId": "cognitive-application",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "P300 prolongada puede ser indicador temprano de deterioro cognitivo. ¿Esta afirmación es la que corresponde enseñar en «Aplicaciones en Deterioro Cognitivo»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "P300 prolongada puede ser indicador temprano de deterioro cognitivo.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Aplicaciones en Deterioro Cognitivo», ¿cuál afirmación es la correcta?\nNo distingue tipos de demencia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "No distingue tipos de demencia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "No distingue tipos de demencia.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones en Deterioro Cognitivo», ¿cuál afirmación es la correcta?\nMMN (Mismatch Negativity): No requiere atención, útil en no colaboradores.",
+      "options": [
+        {
+          "id": "a",
+          "text": "MMN (Mismatch Negativity): No requiere atención, útil en no colaboradores.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "MMN (Mismatch Negativity): No requiere atención, útil en no colaboradores.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones en Deterioro Cognitivo», ¿cuál afirmación es la correcta?\nLos potenciales evocados cognitivos ofrecen una ventana electrofisiológica objetiva a las funciones mentales superiores.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los potenciales evocados cognitivos ofrecen una ventana electrofisiológica objetiva a las funciones mentales superiores.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los potenciales evocados cognitivos ofrecen una ventana electrofisiológica objetiva a las funciones mentales superiores.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "cognitive-application",
+      "topic_name": "Aplicaciones en Deterioro Cognitivo",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Aplicaciones en Deterioro Cognitivo». P300 prolongada puede ser indicador temprano de deterioro cognitivo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "P300 prolongada puede ser indicador temprano de deterioro cognitivo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "P300 prolongada puede ser indicador temprano de deterioro cognitivo.",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "cognitive-application"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

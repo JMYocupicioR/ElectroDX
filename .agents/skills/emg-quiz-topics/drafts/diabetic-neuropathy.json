@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Polineuropatía Diabética",
+  "revisionType": "quiz",
+  "quizTopicId": "diabetic-neuropathy",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Causa #1 mundial de polineuropatía. Patrón axonal sensitivo-motor longitud-dependiente. ¿Esta afirmación es la que corresponde enseñar en «Polineuropatía Diabética»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Causa #1 mundial de polineuropatía. Patrón axonal sensitivo-motor longitud-dependiente.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Polineuropatía Diabética», ¿cuál afirmación es la correcta?\nProgresión: SNAP sural → SNAP peroneo superficial → SNAPs MS → CMAPs MI.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Progresión: SNAP sural → SNAP peroneo superficial → SNAPs MS → CMAPs MI.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Progresión: SNAP sural → SNAP peroneo superficial → SNAPs MS → CMAPs MI.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Polineuropatía Diabética», ¿cuál afirmación es la correcta?\nSi el patrón es desmielinizante en un diabético, buscar CIDP sobreimpuesta.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si el patrón es desmielinizante en un diabético, buscar CIDP sobreimpuesta.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si el patrón es desmielinizante en un diabético, buscar CIDP sobreimpuesta.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Polineuropatía Diabética», ¿cuál afirmación es la correcta?\nSCREENING: El SNAP sural bilateral es el estudio más sensible para detectar DSPN temprana. Si es normal, la probabilidad de DSPN clínicamente significativa es muy baja.",
+      "options": [
+        {
+          "id": "a",
+          "text": "SCREENING: El SNAP sural bilateral es el estudio más sensible para detectar DSPN temprana. Si es normal, la probabilidad de DSPN clínicamente significativa es muy baja.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "SCREENING: El SNAP sural bilateral es el estudio más sensible para detectar DSPN temprana. Si es normal, la probabilidad de DSPN clínicamente significativa es muy baja.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "diabetic-neuropathy",
+      "topic_name": "Polineuropatía Diabética",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Polineuropatía Diabética». Causa #1 mundial de polineuropatía. Patrón axonal sensitivo-motor longitud-dependiente. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Causa #1 mundial de polineuropatía. Patrón axonal sensitivo-motor longitud-dependiente.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "SCREENING: El SNAP sural bilateral es el estudio más sensible para detectar DSPN temprana. Si es normal, la probabilidad de DSPN clínicamente significativa es muy baja.",
+      "source_reference": "England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "tags": [
+        "pathologies",
+        "diabetic-neuropathy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

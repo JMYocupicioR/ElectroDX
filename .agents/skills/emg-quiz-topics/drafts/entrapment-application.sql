@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: entrapment-application (Module: special-studies)
+-- Generated at: 2026-11-16T04:54:08.262Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'entrapment-application',
+  'special-studies',
+  'update',
+  $payload${"title":"Evaluación: Aplicaciones en Atrapamientos","revisionType":"quiz","quizTopicId":"entrapment-application","moduleId":"special-studies","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Cubital: Segmentar epicóndilo → surco → FCU. ¿Esta afirmación es la que corresponde enseñar en «Aplicaciones en Atrapamientos»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Cubital: Segmentar epicóndilo → surco → FCU.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Aplicaciones en Atrapamientos», ¿cuál afirmación es la correcta?\nMediano: Segmentar palma → ligamento transverso.","options":[{"id":"a","text":"Mediano: Segmentar palma → ligamento transverso.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Mediano: Segmentar palma → ligamento transverso.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Aplicaciones en Atrapamientos», ¿cuál afirmación es la correcta?\nPeroneo: Segmentar alrededor de la cabeza del peroné.","options":[{"id":"a","text":"Peroneo: Segmentar alrededor de la cabeza del peroné.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Peroneo: Segmentar alrededor de la cabeza del peroné.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Aplicaciones en Atrapamientos», ¿cuál afirmación es la correcta?\nLa técnica de inching tiene aplicaciones clásicas en los síndromes de atrapamiento más comunes.","options":[{"id":"a","text":"La técnica de inching tiene aplicaciones clásicas en los síndromes de atrapamiento más comunes.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"La técnica de inching tiene aplicaciones clásicas en los síndromes de atrapamiento más comunes.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]}],"examQuestions":[{"module_id":"special-studies","topic_id":"entrapment-application","topic_name":"Aplicaciones en Atrapamientos","island_name":"EMG","stem":"Caso breve ligado a «Aplicaciones en Atrapamientos». Cubital: Segmentar epicóndilo → surco → FCU. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Cubital: Segmentar epicóndilo → surco → FCU.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"Cubital: Segmentar epicóndilo → surco → FCU.","source_reference":"Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","tags":["special-studies","entrapment-application"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'entrapment-application'
+    AND r.module_id = 'special-studies'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

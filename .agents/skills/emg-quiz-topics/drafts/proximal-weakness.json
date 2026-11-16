@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Debilidad proximal: miopatía, plexo o polirradiculopatía",
+  "revisionType": "quiz",
+  "quizTopicId": "proximal-weakness",
+  "moduleId": "syndrome-differential",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El EMG de cinturas es el estudio, no un apéndice. ¿Esta afirmación es la que corresponde enseñar en «Debilidad proximal: miopatía, plexo o polirradiculopatía»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El EMG de cinturas es el estudio, no un apéndice.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Debilidad proximal: miopatía, plexo o polirradiculopatía», ¿cuál afirmación es la correcta?\nSeparar miopatía, plexo y unión neuromuscular antes de emitir el informe.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Separar miopatía, plexo y unión neuromuscular antes de emitir el informe.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Separar miopatía, plexo y unión neuromuscular antes de emitir el informe.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Debilidad proximal: miopatía, plexo o polirradiculopatía», ¿cuál afirmación es la correcta?\nFibrilaciones en un músculo proximal no equivalen a radiculopatía: las miopatías inflamatorias las producen con frecuencia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Fibrilaciones en un músculo proximal no equivalen a radiculopatía: las miopatías inflamatorias las producen con frecuencia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Fibrilaciones en un músculo proximal no equivalen a radiculopatía: las miopatías inflamatorias las producen con frecuencia.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Debilidad proximal: miopatía, plexo o polirradiculopatía», ¿cuál afirmación es la correcta?\nSi hay fatigabilidad, la RNS y el SFEMG (curso avanzado) cambian el algoritmo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si hay fatigabilidad, la RNS y el SFEMG (curso avanzado) cambian el algoritmo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si hay fatigabilidad, la RNS y el SFEMG (curso avanzado) cambian el algoritmo.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "syndrome-differential",
+      "topic_id": "proximal-weakness",
+      "topic_name": "Debilidad proximal: miopatía, plexo o polirradiculopatía",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Debilidad proximal: miopatía, plexo o polirradiculopatía». El EMG de cinturas es el estudio, no un apéndice. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El EMG de cinturas es el estudio, no un apéndice.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Fibrilaciones en un músculo proximal no equivalen a radiculopatía: las miopatías inflamatorias las producen con frecuencia.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders. Elsevier (2021).",
+      "tags": [
+        "syndrome-differential",
+        "proximal-weakness"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

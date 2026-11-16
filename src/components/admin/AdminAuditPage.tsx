@@ -253,7 +253,7 @@ export default function AdminAuditPage() {
     <AdminLayout title="Registro de auditoría y participación legal">
       <p className="text-sm text-slate-500 mb-4 -mt-4">
         {tab === 'participacion'
-          ? 'Conteo contractual de participación (Docencia, Obra y Labor Editorial), atribuciones léxicas (>50%) y bitácora inmutable para el Acta de Créditos.'
+          ? 'Lista de profesores y editores, con el reparto de las tres bolsas según clases, temas modificados, quizzes y el resto de la actividad.'
           : tab === 'direccion'
             ? 'Historial de acciones administrativas y editoriales.'
             : 'Lecturas, evaluaciones, simulacros y comentarios de los alumnos.'}

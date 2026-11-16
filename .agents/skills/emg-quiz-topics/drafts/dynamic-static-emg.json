@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: EMG Libre (Free-Run) y EMG Evocada (Triggered)",
+  "revisionType": "quiz",
+  "quizTopicId": "dynamic-static-emg",
+  "moduleId": "special-studies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Free-Run: Descargas neurotónicas = Irritación radicular. Detener cirugía. ¿Esta afirmación es la que corresponde enseñar en «EMG Libre (Free-Run) y EMG Evocada (Triggered)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Free-Run: Descargas neurotónicas = Irritación radicular. Detener cirugía.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «EMG Libre (Free-Run) y EMG Evocada (Triggered)», ¿cuál afirmación es la correcta?\nTriggered EMG: Umbral menor de 20 V = Brecha cortical del pedículo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Triggered EMG: Umbral menor de 20 V = Brecha cortical del pedículo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Triggered EMG: Umbral menor de 20 V = Brecha cortical del pedículo.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «EMG Libre (Free-Run) y EMG Evocada (Triggered)», ¿cuál afirmación es la correcta?\nUmbral menor de 6-8 V = Alerta crítica, reposicionar tornillo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Umbral menor de 6-8 V = Alerta crítica, reposicionar tornillo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Umbral menor de 6-8 V = Alerta crítica, reposicionar tornillo.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «EMG Libre (Free-Run) y EMG Evocada (Triggered)», ¿cuál afirmación es la correcta?\nLas descargas neurotónicas sostenidas son una EMERGENCIA intraoperatoria. Si no se detiene la manipulación, puede producirse daño radicular permanente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Las descargas neurotónicas sostenidas son una EMERGENCIA intraoperatoria. Si no se detiene la manipulación, puede producirse daño radicular permanente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Las descargas neurotónicas sostenidas son una EMERGENCIA intraoperatoria. Si no se detiene la manipulación, puede producirse daño radicular permanente.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "special-studies",
+      "topic_id": "dynamic-static-emg",
+      "topic_name": "EMG Libre (Free-Run) y EMG Evocada (Triggered)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «EMG Libre (Free-Run) y EMG Evocada (Triggered)». Free-Run: Descargas neurotónicas = Irritación radicular. Detener cirugía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Free-Run: Descargas neurotónicas = Irritación radicular. Detener cirugía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Las descargas neurotónicas sostenidas son una EMERGENCIA intraoperatoria. Si no se detiene la manipulación, puede producirse daño radicular permanente.",
+      "source_reference": "Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "tags": [
+        "special-studies",
+        "dynamic-static-emg"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

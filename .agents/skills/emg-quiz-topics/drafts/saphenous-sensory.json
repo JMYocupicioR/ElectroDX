@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Nervio Safeno",
-  "revisionType": "quiz",
-  "quizTopicId": "saphenous-sensory",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Nervio Safeno",
+  "quizTopicId": "saphenous-sensory",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "saph-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Rama sensitiva del femoral (L3-L4). ¿Esta afirmación es la que corresponde enseñar en «Nervio Safeno»?",
+      "stem": "¿De qué nervio es el safeno y por qué la lección insiste en 30–50 promedios?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "saph-q1-a",
+          "text": "Es la rama sensitiva terminal del femoral, L3–L4, y el potencial es muy pequeño, de 4–12 µV.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "saph-q1-b",
+          "text": "Es rama del peroneo, y suele medir 30–60 µV sin promedio.",
+          "isCorrect": false
+        },
+        {
+          "id": "saph-q1-c",
+          "text": "Es el sural, registrado en el maléolo lateral.",
+          "isCorrect": false
+        },
+        {
+          "id": "saph-q1-d",
+          "text": "Es un nervio motor del cuádriceps.",
           "isCorrect": false
         }
       ],
-      "explanation": "Rama sensitiva del femoral (L3-L4).\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "G1 por delante del maléolo medial, estímulo 14 cm proximal en el borde de la tibia, junto a la vena safena. Ganancia 5–10 µV/div. No se declara ausente sin esos 30–50 promedios.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "saph-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Nervio Safeno», ¿cuál afirmación es la correcta?\nPotencial MUY pequeño: promediación 30-50 trazos obligatoria.",
+      "stem": "A 14 cm, ¿qué pico y qué amplitud considera anormales la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Potencial MUY pequeño: promediación 30-50 trazos obligatoria.",
+          "id": "saph-q2-a",
+          "text": "Pico mayor de 4.4 ms o amplitud menor de 3 µV.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "saph-q2-b",
+          "text": "Pico mayor de 2.8 ms o amplitud menor de 15 µV.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "saph-q2-c",
+          "text": "Cualquier potencial menor de 20 µV.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "saph-q2-d",
+          "text": "Velocidad menor de 50 m/s, el umbral de la mano.",
           "isCorrect": false
         }
       ],
-      "explanation": "Potencial MUY pequeño: promediación 30-50 trazos obligatoria.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Pico normal 3.4–4.0 ms, amplitud 4–12 µV, velocidad 42–55 m/s y anormal por debajo de 40 m/s. El umbral de 50 m/s es del miembro superior.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
     },
     {
-      "id": "q3",
+      "id": "saph-q3",
+      "sortOrder": 2,
       "type": "single",
       "difficulty": "advanced",
-      "stem": "En «Nervio Safeno», ¿cuál afirmación es la correcta?\nRegistro: anterior al maléolo medial. Distancia: 14 cm.",
+      "stem": "Debilidad de cuádriceps tras una cirugía de cadera. Safeno de 2 µV de ese lado y 9 µV del otro. ¿Qué distingue la lección de una raíz L3–L4?",
       "options": [
         {
-          "id": "a",
-          "text": "Registro: anterior al maléolo medial. Distancia: 14 cm.",
+          "id": "saph-q3-a",
+          "text": "El safeno bajo confirma una lesión del femoral, postganglionar. En la radiculopatía L3–L4 este SNAP seguiría normal.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "saph-q3-b",
+          "text": "El safeno bajo es lo esperable en la raíz L4.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "saph-q3-c",
+          "text": "2 µV es normal y descarta el femoral.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "saph-q3-d",
+          "text": "Hay que mirar el sural: si está normal, el femoral está cortado.",
           "isCorrect": false
         }
       ],
-      "explanation": "Registro: anterior al maléolo medial. Distancia: 14 cm.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "2 µV cruza el límite de 3 µV. La perla de la cirugía de cadera usa exactamente esta diferencia: safeno bajo es femoral, no raíz. Un atrapamiento en el canal de Hunter duele en la cara medial de la rodilla y se confunde con patología articular.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Safeno», ¿cuál afirmación es la correcta?\nSNAP reducido en neuropatía femoral; NORMAL en radiculopatía L3-L4.",
+      "id": "saph-q4",
+      "sortOrder": 3,
+      "type": "image_choice",
+      "difficulty": "intermediate",
+      "stem": "Tobillo medial, 14 cm, ganancia 5 µV/div, 40 promedios. El potencial, repetible, mide unos 2 µV. ¿Se puede dar por normal?",
       "options": [
         {
-          "id": "a",
-          "text": "SNAP reducido en neuropatía femoral; NORMAL en radiculopatía L3-L4.",
+          "id": "saph-q4-a",
+          "text": "No por el número: 2 µV está bajo 3 µV. En mayores de 65 años y en obesidad la ausencia bilateral sí puede ser normal, así que el otro lado decide.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "saph-q4-b",
+          "text": "Sí: 2 µV entra en 4–12 µV.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "saph-q4-c",
+          "text": "Sí, y además prueba una radiculopatía L4.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "saph-q4-d",
+          "text": "Hay que declararlo ausente porque no se llegó a 100 promedios.",
           "isCorrect": false
         }
       ],
-      "explanation": "SNAP reducido en neuropatía femoral; NORMAL en radiculopatía L3-L4.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La tabla pone el límite en <3 µV. La perla de la edad y la obesidad vale para la ausencia de los dos lados, no para convertir 2 µV unilaterales en normales. El mínimo de promedios de la lección es 30–50, no 100.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ],
+      "imageUrl": "/quiz-traces/saphenous-sensory-saph-q4.svg",
+      "imageAlt": "SNAP muy pequeño, cerca de 2 µV, inicio alrededor de 3.6 ms, ganancia 5 µV/div y barrido 1 ms/div."
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "saphenous-sensory",
       "topic_name": "Nervio Safeno",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Nervio Safeno». Rama sensitiva del femoral (L3-L4). ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Rama sensitiva del femoral (L3-L4).",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
+      "stem": "Mujer de 70 años, obesa, dolor medial de la rodilla derecha tras un golpe en el canal de los aductores. Safeno derecho 2 µV tras 40 promedios; izquierdo 8 µV. Cuádriceps derecho débil. Lumbar sin radiculopatía clara.",
       "difficulty": 2,
       "is_critical": false,
-      "pearl": "El SNAP safeno es un potencial MUY PEQUEÑO (4-12 µV); la promediación intensiva (30-50 trazos) es INDISPENSABLE. No declares ausencia sin al menos 50 trazos promediados.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "findings": [
+        {
+          "type": "AMPL",
+          "label": "Safeno",
+          "value": "2 µV derecho, 8 µV izquierdo, 40 promedios"
+        },
+        {
+          "type": "SIGN",
+          "label": "Clínica",
+          "value": "Dolor medial de rodilla y cuádriceps débil"
+        }
+      ],
+      "options": [
+        {
+          "text": "Lesión del safeno o del femoral, no una raíz L3–L4. El canal de Hunter entra en el diagnóstico del dolor medial.",
+          "is_correct": true,
+          "feedback": "2 µV es anormal y la asimetría es grande. La raíz conservaría el SNAP. La ausencia bilateral del obeso no aplica cuando el otro lado mide 8 µV."
+        },
+        {
+          "text": "Normal de la edad, por la obesidad.",
+          "is_correct": false,
+          "feedback": "Esa reserva es la ausencia de los dos lados, no 2 contra 8 µV."
+        },
+        {
+          "text": "Radiculopatía L4, por el cuádriceps débil.",
+          "is_correct": false,
+          "feedback": "En la raíz el safeno estaría normal."
+        },
+        {
+          "text": "Hace falta otro bloque de 100 promedios antes de mirar el número.",
+          "is_correct": false,
+          "feedback": "40 promedios ya están dentro de los 30–50 de la lección, y el potencial se obtuvo."
+        }
+      ],
+      "pearl": "Safeno bajo: femoral o canal de Hunter. Safeno normal con clínica L3–L4: raíz. No lo des por ausente antes de 30–50 promedios.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "saphenous-sensory"

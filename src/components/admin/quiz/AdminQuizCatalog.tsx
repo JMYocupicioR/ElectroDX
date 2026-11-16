@@ -12,7 +12,8 @@ import {
 } from 'lucide-react';
 import { useAllModules } from '../../../hooks/useAllModules';
 import { getAllFlatTopics, topicListKey } from '../../../services/contentMerge';
-import { isQuizEligibleLeaf, topTopicsMissingQuiz } from '../../../utils/topicsMissingQuiz';
+import { isQuizEligibleLeaf, topTopicsMissingQuiz, listOmittedQuizTopics } from '../../../utils/topicsMissingQuiz';
+import { useOmittedQuizTopics } from '../../../hooks/useOmittedQuizTopics';
 import { TopicsMissingQuizQueue } from './TopicsMissingQuizQueue';
 import { getAllQuizFlags } from '../../../services/quizService';
 import { getTopicPublicUrl } from '../../../utils/adminUtils';
@@ -48,6 +49,7 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
   const location = useLocation();
   const [flags, setFlags] = useState<QuizTopicFlag[]>([]);
   const [loadingFlags, setLoadingFlags] = useState(true);
+  const { ids: omittedQuizTopicIds, omit: omitQuizTopicId, restore: restoreQuizTopicId } = useOmittedQuizTopics();
 
   const [localSearch, setLocalSearch] = useState('');
   const [localModule, setLocalModule] = useState('all');
@@ -134,21 +136,25 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
   }, [flags]);
 
   const topicsMissingQuiz = useMemo(() => {
-    if (loadingFlags) return { topics: [], total: 0 };
+    if (loadingFlags) return { topics: [], total: 0, omitted: [] };
     const withQuiz = new Set(
       flags.filter((flag) => flag.question_count > 0).map((flag) => flag.topic_id),
     );
-    return topTopicsMissingQuiz(modules, withQuiz);
-  }, [flags, loadingFlags, modules]);
+    return {
+      ...topTopicsMissingQuiz(modules, withQuiz, undefined, omittedQuizTopicIds),
+      omitted: listOmittedQuizTopics(modules, omittedQuizTopicIds, withQuiz),
+    };
+  }, [flags, loadingFlags, modules, omittedQuizTopicIds]);
 
   // Filtered topics list
   const filteredTopics = useMemo(() => {
     return allLeafTopics.filter((item) => {
       const flag = flagsMap.get(item.topic.id);
       const hasQuiz = Boolean(flag && flag.question_count > 0);
+      const omitted = !hasQuiz && omittedQuizTopicIds.has(item.topic.id);
 
       if (statusFilter === 'with_quiz' && !hasQuiz) return false;
-      if (statusFilter === 'no_quiz' && hasQuiz) return false;
+      if (statusFilter === 'no_quiz' && (hasQuiz || omitted)) return false;
       if (selectedModuleFilter !== 'all' && item.moduleId !== selectedModuleFilter) return false;
 
       if (searchQuery.trim()) {
@@ -161,7 +167,7 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
 
       return true;
     });
-  }, [allLeafTopics, flagsMap, statusFilter, selectedModuleFilter, searchQuery]);
+  }, [allLeafTopics, flagsMap, statusFilter, selectedModuleFilter, searchQuery, omittedQuizTopicIds]);
 
   useEffect(() => {
     if (!focusedRowId || modulesLoading) return;
@@ -175,6 +181,10 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
   const topicsWithQuiz = allLeafTopics.filter((t) => {
     const f = flagsMap.get(t.topic.id);
     return Boolean(f && f.question_count > 0);
+  }).length;
+  const omittedWithoutQuiz = allLeafTopics.filter((t) => {
+    const f = flagsMap.get(t.topic.id);
+    return !(f && f.question_count > 0) && omittedQuizTopicIds.has(t.topic.id);
   }).length;
   const totalQuestions = flags.reduce((acc, f) => acc + (f.question_count || 0), 0);
   const coveragePercentage = totalTopics > 0 ? Math.round((topicsWithQuiz / totalTopics) * 100) : 0;
@@ -284,6 +294,9 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
       <TopicsMissingQuizQueue
         topics={topicsMissingQuiz.topics}
         total={topicsMissingQuiz.total}
+        omitted={topicsMissingQuiz.omitted}
+        onOmit={(topic) => omitQuizTopicId(topic.topicId)}
+        onRestore={(topic) => restoreQuizTopicId(topic.topicId)}
         onAddQuiz={(topic) => onSelectTopic(topic.topicId, topic.moduleId)}
       />
 
@@ -329,7 +342,7 @@ export function AdminQuizCatalog({ onSelectTopic, isModal }: AdminQuizCatalogPro
             activeClass="text-emerald-600 dark:text-emerald-400"
           />
           <StatusTab
-            label={`Sin Quiz (${totalTopics - topicsWithQuiz})`}
+            label={`Sin Quiz (${Math.max(0, totalTopics - topicsWithQuiz - omittedWithoutQuiz)})`}
             active={statusFilter === 'no_quiz'}
             onClick={() => writeFilters({ estado: 'no_quiz' })}
             activeClass="text-amber-600 dark:text-amber-400"

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: CIDP: criterios actuales y variantes",
+  "revisionType": "quiz",
+  "quizTopicId": "cidp-criteria-update",
+  "moduleId": "pathology-updates",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Separe CIDP típica de variantes y de imitadores con biomarcadores. ¿Esta afirmación es la que corresponde enseñar en «CIDP: criterios actuales y variantes»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Separe CIDP típica de variantes y de imitadores con biomarcadores.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «CIDP: criterios actuales y variantes», ¿cuál afirmación es la correcta?\nEl EDX solo no sustituye el resto del expediente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El EDX solo no sustituye el resto del expediente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El EDX solo no sustituye el resto del expediente.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «CIDP: criterios actuales y variantes», ¿cuál afirmación es la correcta?\nLos criterios EAN/PNS actualizan la CIDP típica y las variantes (multifocal, distal, motora, sensitiva).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los criterios EAN/PNS actualizan la CIDP típica y las variantes (multifocal, distal, motora, sensitiva).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los criterios EAN/PNS actualizan la CIDP típica y las variantes (multifocal, distal, motora, sensitiva).\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «CIDP: criterios actuales y variantes», ¿cuál afirmación es la correcta?\nEl laboratorio debe conocer qué parámetros de desmielinización se aceptan y cómo las variantes cambian el mapa de nervios (p.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El laboratorio debe conocer qué parámetros de desmielinización se aceptan y cómo las variantes cambian el mapa de nervios (p.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El laboratorio debe conocer qué parámetros de desmielinización se aceptan y cómo las variantes cambian el mapa de nervios (p.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathology-updates",
+      "topic_id": "cidp-criteria-update",
+      "topic_name": "CIDP: criterios actuales y variantes",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «CIDP: criterios actuales y variantes». Separe CIDP típica de variantes y de imitadores con biomarcadores. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Separe CIDP típica de variantes y de imitadores con biomarcadores.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Separe CIDP típica de variantes y de imitadores con biomarcadores.",
+      "source_reference": "Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "tags": [
+        "pathology-updates",
+        "cidp-criteria-update"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

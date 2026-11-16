@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Latencia de inicio y latencia pico",
-  "revisionType": "quiz",
-  "quizTopicId": "onset-peak-latency",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Latencia de inicio y latencia pico",
+  "quizTopicId": "onset-peak-latency",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "onset-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Pico = reproducibilidad en SNAP chicos. ¿Esta afirmación es la que corresponde enseñar en «Latencia de inicio y latencia pico»?",
+      "stem": "En el SNAP, ¿qué fibras representa la latencia de inicio y por qué la práctica usa más la latencia pico?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "onset-q1-a",
+          "text": "El inicio marca las fibras más rápidas. El pico es más reproducible, aunque mezcla fibras de velocidad intermedia, y por eso se usa más.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "onset-q1-b",
+          "text": "El pico marca solo las fibras más rápidas y el inicio incluye las más lentas.",
+          "isCorrect": false
+        },
+        {
+          "id": "onset-q1-c",
+          "text": "Inicio y pico son el mismo punto; el cursor se pone donde sea.",
+          "isCorrect": false
+        },
+        {
+          "id": "onset-q1-d",
+          "text": "La latencia pico no se usa en clínica porque varía más que el inicio.",
           "isCorrect": false
         }
       ],
-      "explanation": "Pico = reproducibilidad en SNAP chicos.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La lección asigna el inicio a las fibras más rápidas y el pico a una medida más reproducible, que incorpora fibras de velocidad media. Por esa reproducibilidad el pico es el que más se informa.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "onset-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nEl cursor es un acto diagnóstico.",
+      "stem": "Un mismo SNAP tiene inicio a 2.6 ms y pico a 3.3 ms. ¿Cuál de las dos usaría la lección para calcular la velocidad sensitiva?",
       "options": [
         {
-          "id": "a",
-          "text": "El cursor es un acto diagnóstico.",
+          "id": "onset-q2-a",
+          "text": "La de inicio: la velocidad de la lección es distancia dividida entre latencia de inicio.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "onset-q2-b",
+          "text": "La de pico, porque la velocidad pico es la de las fibras más rápidas.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "onset-q2-c",
+          "text": "El promedio de 2.6 y 3.3.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "onset-q2-d",
+          "text": "Ninguna: la velocidad sensitiva usa la latencia motora distal.",
           "isCorrect": false
         }
       ],
-      "explanation": "El cursor es un acto diagnóstico.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La fórmula de la lección es VCS = distancia / latencia de inicio. El pico sirve para comparar latencias, no para esa velocidad.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ]
     },
     {
-      "id": "q3",
-      "type": "single",
+      "id": "onset-q3",
+      "sortOrder": 2,
+      "type": "image_choice",
       "difficulty": "advanced",
-      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nPico no es más lento: es otra magnitud.",
+      "stem": "A 1 ms/div el potencial se despega de la línea de base alrededor de 2.6 ms y el pico negativo cae una división más tarde. ¿Qué cursor es el inicio y cuál es el pico?",
       "options": [
         {
-          "id": "a",
-          "text": "Pico no es más lento: es otra magnitud.",
+          "id": "onset-q3-a",
+          "text": "Inicio en el despegue, hacia 2.6 ms; pico en el vértice negativo, después.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "onset-q3-b",
+          "text": "Inicio en el pico negativo y pico en el regreso a la línea de base.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "onset-q3-c",
+          "text": "Los dos cursores van en el artefacto de estímulo.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "onset-q3-d",
+          "text": "El inicio es el cruce positivo final, porque ahí viajan las fibras rápidas.",
           "isCorrect": false
         }
       ],
-      "explanation": "Pico no es más lento: es otra magnitud.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "El inicio es el primer despegue, fibras rápidas. El pico es el vértice, más fácil de marcar y más reproducible.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ],
+      "imageUrl": "/quiz-traces/onset-peak-latency-onset-q3.svg",
+      "imageAlt": "SNAP a 1 ms/div y 10 µV/div, despegue cerca de 2.6 ms y pico negativo posterior, sin el nombre del nervio en el encabezado."
     },
     {
-      "id": "q4",
+      "id": "onset-q4",
+      "sortOrder": 3,
       "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Latencia de inicio y latencia pico», ¿cuál afirmación es la correcta?\nLa latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.",
+      "difficulty": "intermediate",
+      "stem": "El ruido de base hace saltar el cursor de inicio 0.3 ms entre dos trazos, mientras el pico cae siempre en el mismo punto. ¿Qué consecuencia saca la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "La latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.",
+          "id": "onset-q4-a",
+          "text": "Por eso el pico se prefiere en la práctica: el inicio es el fisiológicamente “rápido”, pero marca peor.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "onset-q4-b",
+          "text": "Hay que abandonar el pico e informar solo el inicio más corto de los dos.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "onset-q4-c",
+          "text": "Una diferencia de 0.3 ms en el inicio no existe: el cursor no se mueve con el ruido.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "onset-q4-d",
+          "text": "Se informa la latencia del artefacto, que es la más estable.",
           "isCorrect": false
         }
       ],
-      "explanation": "La latencia de inicio corresponde a las fibras más rápidas; la latencia pico es más reproducible pero incluye fibras de velocidad media.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "La lección dice exactamente eso: el pico incluye fibras de velocidad media, pero se reproduce mejor, y por eso domina en la práctica.\n\n📚 Referencia: Dillingham T, Chen S, Andary M, et al.. Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force). Muscle & Nerve (2016). https://doi.org/10.1002/mus.25204",
+      "citations": [
+        {
+          "authors": "Dillingham T, Chen S, Andary M, et al.",
+          "title": "Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force)",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25204"
+        }
+      ]
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "onset-peak-latency",
       "topic_name": "Latencia de inicio y latencia pico",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Latencia de inicio y latencia pico». Pico = reproducibilidad en SNAP chicos. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Pico = reproducibilidad en SNAP chicos.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
+      "stem": "Mediano sensitivo a 14 cm. Inicio 3.6 ms, pico 4.2 ms. Alguien calcula la velocidad como 140 mm / 4.2 ms = 33 m/s y concluye desmielinización.",
       "difficulty": 2,
       "is_critical": false,
-      "pearl": "El cursor es un acto diagnóstico.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "findings": [
+        {
+          "type": "LAT",
+          "label": "Inicio y pico",
+          "value": "3.6 ms y 4.2 ms a 14 cm"
+        },
+        {
+          "type": "VCN",
+          "label": "Velocidad calculada con el pico",
+          "value": "33 m/s"
+        }
+      ],
+      "options": [
+        {
+          "text": "Recalcular con el inicio: 140 mm / 3.6 ms = 39 m/s. El pico no entra en esa fórmula.",
+          "is_correct": true,
+          "feedback": "La VCS de la lección usa la latencia de inicio. 33 m/s es una velocidad falsamente lenta."
+        },
+        {
+          "text": "Aceptar 33 m/s: el pico es la latencia de las fibras rápidas.",
+          "is_correct": false,
+          "feedback": "El pico no representa solo a las fibras más rápidas."
+        },
+        {
+          "text": "Promediar inicio y pico y dividir 140 entre 3.9.",
+          "is_correct": false,
+          "feedback": "La fórmula no promedia los dos cursores."
+        },
+        {
+          "text": "Usar 4.2 ms porque es más reproducible y por eso es la velocidad oficial.",
+          "is_correct": false,
+          "feedback": "La reproducibilidad justifica informar la latencia pico, no sustituye el inicio en la velocidad."
+        }
+      ],
+      "pearl": "Latencia pico para comparar. Latencia de inicio para la velocidad.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "onset-peak-latency"

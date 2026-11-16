@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Mediano Sensitivo (PANS)",
+  "revisionType": "quiz",
+  "quizTopicId": "median-sensory-step",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Comparativo si el absoluto es fronterizo. ¿Esta afirmación es la que corresponde enseñar en «Nervio Mediano Sensitivo (PANS)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Comparativo si el absoluto es fronterizo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Mediano Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nSi el SNAP en el 2do dedo es normal pero sospechas STC leve, realiza el estudio comparativo en el 4to dedo (mediano vs ulnar). Es mucho más sensible.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si el SNAP en el 2do dedo es normal pero sospechas STC leve, realiza el estudio comparativo en el 4to dedo (mediano vs ulnar). Es mucho más sensible.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si el SNAP en el 2do dedo es normal pero sospechas STC leve, realiza el estudio comparativo en el 4to dedo (mediano vs ulnar). Es mucho más sensible.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Mediano Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nEl 4.º dedo gana al absoluto.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El 4.º dedo gana al absoluto.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El 4.º dedo gana al absoluto.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Mediano Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nEstudio fundamental para el diagnóstico de STC.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Estudio fundamental para el diagnóstico de STC.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Estudio fundamental para el diagnóstico de STC.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "median-sensory-step",
+      "topic_name": "Nervio Mediano Sensitivo (PANS)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Mediano Sensitivo (PANS)». Comparativo si el absoluto es fronterizo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Comparativo si el absoluto es fronterizo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Si el SNAP en el 2do dedo es normal pero sospechas STC leve, realiza el estudio comparativo en el **4to dedo** (mediano vs ulnar). Es mucho más sensible.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "median-sensory-step"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

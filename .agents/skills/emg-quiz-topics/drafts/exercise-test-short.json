@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Prueba de Ejercicio Corto (10s)",
+  "revisionType": "quiz",
+  "quizTopicId": "exercise-test-short",
+  "moduleId": "repetitive-stimulation",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Alternativa de elección, totalmente indolora. ¿Esta afirmación es la que corresponde enseñar en «Prueba de Ejercicio Corto (10s)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Alternativa de elección, totalmente indolora.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Prueba de Ejercicio Corto (10s)», ¿cuál afirmación es la correcta?\nContracción isométrica máxima por exactamente 10 segundos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Contracción isométrica máxima por exactamente 10 segundos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Contracción isométrica máxima por exactamente 10 segundos.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Prueba de Ejercicio Corto (10s)», ¿cuál afirmación es la correcta?\nEstímulo post-ejercicio inmediato (< 10 segundos).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Estímulo post-ejercicio inmediato (< 10 segundos).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Estímulo post-ejercicio inmediato (< 10 segundos).\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Prueba de Ejercicio Corto (10s)», ¿cuál afirmación es la correcta?\nFacilitación real = Aumento de amplitud Y de área.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Facilitación real = Aumento de amplitud Y de área.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Facilitación real = Aumento de amplitud Y de área.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "repetitive-stimulation",
+      "topic_id": "exercise-test-short",
+      "topic_name": "Prueba de Ejercicio Corto (10s)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Prueba de Ejercicio Corto (10s)». Alternativa de elección, totalmente indolora. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Alternativa de elección, totalmente indolora.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El paciente debe estar completamente relajado antes de obtener la línea basal. Si está discretamente tenso, se estará auto-facilitando sin darte cuenta, lo que elevará tu línea base y te arruinará el cálculo del incremento (falso negativo).",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, Weber CF, Wilson JR, et al.. Literature review of the usefulness of repetitive nerve stimulation and single fiber EMG in the electrodiagnostic evaluation of patients with suspected myasthenia gravis or Lambert-Eaton myasthenic syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "repetitive-stimulation",
+        "exercise-test-short"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

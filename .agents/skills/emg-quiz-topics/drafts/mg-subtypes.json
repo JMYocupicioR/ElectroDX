@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Subtipos de MG: AChR vs MuSK",
+  "revisionType": "quiz",
+  "quizTopicId": "mg-subtypes",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "MG anti-MuSK: cara atrófica + debilidad bulbar + RNS normal en manos + no responde a piridostigmina = solicitar anti-MuSK. EL tratamiento es RITUXIMAB, no timectomía. ¿Esta afirmación es la que corresponde enseñar en «Subtipos de MG: AChR vs MuSK»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "MG anti-MuSK: cara atrófica + debilidad bulbar + RNS normal en manos + no responde a piridostigmina = solicitar anti-MuSK. EL tratamiento es RITUXIMAB, no timectomía.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Subtipos de MG: AChR vs MuSK», ¿cuál afirmación es la correcta?\nSi la RNS es negativa en manos pero la sospecha clínica es alta: evaluar nasalis (facial) y trapecio (accesorio). Los músculos proximales y craneales son más sensibles.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si la RNS es negativa en manos pero la sospecha clínica es alta: evaluar nasalis (facial) y trapecio (accesorio). Los músculos proximales y craneales son más sensibles.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si la RNS es negativa en manos pero la sospecha clínica es alta: evaluar nasalis (facial) y trapecio (accesorio). Los músculos proximales y craneales son más sensibles.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Subtipos de MG: AChR vs MuSK», ¿cuál afirmación es la correcta?\nMG con anticuerpos anti-AChR (85%): • Típica: debilidad fluctuante, predominio ocular → generalizada.",
+      "options": [
+        {
+          "id": "a",
+          "text": "MG con anticuerpos anti-AChR (85%): • Típica: debilidad fluctuante, predominio ocular → generalizada.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "MG con anticuerpos anti-AChR (85%): • Típica: debilidad fluctuante, predominio ocular → generalizada.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Subtipos de MG: AChR vs MuSK», ¿cuál afirmación es la correcta?\n• RNS: decremento postsináptico clásico a 2-3 Hz.",
+      "options": [
+        {
+          "id": "a",
+          "text": "• RNS: decremento postsináptico clásico a 2-3 Hz.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "• RNS: decremento postsináptico clásico a 2-3 Hz.\n\n📚 Referencia: Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "mg-subtypes",
+      "topic_name": "Subtipos de MG: AChR vs MuSK",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Subtipos de MG: AChR vs MuSK». MG anti-MuSK: cara atrófica + debilidad bulbar + RNS normal en manos + no responde a piridostigmina = solicitar anti-MuSK. EL tratamiento es RITUXIMAB, no timectomía. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "MG anti-MuSK: cara atrófica + debilidad bulbar + RNS normal en manos + no responde a piridostigmina = solicitar anti-MuSK. EL tratamiento es RITUXIMAB, no timectomía.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "MG anti-MuSK: cara atrófica + debilidad bulbar + RNS normal en manos + no responde a piridostigmina = solicitar anti-MuSK. EL tratamiento es RITUXIMAB, no timectomía.",
+      "source_reference": "Chiou-Tan FY, Tim RW, Gilchrist JM, et al.. Repetitive nerve stimulation and single fiber EMG in myasthenia gravis or Lambert-Eaton syndrome. Muscle & Nerve (2001). https://doi.org/10.1002/mus.1140",
+      "tags": [
+        "pathologies",
+        "mg-subtypes"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

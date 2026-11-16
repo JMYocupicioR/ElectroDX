@@ -1,0 +1,220 @@
+{
+  "moduleId": "safety-qc",
+  "revisionType": "quiz",
+  "title": "Evaluación: Riesgo Crítico de Neumotórax",
+  "quizTopicId": "pneumothorax",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "ptx-q1",
+      "sortOrder": 0,
+      "type": "multiple",
+      "difficulty": "basic",
+      "stem": "¿Qué dos músculos cita la lección entre los que pueden puncionar la pleura?",
+      "options": [
+        {
+          "id": "ptx-q1-a",
+          "text": "Serrato anterior.",
+          "isCorrect": true
+        },
+        {
+          "id": "ptx-q1-b",
+          "text": "Diafragma y paraespinales torácicos.",
+          "isCorrect": true
+        },
+        {
+          "id": "ptx-q1-c",
+          "text": "Abductor del meñique.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q1-d",
+          "text": "Gastrocnemio medial.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La lista de la lección es paraespinales torácicos, supraespinoso, romboides, serrato anterior, diafragma e intercostales. Kassardjian y colaboradores cuantifican el neumotórax iatrogénico tras la aguja.\n\n📚 Referencia: Kassardjian CD, O'Gorman CM, Sorenson EJ. The risk of iatrogenic pneumothorax after electromyography. Muscle & Nerve (2016). https://doi.org/10.1002/mus.24999",
+      "citations": [
+        {
+          "authors": "Kassardjian CD, O'Gorman CM, Sorenson EJ",
+          "title": "The risk of iatrogenic pneumothorax after electromyography",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.24999"
+        }
+      ]
+    },
+    {
+      "id": "ptx-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Se va a estudiar el serrato anterior. ¿Qué condición de técnica impone la lección si la aguja se dirige hacia el tórax?",
+      "options": [
+        {
+          "id": "ptx-q2-a",
+          "text": "No avanzar hacia el pulmón sin un tope óseo directo o sin guía ecográfica.",
+          "isCorrect": true
+        },
+        {
+          "id": "ptx-q2-b",
+          "text": "Basta una aguja más larga para “pasar rápido” la pleura.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q2-c",
+          "text": "El serrato se aguja igual que el tibial anterior, sin referencia ósea.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q2-d",
+          "text": "Pedir al paciente que inspire hondo y empujar en ese momento.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sin tope óseo o sin ecografía, la aguja no se empuja en dirección al pulmón. Inspirar hondo acerca la pleura.\n\n📚 Referencia: Kassardjian CD, O'Gorman CM, Sorenson EJ. The risk of iatrogenic pneumothorax after electromyography. Muscle & Nerve (2016). https://doi.org/10.1002/mus.24999",
+      "citations": [
+        {
+          "authors": "Kassardjian CD, O'Gorman CM, Sorenson EJ",
+          "title": "The risk of iatrogenic pneumothorax after electromyography",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.24999"
+        }
+      ]
+    },
+    {
+      "id": "ptx-q3",
+      "sortOrder": 2,
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "De estos cuatro músculos, ¿cuál concentra el riesgo pleural que enumera la lección?",
+      "options": [
+        {
+          "id": "ptx-q3-a",
+          "text": "Romboides.",
+          "isCorrect": true
+        },
+        {
+          "id": "ptx-q3-b",
+          "text": "Primer interóseo dorsal.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q3-c",
+          "text": "Vasto lateral.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q3-d",
+          "text": "Abductor corto del pulgar.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Romboides está en la lista torácica, junto con supraespinoso, serrato, diafragma, intercostales y paraespinales torácicos. La mano y el cuádriceps no.\n\n📚 Referencia: Kassardjian CD, O'Gorman CM, Sorenson EJ. The risk of iatrogenic pneumothorax after electromyography. Muscle & Nerve (2016). https://doi.org/10.1002/mus.24999",
+      "citations": [
+        {
+          "authors": "Kassardjian CD, O'Gorman CM, Sorenson EJ",
+          "title": "The risk of iatrogenic pneumothorax after electromyography",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.24999"
+        }
+      ]
+    },
+    {
+      "id": "ptx-q4",
+      "sortOrder": 3,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Un supraespinoso se aguja “a ciegas”, empujando la aguja hasta que el paciente tosa, sin buscar escápula ni usar ecógrafo. ¿Qué complicación busca evitar la lección con esa prohibición?",
+      "options": [
+        {
+          "id": "ptx-q4-a",
+          "text": "Neumotórax por punción pleural.",
+          "isCorrect": true
+        },
+        {
+          "id": "ptx-q4-b",
+          "text": "Solo un hematoma del tamaño de la warfarina.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q4-c",
+          "text": "Interferencia de 60 Hz en el romboides.",
+          "isCorrect": false
+        },
+        {
+          "id": "ptx-q4-d",
+          "text": "Bloqueo de la conducción del supraescapular.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El supraespinoso está junto a la pleura. La lección exige tope óseo o ecografía justamente para no puncionar el pulmón.\n\n📚 Referencia: Kassardjian CD, O'Gorman CM, Sorenson EJ. The risk of iatrogenic pneumothorax after electromyography. Muscle & Nerve (2016). https://doi.org/10.1002/mus.24999",
+      "citations": [
+        {
+          "authors": "Kassardjian CD, O'Gorman CM, Sorenson EJ",
+          "title": "The risk of iatrogenic pneumothorax after electromyography",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.24999"
+        }
+      ]
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "safety-qc",
+      "topic_id": "pneumothorax",
+      "topic_name": "Riesgo Crítico de Neumotórax",
+      "island_name": "EMG",
+      "stem": "Mujer de 61 años con escápula alada. Se plantea aguja de serrato anterior y de romboides, sin ecógrafo. El operador piensa avanzar hasta obtener insercional “más profundo”.",
+      "difficulty": 3,
+      "is_critical": true,
+      "findings": [
+        {
+          "type": "EMG",
+          "label": "Músculos",
+          "value": "Serrato anterior y romboides"
+        },
+        {
+          "type": "SIGN",
+          "label": "Guía",
+          "value": "Sin ecografía y sin tope óseo planificado"
+        }
+      ],
+      "options": [
+        {
+          "text": "No dirigir la aguja hacia el pulmón. Hace falta tope óseo o ecografía.",
+          "is_correct": true,
+          "feedback": "Serrato y romboides están en la lista de neumotórax. La profundidad a ciegas es el mecanismo de la punción pleural."
+        },
+        {
+          "text": "Avanzar: el neumotórax solo ocurre en el diafragma.",
+          "is_correct": false,
+          "feedback": "La lección incluye serrato, romboides, supraespinoso, paraespinal torácico e intercostales, no solo el diafragma."
+        },
+        {
+          "text": "Usar una aguja más larga para apoyar antes en la pleura.",
+          "is_correct": false,
+          "feedback": "Apoyar en la pleura es la complicación, no la técnica."
+        },
+        {
+          "text": "Sustituir ambos músculos por el abductor del meñique, que evalúa el mismo nervio torácico largo.",
+          "is_correct": false,
+          "feedback": "El abductor del meñique no estudia el torácico largo ni el dorsal escapular. La alternativa segura es cambiar la técnica, no el nervio."
+        }
+      ],
+      "pearl": "Serrato, romboides, supraespinoso, diafragma, intercostales y paraespinal torácico: tope óseo o ecografía, nunca profundidad libre hacia el pulmón.",
+      "source_reference": "Kassardjian CD, O'Gorman CM, Sorenson EJ. The risk of iatrogenic pneumothorax after electromyography. Muscle & Nerve (2016). https://doi.org/10.1002/mus.24999",
+      "tags": [
+        "safety-qc",
+        "pneumothorax"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

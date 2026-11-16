@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Evaluación Milimétrica del Nervio",
+  "revisionType": "quiz",
+  "quizTopicId": "incremental-assessment",
+  "moduleId": "special-studies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Estimulación cada 1-2 cm a lo largo del nervio. ¿Esta afirmación es la que corresponde enseñar en «Evaluación Milimétrica del Nervio»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Estimulación cada 1-2 cm a lo largo del nervio.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Evaluación Milimétrica del Nervio», ¿cuál afirmación es la correcta?\nSalto de latencia mayor de 0.4-0.5 ms/cm = Punto de compresión.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Salto de latencia mayor de 0.4-0.5 ms/cm = Punto de compresión.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Salto de latencia mayor de 0.4-0.5 ms/cm = Punto de compresión.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Evaluación Milimétrica del Nervio», ¿cuál afirmación es la correcta?\nLa técnica de localización más precisa disponible.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La técnica de localización más precisa disponible.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La técnica de localización más precisa disponible.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Evaluación Milimétrica del Nervio», ¿cuál afirmación es la correcta?\nLa técnica de inching requiere un estimulador cuidadosamente calibrado y marcas de piel muy precisas a intervalos regulares. Errores de medición de 0.5 cm pueden crear falsos positivos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La técnica de inching requiere un estimulador cuidadosamente calibrado y marcas de piel muy precisas a intervalos regulares. Errores de medición de 0.5 cm pueden crear falsos positivos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La técnica de inching requiere un estimulador cuidadosamente calibrado y marcas de piel muy precisas a intervalos regulares. Errores de medición de 0.5 cm pueden crear falsos positivos.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "special-studies",
+      "topic_id": "incremental-assessment",
+      "topic_name": "Evaluación Milimétrica del Nervio",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Evaluación Milimétrica del Nervio». Estimulación cada 1-2 cm a lo largo del nervio. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Estimulación cada 1-2 cm a lo largo del nervio.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La técnica de inching requiere un estimulador cuidadosamente calibrado y marcas de piel muy precisas a intervalos regulares. Errores de medición de 0.5 cm pueden crear falsos positivos.",
+      "source_reference": "Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).",
+      "tags": [
+        "special-studies",
+        "incremental-assessment"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

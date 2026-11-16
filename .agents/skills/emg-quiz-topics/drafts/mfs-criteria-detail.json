@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Síndrome de Miller Fisher (MFS)",
+  "revisionType": "quiz",
+  "quizTopicId": "mfs-criteria-detail",
+  "moduleId": "diagnostic-criteria",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Ante oftalmoplejía aguda + arreflexia: solicitar anti-GQ1b ANTES del estudio electrodiagnóstico. El anticuerpo es casi patognomónico y puede estar positivo antes de que aparezcan anomalías NCS. ¿Esta afirmación es la que corresponde enseñar en «Síndrome de Miller Fisher (MFS)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ante oftalmoplejía aguda + arreflexia: solicitar anti-GQ1b ANTES del estudio electrodiagnóstico. El anticuerpo es casi patognomónico y puede estar positivo antes de que aparezcan anomalías NCS.\n\n📚 Referencia: Hadden RD, Cornblath DR, Hughes RA, et al.. Electrophysiological classification of Guillain-Barré syndrome: Clinical associations and outcome. Annals of Neurology (1998). https://pubmed.ncbi.nlm.nih.gov/9818934/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nEl Blink Reflex es la prueba electrodiagnóstica más sensible en MFS temprano. Si las NCS de extremidades son normales pero sospechas MFS, haz el blink reflex — puede ser el único hallazgo anormal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El Blink Reflex es la prueba electrodiagnóstica más sensible en MFS temprano. Si las NCS de extremidades son normales pero sospechas MFS, haz el blink reflex — puede ser el único hallazgo anormal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El Blink Reflex es la prueba electrodiagnóstica más sensible en MFS temprano. Si las NCS de extremidades son normales pero sospechas MFS, haz el blink reflex — puede ser el único hallazgo anormal.\n\n📚 Referencia: Hadden RD, Cornblath DR, Hughes RA, et al.. Electrophysiological classification of Guillain-Barré syndrome: Clinical associations and outcome. Annals of Neurology (1998). https://pubmed.ncbi.nlm.nih.gov/9818934/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nVariante craneal del SGB que constituye ~5% de los casos.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Variante craneal del SGB que constituye ~5% de los casos.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Variante craneal del SGB que constituye ~5% de los casos.\n\n📚 Referencia: Hadden RD, Cornblath DR, Hughes RA, et al.. Electrophysiological classification of Guillain-Barré syndrome: Clinical associations and outcome. Annals of Neurology (1998). https://pubmed.ncbi.nlm.nih.gov/9818934/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Síndrome de Miller Fisher (MFS)», ¿cuál afirmación es la correcta?\nTríada clínica: Oftalmoplejía + Ataxia + Arreflexia.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Tríada clínica: Oftalmoplejía + Ataxia + Arreflexia.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Tríada clínica: Oftalmoplejía + Ataxia + Arreflexia.\n\n📚 Referencia: Hadden RD, Cornblath DR, Hughes RA, et al.. Electrophysiological classification of Guillain-Barré syndrome: Clinical associations and outcome. Annals of Neurology (1998). https://pubmed.ncbi.nlm.nih.gov/9818934/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "diagnostic-criteria",
+      "topic_id": "mfs-criteria-detail",
+      "topic_name": "Síndrome de Miller Fisher (MFS)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Síndrome de Miller Fisher (MFS)». Ante oftalmoplejía aguda + arreflexia: solicitar anti-GQ1b ANTES del estudio electrodiagnóstico. El anticuerpo es casi patognomónico y puede estar positivo antes de que aparezcan anomalías NCS. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Ante oftalmoplejía aguda + arreflexia: solicitar anti-GQ1b ANTES del estudio electrodiagnóstico. El anticuerpo es casi patognomónico y puede estar positivo antes de que aparezcan anomalías NCS.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Ante oftalmoplejía aguda + arreflexia: solicitar anti-GQ1b ANTES del estudio electrodiagnóstico. El anticuerpo es casi patognomónico y puede estar positivo antes de que aparezcan anomalías NCS.",
+      "source_reference": "Hadden RD, Cornblath DR, Hughes RA, et al.. Electrophysiological classification of Guillain-Barré syndrome: Clinical associations and outcome. Annals of Neurology (1998). https://pubmed.ncbi.nlm.nih.gov/9818934/",
+      "tags": [
+        "diagnostic-criteria",
+        "mfs-criteria-detail"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

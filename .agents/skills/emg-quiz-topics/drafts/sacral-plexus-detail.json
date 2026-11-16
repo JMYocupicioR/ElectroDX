@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Plexo Sacro (L4-S3): Nervios y Territorios",
+  "revisionType": "quiz",
+  "quizTopicId": "sacral-plexus-detail",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Ciático = división peronea (L4-S2) + división tibial (L4-S3) en una sola vaina. ¿Esta afirmación es la que corresponde enseñar en «Plexo Sacro (L4-S3): Nervios y Territorios»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Ciático = división peronea (L4-S2) + división tibial (L4-S3) en una sola vaina.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Plexo Sacro (L4-S3): Nervios y Territorios», ¿cuál afirmación es la correcta?\nDivisión peronea: dorsiflexión + eversión. División tibial: plantiflexión + inversión.",
+      "options": [
+        {
+          "id": "a",
+          "text": "División peronea: dorsiflexión + eversión. División tibial: plantiflexión + inversión.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "División peronea: dorsiflexión + eversión. División tibial: plantiflexión + inversión.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexo Sacro (L4-S3): Nervios y Territorios», ¿cuál afirmación es la correcta?\nLa división peronea es más vulnerable a compresión.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La división peronea es más vulnerable a compresión.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La división peronea es más vulnerable a compresión.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexo Sacro (L4-S3): Nervios y Territorios», ¿cuál afirmación es la correcta?\nBíceps femoral cabeza corta = músculo clave para localizar lesión alta vs baja.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Bíceps femoral cabeza corta = músculo clave para localizar lesión alta vs baja.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Bíceps femoral cabeza corta = músculo clave para localizar lesión alta vs baja.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "sacral-plexus-detail",
+      "topic_name": "Plexo Sacro (L4-S3): Nervios y Territorios",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Plexo Sacro (L4-S3): Nervios y Territorios». Ciático = división peronea (L4-S2) + división tibial (L4-S3) en una sola vaina. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Ciático = división peronea (L4-S2) + división tibial (L4-S3) en una sola vaina.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "CLAVE ANATÓMICA: la división peronea del ciático es más vulnerable que la tibial porque está en posición posterolateral (más expuesta a compresión contra estructuras óseas). Por eso las lesiones del ciático a nivel de cadera/muslo afectan preferentemente la dorsiflexión (peroneo) → simulando una lesión del peroneo común aislado.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "sacral-plexus-detail"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

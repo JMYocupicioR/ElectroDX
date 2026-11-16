@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Plexo Lumbar (L1-L4): Nervios y Territorios",
+  "revisionType": "quiz",
+  "quizTopicId": "lumbar-plexus-detail",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Meralgia parestésica (atrapamiento del femorocutáneo lateral): dolor/adormecimiento de cara lateral del muslo sin debilidad motora. Factores de riesgo: obesidad, embarazo, cinturones apretados, diabetes. NO requiere EMG a menos que haya duda diagnóstica — el SNAP del LFCN comparativo bilateral es diagnóstico. ¿Esta afirmación es la que corresponde enseñar en «Plexo Lumbar (L1-L4): Nervios y Territorios»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Meralgia parestésica (atrapamiento del femorocutáneo lateral): dolor/adormecimiento de cara lateral del muslo sin debilidad motora. Factores de riesgo: obesidad, embarazo, cinturones apretados, diabetes. NO requiere EMG a menos que haya duda diagnóstica — el SNAP del LFCN comparativo bilateral es diagnóstico.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Plexo Lumbar (L1-L4): Nervios y Territorios», ¿cuál afirmación es la correcta?\nPara diferenciar neuropatía femoral vs radiculopatía L3-L4: evaluar los aductores (obturador, L2-L4). Si los aductores están afectados JUNTO con el cuádriceps → plexopatía lumbar (ambos nervios del plexo). Si solo el cuádriceps está afectado → neuropatía femoral aislada.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para diferenciar neuropatía femoral vs radiculopatía L3-L4: evaluar los aductores (obturador, L2-L4). Si los aductores están afectados JUNTO con el cuádriceps → plexopatía lumbar (ambos nervios del plexo). Si solo el cuádriceps está afectado → neuropatía femoral aislada.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para diferenciar neuropatía femoral vs radiculopatía L3-L4: evaluar los aductores (obturador, L2-L4). Si los aductores están afectados JUNTO con el cuádriceps → plexopatía lumbar (ambos nervios del plexo). Si solo el cuádriceps está afectado → neuropatía femoral aislada.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexo Lumbar (L1-L4): Nervios y Territorios», ¿cuál afirmación es la correcta?\nSus ramas principales inervan la pared abdominal inferior, la región inguinal y el compartimento anterior del muslo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sus ramas principales inervan la pared abdominal inferior, la región inguinal y el compartimento anterior del muslo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sus ramas principales inervan la pared abdominal inferior, la región inguinal y el compartimento anterior del muslo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Plexo Lumbar (L1-L4): Nervios y Territorios», ¿cuál afirmación es la correcta?\nNervio Iliohipogástrico (L1): Motor: oblicuo interno, transverso abdominal.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Nervio Iliohipogástrico (L1): Motor: oblicuo interno, transverso abdominal.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Nervio Iliohipogástrico (L1): Motor: oblicuo interno, transverso abdominal.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "lumbar-plexus-detail",
+      "topic_name": "Plexo Lumbar (L1-L4): Nervios y Territorios",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Plexo Lumbar (L1-L4): Nervios y Territorios». Meralgia parestésica (atrapamiento del femorocutáneo lateral): dolor/adormecimiento de cara lateral del muslo sin debilidad motora. Factores de riesgo: obesidad, embarazo, cinturones apretados, diabetes. NO requiere EMG a menos que haya duda diagnóstica — el SNAP del LFCN comparativo bilateral es diagnóstico. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Meralgia parestésica (atrapamiento del femorocutáneo lateral): dolor/adormecimiento de cara lateral del muslo sin debilidad motora. Factores de riesgo: obesidad, embarazo, cinturones apretados, diabetes. NO requiere EMG a menos que haya duda diagnóstica — el SNAP del LFCN comparativo bilateral es diagnóstico.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Meralgia parestésica (atrapamiento del femorocutáneo lateral): dolor/adormecimiento de cara lateral del muslo sin debilidad motora. Factores de riesgo: obesidad, embarazo, cinturones apretados, diabetes. NO requiere EMG a menos que haya duda diagnóstica — el SNAP del LFCN comparativo bilateral es diagnóstico.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "lumbar-plexus-detail"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

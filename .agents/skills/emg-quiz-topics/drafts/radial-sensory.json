@@ -1,121 +1,169 @@
 {
-  "title": "Evaluación: Nervio Radial sensitivo (tabaquera anatómica)",
-  "revisionType": "quiz",
-  "quizTopicId": "radial-sensory",
   "moduleId": "nerve-conduction",
+  "revisionType": "quiz",
+  "title": "Evaluación: Nervio Radial sensitivo (tabaquera anatómica)",
+  "quizTopicId": "radial-sensory",
   "passScore": 70,
+  "maxAttempts": null,
   "shuffleQuestions": true,
   "shuffleOptions": true,
   "questions": [
     {
-      "id": "q1",
-      "type": "true_false",
+      "id": "rads-q1",
+      "sortOrder": 0,
+      "type": "single",
       "difficulty": "basic",
-      "stem": "Registro: tabaquera anatómica. Distancia: 10 cm. ¿Esta afirmación es la que corresponde enseñar en «Nervio Radial sensitivo (tabaquera anatómica)»?",
+      "stem": "SNAP radial en la tabaquera, 10 cm por el borde del radio. ¿Qué amplitud y qué pico da la lección como normales?",
       "options": [
         {
-          "id": "a",
-          "text": "Sí. Esa es la conducta que describe la lección.",
+          "id": "rads-q1-a",
+          "text": "Amplitud 30–60 µV, la más alta del miembro superior, y pico 2.1–2.5 ms.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "No. La lección sostiene lo contrario.",
+          "id": "rads-q1-b",
+          "text": "Amplitud 4–12 µV, como el safeno, y pico mayor de 4 ms.",
+          "isCorrect": false
+        },
+        {
+          "id": "rads-q1-c",
+          "text": "Amplitud en mV, porque el radial sensitivo es un CMAP.",
+          "isCorrect": false
+        },
+        {
+          "id": "rads-q1-d",
+          "text": "Pico normal hasta 3.6 ms, el mismo límite del mediano a 14 cm.",
           "isCorrect": false
         }
       ],
-      "explanation": "Registro: tabaquera anatómica. Distancia: 10 cm.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "A 10 cm el pico normal es 2.1–2.5 ms (anormal >2.8), la amplitud 30–60 µV (anormal <15) y la velocidad 58–70 m/s. Suele verse sin promedio. G1 entre el extensor corto y el extensor largo del pulgar.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
     },
     {
-      "id": "q2",
+      "id": "rads-q2",
+      "sortOrder": 1,
       "type": "single",
       "difficulty": "intermediate",
-      "stem": "En «Nervio Radial sensitivo (tabaquera anatómica)», ¿cuál afirmación es la correcta?\nAmplitud más alta del MS: 30-60 µV.",
+      "stem": "Dolor en el dorso de la mano, SNAP radial de 8 µV y motor radial normal. ¿Qué síndrome nombra la lección?",
       "options": [
         {
-          "id": "a",
-          "text": "Amplitud más alta del MS: 30-60 µV.",
+          "id": "rads-q2-a",
+          "text": "Wartenberg: neuropatía sensitiva pura del radial superficial, con el motor respetado.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "rads-q2-b",
+          "text": "Síndrome del pronador, que borra el SNAP radial y paraliza el extensor de los dedos.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "rads-q2-c",
+          "text": "STC, porque el radial es el nervio del dedo 2.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "rads-q2-d",
+          "text": "Atrapamiento del cubital en Guyon.",
           "isCorrect": false
         }
       ],
-      "explanation": "Amplitud más alta del MS: 30-60 µV.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "8 µV está bajo el límite de 15 µV. Wartenberg es sensitivo puro. La perla lo asocia a pulseras, tijeras o esposas, y a un Tinel en el borde del radio. De Quervain puede comprimirlo por vecindad.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q3",
+      "id": "rads-q3",
+      "sortOrder": 2,
       "type": "single",
       "difficulty": "advanced",
-      "stem": "En «Nervio Radial sensitivo (tabaquera anatómica)», ¿cuál afirmación es la correcta?\nLatencia pico normal: 2.1-2.5 ms. VCS: 58-70 m/s.",
+      "stem": "Al estimular “el radial” demasiado medial en el antebrazo aparece un potencial que no es el de la tabaquera. ¿Qué nervio advierte la lección que se puede coestimular?",
       "options": [
         {
-          "id": "a",
-          "text": "Latencia pico normal: 2.1-2.5 ms. VCS: 58-70 m/s.",
+          "id": "rads-q3-a",
+          "text": "El cutáneo lateral del antebrazo, rama del musculocutáneo.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "rads-q3-b",
+          "text": "El sural.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "rads-q3-c",
+          "text": "El plantar medial.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "rads-q3-d",
+          "text": "La rama dorsal del ulnar.",
           "isCorrect": false
         }
       ],
-      "explanation": "Latencia pico normal: 2.1-2.5 ms. VCS: 58-70 m/s.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "El cátodo tiene que quedarse en el borde lateral del radio. Medial a eso se cuela el cutáneo lateral del antebrazo. En un STC, este SNAP radial debe estar normal: es un nervio control.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
     },
     {
-      "id": "q4",
-      "type": "single",
-      "difficulty": "advanced",
-      "stem": "En «Nervio Radial sensitivo (tabaquera anatómica)», ¿cuál afirmación es la correcta?\nSíndrome de Wartenberg: neuropatía sensitiva pura del radial.",
+      "id": "rads-q4",
+      "sortOrder": 3,
+      "type": "image_choice",
+      "difficulty": "intermediate",
+      "stem": "Tabaquera, 10 cm, 1 ms/div y 10 µV/div. El potencial mide unos 8 µV y el inicio cae cerca de 2.4 ms. ¿Qué parámetro está fuera de la tabla?",
       "options": [
         {
-          "id": "a",
-          "text": "Síndrome de Wartenberg: neuropatía sensitiva pura del radial.",
+          "id": "rads-q4-a",
+          "text": "La amplitud: 8 µV está por debajo de 15 µV. Un inicio de 2.4 ms no es, por sí solo, el pico anormal.",
           "isCorrect": true
         },
         {
-          "id": "b",
-          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "id": "rads-q4-b",
+          "text": "Los dos: 2.4 ms supera el pico anormal de 2.8 ms y 8 µV es normal.",
           "isCorrect": false
         },
         {
-          "id": "c",
-          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "id": "rads-q4-c",
+          "text": "Ninguno: 8 µV entra en 30–60 µV.",
           "isCorrect": false
         },
         {
-          "id": "d",
-          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "id": "rads-q4-d",
+          "text": "Solo la latencia, porque 8 µV es la amplitud más alta esperable del radial.",
           "isCorrect": false
         }
       ],
-      "explanation": "Síndrome de Wartenberg: neuropatía sensitiva pura del radial.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
-      "citations": []
+      "explanation": "Anormal por amplitud es <15 µV. El pico se considera anormal por encima de 2.8 ms; 2.4 ms cabe en 2.1–2.5 si fuera el pico, y aquí el trazo marca el inicio, todavía más temprano.\n\n📚 Referencia: Chen S, Andary M, Buschbacher R, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "citations": [
+        {
+          "authors": "Chen S, Andary M, Buschbacher R, et al.",
+          "title": "Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25203"
+        }
+      ],
+      "imageUrl": "/quiz-traces/radial-sensory-rads-q4.svg",
+      "imageAlt": "SNAP de unos 8 µV con inicio cerca de 2.4 ms, barrido 1 ms/div y ganancia 10 µV/div."
     }
   ],
   "examQuestions": [
@@ -124,34 +172,45 @@
       "topic_id": "radial-sensory",
       "topic_name": "Nervio Radial sensitivo (tabaquera anatómica)",
       "island_name": "EMG",
-      "stem": "Caso breve ligado a «Nervio Radial sensitivo (tabaquera anatómica)». Registro: tabaquera anatómica. Distancia: 10 cm. ¿Cuál es la conducta correcta?",
-      "findings": [],
-      "options": [
-        {
-          "text": "Registro: tabaquera anatómica. Distancia: 10 cm.",
-          "is_correct": true,
-          "feedback": "Coincide con el texto de la lección."
-        },
-        {
-          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
-          "is_correct": false,
-          "feedback": "Un parámetro aislado no cierra la topografía."
-        },
-        {
-          "text": "Ignorar temperatura y distancia.",
-          "is_correct": false,
-          "feedback": "Temperatura y distancia cambian latencia y velocidad."
-        },
-        {
-          "text": "Medir la latencia sobre el artefacto de estímulo.",
-          "is_correct": false,
-          "feedback": "El onset dentro del artefacto no es una latencia."
-        }
-      ],
+      "stem": "Hombre de 36 años, esposas el fin de semana, quemazón en el dorso del pulgar. Extensión de muñeca y dedos conservada. SNAP radial 9 µV, pico 2.4 ms a 10 cm. Mediano y ulnar sensitivos normales.",
       "difficulty": 2,
       "is_critical": false,
-      "pearl": "El SNAP radial tiene la amplitud más alta de todos los nervios sensitivos del MS (30-60 µV). Si está significativamente reducido, sospechar patología real.",
-      "source_reference": "Chen S, Andary M, Buschbacher R, Del Toro D, Smith B, So Y, et al.. Electrodiagnostic reference values for upper and lower limb nerve conduction studies in adult populations. Muscle & Nerve (2016). https://doi.org/10.1002/mus.25203",
+      "findings": [
+        {
+          "type": "AMPL",
+          "label": "SNAP radial a 10 cm",
+          "value": "9 µV, pico 2.4 ms"
+        },
+        {
+          "type": "SIGN",
+          "label": "Motor radial",
+          "value": "Extensión de muñeca y dedos conservada"
+        }
+      ],
+      "options": [
+        {
+          "text": "Wartenberg: SNAP radial bajo con motor radial respetado.",
+          "is_correct": true,
+          "feedback": "9 µV cruza el límite de 15 µV. El pico de 2.4 ms sigue en 2.1–2.5. El contexto de compresión en el borde del radio encaja."
+        },
+        {
+          "text": "Parálisis radial en el canal de torsión, completa.",
+          "is_correct": false,
+          "feedback": "Esa lesión tumba la extensión. Aquí el motor está clínicamente respetado."
+        },
+        {
+          "text": "STC, porque el dorso del pulgar es mediano.",
+          "is_correct": false,
+          "feedback": "El dorso del primer espacio es radial superficial, y el mediano sensitivo está normal."
+        },
+        {
+          "text": "Estudio normal: 9 µV entra en 30–60 µV.",
+          "is_correct": false,
+          "feedback": "30–60 µV es el rango normal; por debajo de 15 µV es el límite anormal."
+        }
+      ],
+      "pearl": "El radial sensitivo es el de mayor amplitud en la mano. Si se cae y el motor sigue, piensa en Wartenberg, no en un STC.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
       "tags": [
         "nerve-conduction",
         "radial-sensory"

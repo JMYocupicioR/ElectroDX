@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { allModules } from '../src/content/modules/index.ts';
 import { applyLessonExpansions, getAllFlatTopics } from '../src/services/contentMerge.ts';
 import { isQuizEligibleLeaf } from '../src/utils/topicsMissingQuiz.ts';
@@ -7,7 +9,14 @@ import { submitQuizDraft } from '../mcp/neurosafe-quiz/tools.ts';
 import type { QuizQuestionDraft } from '../src/types/quiz.ts';
 import type { ExamQuestion } from '../src/types/exam.ts';
 
-const MODULES = ['fundamentals', 'nerve-conduction', 'emg-needle'];
+const SKIP_MODULES = new Set(['bibliography']);
+const MODULES = allModules.map((m) => m.id).filter((id) => !SKIP_MODULES.has(id));
+const draftsDir = path.resolve('.agents/skills/emg-quiz-topics/drafts');
+const existingDrafts = new Set(
+  fs.existsSync(draftsDir)
+    ? fs.readdirSync(draftsDir).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, ''))
+    : [],
+);
 const withQuiz = new Set(
   LOCAL_QUIZ_FLAGS.filter((f) => f.question_count > 0).map((f) => f.topic_id),
 );
@@ -100,7 +109,7 @@ for (const moduleId of MODULES) {
   const mod = applyLessonExpansions(allModules.find((m) => m.id === moduleId)!);
   for (const { topic, path } of getAllFlatTopics(mod.topics)) {
     if (!isQuizEligibleLeaf(topic)) continue;
-    if (seenIds.has(topic.id) || withQuiz.has(topic.id)) {
+    if (seenIds.has(topic.id) || withQuiz.has(topic.id) || existingDrafts.has(topic.id)) {
       skipped += 1;
       continue;
     }

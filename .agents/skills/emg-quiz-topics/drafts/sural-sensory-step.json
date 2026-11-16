@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Sural Sensitivo (PANS)",
+  "revisionType": "quiz",
+  "quizTopicId": "sural-sensory-step",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "El SNAP sural disminuye fisiológicamente con la edad. En mayores de 70 años, un SNAP de 4 µV puede ser normal. Siempre comparar con el lado contralateral. ¿Esta afirmación es la que corresponde enseñar en «Nervio Sural Sensitivo (PANS)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El SNAP sural disminuye fisiológicamente con la edad. En mayores de 70 años, un SNAP de 4 µV puede ser normal. Siempre comparar con el lado contralateral.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Sural Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nSi no encuentras respuesta a 14 cm, intenta a 10 cm o mueve el estimulador medialmente.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Si no encuentras respuesta a 14 cm, intenta a 10 cm o mueve el estimulador medialmente.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Si no encuentras respuesta a 14 cm, intenta a 10 cm o mueve el estimulador medialmente.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Sural Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nEdad y el otro pie antes que el adjetivo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Edad y el otro pie antes que el adjetivo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Edad y el otro pie antes que el adjetivo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Sural Sensitivo (PANS)», ¿cuál afirmación es la correcta?\nEl nervio sensitivo más importante para descartar polineuropatía.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El nervio sensitivo más importante para descartar polineuropatía.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El nervio sensitivo más importante para descartar polineuropatía.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "sural-sensory-step",
+      "topic_name": "Nervio Sural Sensitivo (PANS)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Sural Sensitivo (PANS)». El SNAP sural disminuye fisiológicamente con la edad. En mayores de 70 años, un SNAP de 4 µV puede ser normal. Siempre comparar con el lado contralateral. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "El SNAP sural disminuye fisiológicamente con la edad. En mayores de 70 años, un SNAP de 4 µV puede ser normal. Siempre comparar con el lado contralateral.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "El SNAP sural disminuye fisiológicamente con la edad. En mayores de 70 años, un SNAP de 4 µV puede ser normal. Siempre comparar con el lado contralateral.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "sural-sensory-step"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

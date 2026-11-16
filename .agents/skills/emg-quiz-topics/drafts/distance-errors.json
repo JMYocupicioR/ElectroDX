@@ -1,0 +1,219 @@
+{
+  "moduleId": "safety-qc",
+  "revisionType": "quiz",
+  "title": "Evaluación: Errores de Medición de Distancia",
+  "quizTopicId": "distance-errors",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "dist-q1",
+      "sortOrder": 0,
+      "type": "single",
+      "difficulty": "basic",
+      "stem": "La velocidad se calculó con una cinta floja, que marcó más centímetros de los que realmente separan los cátodos. ¿Hacia dónde se desplaza la velocidad?",
+      "options": [
+        {
+          "id": "dist-q1-a",
+          "text": "Se sobreestima, porque la velocidad usa esa distancia inflada en el numerador.",
+          "isCorrect": true
+        },
+        {
+          "id": "dist-q1-b",
+          "text": "Se subestima siempre, porque la cinta floja acorta la distancia.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q1-c",
+          "text": "No cambia: la velocidad depende solo de la latencia.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q1-d",
+          "text": "Se vuelve incalculable y el equipo informa bloqueo.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "VCN = distancia / tiempo. Una cinta holgada alarga la distancia medida y fabrica una velocidad falsamente alta. Una cinta demasiado apretada o un trayecto que no respeta el codo hace el error inverso.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
+    },
+    {
+      "id": "dist-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "El codo se estimuló con el antebrazo flexionado a 90°, pero la distancia se midió después, con el codo extendido. ¿Qué viola esa secuencia?",
+      "options": [
+        {
+          "id": "dist-q2-a",
+          "text": "La extremidad tiene que medirse en la misma posición en la que se estimuló.",
+          "isCorrect": true
+        },
+        {
+          "id": "dist-q2-b",
+          "text": "La distancia del codo solo es válida en extensión, aunque el estímulo haya sido en flexión.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q2-c",
+          "text": "La posición no importa si los filtros están en 20 Hz–2 kHz.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q2-d",
+          "text": "Hay que medir sobre la piel laxa, a propósito, para incluir el nervio redundante.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La lección exige la misma posición durante el estímulo y durante la cinta: cinta tensa en línea recta, o el codo curvo medido como se estimuló.\n\n📚 Referencia: Buschbacher RM, Kumbhare D, Robinson L. Buschbacher's Manual of Nerve Conduction Studies (3rd ed). Demos Medical (2015).",
+      "citations": [
+        {
+          "authors": "Buschbacher RM, Kumbhare D, Robinson L",
+          "title": "Buschbacher's Manual of Nerve Conduction Studies (3rd ed)",
+          "journal": "Demos Medical",
+          "year": 2015
+        }
+      ]
+    },
+    {
+      "id": "dist-q3",
+      "sortOrder": 2,
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "Entre muñeca y codo la diferencia de latencias es 4.0 ms. La distancia real es 200 mm, pero la cinta floja marcó 260 mm. ¿Qué velocidades resultan, en m/s?",
+      "options": [
+        {
+          "id": "dist-q3-a",
+          "text": "La real es 50 m/s y la calculada con la cinta floja es 65 m/s.",
+          "isCorrect": true
+        },
+        {
+          "id": "dist-q3-b",
+          "text": "La real es 80 m/s y la floja es 50 m/s.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q3-c",
+          "text": "Ambas son 50 m/s, porque el tiempo manda.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q3-d",
+          "text": "La floja da 15 m/s, porque se restan los 60 mm sobrantes.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "200 mm / 4.0 ms = 50 m/s. 260 mm / 4.0 ms = 65 m/s. El error de cinta puede convertir un nervio límite en uno “rápido”.\n\n📚 Referencia: Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "citations": [
+        {
+          "authors": "Preston DC, Shapiro BE",
+          "title": "Electromyography and Neuromuscular Disorders (4th ed)",
+          "journal": "Elsevier",
+          "year": 2021,
+          "url": "https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5"
+        }
+      ]
+    },
+    {
+      "id": "dist-q4",
+      "sortOrder": 3,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Una velocidad ulnar a través del codo sale en 70 m/s, muy por encima de lo esperado, y la cinta se pasó con el codo en un ángulo distinto al del estímulo. ¿Cuál es la primera hipótesis técnica?",
+      "options": [
+        {
+          "id": "dist-q4-a",
+          "text": "Distancia mal medida por el cambio de posición; hay que volver a medir con el codo como se estimuló.",
+          "isCorrect": true
+        },
+        {
+          "id": "dist-q4-b",
+          "text": "Axonotmesis, porque las lesiones axonales aceleran la conducción.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q4-c",
+          "text": "STC asociado, que acelera el segmento del codo.",
+          "isCorrect": false
+        },
+        {
+          "id": "dist-q4-d",
+          "text": "Supramáximo insuficiente, que alarga la distancia eléctrica.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Una velocidad inverosímilmente alta obliga a revisar la cinta y la posición antes de cualquier diagnóstico. El estímulo submáximo afecta la amplitud, no alarga la distancia.\n\n📚 Referencia: Dillingham T, Chen S, Andary M, et al.. Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force). Muscle & Nerve (2016). https://doi.org/10.1002/mus.25204",
+      "citations": [
+        {
+          "authors": "Dillingham T, Chen S, Andary M, et al.",
+          "title": "Establishing high quality reference values for nerve conduction studies (AANEM Normative Data Task Force)",
+          "journal": "Muscle & Nerve",
+          "year": 2016,
+          "url": "https://doi.org/10.1002/mus.25204"
+        }
+      ]
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "safety-qc",
+      "topic_id": "distance-errors",
+      "topic_name": "Errores de Medición de Distancia",
+      "island_name": "EMG",
+      "stem": "El segmento ulnar muñeca–bajo codo mide, con la cinta tensa y el brazo en la posición del estímulo, 200 mm, y la diferencia de latencias es 4.0 ms. Una segunda técnica, con la cinta floja, anota 248 mm para el mismo par de trazos.",
+      "difficulty": 3,
+      "is_critical": true,
+      "findings": [
+        {
+          "type": "LAT",
+          "label": "Diferencia de latencias muñeca–bajo codo",
+          "value": "4.0 ms"
+        },
+        {
+          "type": "VCN",
+          "label": "Distancia tensa frente a cinta floja",
+          "value": "200 mm frente a 248 mm"
+        }
+      ],
+      "options": [
+        {
+          "text": "Informar 50 m/s, la velocidad de la distancia tensa en la posición del estímulo.",
+          "is_correct": true,
+          "feedback": "200/4 = 50 m/s. 248/4 = 62 m/s, una velocidad inflada por la cinta."
+        },
+        {
+          "text": "Informar 62 m/s, porque la cinta floja es el estándar.",
+          "is_correct": false,
+          "feedback": "La holgura agranda el numerador y fabrica una velocidad alta."
+        },
+        {
+          "text": "Informar bloqueo, porque las dos cintas no coinciden.",
+          "is_correct": false,
+          "feedback": "La discrepancia es de medición, no una caída de amplitud entre sitios."
+        },
+        {
+          "text": "Promediar 50 y 62 e informar 56 m/s.",
+          "is_correct": false,
+          "feedback": "No se promedia una medición mala con una buena; se repite la cinta correcta."
+        }
+      ],
+      "pearl": "Misma posición al estimular y al medir. Cinta tensa. VCN (m/s) = mm / ms.",
+      "source_reference": "Preston DC, Shapiro BE. Electromyography and Neuromuscular Disorders (4th ed). Elsevier (2021). https://www.elsevier.com/books/electromyography-and-neuromuscular-disorders/preston/978-0-323-66180-5",
+      "tags": [
+        "safety-qc",
+        "distance-errors"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

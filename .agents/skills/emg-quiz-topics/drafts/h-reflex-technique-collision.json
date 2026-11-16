@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Técnica y Fenómeno de Colisión",
+  "revisionType": "quiz",
+  "quizTopicId": "h-reflex-technique-collision",
+  "moduleId": "late-responses",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Estímulo SUBMÁXIMO con pulso largo (1 ms). ¿Esta afirmación es la que corresponde enseñar en «Técnica y Fenómeno de Colisión»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Estímulo SUBMÁXIMO con pulso largo (1 ms).\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Técnica y Fenómeno de Colisión», ¿cuál afirmación es la correcta?\nSube el estímulo → H aparece. Sube a supramáximo → H desaparece por colisión.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sube el estímulo → H aparece. Sube a supramáximo → H desaparece por colisión.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Sube el estímulo → H aparece. Sube a supramáximo → H desaparece por colisión.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnica y Fenómeno de Colisión», ¿cuál afirmación es la correcta?\nEstabilidad: A diferencia de la Onda F, el Reflejo H tiene latencia y forma (usualmente trifásica) muy constantes ante un estímulo fijo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Estabilidad: A diferencia de la Onda F, el Reflejo H tiene latencia y forma (usualmente trifásica) muy constantes ante un estímulo fijo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Estabilidad: A diferencia de la Onda F, el Reflejo H tiene latencia y forma (usualmente trifásica) muy constantes ante un estímulo fijo.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Técnica y Fenómeno de Colisión», ¿cuál afirmación es la correcta?\nLa curva H–M es el trazado, no un clic.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La curva H–M es el trazado, no un clic.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La curva H–M es el trazado, no un clic.\n\n📚 Referencia: Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "late-responses",
+      "topic_id": "h-reflex-technique-collision",
+      "topic_name": "Técnica y Fenómeno de Colisión",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Técnica y Fenómeno de Colisión». Estímulo SUBMÁXIMO con pulso largo (1 ms). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Estímulo SUBMÁXIMO con pulso largo (1 ms).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Estabilidad: A diferencia de la Onda F, el Reflejo H tiene latencia y forma (usualmente trifásica) muy constantes ante un estímulo fijo.",
+      "source_reference": "Fisher MA. AAEM Minimonograph #13: H reflexes and F waves: physiology and clinical indications. Muscle & Nerve (1992). https://doi.org/10.1002/mus.880150402",
+      "tags": [
+        "late-responses",
+        "h-reflex-technique-collision"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

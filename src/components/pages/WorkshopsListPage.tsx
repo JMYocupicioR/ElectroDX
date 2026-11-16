@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Video, Calendar, ArrowRight, CheckCircle, PlayCircle, Clock, ExternalLink } from 'lucide-react';
+import { Video, Calendar, ArrowRight, CheckCircle, PlayCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { WorkshopCard } from '../course/WorkshopCard';
+import { RecordedWorkshopCard } from '../course/RecordedWorkshopCard';
 import { StudentAgenda } from '../student/StudentAgenda';
 import { getWorkshops } from '../../services/courseService';
 import { fetchSessionBriefs } from '../../services/liveSessionBriefService';
@@ -11,7 +12,6 @@ import { allModules } from '../../content/modules';
 import type { LiveWorkshop } from '../../types/database';
 import type { SessionBrief } from '../../utils/liveSessionBrief';
 import { endOfWeekMonday, startOfWeekMonday } from '../../utils/academicCalendar';
-import { getWorkshopDurationInfo } from '../../utils/workshopDurationUtils';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -82,7 +82,9 @@ export default function WorkshopsListPage() {
   });
   const later = visibleUpcoming.filter((workshop) => !thisWeek.some((item) => item.id === workshop.id));
 
-  const recordedWorkshops = workshops.filter((w) => Boolean(w.recording_url));
+  const recordedWorkshops = workshops
+    .filter((w) => Boolean(w.recording_url))
+    .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
 
   return (
     <div className="pt-24 pb-20 px-4 max-w-7xl mx-auto">
@@ -251,70 +253,9 @@ export default function WorkshopsListPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recordedWorkshops.map((ws) => {
-              const d = new Date(ws.scheduled_at);
-              const durInfo = getWorkshopDurationInfo(ws);
-              return (
-                <div
-                  key={ws.id}
-                  className="group rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-200/80 dark:border-slate-700 overflow-hidden shadow-sm hover:shadow-xl hover:shadow-purple-500/10 transition-all flex flex-col"
-                >
-                  <div className="p-6 flex-1 flex flex-col">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
-                        <PlayCircle className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                        Grabación disponible
-                      </span>
-                      <span className="text-xs text-slate-500">
-                        {d.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                      {ws.title}
-                    </h3>
-
-                    {ws.description && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-4">
-                        {ws.description}
-                      </p>
-                    )}
-
-                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-3">
-                      <span
-                        className="inline-flex items-center gap-1.5 text-xs text-slate-500"
-                        title={durInfo.isReal ? 'Duración real del video grabado' : 'Duración estimada'}
-                      >
-                        <Clock className="w-3.5 h-3.5" />
-                        {durInfo.display}
-                      </span>
-
-                      <div className="flex items-center gap-2">
-                        {ws.recording_url ? (
-                          <a
-                            href={ws.recording_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Abrir video original"
-                            aria-label="Abrir video original"
-                            className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                        ) : null}
-                        <Link
-                          to={`/taller/${ws.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-sm transition-all"
-                        >
-                          Detalles
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {recordedWorkshops.map((ws) => (
+              <RecordedWorkshopCard key={ws.id} workshop={ws} brief={briefs.get(ws.id)} />
+            ))}
           </div>
         )
       )}

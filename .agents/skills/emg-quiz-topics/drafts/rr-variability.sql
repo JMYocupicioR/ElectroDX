@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: rr-variability (Module: special-studies)
+-- Generated at: 2026-11-16T04:54:09.923Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'rr-variability',
+  'special-studies',
+  'update',
+  $payload${"title":"Evaluación: Variabilidad del Intervalo RR","revisionType":"quiz","quizTopicId":"rr-variability","moduleId":"special-studies","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"Evalúa el parasimpático cardiovagal (nervio vago). ¿Esta afirmación es la que corresponde enseñar en «Variabilidad del Intervalo RR»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"Evalúa el parasimpático cardiovagal (nervio vago).\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Variabilidad del Intervalo RR», ¿cuál afirmación es la correcta?\nRatio de Valsalva normal: mayor de 1.21.","options":[{"id":"a","text":"Ratio de Valsalva normal: mayor de 1.21.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Ratio de Valsalva normal: mayor de 1.21.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Variabilidad del Intervalo RR», ¿cuál afirmación es la correcta?\nRatio 30:15 normal: mayor de 1.04.","options":[{"id":"a","text":"Ratio 30:15 normal: mayor de 1.04.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Ratio 30:15 normal: mayor de 1.04.\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Variabilidad del Intervalo RR», ¿cuál afirmación es la correcta?\nPérdida de variabilidad = Neuropatía autonómica temprana (diabetes).","options":[{"id":"a","text":"Pérdida de variabilidad = Neuropatía autonómica temprana (diabetes).","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Pérdida de variabilidad = Neuropatía autonómica temprana (diabetes).\n\n📚 Referencia: Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","citations":[]}],"examQuestions":[{"module_id":"special-studies","topic_id":"rr-variability","topic_name":"Variabilidad del Intervalo RR","island_name":"EMG","stem":"Caso breve ligado a «Variabilidad del Intervalo RR». Evalúa el parasimpático cardiovagal (nervio vago). ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"Evalúa el parasimpático cardiovagal (nervio vago).","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"La variabilidad RR por respiración profunda es el TEST MÁS SENSIBLE para detectar neuropatía autonómica diabética cardiovagal temprana. Debe realizarse como parte del screening anual en diabéticos.","source_reference":"Walker F, Cartwright MS. Neuromuscular Ultrasound. Saunders (2011).","tags":["special-studies","rr-variability"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'rr-variability'
+    AND r.module_id = 'special-studies'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

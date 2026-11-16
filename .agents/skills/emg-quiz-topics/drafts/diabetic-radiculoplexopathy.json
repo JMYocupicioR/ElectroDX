@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)",
+  "revisionType": "quiz",
+  "quizTopicId": "diabetic-radiculoplexopathy",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "La amiotrofia diabética NO es \"la neuropatía diabética usual que progresó\". Es una ENTIDAD DIFERENTE con mecanismo autoinmune (vasculitis de vasa nervorum). Reconocerla cambia el tratamiento: algunos pacientes responden a IVIg o corticoides. ¿Esta afirmación es la que corresponde enseñar en «Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La amiotrofia diabética NO es \"la neuropatía diabética usual que progresó\". Es una ENTIDAD DIFERENTE con mecanismo autoinmune (vasculitis de vasa nervorum). Reconocerla cambia el tratamiento: algunos pacientes responden a IVIg o corticoides.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)», ¿cuál afirmación es la correcta?\nPista diagnóstica: si un paciente diabético presenta dolor proximal AGUDO con debilidad y pérdida de peso → es amiotrofia diabética hasta probar lo contrario. La neuropatía diabética distal es gradual y no produce dolor proximal severo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Pista diagnóstica: si un paciente diabético presenta dolor proximal AGUDO con debilidad y pérdida de peso → es amiotrofia diabética hasta probar lo contrario. La neuropatía diabética distal es gradual y no produce dolor proximal severo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pista diagnóstica: si un paciente diabético presenta dolor proximal AGUDO con debilidad y pérdida de peso → es amiotrofia diabética hasta probar lo contrario. La neuropatía diabética distal es gradual y no produce dolor proximal severo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)», ¿cuál afirmación es la correcta?\nEs una vasculitis autoinmune del plexo lumbosacro que afecta a pacientes diabéticos, típicamente varones >50 años con DM2 y buen control glucémico.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Es una vasculitis autoinmune del plexo lumbosacro que afecta a pacientes diabéticos, típicamente varones >50 años con DM2 y buen control glucémico.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Es una vasculitis autoinmune del plexo lumbosacro que afecta a pacientes diabéticos, típicamente varones >50 años con DM2 y buen control glucémico.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)», ¿cuál afirmación es la correcta?\nPresentación clínica: • Inicio agudo/subagudo con dolor INTENSO (el peor dolor de su vida) en muslo anterior y cadera.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Presentación clínica: • Inicio agudo/subagudo con dolor INTENSO (el peor dolor de su vida) en muslo anterior y cadera.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Presentación clínica: • Inicio agudo/subagudo con dolor INTENSO (el peor dolor de su vida) en muslo anterior y cadera.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "diabetic-radiculoplexopathy",
+      "topic_name": "Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Radiculoplexoneuropatía Lumbosacra Diabética (Bruns-Garland)». La amiotrofia diabética NO es \"la neuropatía diabética usual que progresó\". Es una ENTIDAD DIFERENTE con mecanismo autoinmune (vasculitis de vasa nervorum). Reconocerla cambia el tratamiento: algunos pacientes responden a IVIg o corticoides. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "La amiotrofia diabética NO es \"la neuropatía diabética usual que progresó\". Es una ENTIDAD DIFERENTE con mecanismo autoinmune (vasculitis de vasa nervorum). Reconocerla cambia el tratamiento: algunos pacientes responden a IVIg o corticoides.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "La amiotrofia diabética NO es \"la neuropatía diabética usual que progresó\". Es una ENTIDAD DIFERENTE con mecanismo autoinmune (vasculitis de vasa nervorum). Reconocerla cambia el tratamiento: algunos pacientes responden a IVIg o corticoides.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "diabetic-radiculoplexopathy"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

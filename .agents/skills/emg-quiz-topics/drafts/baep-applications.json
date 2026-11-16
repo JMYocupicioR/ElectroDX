@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Aplicaciones Clínicas de los PEATC",
+  "revisionType": "quiz",
+  "quizTopicId": "baep-applications",
+  "moduleId": "evoked-potentials",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "Neurinoma: Prolongación de Onda I y/o intervalo I-III. ¿Esta afirmación es la que corresponde enseñar en «Aplicaciones Clínicas de los PEATC»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Neurinoma: Prolongación de Onda I y/o intervalo I-III.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Aplicaciones Clínicas de los PEATC», ¿cuál afirmación es la correcta?\nMuerte cerebral: Ondas II-V ausentes + Onda I preservada.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Muerte cerebral: Ondas II-V ausentes + Onda I preservada.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Muerte cerebral: Ondas II-V ausentes + Onda I preservada.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones Clínicas de los PEATC», ¿cuál afirmación es la correcta?\nScreening neonatal: Presencia de Onda V a 30-35 dB = audición funcional.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Screening neonatal: Presencia de Onda V a 30-35 dB = audición funcional.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Screening neonatal: Presencia de Onda V a 30-35 dB = audición funcional.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Aplicaciones Clínicas de los PEATC», ¿cuál afirmación es la correcta?\nPara tumores menores de 1 cm del ángulo cerebellopontino, la RM con gadolinio es más sensible que los PEATC. Sin embargo, los PEATC siguen siendo útiles como estudio funcional complementario.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para tumores menores de 1 cm del ángulo cerebellopontino, la RM con gadolinio es más sensible que los PEATC. Sin embargo, los PEATC siguen siendo útiles como estudio funcional complementario.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para tumores menores de 1 cm del ángulo cerebellopontino, la RM con gadolinio es más sensible que los PEATC. Sin embargo, los PEATC siguen siendo útiles como estudio funcional complementario.\n\n📚 Referencia: Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "evoked-potentials",
+      "topic_id": "baep-applications",
+      "topic_name": "Aplicaciones Clínicas de los PEATC",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Aplicaciones Clínicas de los PEATC». Neurinoma: Prolongación de Onda I y/o intervalo I-III. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "Neurinoma: Prolongación de Onda I y/o intervalo I-III.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Para tumores menores de 1 cm del ángulo cerebellopontino, la RM con gadolinio es más sensible que los PEATC. Sin embargo, los PEATC siguen siendo útiles como estudio funcional complementario.",
+      "source_reference": "Yiannikas C, Vucic S. Utility of somatosensory evoked potentials in chronic acquired demyelinating neuropathy. Muscle & Nerve (2008). https://doi.org/10.1002/mus.21093",
+      "tags": [
+        "evoked-potentials",
+        "baep-applications"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

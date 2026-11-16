@@ -1,0 +1,27 @@
+-- ============================================================================
+-- NeuroSAFE quiz revision (NO toca published_quizzes ni quiz_attempts)
+-- Topic: femoral-motor-step (Module: topographic-anatomy)
+-- Generated at: 2026-11-16T04:54:16.289Z
+-- Autor: jmyocupicior@gmail.com. Estado: draft, hasta aprobación humana.
+-- ============================================================================
+INSERT INTO public.content_revisions (
+  target_topic_id, module_id, action, payload, status, author_id
+)
+SELECT
+  'femoral-motor-step',
+  'topographic-anatomy',
+  'update',
+  $payload${"title":"Evaluación: Nervio Femoral Motor (PAMC)","revisionType":"quiz","quizTopicId":"femoral-motor-step","moduleId":"topographic-anatomy","passScore":70,"shuffleQuestions":true,"shuffleOptions":true,"questions":[{"id":"q1","type":"true_false","difficulty":"basic","stem":"NAVEL: nervio lateral a la arteria. ¿Esta afirmación es la que corresponde enseñar en «Nervio Femoral Motor (PAMC)»?","options":[{"id":"a","text":"Sí. Esa es la conducta que describe la lección.","isCorrect":true},{"id":"b","text":"No. La lección sostiene lo contrario.","isCorrect":false}],"explanation":"NAVEL: nervio lateral a la arteria.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q2","type":"single","difficulty":"intermediate","stem":"En «Nervio Femoral Motor (PAMC)», ¿cuál afirmación es la correcta?\nSiempre comparar con contralateral. Hematoma iliopsoas + debilidad cuádriceps = urgencia.","options":[{"id":"a","text":"Siempre comparar con contralateral. Hematoma iliopsoas + debilidad cuádriceps = urgencia.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Siempre comparar con contralateral. Hematoma iliopsoas + debilidad cuádriceps = urgencia.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q3","type":"single","difficulty":"advanced","stem":"En «Nervio Femoral Motor (PAMC)», ¿cuál afirmación es la correcta?\nLateral al pulso, no sobre el pulso.","options":[{"id":"a","text":"Lateral al pulso, no sobre el pulso.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Lateral al pulso, no sobre el pulso.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]},{"id":"q4","type":"single","difficulty":"advanced","stem":"En «Nervio Femoral Motor (PAMC)», ¿cuál afirmación es la correcta?\nHematoma de psoas + cuádriceps es urgencia, no un túnel.","options":[{"id":"a","text":"Hematoma de psoas + cuádriceps es urgencia, no un túnel.","isCorrect":true},{"id":"b","text":"Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.","isCorrect":false},{"id":"c","text":"La temperatura de la extremidad puede ignorarse si el número ya es extremo.","isCorrect":false},{"id":"d","text":"Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.","isCorrect":false}],"explanation":"Hematoma de psoas + cuádriceps es urgencia, no un túnel.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","citations":[]}],"examQuestions":[{"module_id":"topographic-anatomy","topic_id":"femoral-motor-step","topic_name":"Nervio Femoral Motor (PAMC)","island_name":"EMG","stem":"Caso breve ligado a «Nervio Femoral Motor (PAMC)». NAVEL: nervio lateral a la arteria. ¿Cuál es la conducta correcta?","findings":[],"options":[{"text":"NAVEL: nervio lateral a la arteria.","is_correct":true,"feedback":"Coincide con el texto de la lección."},{"text":"Cerrar el diagnóstico con un solo parámetro no reproducido.","is_correct":false,"feedback":"Un parámetro aislado no cierra la topografía."},{"text":"Ignorar temperatura y distancia.","is_correct":false,"feedback":"Temperatura y distancia cambian latencia y velocidad."},{"text":"Medir la latencia sobre el artefacto de estímulo.","is_correct":false,"feedback":"El onset dentro del artefacto no es una latencia."}],"difficulty":2,"is_critical":false,"pearl":"Siempre comparar con contralateral. Hematoma iliopsoas + debilidad cuádriceps = urgencia.","source_reference":"Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).","tags":["topographic-anatomy","femoral-motor-step"],"status":"DRAFT"}]}$payload$::jsonb,
+  'draft',
+  (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+WHERE EXISTS (
+  SELECT 1 FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com'
+)
+AND NOT EXISTS (
+  SELECT 1 FROM public.content_revisions r
+  WHERE r.target_topic_id = 'femoral-motor-step'
+    AND r.module_id = 'topographic-anatomy'
+    AND r.status = 'draft'
+    AND r.payload->>'revisionType' = 'quiz'
+    AND r.author_id = (SELECT id FROM auth.users WHERE lower(email) = 'jmyocupicior@gmail.com' LIMIT 1)
+);

@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nodopatías Autoinmunes (Entidad Emergente)",
+  "revisionType": "quiz",
+  "quizTopicId": "autoimmune-nodopathies",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "¿CIDP refractaria a IVIg? Solicitar anticuerpos nodales/paranodales (NF155, CNTN1, Caspr1). Si son positivos, cambiar a rituximab — es una nodopatía autoinmune, no CIDP clásica. ¿Esta afirmación es la que corresponde enseñar en «Nodopatías Autoinmunes (Entidad Emergente)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "¿CIDP refractaria a IVIg? Solicitar anticuerpos nodales/paranodales (NF155, CNTN1, Caspr1). Si son positivos, cambiar a rituximab — es una nodopatía autoinmune, no CIDP clásica.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nodopatías Autoinmunes (Entidad Emergente)», ¿cuál afirmación es la correcta?\nLos anticuerpos IgG4 no activan complemento (a diferencia de IgG1/IgG3), por eso la IVIg (que actúa bloqueando receptores Fc) no funciona. El mecanismo es directo (destrucción de la arquitectura nodal).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Los anticuerpos IgG4 no activan complemento (a diferencia de IgG1/IgG3), por eso la IVIg (que actúa bloqueando receptores Fc) no funciona. El mecanismo es directo (destrucción de la arquitectura nodal).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Los anticuerpos IgG4 no activan complemento (a diferencia de IgG1/IgG3), por eso la IVIg (que actúa bloqueando receptores Fc) no funciona. El mecanismo es directo (destrucción de la arquitectura nodal).\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nodopatías Autoinmunes (Entidad Emergente)», ¿cuál afirmación es la correcta?\nCondiciones recientemente separadas de CIDP.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Condiciones recientemente separadas de CIDP.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Condiciones recientemente separadas de CIDP.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nodopatías Autoinmunes (Entidad Emergente)», ¿cuál afirmación es la correcta?\nCausadas por anticuerpos IgG4 contra proteínas del Nodo de Ranvier.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Causadas por anticuerpos IgG4 contra proteínas del Nodo de Ranvier.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Causadas por anticuerpos IgG4 contra proteínas del Nodo de Ranvier.\n\n📚 Referencia: Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "autoimmune-nodopathies",
+      "topic_name": "Nodopatías Autoinmunes (Entidad Emergente)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nodopatías Autoinmunes (Entidad Emergente)». ¿CIDP refractaria a IVIg? Solicitar anticuerpos nodales/paranodales (NF155, CNTN1, Caspr1). Si son positivos, cambiar a rituximab — es una nodopatía autoinmune, no CIDP clásica. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "¿CIDP refractaria a IVIg? Solicitar anticuerpos nodales/paranodales (NF155, CNTN1, Caspr1). Si son positivos, cambiar a rituximab — es una nodopatía autoinmune, no CIDP clásica.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "¿CIDP refractaria a IVIg? Solicitar anticuerpos nodales/paranodales (NF155, CNTN1, Caspr1). Si son positivos, cambiar a rituximab — es una nodopatía autoinmune, no CIDP clásica.",
+      "source_reference": "Van den Bergh PYK, van Doorn PA, Hadden RDM, et al.. EAN/PNS guideline on diagnosis and treatment of chronic inflammatory demyelinating polyradiculoneuropathy: Second revision. European Journal of Neurology (2023). https://pubmed.ncbi.nlm.nih.gov/38873949/",
+      "tags": [
+        "pathologies",
+        "autoimmune-nodopathies"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

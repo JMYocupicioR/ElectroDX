@@ -1,0 +1,219 @@
+{
+  "moduleId": "safety-qc",
+  "revisionType": "quiz",
+  "title": "Evaluación: Interferencia de línea (60 Hz)",
+  "quizTopicId": "60hz-noise",
+  "passScore": 70,
+  "maxAttempts": null,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "hz60-q1",
+      "sortOrder": 0,
+      "type": "single",
+      "difficulty": "basic",
+      "stem": "El trazo sensitivo se llena de una oscilación gruesa y regular de 60 Hz que impide ver el SNAP. ¿Qué tres causas señala la lección?",
+      "options": [
+        {
+          "id": "hz60-q1-a",
+          "text": "Mala tierra, sala eléctricamente ruidosa o impedancia alta del electrodo.",
+          "isCorrect": true
+        },
+        {
+          "id": "hz60-q1-b",
+          "text": "Estímulo supramáximo correcto, temperatura de 33 °C e impedancia menor de 5 kΩ.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q1-c",
+          "text": "Distancia de 14 cm medida con la cinta floja.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q1-d",
+          "text": "Coestimulación del nervio vecino por gel derramado.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La interferencia de 60 Hz de la lección se atribuye a tierra deficiente, ambiente eléctrico ruidoso o impedancia alta. No es un error de distancia ni de coestimulación.\n\n📚 Referencia: London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "citations": [
+        {
+          "authors": "London ZN",
+          "title": "Safety and pain in electrodiagnostic studies",
+          "journal": "Muscle & Nerve",
+          "year": 2017,
+          "url": "https://doi.org/10.1002/mus.25421"
+        }
+      ]
+    },
+    {
+      "id": "hz60-q2",
+      "sortOrder": 1,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Para bajar el ruido de 60 Hz, ¿dónde pide la lección colocar el electrodo de tierra?",
+      "options": [
+        {
+          "id": "hz60-q2-a",
+          "text": "Entre el estimulador y el electrodo de registro activo.",
+          "isCorrect": true
+        },
+        {
+          "id": "hz60-q2-b",
+          "text": "Sobre el generador de un marcapasos, para “drenar” la interferencia.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q2-c",
+          "text": "En el dedo contralateral, lo más lejos posible del nervio estudiado.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q2-d",
+          "text": "Pegado al ánodo, para acortar el artefacto de estímulo.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La tierra va entre estimulador y registro activo. Además hay que limpiar la piel, poner gel y desconectar camas eléctricas.\n\n📚 Referencia: McClellan C, McLaughlin M. Quality in Electrodiagnostic Studies: A Guide for Referring Physicians. Missouri Medicine (2019).",
+      "citations": [
+        {
+          "authors": "McClellan C, McLaughlin M",
+          "title": "Quality in Electrodiagnostic Studies: A Guide for Referring Physicians",
+          "journal": "Missouri Medicine",
+          "year": 2019
+        }
+      ]
+    },
+    {
+      "id": "hz60-q3",
+      "sortOrder": 2,
+      "type": "multiple",
+      "difficulty": "advanced",
+      "stem": "Un SNAP de dedo 2 queda enterrado en 60 Hz. ¿Qué dos medidas corresponden a esta interferencia, y no al artefacto de estímulo?",
+      "options": [
+        {
+          "id": "hz60-q3-a",
+          "text": "Limpiar la piel con alcohol o pasta abrasiva y reaplicar gel.",
+          "isCorrect": true
+        },
+        {
+          "id": "hz60-q3-b",
+          "text": "Desconectar camas u otros equipos eléctricos de la sala.",
+          "isCorrect": true
+        },
+        {
+          "id": "hz60-q3-c",
+          "text": "Pellizcar la piel entre estimulador y G1 como primera maniobra.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q3-d",
+          "text": "Girar el ánodo del estimulador para acortar la cola del estímulo.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Pellizcar la piel y rotar el ánodo son maniobras del artefacto de estímulo. El 60 Hz se trabaja con impedancia, tierra y apagar fuentes de la sala.\n\n📚 Referencia: London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "citations": [
+        {
+          "authors": "London ZN",
+          "title": "Safety and pain in electrodiagnostic studies",
+          "journal": "Muscle & Nerve",
+          "year": 2017,
+          "url": "https://doi.org/10.1002/mus.25421"
+        }
+      ]
+    },
+    {
+      "id": "hz60-q4",
+      "sortOrder": 3,
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "Después de limpiar la piel, el óhmetro sigue marcando impedancia muy alta en G1 y el 60 Hz persiste. ¿Cuál es el siguiente paso que prioriza la lección?",
+      "options": [
+        {
+          "id": "hz60-q4-a",
+          "text": "Volver a preparar la piel y asegurar gel y contacto antes de subir filtros o promediar a ciegas.",
+          "isCorrect": true
+        },
+        {
+          "id": "hz60-q4-b",
+          "text": "Subir la duración del estímulo a 1 ms para “vencer” el ruido.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q4-c",
+          "text": "Informar neuropatía axonal porque no aparece un SNAP claro.",
+          "isCorrect": false
+        },
+        {
+          "id": "hz60-q4-d",
+          "text": "Mover el cátodo 8 cm más proximal sin corregir la impedancia.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La impedancia alta es una causa directa del 60 Hz. Prolongar el estímulo no limpia la línea de base y un SNAP ilegible no se informa como axonal.\n\n📚 Referencia: London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "citations": [
+        {
+          "authors": "London ZN",
+          "title": "Safety and pain in electrodiagnostic studies",
+          "journal": "Muscle & Nerve",
+          "year": 2017,
+          "url": "https://doi.org/10.1002/mus.25421"
+        }
+      ]
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "safety-qc",
+      "topic_id": "60hz-noise",
+      "topic_name": "Interferencia de línea (60 Hz)",
+      "island_name": "EMG",
+      "stem": "Durante el mediano sensitivo, la línea de base oscila a 60 Hz. G1 está seco, la cama eléctrica sigue enchufada y la tierra quedó en el muslo, lejos del circuito de la mano.",
+      "difficulty": 2,
+      "is_critical": false,
+      "findings": [
+        {
+          "type": "SIGN",
+          "label": "Línea de base",
+          "value": "Oscilación regular de 60 Hz"
+        },
+        {
+          "type": "SIGN",
+          "label": "Montaje",
+          "value": "G1 seco; tierra en el muslo; cama eléctrica conectada"
+        }
+      ],
+      "options": [
+        {
+          "text": "Preparar la piel, poner gel, colocar la tierra entre estimulador y G1, y desconectar la cama.",
+          "is_correct": true,
+          "feedback": "Esas son las cuatro correcciones que la lección da para el 60 Hz."
+        },
+        {
+          "text": "Diagnosticar pérdida axonal del mediano.",
+          "is_correct": false,
+          "feedback": "No hay un SNAP medible; el problema es técnico."
+        },
+        {
+          "text": "Girar el ánodo y pellizcar la piel como única corrección.",
+          "is_correct": false,
+          "feedback": "Esas maniobras son del artefacto de estímulo, no de la interferencia de línea."
+        },
+        {
+          "text": "Bajar la temperatura a 28 °C para aumentar la amplitud por encima del ruido.",
+          "is_correct": false,
+          "feedback": "Enfriar prolonga latencias y no es el tratamiento del 60 Hz."
+        }
+      ],
+      "pearl": "60 Hz: impedancia, tierra entre estímulo y G1, y apagar lo que enchufa ruido a la sala.",
+      "source_reference": "London ZN. Safety and pain in electrodiagnostic studies. Muscle & Nerve (2017). https://doi.org/10.1002/mus.25421",
+      "tags": [
+        "safety-qc",
+        "60hz-noise"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

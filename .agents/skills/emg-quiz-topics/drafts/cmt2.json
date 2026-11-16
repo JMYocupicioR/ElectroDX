@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: CMT Tipo 2 (Axonal)",
+  "revisionType": "quiz",
+  "quizTopicId": "cmt2",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "VCM mediano > 38 m/s con amplitudes muy bajas = CMT2 (axonal). ¿Esta afirmación es la que corresponde enseñar en «CMT Tipo 2 (Axonal)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "VCM mediano > 38 m/s con amplitudes muy bajas = CMT2 (axonal).\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «CMT Tipo 2 (Axonal)», ¿cuál afirmación es la correcta?\nCMT2A (MFN2) es la forma axonal más común.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CMT2A (MFN2) es la forma axonal más común.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CMT2A (MFN2) es la forma axonal más común.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «CMT Tipo 2 (Axonal)», ¿cuál afirmación es la correcta?\nCMT2 es cantidad de axón, no reloj de mielina.",
+      "options": [
+        {
+          "id": "a",
+          "text": "CMT2 es cantidad de axón, no reloj de mielina.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "CMT2 es cantidad de axón, no reloj de mielina.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «CMT Tipo 2 (Axonal)», ¿cuál afirmación es la correcta?\nLa crónica se ve en los pies, no solo en el trazo.",
+      "options": [
+        {
+          "id": "a",
+          "text": "La crónica se ve en los pies, no solo en el trazo.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "La crónica se ve en los pies, no solo en el trazo.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "cmt2",
+      "topic_name": "CMT Tipo 2 (Axonal)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «CMT Tipo 2 (Axonal)». VCM mediano > 38 m/s con amplitudes muy bajas = CMT2 (axonal). ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "VCM mediano > 38 m/s con amplitudes muy bajas = CMT2 (axonal).",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "CMT2 es cantidad de axón, no reloj de mielina.",
+      "source_reference": "England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "tags": [
+        "pathologies",
+        "cmt2"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

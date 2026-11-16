@@ -72,4 +72,15 @@ describe('listTopicsMissingQuiz', () => {
     expect(result.topics.map((item) => item.curriculumIndex)).toEqual([2, 3, 4, 5, 6]);
     expect(result.topics[0]?.title).toBe('Tema 2');
   });
+
+  it('drops omitted lessons and lets the next gap move up', () => {
+    const missing = listTopicsMissingQuiz(
+      modules,
+      new Set(['with-quiz']),
+      new Set(['gap']),
+    );
+
+    expect(missing.map((item) => item.topicId)).toEqual(['next', 'late']);
+    expect(missing[0]?.curriculumIndex).toBe(3);
+  });
 });

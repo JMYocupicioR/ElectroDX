@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)",
+  "revisionType": "quiz",
+  "quizTopicId": "hnpp",
+  "moduleId": "pathologies",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "STC bilateral + neuropatía ulnar bilateral + neuropatía peronea en paciente joven = HNPP hasta probar lo contrario. Solicitar deleción PMP22. ¿Esta afirmación es la que corresponde enseñar en «HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "STC bilateral + neuropatía ulnar bilateral + neuropatía peronea en paciente joven = HNPP hasta probar lo contrario. Solicitar deleción PMP22.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)», ¿cuál afirmación es la correcta?\nHNPP vs atrapamientos múltiples coincidentes: en HNPP las NCS muestran polineuropatía sensitiva DIFUSA además de los atrapamientos focales. En atrapamientos coincidentes, los nervios no atrapados son normales.",
+      "options": [
+        {
+          "id": "a",
+          "text": "HNPP vs atrapamientos múltiples coincidentes: en HNPP las NCS muestran polineuropatía sensitiva DIFUSA además de los atrapamientos focales. En atrapamientos coincidentes, los nervios no atrapados son normales.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "HNPP vs atrapamientos múltiples coincidentes: en HNPP las NCS muestran polineuropatía sensitiva DIFUSA además de los atrapamientos focales. En atrapamientos coincidentes, los nervios no atrapados son normales.\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)», ¿cuál afirmación es la correcta?\nDeleción recíproca de PMP22 (la duplicación causa CMT1A).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Deleción recíproca de PMP22 (la duplicación causa CMT1A).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Deleción recíproca de PMP22 (la duplicación causa CMT1A).\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)», ¿cuál afirmación es la correcta?\nPresentación: Episodios recurrentes de mononeuropatías focales transitorias en sitios de compresión habitual: • Peroneo en cabeza de peroné (pie caído transitorio).",
+      "options": [
+        {
+          "id": "a",
+          "text": "Presentación: Episodios recurrentes de mononeuropatías focales transitorias en sitios de compresión habitual: • Peroneo en cabeza de peroné (pie caído transitorio).",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Presentación: Episodios recurrentes de mononeuropatías focales transitorias en sitios de compresión habitual: • Peroneo en cabeza de peroné (pie caído transitorio).\n\n📚 Referencia: England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "pathologies",
+      "topic_id": "hnpp",
+      "topic_name": "HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «HNPP (Neuropatía Hereditaria con Predisposición a Parálisis por Presión)». STC bilateral + neuropatía ulnar bilateral + neuropatía peronea en paciente joven = HNPP hasta probar lo contrario. Solicitar deleción PMP22. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "STC bilateral + neuropatía ulnar bilateral + neuropatía peronea en paciente joven = HNPP hasta probar lo contrario. Solicitar deleción PMP22.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "STC bilateral + neuropatía ulnar bilateral + neuropatía peronea en paciente joven = HNPP hasta probar lo contrario. Solicitar deleción PMP22.",
+      "source_reference": "England JD, Gronseth GS, Franklin G, et al.. Distal symmetric polyneuropathy: a definition for clinical research. Neurology (2005). https://pubmed.ncbi.nlm.nih.gov/15668414/",
+      "tags": [
+        "pathologies",
+        "hnpp"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}

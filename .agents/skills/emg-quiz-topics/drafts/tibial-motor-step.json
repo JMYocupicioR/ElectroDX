@@ -1,0 +1,162 @@
+{
+  "title": "Evaluación: Nervio Tibial Motor (PAMC)",
+  "revisionType": "quiz",
+  "quizTopicId": "tibial-motor-step",
+  "moduleId": "topographic-anatomy",
+  "passScore": 70,
+  "shuffleQuestions": true,
+  "shuffleOptions": true,
+  "questions": [
+    {
+      "id": "q1",
+      "type": "true_false",
+      "difficulty": "basic",
+      "stem": "AH, maléolo medial, poplíteo. ¿Esta afirmación es la que corresponde enseñar en «Nervio Tibial Motor (PAMC)»?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Sí. Esa es la conducta que describe la lección.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "No. La lección sostiene lo contrario.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "AH, maléolo medial, poplíteo.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q2",
+      "type": "single",
+      "difficulty": "intermediate",
+      "stem": "En «Nervio Tibial Motor (PAMC)», ¿cuál afirmación es la correcta?\nPara obtener una Onda F limpia, estimula en el tobillo con intensidad ligeramente superior a la supramáxima del CMAP y gira el cátodo hacia PROXIMAL.",
+      "options": [
+        {
+          "id": "a",
+          "text": "Para obtener una Onda F limpia, estimula en el tobillo con intensidad ligeramente superior a la supramáxima del CMAP y gira el cátodo hacia PROXIMAL.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "Para obtener una Onda F limpia, estimula en el tobillo con intensidad ligeramente superior a la supramáxima del CMAP y gira el cátodo hacia PROXIMAL.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q3",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Tibial Motor (PAMC)», ¿cuál afirmación es la correcta?\nEl hueco poplíteo miente si no hay meseta.",
+      "options": [
+        {
+          "id": "a",
+          "text": "El hueco poplíteo miente si no hay meseta.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "El hueco poplíteo miente si no hay meseta.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    },
+    {
+      "id": "q4",
+      "type": "single",
+      "difficulty": "advanced",
+      "stem": "En «Nervio Tibial Motor (PAMC)», ¿cuál afirmación es la correcta?\nF y H salen de este mismo nervio, con reglas distintas.",
+      "options": [
+        {
+          "id": "a",
+          "text": "F y H salen de este mismo nervio, con reglas distintas.",
+          "isCorrect": true
+        },
+        {
+          "id": "b",
+          "text": "Un valor aislado, sin repetir el trazo, basta para cerrar el diagnóstico.",
+          "isCorrect": false
+        },
+        {
+          "id": "c",
+          "text": "La temperatura de la extremidad puede ignorarse si el número ya es extremo.",
+          "isCorrect": false
+        },
+        {
+          "id": "d",
+          "text": "Medir sobre el artefacto de estímulo es aceptable si la amplitud se ve estable.",
+          "isCorrect": false
+        }
+      ],
+      "explanation": "F y H salen de este mismo nervio, con reglas distintas.\n\n📚 Referencia: Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "citations": []
+    }
+  ],
+  "examQuestions": [
+    {
+      "module_id": "topographic-anatomy",
+      "topic_id": "tibial-motor-step",
+      "topic_name": "Nervio Tibial Motor (PAMC)",
+      "island_name": "EMG",
+      "stem": "Caso breve ligado a «Nervio Tibial Motor (PAMC)». AH, maléolo medial, poplíteo. ¿Cuál es la conducta correcta?",
+      "findings": [],
+      "options": [
+        {
+          "text": "AH, maléolo medial, poplíteo.",
+          "is_correct": true,
+          "feedback": "Coincide con el texto de la lección."
+        },
+        {
+          "text": "Cerrar el diagnóstico con un solo parámetro no reproducido.",
+          "is_correct": false,
+          "feedback": "Un parámetro aislado no cierra la topografía."
+        },
+        {
+          "text": "Ignorar temperatura y distancia.",
+          "is_correct": false,
+          "feedback": "Temperatura y distancia cambian latencia y velocidad."
+        },
+        {
+          "text": "Medir la latencia sobre el artefacto de estímulo.",
+          "is_correct": false,
+          "feedback": "El onset dentro del artefacto no es una latencia."
+        }
+      ],
+      "difficulty": 2,
+      "is_critical": false,
+      "pearl": "Para obtener una Onda F limpia, estimula en el tobillo con intensidad ligeramente superior a la supramáxima del CMAP y gira el cátodo hacia PROXIMAL.",
+      "source_reference": "Haymaker W, Woodhall B. Peripheral Nerve Injuries. WB Saunders, Philadelphia (1953).",
+      "tags": [
+        "topographic-anatomy",
+        "tibial-motor-step"
+      ],
+      "status": "DRAFT"
+    }
+  ]
+}
