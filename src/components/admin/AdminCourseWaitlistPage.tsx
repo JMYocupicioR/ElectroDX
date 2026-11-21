@@ -15,6 +15,7 @@ import {
   AlertCircle,
   RotateCcw,
   Ticket,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import {
@@ -29,6 +30,12 @@ import type { CourseWaitlistRow, CourseEnrollmentStatus, CourseId } from '../../
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { sellableCourses, isCourseId } from '../../content/courseCatalog';
 import StudentKardexModal from './StudentKardexModal';
+import DirectStudentChatModal from './DirectStudentChatModal';
+import {
+  listAllDirectChatSummaries,
+  type DirectChatStudentTarget,
+  type DirectChatThreadSummary,
+} from '../../services/directChatService';
 
 const STATUS_FILTERS: { id: CourseEnrollmentStatus | 'all'; label: string }[] = [
   { id: 'pending', label: 'En lista de espera' },
@@ -83,6 +90,10 @@ export default function AdminCourseWaitlistPage() {
   // Modal de Kardex
   const [kardexStudent, setKardexStudent] = useState<CourseWaitlistRow | null>(null);
 
+  // Modal de Chat Privado Directo con el aspirante
+  const [chatTarget, setChatTarget] = useState<DirectChatStudentTarget | null>(null);
+  const [chatSummaries, setChatSummaries] = useState<Map<string, DirectChatThreadSummary>>(new Map());
+
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -95,11 +106,15 @@ export default function AdminCourseWaitlistPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getAdminCourseWaitlist(
-        selectedCourse === 'all' ? null : selectedCourse,
-        selectedStatus
-      );
+      const [data, chatsMap] = await Promise.all([
+        getAdminCourseWaitlist(
+          selectedCourse === 'all' ? null : selectedCourse,
+          selectedStatus
+        ),
+        listAllDirectChatSummaries().catch(() => new Map<string, DirectChatThreadSummary>()),
+      ]);
       setWaitlist(data);
+      setChatSummaries(chatsMap);
       if (selectedStatus === 'pending' || selectedStatus === 'all') {
         const profiles = await getAdminProfiles(false, 'enrollment_pending');
         const queuedIds = new Set(data.filter((row) => row.status === 'pending').map((row) => row.user_id));
@@ -391,13 +406,21 @@ export default function AdminCourseWaitlistPage() {
             })
             .map((profile) => {
               const requestedAt = formatRequestedAt(profile.enrollment_requested_at || profile.created_at);
+              const profChat = chatSummaries.get(profile.id);
               return (
                 <div
                   key={profile.id}
                   className="p-5 rounded-2xl border border-amber-300/80 dark:border-amber-800 bg-amber-50/40 dark:bg-amber-950/20 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="min-w-0">
-                    <p className="font-bold text-slate-900 dark:text-white">{profile.display_name || 'Médico sin nombre'}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-slate-900 dark:text-white">{profile.display_name || 'Médico sin nombre'}</p>
+                      {profChat?.needsTeacherReply && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500 text-white animate-pulse">
+                          Nuevo mensaje en chat
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-500 mt-0.5">
                       {profile.specialty || profile.institution || profile.email}
                       {profile.cedula_profesional ? ` · Cédula: ${profile.cedula_profesional}` : ''}
@@ -410,13 +433,47 @@ export default function AdminCourseWaitlistPage() {
                         <span className="font-semibold text-slate-700 dark:text-slate-200">{requestedAt}</span>
                       </p>
                     )}
+                    {profChat?.lastMessageBody && (
+                      <div className="mt-2 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/70 text-xs text-indigo-900 dark:text-indigo-200 flex items-start gap-2">
+                        <MessageCircle className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">
+                          <strong>{profChat.lastSenderIsStaff ? 'Tú: ' : 'Aspirante: '}</strong>
+                          {profChat.lastMessageBody}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setChatTarget({
+                          id: profile.id,
+                          displayName: profile.display_name || 'Médico solicitante',
+                          email: profile.email,
+                          institution: profile.institution,
+                          specialty: profile.specialty,
+                          cedulaProfesional: profile.cedula_profesional,
+                          cedulaVerified: profile.cedula_verified,
+                          avatarUrl: profile.avatar_url,
+                          enrollmentStatus: 'pending',
+                          contextTag: 'waitlist',
+                        })
+                      }
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 text-indigo-700 dark:text-cyan-300 text-xs font-bold transition cursor-pointer"
+                      title="Abrir chat privado con el aspirante en su pantalla de espera"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Mensaje</span>
+                      {profChat?.needsTeacherReply && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                      )}
+                    </button>
                     <button
                       type="button"
                       disabled={actionBusyId === profile.id}
                       onClick={() => handleRejectProfile(profile)}
-                      className="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold disabled:opacity-50"
+                      className="px-3 py-2 rounded-xl border border-red-200 text-red-600 text-xs font-semibold disabled:opacity-50 cursor-pointer"
                     >
                       Rechazar
                     </button>
@@ -424,7 +481,7 @@ export default function AdminCourseWaitlistPage() {
                       type="button"
                       disabled={actionBusyId === profile.id}
                       onClick={() => handleApproveProfile(profile)}
-                      className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold disabled:opacity-50"
+                      className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold disabled:opacity-50 cursor-pointer"
                     >
                       {actionBusyId === profile.id ? 'Aprobando...' : 'Aprobar'}
                     </button>
@@ -540,6 +597,19 @@ export default function AdminCourseWaitlistPage() {
                         "{row.request_notes}"
                       </p>
                     )}
+
+                    {/* Latest Direct Chat preview */}
+                    {chatSummaries.get(row.user_id)?.lastMessageBody && (
+                      <div className="p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/70 text-xs text-indigo-900 dark:text-indigo-200 flex items-start gap-2">
+                        <MessageCircle className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">
+                          <strong>
+                            {chatSummaries.get(row.user_id)?.lastSenderIsStaff ? 'Tú: ' : 'Aspirante: '}
+                          </strong>
+                          {chatSummaries.get(row.user_id)?.lastMessageBody}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -588,6 +658,35 @@ export default function AdminCourseWaitlistPage() {
                       <span>Revocar acceso</span>
                     </button>
                   )}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setChatTarget({
+                        id: row.user_id,
+                        displayName: row.display_name,
+                        email: row.email,
+                        institution: row.institution,
+                        specialty: row.specialty,
+                        residencyYear: row.residency_year,
+                        cedulaProfesional: row.cedula_profesional,
+                        cedulaVerified: row.cedula_verified,
+                        avatarUrl: row.avatar_url,
+                        courseTitle: row.course_title,
+                        courseId: row.course_id,
+                        enrollmentStatus: isPending ? 'pending' : isRejected ? 'rejected' : 'approved',
+                        contextTag: isPending || isRejected ? 'waitlist' : 'general',
+                      })
+                    }
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-700 dark:text-cyan-300 text-xs font-bold transition cursor-pointer"
+                    title="Abrir chat privado directo con el médico"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Mensaje</span>
+                    {chatSummaries.get(row.user_id)?.needsTeacherReply && (
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                    )}
+                  </button>
 
                   <button
                     type="button"
@@ -757,6 +856,15 @@ export default function AdminCourseWaitlistPage() {
           }}
         />
       )}
+      {/* Modal de Chat Privado Directo */}
+      <DirectStudentChatModal
+        isOpen={Boolean(chatTarget)}
+        onClose={() => setChatTarget(null)}
+        target={chatTarget}
+        onMessageSent={() => {
+          void loadData();
+        }}
+      />
     </AdminLayout>
   );
 }

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { BRAND } from '../../config/brand';
+import { StudentDirectChatPanel } from '../student/StudentDirectChatPanel';
 
 export function PendingApprovalGate() {
   const { user, profile, refreshProfile, signOut, enrollmentStatus, isRejected } = useAuth();
@@ -178,6 +179,11 @@ export function PendingApprovalGate() {
               <LogOut className="w-4 h-4" />
               <span className="sm:hidden">Cerrar sesión</span>
             </button>
+          </div>
+
+          {/* Canal Directo de Chat Privado desde la Pantalla de Espera de Aprobación */}
+          <div className="relative z-10 mt-6">
+            <StudentDirectChatPanel variant="embedded" contextTag="waitlist" />
           </div>
 
           {/* Footer note */}

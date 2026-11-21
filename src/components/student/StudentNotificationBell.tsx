@@ -44,6 +44,7 @@ import {
   getNotificationTypeLabel,
   getNotificationVisualStyle,
 } from './StudentQuickControlHub';
+import { openStudentDirectChatModal } from '../../services/directChatService';
 
 type BellPlacement = 'desktop' | 'mobile';
 type StudentBellFilter = 'all' | 'unread' | 'workshop' | 'academic';
@@ -209,6 +210,10 @@ export function StudentNotificationBell({ placement = 'desktop' }: { placement?:
   const handleSelectNotification = (notif: StudentNotification) => {
     handleMarkOneRead(notif.id);
     setOpen(false);
+    if (notif.linkUrl && notif.linkUrl.includes('chat=1')) {
+      openStudentDirectChatModal();
+      return;
+    }
     if (notif.linkUrl) {
       navigate(notif.linkUrl);
     } else {

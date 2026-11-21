@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from 'react';
-import { Lock, Sparkles, Check, GraduationCap } from 'lucide-react';
+import { Lock, Sparkles, Check, GraduationCap, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthProvider';
 import { useCourseStore } from '../stores/courseStore';
@@ -8,6 +8,7 @@ import { useSyllabusCatalog } from '../hooks/useSyllabusCatalog';
 import { getCourseIdForModule, getCourseById } from '../content/courseCatalog';
 import type { CourseId } from '../types/database';
 import { isTopicOpenToRegistered, moduleHasRegisteredTopics } from '../utils/topicOpenAccess';
+import { openStudentDirectChatModal } from '../services/directChatService';
 
 interface CourseGateProps {
   moduleId?: string;
@@ -120,7 +121,7 @@ export function CourseGate({ moduleId, topicId, topicPathIds, children }: Course
             <p className="text-sm text-slate-600 dark:text-slate-300 text-center">
               El cobro es externo. Cuando se confirme el pago, el equipo activa este curso en tu perfil.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
               <Link
                 to="/cursos"
                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow-md text-center inline-flex items-center justify-center gap-2"
@@ -128,6 +129,19 @@ export function CourseGate({ moduleId, topicId, topicPathIds, children }: Course
                 <Sparkles className="w-4 h-4" />
                 Ver cursos y cómo inscribirme
               </Link>
+              <button
+                type="button"
+                onClick={() =>
+                  openStudentDirectChatModal({
+                    contextTag: 'course_gate',
+                    courseTitle: lockedTitle,
+                  })
+                }
+                className="px-5 py-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-cyan-300 border border-indigo-200 dark:border-indigo-800 rounded-xl font-semibold text-center inline-flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Chat directo con el Profesor
+              </button>
               <Link
                 to="/temario"
                 className="px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-semibold text-center"

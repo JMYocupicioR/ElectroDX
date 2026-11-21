@@ -10,11 +10,13 @@ import {
   Ticket,
   Sparkles,
   Zap,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { requestCourseEnrollment } from '../../services/courseService';
 import { validateScholarshipCoupon } from '../../services/scholarshipService';
 import { calculateScholarshipPricing } from '../../utils/scholarshipPricing';
+import { openStudentDirectChatModal } from '../../services/directChatService';
 import type { Course, CourseId } from '../../types/database';
 import type { CouponValidationResult } from '../../types/scholarship';
 
@@ -430,7 +432,23 @@ export default function CourseEnrollmentRequestModal({
             </div>
           )}
 
-          <div className="pt-2 flex items-center justify-end gap-3">
+          <div className="pt-2 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openStudentDirectChatModal({
+                  contextTag: 'waitlist',
+                  courseTitle: course.title,
+                });
+              }}
+              className="w-full inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/60 dark:bg-indigo-950/30 hover:bg-indigo-100 text-indigo-700 dark:text-cyan-300 text-xs font-bold transition cursor-pointer"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>¿Dudas con tu inscripción o beca? Chat directo con el profesor</span>
+            </button>
+
+            <div className="flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
@@ -462,6 +480,7 @@ export default function CourseEnrollmentRequestModal({
                 </>
               )}
             </button>
+            </div>
           </div>
         </form>
       </div>

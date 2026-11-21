@@ -146,6 +146,7 @@ import StudentKardexModal from '../admin/StudentKardexModal';
 import CourseEnrollmentRequestModal from '../course/CourseEnrollmentRequestModal';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { moduleIdsForCourse, recommendedNextCourse, sellableCourses } from '../../content/courseCatalog';
+import { openStudentDirectChatModal } from '../../services/directChatService';
 
 function formatRemainingExamTime(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -963,6 +964,10 @@ export default function StudentDashboard() {
   const handleAttendNotification = (notif: StudentNotification) => {
     handleMarkNotifRead(notif.id);
     if (!notif.linkUrl) return;
+    if (notif.linkUrl.includes('chat=1')) {
+      openStudentDirectChatModal();
+      return;
+    }
     if (notif.linkUrl.startsWith('/portal?') || notif.linkUrl.startsWith('/dashboard?')) {
       const queryString = notif.linkUrl.split('?')[1] || '';
       const params = new URLSearchParams(queryString);

@@ -25,8 +25,11 @@ import {
   ChevronRight,
   Pencil,
   FileText,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
+import DirectStudentChatModal from './DirectStudentChatModal';
+import type { DirectChatStudentTarget } from '../../services/directChatService';
 import {
   getAdminProfiles,
   verifyContributor,
@@ -163,6 +166,7 @@ export default function AdminUsersPage() {
   // Delete user state & action
   const [deleteTarget, setDeleteTarget] = useState<AdminProfileRow | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [chatTarget, setChatTarget] = useState<DirectChatStudentTarget | null>(null);
 
   const confirmDeleteUser = async () => {
     if (!deleteTarget) return;
@@ -614,6 +618,32 @@ export default function AdminUsersPage() {
 
                   {/* Right Column: Administrative Controls & Public Visibility */}
                   <div className="flex flex-col gap-2.5 min-w-[240px]">
+                    {!isSelf && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setChatTarget({
+                            id: u.id,
+                            displayName: u.display_name,
+                            email: u.email,
+                            institution: u.institution,
+                            specialty: u.specialty,
+                            residencyYear: u.residency_year,
+                            cedulaProfesional: u.cedula_profesional,
+                            cedulaVerified: u.cedula_verified,
+                            avatarUrl: u.avatar_url,
+                            enrollmentStatus: u.enrollment_status,
+                            contextTag:
+                              u.enrollment_status !== 'approved' ? 'waitlist' : 'general',
+                          })
+                        }
+                        className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl border border-indigo-300 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-cyan-300 text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/70 transition cursor-pointer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Chat Privado / Mensaje</span>
+                      </button>
+                    )}
+
                     {/* Primary Button: Expediente y Progreso Académico */}
                     <Link
                       to={`/admin/usuarios/${u.id}/perfil`}
@@ -1023,6 +1053,11 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+      <DirectStudentChatModal
+        isOpen={Boolean(chatTarget)}
+        onClose={() => setChatTarget(null)}
+        target={chatTarget}
+      />
     </AdminLayout>
   );
 }

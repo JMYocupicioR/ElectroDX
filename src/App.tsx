@@ -64,6 +64,7 @@ const AdminQuizAttemptsPage = lazy(() => import('./components/admin/AdminQuizAtt
 const AdminQuizzesPage = lazy(() => import('./components/admin/AdminQuizzesPage'));
 const AdminWorkshopsPage = lazy(() => import('./components/admin/AdminWorkshopsPage'));
 const AdminAnnouncementsPage = lazy(() => import('./components/admin/AdminAnnouncementsPage'));
+const AdminDirectMessagesPage = lazy(() => import('./components/admin/AdminDirectMessagesPage'));
 const AccountPage = lazy(() => import('./components/user/AccountPage'));
 const SettingsPage = lazy(() => import('./components/user/SettingsPage'));
 const ExamConfigPage = lazy(() => import('./components/exam/ExamConfigPage'));
@@ -230,6 +231,7 @@ function App() {
               <Route path="/admin/talleres" element={<ProtectedRoute mode="editor"><AdminWorkshopsPage /></ProtectedRoute>} />
               <Route path="/admin/biblioteca" element={<Navigate to="/biblioteca" replace />} />
               <Route path="/admin/anuncios" element={<ProtectedRoute mode="editor"><AdminAnnouncementsPage /></ProtectedRoute>} />
+              <Route path="/admin/mensajes" element={<ProtectedRoute mode="editor"><AdminDirectMessagesPage /></ProtectedRoute>} />
               <Route path="/admin/acceso" element={<Navigate to="/admin/temario" replace />} />
               <Route path="/admin/temario" element={<ProtectedRoute mode="editor"><AdminSyllabusPage /></ProtectedRoute>} />
               <Route path="/admin/exportacion" element={<ProtectedRoute mode="editor"><AdminTextbookExportPage /></ProtectedRoute>} />

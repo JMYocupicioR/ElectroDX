@@ -27,6 +27,7 @@ import { useSettingsStore } from '../../stores/settingsStore';
 import type { ModuleQuizProgress, QuizAttempt } from '../../types/quiz';
 import type { StudentLearningPlan } from '../../types/studentPlan';
 import { getTopicLabel, getTopicPublicUrl } from '../../utils/adminUtils';
+import { DIRECT_CHAT_MODULE_ID, openStudentDirectChatModal } from '../../services/directChatService';
 
 export function StudentStudyHub({
   attempts = [],
@@ -71,7 +72,13 @@ export function StudentStudyHub({
       ]);
       setBookmarks(b);
       setCards(c);
-      setThreads(t.filter((row) => row.visibility !== 'cohort' || !row.topic_id));
+      setThreads(
+        t.filter(
+          (row) =>
+            row.module_id !== DIRECT_CHAT_MODULE_ID &&
+            (row.visibility !== 'cohort' || !row.topic_id)
+        )
+      );
       setReports(r);
       setNotes(n);
       setNoteDrafts(Object.fromEntries(n.map((row) => [row.id, row.body])));
@@ -344,9 +351,19 @@ export function StudentStudyHub({
       </section>
 
       <section className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <h3 className="font-bold flex items-center gap-2 mb-3">
-          <MessageCircle className="w-4 h-4" /> {copy.qa}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h3 className="font-bold flex items-center gap-2">
+            <MessageCircle className="w-4 h-4" /> {copy.qa}
+          </h3>
+          <button
+            type="button"
+            onClick={() => openStudentDirectChatModal()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-cyan-300 border border-indigo-200 dark:border-indigo-800 text-xs font-bold hover:bg-indigo-100 transition cursor-pointer"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>Abrir Chat Privado 1:1 con Dirección Académica</span>
+          </button>
+        </div>
         <form
           className="space-y-2 mb-4"
           onSubmit={async (e) => {

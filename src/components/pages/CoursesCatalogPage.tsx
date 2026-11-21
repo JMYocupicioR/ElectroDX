@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
   GraduationCap,
   Lock,
@@ -13,11 +12,13 @@ import {
   Calendar,
   FileText,
   Download,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useSyllabusCatalog } from '../../hooks/useSyllabusCatalog';
 import { previousSellableCourseId, recommendedNextCourse, sellableCourses } from '../../content/courseCatalog';
 import CourseEnrollmentRequestModal from '../course/CourseEnrollmentRequestModal';
+import { openStudentDirectChatModal } from '../../services/directChatService';
 import type { Course } from '../../types/database';
 
 export default function CoursesCatalogPage() {
@@ -184,10 +185,23 @@ export default function CoursesCatalogPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedCourseForModal(course)}
-                      className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-2 min-h-[44px] rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold transition shadow-sm cursor-pointer"
                     >
                       <Clock className="w-4 h-4" />
                       <span>En lista de espera (Ver estado)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        openStudentDirectChatModal({
+                          contextTag: 'waitlist',
+                          courseTitle: course.title,
+                        })
+                      }
+                      className="w-full inline-flex items-center justify-center gap-2 min-h-[40px] rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-700 dark:text-cyan-300 text-xs font-bold transition cursor-pointer"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Chat directo con el Profesor / Admisiones</span>
                     </button>
                     <p className="text-[11px] text-center text-amber-700 dark:text-amber-300">
                       Tu solicitud está registrada. El profesor te admitirá en breve.

@@ -23,6 +23,7 @@ import {
   Ticket,
   Megaphone,
   Film,
+  MessageCircle,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthProvider';
 import { useStaffViewStore } from '../../stores/staffViewStore';
@@ -141,6 +142,14 @@ export function AdminLayout({
           to: '/admin/alumnos',
           label: 'Alumnos',
           icon: Users,
+          exact: false,
+          badge: 0,
+        },
+        {
+          to: '/admin/mensajes',
+          label: 'Mensajes directos',
+          shortLabel: 'Mensajes',
+          icon: MessageCircle,
           exact: false,
           badge: 0,
         },

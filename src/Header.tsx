@@ -37,6 +37,7 @@ import { PWAUpdateButton } from './components/pwa/PWAUpdateButton';
 import { UserMenu } from './components/user/UserMenu';
 import { TeacherCommentBell } from './components/admin/TeacherCommentBell';
 import { StudentNotificationBell } from './components/student/StudentNotificationBell';
+import { StudentDirectChatButton } from './components/student/StudentDirectChatButton';
 import { useAuth } from './contexts/AuthProvider';
 import { useStaffViewStore } from './stores/staffViewStore';
 import { useAdminPendingCounts } from './hooks/useAdminPendingCounts';
@@ -307,7 +308,10 @@ export function Header() {
             )}
 
             {isSupabaseConfigured && user && (!isAdmin && !isEditor || studentMode) && (
-              <StudentNotificationBell placement="desktop" />
+              <>
+                <StudentDirectChatButton placement="desktop" />
+                <StudentNotificationBell placement="desktop" />
+              </>
             )}
 
             {isSupabaseConfigured && user && (isAdmin || isEditor) && !studentMode && !location.pathname.startsWith('/admin') && (
@@ -389,7 +393,10 @@ export function Header() {
             )}
 
             {isSupabaseConfigured && user && (!isAdmin && !isEditor || studentMode) && (
-              <StudentNotificationBell placement="mobile" />
+              <>
+                <StudentDirectChatButton placement="mobile" />
+                <StudentNotificationBell placement="mobile" />
+              </>
             )}
 
             {/* Control unificado de usuario / menú móvil: un solo control en vez de hamburguesa + avatar duplicados */}

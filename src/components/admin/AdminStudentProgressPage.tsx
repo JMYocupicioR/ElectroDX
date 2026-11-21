@@ -35,11 +35,13 @@ import {
   RefreshCw,
   RotateCcw,
   Link2,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import AssignExamModal from './AssignExamModal';
 import AssignHomeworkModal from './AssignHomeworkModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
+import DirectStudentChatModal from './DirectStudentChatModal';
 import { AssignmentSubmissionReview } from '../student/AssignmentDeliveryPanel';
 import { extractUrls } from '../../utils/submissionLinks';
 import { useAuth } from '../../contexts/AuthProvider';
@@ -404,6 +406,7 @@ export default function AdminStudentProgressPage() {
     searchParams.get('tab') === 'agreements' ? 'agreements' : 'summary'
   );
   const [showKardexModal, setShowKardexModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   // Exam Detail state (Question by question breakdown)
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
@@ -778,7 +781,16 @@ export default function AdminStudentProgressPage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setShowChatModal(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-cyan-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-xs font-bold transition shadow-2xs cursor-pointer"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>Chat Directo</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setShowKardexModal(true)}
@@ -2321,12 +2333,32 @@ export default function AdminStudentProgressPage() {
       )}
 
       {studentId && (
-        <StudentKardexModal
-          isOpen={showKardexModal}
-          onClose={() => setShowKardexModal(false)}
-          studentId={studentId}
-          profile={profile}
-        />
+        <>
+          <StudentKardexModal
+            isOpen={showKardexModal}
+            onClose={() => setShowKardexModal(false)}
+            studentId={studentId}
+            profile={profile}
+          />
+          <DirectStudentChatModal
+            isOpen={showChatModal}
+            onClose={() => setShowChatModal(false)}
+            target={
+              profile
+                ? {
+                    id: studentId,
+                    displayName: profile.display_name,
+                    email: (profile as { email?: string | null }).email ?? null,
+                    institution: profile.institution,
+                    specialty: profile.specialty,
+                    residencyYear: profile.residency_year,
+                    avatarUrl: profile.avatar_url,
+                    enrollmentStatus: profile.enrollment_status,
+                  }
+                : null
+            }
+          />
+        </>
       )}
     </AdminLayout>
   );

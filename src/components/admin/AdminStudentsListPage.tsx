@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   BookOpen,
   FileQuestion,
+  MessageCircle,
 } from 'lucide-react';
 import { AdminLayout } from './AdminLayout';
 import { getAdminProfiles } from '../../services/editorialService';
@@ -22,8 +23,10 @@ import { useAuth } from '../../contexts/AuthProvider';
 import GradebookConfigModal from './GradebookConfigModal';
 import AttendanceTrackerModal from './AttendanceTrackerModal';
 import StudentKardexModal from './StudentKardexModal';
+import DirectStudentChatModal from './DirectStudentChatModal';
 import AssignExamModal from './AssignExamModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
+import type { DirectChatStudentTarget } from '../../services/directChatService';
 import type { AdminProfileRow } from '../../types/admin';
 import type { StudentCohortSummary } from '../../types/academicGradebook';
 import { BRAND } from '../../config/brand';
@@ -48,6 +51,7 @@ export default function AdminStudentsListPage() {
   const [showAssignExamModal, setShowAssignExamModal] = useState(false);
   const [showAssignCaseModal, setShowAssignCaseModal] = useState(false);
   const [kardexStudent, setKardexStudent] = useState<AdminProfileRow | null>(null);
+  const [chatTarget, setChatTarget] = useState<DirectChatStudentTarget | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -431,6 +435,32 @@ export default function AdminStudentsListPage() {
 
                         <button
                           type="button"
+                          onClick={() => {
+                            const isRisk =
+                              sSummary?.complianceStatus === 'at_risk' ||
+                              sSummary?.complianceStatus === 'lagging';
+                            setChatTarget({
+                              id: student.id,
+                              displayName: student.display_name,
+                              email: student.email,
+                              institution: student.institution,
+                              specialty: student.specialty,
+                              residencyYear: student.residency_year,
+                              avatarUrl: student.avatar_url,
+                              complianceLabel: sSummary?.complianceLabel,
+                              riskReasons: sSummary?.riskReasons ?? [],
+                              contextTag: isRisk ? 'at_risk' : 'general',
+                            });
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 text-indigo-700 dark:text-cyan-300 text-xs font-bold border border-indigo-200 dark:border-indigo-800 transition shadow-2xs cursor-pointer"
+                          title={`Abrir chat privado directo con ${student.display_name}`}
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>Mensaje</span>
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={() => setKardexStudent(student)}
                           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs font-bold border border-slate-200 dark:border-slate-700 hover:border-indigo-300 transition shadow-2xs cursor-pointer"
                           title="Ver e Imprimir Kardex Académico Oficial"
@@ -597,6 +627,12 @@ export default function AdminStudentsListPage() {
         onClose={() => setShowAssignCaseModal(false)}
         profiles={profiles}
         onAssigned={loadData}
+      />
+
+      <DirectStudentChatModal
+        isOpen={Boolean(chatTarget)}
+        onClose={() => setChatTarget(null)}
+        target={chatTarget}
       />
     </AdminLayout>
   );

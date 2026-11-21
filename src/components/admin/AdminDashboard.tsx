@@ -63,9 +63,15 @@ import AssignExamModal from './AssignExamModal';
 import { AssignClinicalCaseModal } from './AssignClinicalCaseModal';
 import AttendanceTrackerModal from './AttendanceTrackerModal';
 import StudentKardexModal from './StudentKardexModal';
+import DirectStudentChatModal from './DirectStudentChatModal';
 import { AdminQuizEditorModal } from './quiz/AdminQuizEditorModal';
 import { CreateLiveClassModal } from './CreateLiveClassModal';
 import { TopicAdoptionInbox, type TopicAdoptionSummary } from './TopicAdoptionInbox';
+import {
+  listAllDirectChatSummaries,
+  type DirectChatStudentTarget,
+  type DirectChatThreadSummary,
+} from '../../services/directChatService';
 import {
   getAutoOpenClassWizardPref,
   hasAutoOpenClassWizardBeenSeenThisSession,
@@ -244,6 +250,9 @@ export default function AdminDashboard() {
   // Modals state
   const [gradingItem, setGradingItem] = useState<TeacherPendingReviewItem | null>(null);
   const [kardexStudent, setKardexStudent] = useState<AdminProfileRow | null>(null);
+  const [chatTarget, setChatTarget] = useState<DirectChatStudentTarget | null>(null);
+  const [batchChatTargets, setBatchChatTargets] = useState<DirectChatStudentTarget[] | null>(null);
+  const [chatSummaries, setChatSummaries] = useState<Map<string, DirectChatThreadSummary>>(new Map());
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
   const [showAssignDropdown, setShowAssignDropdown] = useState(false);
   const [showAssignExamModal, setShowAssignExamModal] = useState(false);
@@ -339,8 +348,12 @@ export default function AdminDashboard() {
       setPendingRetakes(rets);
 
       // Summaries for at-risk students
-      const summaries = await getCohortAcademicSummaries(studentsOnly);
+      const [summaries, chatsMap] = await Promise.all([
+        getCohortAcademicSummaries(studentsOnly),
+        listAllDirectChatSummaries().catch(() => new Map<string, DirectChatThreadSummary>()),
+      ]);
       setCohortSummaries(summaries);
+      setChatSummaries(chatsMap);
     } catch (e) {
       console.error('[AdminDashboard] Error loading data:', e);
     } finally {
@@ -899,8 +912,8 @@ export default function AdminDashboard() {
         <div style={sectionStyle('questions')}>
         <CollapsibleDashboardSection
           id="questions"
-          title="Dudas por responder"
-          subtitle="Hilos de la cohorte que siguen abiertos"
+          title="Dudas y mensajes por responder"
+          subtitle="Mensajes privados directos e hilos de la cohorte abiertos"
           icon={<MessageCircle className="w-4 h-4" />}
           iconBgClass={sectionToneClass(questionLevel, questionItems.length === 0)}
           badgeVariant={badgeVariantFromLevel(questionLevel, questionItems.length === 0)}
@@ -908,7 +921,7 @@ export default function AdminDashboard() {
             questionItems.length > 0 ? (
               <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-200 border border-amber-300 dark:border-amber-800 inline-flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                {questionItems.length} {questionItems.length === 1 ? 'duda' : 'dudas'}
+                {questionItems.length} {questionItems.length === 1 ? 'pendiente' : 'pendientes'}
               </span>
             ) : (
               <span className="px-1.5 py-px rounded-full text-[10px] leading-4 font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 inline-flex items-center gap-1">
@@ -917,31 +930,95 @@ export default function AdminDashboard() {
               </span>
             )
           }
+          headerAction={
+            <Link
+              to="/admin/mensajes"
+              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+              title="Abrir canal de mensajes directos"
+            >
+              Mensajes
+            </Link>
+          }
           isOpen={openSections['questions'] ?? false}
           onToggle={() => toggleSection('questions')}
         >
           {questionItems.length === 0 ? (
-            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-              <span>No hay dudas abiertas de la cohorte.</span>
+            <div className="px-3 py-2 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 text-[11px] leading-4 text-slate-500 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>No hay dudas ni mensajes privados sin responder.</span>
+              </div>
+              <Link
+                to="/admin/mensajes"
+                className="text-[11px] font-bold text-indigo-600 dark:text-cyan-400 hover:underline shrink-0"
+              >
+                Abrir chat directo →
+              </Link>
             </div>
           ) : (
             <div className="space-y-2">
-              {questionItems.map((item) => (
-                <Link
-                  key={item.source_key}
-                  to={item.link_url || '/admin'}
-                  className="block p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
-                >
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">
-                    {item.actor_name || 'Médico cursista'}
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{item.context_label}</p>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
-                    {item.message}
-                  </p>
-                </Link>
-              ))}
+              {questionItems.map((item) => {
+                const isDirectChat = item.source_key.startsWith('direct_chat:');
+                const directStudentId = isDirectChat
+                  ? item.source_key.slice('direct_chat:'.length)
+                  : null;
+
+                return (
+                  <div
+                    key={item.source_key}
+                    className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5"
+                  >
+                    <Link
+                      to={item.link_url || '/admin'}
+                      className="min-w-0 flex-1"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-xs font-bold text-slate-900 dark:text-white">
+                          {item.actor_name || 'Médico cursista'}
+                        </p>
+                        {isDirectChat && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-cyan-300 border border-indigo-200 dark:border-indigo-800">
+                            Chat privado 1:1
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{item.context_label}</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-1 line-clamp-2">
+                        {item.message}
+                      </p>
+                    </Link>
+
+                    {isDirectChat && directStudentId ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setBatchChatTargets(null);
+                          setChatTarget({
+                            id: directStudentId,
+                            displayName: item.actor_name || 'Médico',
+                            contextTag:
+                              item.context_label === 'En espera de admisión'
+                                ? 'waitlist'
+                                : 'general',
+                          });
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-2xs transition cursor-pointer shrink-0 self-end sm:self-center"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Responder en Chat</span>
+                      </button>
+                    ) : (
+                      <Link
+                        to={item.link_url || '/admin'}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-semibold transition shrink-0 self-end sm:self-center"
+                      >
+                        <span>Responder</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </CollapsibleDashboardSection>
@@ -1036,7 +1113,31 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-end gap-3 shrink-0">
+                  <div className="flex items-center justify-end gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchChatTargets(null);
+                        setChatTarget({
+                          id: profile.id,
+                          displayName: profile.display_name || 'Médico solicitante',
+                          email: profile.email,
+                          institution: profile.institution,
+                          specialty: profile.specialty,
+                          cedulaProfesional: profile.cedula_profesional,
+                          enrollmentStatus: 'pending',
+                          contextTag: 'waitlist',
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-700 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
+                      title="Enviar mensaje directo a su pantalla de espera"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Mensaje</span>
+                      {chatSummaries.get(profile.id)?.needsTeacherReply && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      )}
+                    </button>
                     <button
                       type="button"
                       disabled={admittingId === profile.id}
@@ -1077,10 +1178,36 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
                     <span className="text-[11px] text-slate-400">
                       {new Date(item.requested_at).toLocaleDateString('es-MX')}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchChatTargets(null);
+                        setChatTarget({
+                          id: item.user_id,
+                          displayName: item.display_name,
+                          email: item.email,
+                          institution: item.institution,
+                          specialty: item.specialty,
+                          cedulaProfesional: item.cedula_profesional,
+                          courseTitle: item.course_title,
+                          courseId: item.course_id,
+                          enrollmentStatus: 'pending',
+                          contextTag: 'waitlist',
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/50 hover:bg-indigo-100 text-indigo-700 dark:text-cyan-300 font-bold text-xs transition cursor-pointer"
+                      title="Enviar mensaje directo a su pantalla de espera"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Mensaje</span>
+                      {chatSummaries.get(item.user_id)?.needsTeacherReply && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      )}
+                    </button>
                     <button
                       type="button"
                       disabled={admittingId === item.enrollment_id}
@@ -1488,6 +1615,25 @@ export default function AdminDashboard() {
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2">
                     <button
                       type="button"
+                      onClick={() => {
+                        setBatchChatTargets(null);
+                        setChatTarget({
+                          id: ret.assignment.student_id,
+                          displayName: ret.studentProfile?.display_name || 'Médico Cursista',
+                          email: ret.studentProfile?.email,
+                          institution: ret.studentProfile?.institution,
+                          contextTag: 'retake',
+                          initialDraft: `Hola ${ret.studentProfile?.display_name || 'Dr(a).'}, respecto a tu solicitud de reintento para "${ret.assignment.title}": `,
+                        });
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 text-indigo-700 dark:text-cyan-300 font-semibold transition cursor-pointer text-xs"
+                      title="Abrir chat privado con el alumno"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Mensaje</span>
+                    </button>
+                    <button
+                      type="button"
                       disabled={retakeActionId === ret.assignment.id}
                       onClick={() => handleRejectRetake(ret)}
                       className="px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-semibold transition disabled:opacity-50 cursor-pointer text-xs"
@@ -1537,13 +1683,40 @@ export default function AdminDashboard() {
             )
           }
           headerAction={
-            <Link
-              to="/admin/alumnos?cumplimiento=riesgo"
-              className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
-              title="Ver todos los alumnos"
-            >
-              Alumnos
-            </Link>
+            <div className="flex items-center gap-2">
+              {atRiskStudents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setChatTarget(null);
+                    setBatchChatTargets(
+                      atRiskStudents.map(({ profile: std, summary }) => ({
+                        id: std.id,
+                        displayName: std.display_name,
+                        email: std.email,
+                        institution: std.institution,
+                        specialty: std.specialty,
+                        complianceLabel: summary?.complianceLabel || 'En riesgo',
+                        riskReasons: summary?.riskReasons ?? [],
+                        contextTag: 'at_risk',
+                      }))
+                    );
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold leading-none transition cursor-pointer"
+                  title="Enviar mensaje privado individualizado a todos los alumnos en riesgo"
+                >
+                  <MessageCircle className="w-3 h-3" />
+                  <span>Mensaje a todos</span>
+                </button>
+              )}
+              <Link
+                to="/admin/alumnos?cumplimiento=riesgo"
+                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-nowrap"
+                title="Ver todos los alumnos"
+              >
+                Alumnos
+              </Link>
+            </div>
           }
           isOpen={openSections['atRisk'] ?? false}
           onToggle={() => toggleSection('atRisk')}
@@ -1557,6 +1730,7 @@ export default function AdminDashboard() {
             <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden divide-y divide-slate-100 dark:divide-slate-800 shadow-2xs">
               {atRiskStudents.map(({ profile: std, summary }) => {
                 const reasons = summary?.riskReasons ?? [];
+                const stdChat = chatSummaries.get(std.id);
                 return (
                 <div
                   key={std.id}
@@ -1574,6 +1748,11 @@ export default function AdminDashboard() {
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900">
                           {summary?.complianceLabel || 'En riesgo'}
                         </span>
+                        {stdChat?.needsTeacherReply && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-600 text-white animate-pulse">
+                            Nuevo mensaje del alumno
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-slate-400 truncate mt-0.5">
                         {std.institution || std.email}
@@ -1601,6 +1780,32 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBatchChatTargets(null);
+                        setChatTarget({
+                          id: std.id,
+                          displayName: std.display_name,
+                          email: std.email,
+                          institution: std.institution,
+                          specialty: std.specialty,
+                          avatarUrl: std.avatar_url,
+                          complianceLabel: summary?.complianceLabel || 'En riesgo',
+                          riskReasons: reasons,
+                          contextTag: 'at_risk',
+                        });
+                      }}
+                      className="px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/70 font-bold text-indigo-700 dark:text-cyan-300 transition text-xs cursor-pointer shadow-2xs whitespace-nowrap flex items-center gap-1.5"
+                      title={`Abrir chat privado con ${std.display_name}`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>Mensaje</span>
+                      {stdChat?.needsTeacherReply && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                      )}
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => setKardexStudent(std)}
@@ -1792,6 +1997,23 @@ export default function AdminDashboard() {
           setSuccessMessage('¡Cuestionario guardado o publicado exitosamente!');
           void loadData();
           setTimeout(() => setSuccessMessage(null), 4000);
+        }}
+      />
+      {/* 8. Canal de Chat Privado Directo con Alumnos / Aspirantes */}
+      <DirectStudentChatModal
+        isOpen={Boolean(chatTarget || (batchChatTargets && batchChatTargets.length > 0))}
+        onClose={() => {
+          setChatTarget(null);
+          setBatchChatTargets(null);
+        }}
+        target={chatTarget}
+        batchTargets={batchChatTargets}
+        onSelectSingleTarget={(single) => {
+          setBatchChatTargets(null);
+          setChatTarget(single);
+        }}
+        onMessageSent={() => {
+          void loadData();
         }}
       />
     </AdminLayout>
