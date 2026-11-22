@@ -77,6 +77,7 @@ import {
   assignTopicsToTeacher,
   listTopicTeachingCommitments,
   removeTeacherFromTopics,
+  syncWorkshopInstructors,
 } from '../../services/topicTeachingService';
 import {
   DEFAULT_ACADEMIC_MILESTONES,
@@ -3063,12 +3064,14 @@ export default function AdminSyllabusPage() {
           const targetIds = includeSubtopics
             ? collectTopicAndChildrenIds(drawerContext.topic)
             : [drawerContext.topic.id];
+          const linkedWorkshopId = workshopByTopicId.get(drawerContext.topic.id)?.id;
           await assignTopicsToTeacher({
             topicIds: targetIds,
             moduleId: drawerContext.mod.id,
             teacherId,
             teacherName,
             milestoneId,
+            ...(linkedWorkshopId ? { workshopId: linkedWorkshopId } : {}),
           });
           const updated = await listTopicTeachingCommitments();
           setCommitments(updated);
@@ -3089,10 +3092,12 @@ export default function AdminSyllabusPage() {
           const targetIds = includeSubtopics
             ? collectTopicAndChildrenIds(drawerContext.topic)
             : [drawerContext.topic.id];
+          const linkedWorkshopId = workshopByTopicId.get(drawerContext.topic.id)?.id ?? null;
           await removeTeacherFromTopics({
             topicIds: targetIds,
             teacherId,
             commitmentIds,
+            workshopId: linkedWorkshopId,
           });
           const updated = await listTopicTeachingCommitments();
           setCommitments(updated);
@@ -3111,6 +3116,7 @@ export default function AdminSyllabusPage() {
           countsForKardex,
           teacherId,
           teacherName,
+          teachers: assignedTeachersInput,
           additionalTopics = [],
         }) => {
           if (!drawerContext || !user) return;
@@ -3154,7 +3160,13 @@ export default function AdminSyllabusPage() {
               created_by: user.id,
             });
           }
-          if (teacherId && teacherName) {
+          const assignedTeachers =
+            assignedTeachersInput && assignedTeachersInput.length > 0
+              ? assignedTeachersInput
+              : teacherId && teacherName
+                ? [{ teacherId, teacherName }]
+                : [];
+          if (assignedTeachers.length > 0) {
             const sessionTopics = [
               { topicId: drawerContext.topic.id, moduleId: drawerContext.mod.id },
               ...additionalTopics.filter((t) => t.topicId !== drawerContext.topic.id),
@@ -3165,16 +3177,22 @@ export default function AdminSyllabusPage() {
               if (!list.includes(item.topicId)) list.push(item.topicId);
               byModule.set(item.moduleId, list);
             }
-            for (const [moduleId, topicIds] of byModule) {
-              await assignTopicsToTeacher({
-                topicIds,
-                moduleId,
-                teacherId,
-                teacherName,
-                workshopId: savedWorkshop.id,
-              });
+            for (const teacher of assignedTeachers) {
+              for (const [moduleId, topicIds] of byModule) {
+                await assignTopicsToTeacher({
+                  topicIds,
+                  moduleId,
+                  teacherId: teacher.teacherId,
+                  teacherName: teacher.teacherName,
+                  workshopId: savedWorkshop.id,
+                });
+              }
             }
           }
+          await syncWorkshopInstructors(
+            savedWorkshop.id,
+            assignedTeachers.map((teacher) => teacher.teacherId),
+          );
           await loadAuxiliaryData();
         }}
         onClearClassDate={async () => {

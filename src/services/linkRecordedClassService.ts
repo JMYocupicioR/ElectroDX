@@ -3,7 +3,6 @@ import { readSessionTopicIds, withSessionTopicIds } from '../utils/liveSessionBr
 import { notifyRecordingLinksChanged } from '../utils/recordingLinksEvents';
 import { getWorkshopById, updateWorkshop } from './courseService';
 import {
-  assignWorkshopToTopics,
   attachWorkshopIdToTopicCommitments,
   detachWorkshopIdFromTopicCommitments,
 } from './topicTeachingService';
@@ -40,9 +39,9 @@ export async function linkRecordedWorkshopToTopic(params: {
   workshop: LiveWorkshop;
   topicId: string;
   moduleId: string;
-  userId: string;
+  userId?: string;
 }): Promise<LiveWorkshop> {
-  const { workshop, topicId, moduleId, userId } = params;
+  const { workshop, topicId, moduleId } = params;
   if (!workshop?.id) throw new Error('Selecciona una clase grabada.');
   if (!topicId) throw new Error('Falta el tema a vincular.');
   if (!workshop.recording_url?.trim()) {
@@ -70,9 +69,6 @@ export async function linkRecordedWorkshopToTopic(params: {
   });
 
   await attachWorkshopIdToTopicCommitments(workshop.id, [topicId]);
-  if (userId) {
-    await assignWorkshopToTopics(workshop.id, [{ topicId, moduleId }], userId);
-  }
 
   notifyRecordingLinksChanged();
   return updated;

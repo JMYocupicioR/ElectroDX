@@ -113,6 +113,7 @@ interface TopicConfigDrawerProps {
     countsForKardex?: boolean;
     teacherId?: string;
     teacherName?: string;
+    teachers?: { teacherId: string; teacherName: string }[];
     additionalTopics?: { topicId: string; moduleId: string }[];
   }) => Promise<void>;
   /** Deletes the linked live workshop so the topic can be re-scheduled. */
@@ -467,13 +468,22 @@ export function TopicConfigDrawer({
     setBusyAction(`remove-${teacherId}`);
     setFeedback(null);
     try {
+      const applySubtopics = subtopics.length > 0 && includeSubtopics;
+      const targetTopicIds = new Set(
+        applySubtopics ? [topic.id, ...subtopics.map((s) => s.id)] : [topic.id]
+      );
       const cids = commitments
-        .filter((c) => c.teacher_id === teacherId && c.topic_id === topic.id)
+        .filter(
+          (c) =>
+            c.teacher_id === teacherId &&
+            targetTopicIds.has(c.topic_id) &&
+            c.status !== 'withdrawn'
+        )
         .map((c) => c.id);
       await onRemoveTeacher({
         teacherId,
         commitmentIds: cids,
-        includeSubtopics: subtopics.length > 0 && includeSubtopics,
+        includeSubtopics: applySubtopics,
       });
       showToast('ok', `Se retiró a ${teacherName} de este tema`);
     } catch (err) {
@@ -524,6 +534,10 @@ export function TopicConfigDrawer({
         countsForKardex: classCountsForKardex,
         teacherId: primaryCommitment?.teacher_id,
         teacherName: primaryCommitment?.teacher_name ?? undefined,
+        teachers: topicCommitments.map((c) => ({
+          teacherId: c.teacher_id,
+          teacherName: c.teacher_name || 'Profesor',
+        })),
         additionalTopics,
       });
       showToast('ok', 'Clase en vivo guardada, con los temas incluidos.');

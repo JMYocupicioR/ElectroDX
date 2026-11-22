@@ -41,7 +41,7 @@ function writeLocalCommitments(rows: TopicTeachingCommitment[]): void {
   }
 }
 
-function mergeRemoteAndLocalCommitments(
+export function mergeRemoteAndLocalCommitments(
   remote: TopicTeachingCommitment[],
   local: TopicTeachingCommitment[],
   cohortId: string
@@ -59,14 +59,15 @@ function mergeRemoteAndLocalCommitments(
     const key = `${loc.cohort_id}:${loc.topic_id}:${loc.teacher_id}`;
     const rem = byKey.get(key);
     if (!rem) {
-      if (loc.status !== 'withdrawn') {
+      // Conservar en local solo docentes invitados (no UUID) o filas creadas sin sincronizar (local_*).
+      // Si ya existía en servidor (UUID real) y el servidor ya no lo devuelve activo, no resucitarlo.
+      if (loc.status !== 'withdrawn' && (!isUuid(loc.teacher_id) || loc.id.startsWith('local_'))) {
         byKey.set(key, loc);
       }
     } else {
-      // Si el registro local fue retirado explícitamente más recientemente o tiene metadatos enriquecidos
-      if (loc.status === 'withdrawn') {
+      if (loc.status === 'withdrawn' && loc.id.startsWith('local_')) {
         byKey.delete(key);
-      } else {
+      } else if (loc.status !== 'withdrawn') {
         byKey.set(key, {
           ...rem,
           teacher_name: rem.teacher_name || loc.teacher_name || 'Profesor',
@@ -204,13 +205,64 @@ export async function autoConfirmAllPendingCommitments(): Promise<number> {
   }
 }
 
+async function removeWorkshopInstructorIfUnused(
+  workshopId: string,
+  teacherId: string,
+  force: boolean,
+  cohortId: string = TOPIC_TEACHING_COHORT_ID
+): Promise<void> {
+  if (!workshopId || !isUuid(workshopId) || !isUuid(teacherId) || isTableMissingInSupabase(INSTRUCTORS_TABLE)) {
+    return;
+  }
+  try {
+    if (!force && !isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+      const { data: remaining, error: checkErr } = await sb
+        .from(COMMITMENTS_TABLE)
+        .select('id')
+        .eq('cohort_id', cohortId)
+        .eq('workshop_id', workshopId)
+        .eq('teacher_id', teacherId)
+        .neq('status', 'withdrawn')
+        .limit(1);
+      if (!checkErr && remaining && remaining.length > 0) {
+        return;
+      }
+    }
+    const { error, status } = await sb
+      .from(INSTRUCTORS_TABLE)
+      .delete()
+      .eq('workshop_id', workshopId)
+      .eq('teacher_id', teacherId);
+    if (isMissingRelationError(error, status)) {
+      markTableAsMissingInSupabase(INSTRUCTORS_TABLE);
+    }
+  } catch (err) {
+    console.warn('[topicTeachingService] removeWorkshopInstructorIfUnused error:', err);
+  }
+}
+
 export async function withdrawTopicCommitment(commitmentId: string): Promise<TopicTeachingCommitment> {
   // Actualizar estado local si existe
   const local = readLocalCommitments();
   const localIdx = local.findIndex((c) => c.id === commitmentId);
+  const localPrevWorkshopId = localIdx >= 0 ? local[localIdx].workshop_id : null;
   if (localIdx >= 0) {
-    local[localIdx] = { ...local[localIdx], status: 'withdrawn' };
+    local[localIdx] = { ...local[localIdx], status: 'withdrawn', workshop_id: null };
     writeLocalCommitments(local);
+  }
+
+  let remotePrevWorkshopId: string | null = null;
+  if (isUuid(commitmentId) && !isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+    try {
+      const { data: before } = await sb
+        .from(COMMITMENTS_TABLE)
+        .select('workshop_id')
+        .eq('id', commitmentId)
+        .maybeSingle();
+      remotePrevWorkshopId = (before as { workshop_id?: string | null } | null)?.workshop_id ?? null;
+    } catch {
+      // Continuar con RPC
+    }
   }
 
   const { data, error } = await sb.rpc('withdraw_topic_commitment', {
@@ -224,7 +276,34 @@ export async function withdrawTopicCommitment(commitmentId: string): Promise<Top
     if (localIdx >= 0) return local[localIdx];
     throw new Error('No se pudo retirar el tema.');
   }
-  return data as TopicTeachingCommitment;
+
+  const withdrawn = data as TopicTeachingCommitment;
+  const workshopToClean = remotePrevWorkshopId || withdrawn.workshop_id || localPrevWorkshopId;
+
+  if (withdrawn.workshop_id && !isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+    try {
+      await sb
+        .from(COMMITMENTS_TABLE)
+        .update({ workshop_id: null })
+        .eq('id', withdrawn.id);
+    } catch {
+      // Ignorar si ya fue limpiado por la migración
+    }
+  }
+
+  if (workshopToClean && isUuid(withdrawn.teacher_id)) {
+    await removeWorkshopInstructorIfUnused(
+      workshopToClean,
+      withdrawn.teacher_id,
+      false,
+      withdrawn.cohort_id || TOPIC_TEACHING_COHORT_ID
+    );
+  }
+
+  // Purgar de caché local ya que quedó sincronizado en servidor
+  writeLocalCommitments(readLocalCommitments().filter((c) => c.id !== commitmentId));
+
+  return { ...withdrawn, workshop_id: null };
 }
 
 /**
@@ -289,6 +368,22 @@ export async function assignTopicsToTeacher(input: {
           remoteRows = upData as TopicTeachingCommitment[];
         }
       }
+
+      if (input.workshopId && isUuid(input.workshopId) && !isTableMissingInSupabase(INSTRUCTORS_TABLE)) {
+        try {
+          const { error: instErr, status: instStatus } = await sb
+            .from(INSTRUCTORS_TABLE)
+            .upsert(
+              { workshop_id: input.workshopId, teacher_id: input.teacherId },
+              { onConflict: 'workshop_id,teacher_id' }
+            );
+          if (isMissingRelationError(instErr, instStatus)) {
+            markTableAsMissingInSupabase(INSTRUCTORS_TABLE);
+          }
+        } catch {
+          // Ignorar error de red en tabla auxiliar
+        }
+      }
     } catch {
       // Continuar con persistencia local resiliente
     }
@@ -328,55 +423,231 @@ export async function assignTopicsToTeacher(input: {
 }
 
 /**
- * Desasigna / retira a un profesor de uno o varios temas.
+ * Desasigna / retira a un profesor de uno o varios temas y limpia su vínculo en la clase asociada.
  */
 export async function removeTeacherFromTopics(input: {
   topicIds: string[];
   teacherId: string;
   commitmentIds?: string[];
+  workshopId?: string | null;
   cohortId?: string;
 }): Promise<void> {
   const cohortId = input.cohortId || TOPIC_TEACHING_COHORT_ID;
-  const topicSet = new Set(input.topicIds);
+  const cleanTopicIds = [...new Set(input.topicIds.map((id) => id.trim()).filter(Boolean))];
+  const topicSet = new Set(cleanTopicIds);
+  const inputCommitmentIds = [...new Set((input.commitmentIds ?? []).filter(Boolean))];
+  const inputCommitmentIdSet = new Set(inputCommitmentIds);
+  const affectedWorkshopIds = new Set<string>();
 
-  // 1. Marcar como withdrawn en caché local inmediatamente
+  if (input.workshopId && isUuid(input.workshopId)) {
+    affectedWorkshopIds.add(input.workshopId);
+  }
+
+  // 1. Marcar como withdrawn en caché local inmediatamente y recopilar talleres afectados
   const local = readLocalCommitments();
+  for (const c of local) {
+    const matchesTarget =
+      (c.cohort_id === cohortId && c.teacher_id === input.teacherId && topicSet.has(c.topic_id)) ||
+      inputCommitmentIdSet.has(c.id);
+    if (matchesTarget && c.workshop_id && isUuid(c.workshop_id)) {
+      affectedWorkshopIds.add(c.workshop_id);
+    }
+  }
+
   const updatedLocal = local.map((c) => {
     if (
       (c.cohort_id === cohortId && c.teacher_id === input.teacherId && topicSet.has(c.topic_id)) ||
-      (input.commitmentIds && input.commitmentIds.includes(c.id))
+      inputCommitmentIdSet.has(c.id)
     ) {
-      return { ...c, status: 'withdrawn' as const };
+      return { ...c, status: 'withdrawn' as const, workshop_id: null };
+    }
+    if (
+      input.workshopId &&
+      c.cohort_id === cohortId &&
+      c.teacher_id === input.teacherId &&
+      c.workshop_id === input.workshopId
+    ) {
+      return { ...c, workshop_id: null };
     }
     return c;
   });
   writeLocalCommitments(updatedLocal);
 
-  // 2. Retirar en Supabase
-  if (input.commitmentIds?.length) {
-    for (const cid of input.commitmentIds) {
-      if (cid.startsWith('local_')) continue;
+  // 2. Retirar en Supabase (cubre todos los topicIds + subtemas y cualquier commitmentId extra)
+  let remoteSynced = false;
+  if (!isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+    const matchedByTopicIds = new Set<string>();
+    const remoteCommitmentIds = new Set<string>(
+      inputCommitmentIds.filter((cid) => !cid.startsWith('local_') && isUuid(cid))
+    );
+
+    if (isUuid(input.teacherId) && cleanTopicIds.length > 0) {
       try {
-        await sb.rpc('withdraw_topic_commitment', { p_commitment_id: cid });
+        const { data: existingRows, error: fetchErr, status: fetchStatus } = await sb
+          .from(COMMITMENTS_TABLE)
+          .select('id, workshop_id')
+          .eq('cohort_id', cohortId)
+          .eq('teacher_id', input.teacherId)
+          .in('topic_id', cleanTopicIds)
+          .neq('status', 'withdrawn');
+
+        if (isMissingRelationError(fetchErr, fetchStatus)) {
+          markTableAsMissingInSupabase(COMMITMENTS_TABLE);
+        } else if (!fetchErr && existingRows) {
+          for (const row of existingRows as { id: string; workshop_id: string | null }[]) {
+            matchedByTopicIds.add(row.id);
+            remoteCommitmentIds.add(row.id);
+            if (row.workshop_id && isUuid(row.workshop_id)) {
+              affectedWorkshopIds.add(row.workshop_id);
+            }
+          }
+        }
       } catch {
+        // Continuar con actualización directa / fallback RPC
+      }
+    }
+
+    if (!isTableMissingInSupabase(COMMITMENTS_TABLE)) {
+      let directUpdateFailed = false;
+
+      if (isUuid(input.teacherId) && cleanTopicIds.length > 0) {
         try {
-          await sb.from(COMMITMENTS_TABLE).update({ status: 'withdrawn' }).eq('id', cid);
+          const { error, status } = await sb
+            .from(COMMITMENTS_TABLE)
+            .update({ status: 'withdrawn', workshop_id: null })
+            .eq('cohort_id', cohortId)
+            .eq('teacher_id', input.teacherId)
+            .in('topic_id', cleanTopicIds);
+          if (isMissingRelationError(error, status)) {
+            markTableAsMissingInSupabase(COMMITMENTS_TABLE);
+          } else if (error) {
+            directUpdateFailed = true;
+          } else {
+            remoteSynced = true;
+          }
+        } catch {
+          directUpdateFailed = true;
+        }
+      }
+
+      const fallbackIds = directUpdateFailed
+        ? [...remoteCommitmentIds]
+        : [...remoteCommitmentIds].filter((cid) => !matchedByTopicIds.has(cid));
+
+      for (const cid of fallbackIds) {
+        try {
+          const { error: rpcErr } = await sb.rpc('withdraw_topic_commitment', {
+            p_commitment_id: cid,
+          });
+          if (rpcErr) {
+            const { error: updErr } = await sb
+              .from(COMMITMENTS_TABLE)
+              .update({ status: 'withdrawn', workshop_id: null })
+              .eq('id', cid);
+            if (!updErr) remoteSynced = true;
+          } else {
+            remoteSynced = true;
+            await sb
+              .from(COMMITMENTS_TABLE)
+              .update({ workshop_id: null })
+              .eq('id', cid);
+          }
+        } catch {
+          // Ignorar error de red individual
+        }
+      }
+
+      // Si se retiró desde una clase específica, desvincular cualquier otro tema que aún apuntara a ese taller
+      if (input.workshopId && isUuid(input.workshopId) && isUuid(input.teacherId)) {
+        try {
+          await sb
+            .from(COMMITMENTS_TABLE)
+            .update({ workshop_id: null })
+            .eq('cohort_id', cohortId)
+            .eq('teacher_id', input.teacherId)
+            .eq('workshop_id', input.workshopId);
         } catch {
           // Ignorar error de red
         }
       }
     }
-  } else if (isUuid(input.teacherId) && !isTableMissingInSupabase(COMMITMENTS_TABLE)) {
-    try {
-      await sb
-        .from(COMMITMENTS_TABLE)
-        .update({ status: 'withdrawn' })
-        .eq('cohort_id', cohortId)
-        .eq('teacher_id', input.teacherId)
-        .in('topic_id', input.topicIds);
-    } catch {
-      // Ignorar si falla en remoto
+  }
+
+  // 3. Limpiar workshop_instructors para que deje de aparecer en la ficha de la clase
+  if (isUuid(input.teacherId) && affectedWorkshopIds.size > 0) {
+    for (const wId of affectedWorkshopIds) {
+      const forceDelete = Boolean(input.workshopId && wId === input.workshopId);
+      await removeWorkshopInstructorIfUnused(wId, input.teacherId, forceDelete, cohortId);
     }
+  }
+
+  // Si sincronizó en Supabase, purgar las filas retiradas de localStorage para evitar tombstones obsoletos
+  if (remoteSynced && isUuid(input.teacherId)) {
+    const cleanedLocal = readLocalCommitments().filter(
+      (c) =>
+        !(
+          (c.cohort_id === cohortId && c.teacher_id === input.teacherId && topicSet.has(c.topic_id)) ||
+          inputCommitmentIdSet.has(c.id)
+        )
+    );
+    writeLocalCommitments(cleanedLocal);
+  }
+}
+
+/**
+ * Sincroniza `workshop_instructors` con la lista exacta de docentes asignados a una clase.
+ * Agrega docentes faltantes y elimina a cualquiera que haya sido retirado de la sesión.
+ */
+export async function syncWorkshopInstructors(
+  workshopId: string,
+  teacherIds: string[]
+): Promise<void> {
+  if (!workshopId || !isUuid(workshopId) || isTableMissingInSupabase(INSTRUCTORS_TABLE)) return;
+  const desired = [...new Set(teacherIds.filter((id) => isUuid(id)))];
+
+  try {
+    const { data: existingRows, error: selectErr, status: selectStatus } = await sb
+      .from(INSTRUCTORS_TABLE)
+      .select('teacher_id')
+      .eq('workshop_id', workshopId);
+
+    if (isMissingRelationError(selectErr, selectStatus)) {
+      markTableAsMissingInSupabase(INSTRUCTORS_TABLE);
+      return;
+    }
+
+    const existingIds = new Set(
+      ((existingRows ?? []) as Pick<WorkshopInstructor, 'teacher_id'>[]).map((row) => row.teacher_id)
+    );
+    const desiredSet = new Set(desired);
+
+    const toInsert = desired.filter((id) => !existingIds.has(id));
+    const toDelete = [...existingIds].filter((id) => !desiredSet.has(id));
+
+    if (toInsert.length > 0) {
+      const { error: upsertErr, status: upsertStatus } = await sb
+        .from(INSTRUCTORS_TABLE)
+        .upsert(
+          toInsert.map((teacher_id) => ({ workshop_id: workshopId, teacher_id })),
+          { onConflict: 'workshop_id,teacher_id' }
+        );
+      if (isMissingRelationError(upsertErr, upsertStatus)) {
+        markTableAsMissingInSupabase(INSTRUCTORS_TABLE);
+        return;
+      }
+    }
+
+    if (toDelete.length > 0) {
+      await sb
+        .from(INSTRUCTORS_TABLE)
+        .delete()
+        .eq('workshop_id', workshopId)
+        .in('teacher_id', toDelete);
+    } else if (selectErr && desired.length === 0) {
+      await sb.from(INSTRUCTORS_TABLE).delete().eq('workshop_id', workshopId);
+    }
+  } catch (err) {
+    console.warn('[topicTeachingService] syncWorkshopInstructors error:', err);
   }
 }
 

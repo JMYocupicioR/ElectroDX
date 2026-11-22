@@ -25,9 +25,9 @@ import { createWorkshop, deleteWorkshop, updateWorkshop } from '../../services/c
 import { getAdminProfiles, getCourseTeachers } from '../../services/editorialService';
 import {
   assignTopicsToTeacher,
-  assignWorkshopToTopics,
   listTopicTeachingCommitments,
   removeTeacherFromTopics,
+  syncWorkshopInstructors,
 } from '../../services/topicTeachingService';
 import type { SessionModality } from '../../types/academicGradebook';
 import type { AdminProfileRow } from '../../types/admin';
@@ -51,7 +51,7 @@ import {
   splitIsoToLocalDateTime,
   splitStoredDescription,
 } from './liveClassFormUtils';
-import { withSessionTopicIds } from '../../utils/liveSessionBrief';
+import { readSessionTopicIds, withSessionTopicIds } from '../../utils/liveSessionBrief';
 
 export interface LiveClassCreateDrawerProps {
   isOpen: boolean;
@@ -290,6 +290,7 @@ export function LiveClassCreateDrawer({
           ...(initialSelectedTopicIds ?? []),
           ...(initialTopicId ? [initialTopicId] : []),
           ...(initialWorkshop?.topic_id ? [initialWorkshop.topic_id] : []),
+          ...(initialWorkshop ? readSessionTopicIds(initialWorkshop) : []),
           ...rows
             .filter(
               (row) =>
@@ -395,10 +396,12 @@ export function LiveClassCreateDrawer({
     setBusyAction(`assign-${teacherId}`);
     setFeedback(null);
     try {
+      const descendants = new Set(descendantTopicIds(catalog, primaryTopicId));
+      const nonDescendantAdditional = additionalIds.filter((id) => !descendants.has(id));
       const topicIds = uniqueIds([
         primaryTopicId,
-        ...(includeSubtopics ? descendantTopicIds(catalog, primaryTopicId) : []),
-        ...additionalIds,
+        ...(includeSubtopics ? [...descendants] : []),
+        ...nonDescendantAdditional,
       ]);
       const byModule = new Map<string, string[]>();
       for (const id of topicIds) {
@@ -445,9 +448,12 @@ export function LiveClassCreateDrawer({
     setBusyAction(`remove-${teacherId}`);
     setFeedback(null);
     try {
+      const descendants = new Set(descendantTopicIds(catalog, primaryTopicId));
+      const nonDescendantAdditional = additionalIds.filter((id) => !descendants.has(id));
       const topicIds = uniqueIds([
         primaryTopicId,
-        ...(includeSubtopics ? descendantTopicIds(catalog, primaryTopicId) : []),
+        ...(includeSubtopics ? [...descendants] : []),
+        ...nonDescendantAdditional,
       ]);
       const commitmentIds = commitments
         .filter(
@@ -457,7 +463,12 @@ export function LiveClassCreateDrawer({
             row.status !== 'withdrawn',
         )
         .map((row) => row.id);
-      await removeTeacherFromTopics({ teacherId, topicIds, commitmentIds });
+      await removeTeacherFromTopics({
+        teacherId,
+        topicIds,
+        commitmentIds,
+        workshopId: initialWorkshop?.id ?? null,
+      });
       setCommitments(await listTopicTeachingCommitments());
       showToast('ok', `Se retiró a ${teacherName} de este tema`);
     } catch (err) {
@@ -602,9 +613,10 @@ export function LiveClassCreateDrawer({
           });
         }
       }
-      if (user.id) {
-        await assignWorkshopToTopics(workshopId, topics, user.id);
-      }
+      await syncWorkshopInstructors(
+        workshopId,
+        topicCommitments.map((teacher) => teacher.teacher_id),
+      );
 
       const result = await onSuccess?.();
       if (result === false) return;
